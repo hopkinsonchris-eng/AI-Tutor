@@ -1,0 +1,12 @@
+{
+  "name": "study-platform",
+  "version": "1.5.0",
+  "description": "Spec-anchored A level study platform: rooms per topic, spaced recall, essay and photo marking to each board's conventions, a Socratic coach, and a multi-subject scheduler.",
+  "private": true,
+  "scripts": {
+    "build": "node build.js",
+    "test": "node tests/spec.test.js && node tests/core.test.js && node tests/gen.test.js && npm run build && node tests/app.test.js",
+    "serve": "npm run build && npx --yes serve dist"
+  },
+  "license": "UNLICENSED"
+}

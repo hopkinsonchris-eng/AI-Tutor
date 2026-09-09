@@ -1,0 +1,11 @@
+const fs=require('fs'),path=require('path');
+const css=fs.readFileSync(path.join(__dirname,'src','styles.css'),'utf8');
+const core=fs.readFileSync(path.join(__dirname,'src','core.js'),'utf8'),gen=fs.readFileSync(path.join(__dirname,'src','gen.js'),'utf8');
+const specs={...require('./src/specs/ocr-h481.js'),...require('./src/specs/edexcel-9bs0-9pl0.js'),...require('./src/specs/edexcel-9ma0.js')};const byId={};for(const s of Object.values(specs))byId[s.id]=s;
+const {AUTHORED}=require('./src/authored/index.js');
+let html=fs.readFileSync(path.join(__dirname,'src','template.html'),'utf8');
+html=html.replace('/*__CSS__*/',()=>css).replace('/*__CORE__*/',()=>core).replace('/*__GEN__*/',()=>gen).replace('/*__SPECS__*/',()=>'const SPECS='+JSON.stringify(byId)+';').replace('/*__AUTHORED__*/',()=>'const AUTHORED='+JSON.stringify(AUTHORED)+';');
+new Function(html.match(/<script>([\s\S]*)<\/script>/)[1]);
+if(/claude\.ai\//.test(html))throw new Error('BUILD REFUSED: artifact contains a claude.ai URL string, which disables the built-in AI route');
+fs.mkdirSync(path.join(__dirname,'dist'),{recursive:true});fs.writeFileSync(path.join(__dirname,'dist','index.html'),html);
+console.log('built dist/index.html',(html.length/1024).toFixed(0)+' KB');

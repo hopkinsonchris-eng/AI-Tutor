@@ -1,0 +1,12 @@
+name = "tutor-proxy"
+main = "index.js"
+compatibility_date = "2026-01-01"
+
+# Optional KV for per-user daily limits and usage counts. Create with: wrangler kv namespace create USAGE
+# [[kv_namespaces]]
+# binding = "USAGE"
+# id = "<paste id here>"
+
+[vars]
+ALLOWED_ORIGIN = "*"
+# Secrets are set with: wrangler secret put ANTHROPIC_API_KEY   and   wrangler secret put USER_KEYS

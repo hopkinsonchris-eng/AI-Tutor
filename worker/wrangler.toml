@@ -9,11 +9,9 @@ ALLOWED_ORIGIN = "https://studyplatform.co.uk"
 
 # Per-user daily caps and usage counts. Without this the Worker still checks keys,
 # but `daily` is not enforced and /usage reports null.
-# Create the namespace (dashboard: Storage & databases -> KV -> Create a namespace,
-# or `npx wrangler kv namespace create USAGE`), then paste its id below and uncomment.
-# [[kv_namespaces]]
-# binding = "USAGE"
-# id = "<paste the USAGE namespace id here>"
+[[kv_namespaces]]
+binding = "USAGE"
+id = "236116d082d047559b1e5c94337412de"
 
 # ANTHROPIC_API_KEY and USER_KEYS are secrets — never put them in this file.
 # Set them in the dashboard under Settings -> Variables and Secrets, or with

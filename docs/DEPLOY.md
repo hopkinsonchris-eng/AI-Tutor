@@ -8,7 +8,7 @@ Two things get deployed:
 
 | Piece | What it is | Where it lives |
 | --- | --- | --- |
-| The site | `dist/index.html`, built from `src/` | Cloudflare Pages, on your domain |
+| The site | `dist/index.html`, built from `src/` | A Cloudflare Worker serving static assets, on your domain |
 | The proxy | `worker/index.js` | Cloudflare Worker, on a subdomain of your domain |
 
 The Anthropic API key only ever exists as a Worker secret. The browser holds a
@@ -29,26 +29,49 @@ A `.com` or `.co.uk` is around £10/year. Pages, Workers and KV all have free
 tiers that comfortably cover a handful of students; the Anthropic API is the
 only real running cost.
 
-## 2. Deploy the site to Pages
+## 2. Deploy the site
 
-Cloudflare dashboard → **Workers & Pages → Create → Pages → Connect to Git**,
+Cloudflare dashboard -> **Compute -> Workers & Pages -> Create -> Import a repository**,
 authorise GitHub, pick this repository.
 
 - Production branch: `main`
 - Build command: `npm run build`
-- Build output directory: `dist`
+- Build output / assets directory: `dist`
 
-Save and deploy. You get `<project>.pages.dev`. Every push to `main` rebuilds —
-and because `npm run build` runs the same code path as `npm test`, a build that
-breaks the app fails the deploy rather than shipping it.
+Save and deploy. You get a `<name>.workers.dev` address. Every push to `main`
+rebuilds it -- and because `npm run build` runs the same code path as `npm test`,
+a build that breaks the app fails the deploy rather than shipping it.
 
-Then *Custom domains → Set up a domain* → enter your domain (and `www` if you
-want it). Cloudflare writes the DNS records itself and issues the certificate;
-give it a few minutes.
+Then on that Worker: **Domains -> Add -> Custom domain** -> your domain.
+Cloudflare writes the DNS record and issues the certificate itself; a few minutes
+later the site is live on it.
+
+Do not add DNS records by hand for any of this. Cloudflare refuses to create a
+custom domain on a hostname that already has a conflicting record, so a
+hand-written A or CNAME blocks the step it was meant to help.
+
+(Cloudflare Pages is the older path to the same result -- build command
+`npm run build`, output directory `dist`. Either works; new projects get Workers.)
 
 ## 3. Deploy the Worker
 
-From `worker/`, with Wrangler:
+The proxy is a **second, separate Worker**. Do not paste it over the site --
+that would replace the site with the proxy.
+
+### From GitHub (no copy-paste)
+
+**Create -> Import a repository -> this repo**, and set:
+
+- Root directory: `worker`
+- Build command: leave empty
+- Deploy command: `npx wrangler deploy` (the default)
+
+Cloudflare reads `worker/wrangler.toml` and deploys `worker/index.js`. Pushes to
+`main` redeploy it. Set `ALLOWED_ORIGIN` and the KV id in that file rather than in
+the dashboard: a Git deploy applies what the file says and drops bindings added
+by hand in the dashboard.
+
+### Or with Wrangler, from `worker/`
 
 ```
 npx wrangler kv namespace create USAGE     # note the id it prints
@@ -57,31 +80,42 @@ npx wrangler secret put ANTHROPIC_API_KEY
 npx wrangler secret put USER_KEYS
 ```
 
-Uncomment the `kv_namespaces` block in `wrangler.toml` and paste the id before
-deploying, so the daily caps are actually enforced. Without KV the Worker still
-authenticates keys but cannot count usage.
+Paste the namespace id into the `kv_namespaces` block in `wrangler.toml` and
+uncomment it before deploying, so the daily caps are enforced. Without KV the
+Worker still authenticates keys but cannot count usage.
 
-Or in the dashboard: *Workers & Pages → Create → Create Worker*, paste
-`worker/index.js`, deploy, then *Settings → Variables and Secrets* for the two
-secrets and *Settings → Bindings* for the KV namespace bound as `USAGE`.
+### Or in the dashboard
 
-Values:
+**Create -> Create Worker**, deploy the Hello World placeholder, then **Edit
+code**, paste `worker/index.js` over it, **Deploy**. Add the KV binding under
+**Bindings**, and the values under **Settings -> Variables and Secrets**. Leave
+**Protect with Cloudflare Access** off during creation -- it puts a login in
+front of the Worker and every API call from the app would fail.
 
-- `ANTHROPIC_API_KEY` — **secret** — from console.anthropic.com. Set a monthly
+### Values, whichever route
+
+- `ANTHROPIC_API_KEY` -- **secret** -- from console.anthropic.com. Set a monthly
   spend limit there first; that limit is your real ceiling.
-- `USER_KEYS` — **secret** — `{"granite-otter-42":{"name":"Matthew","daily":200}}`
-- `ALLOWED_ORIGIN` — plain text — `https://your-domain`, exact, no trailing slash.
-  Leaving it `*` lets any site call your Worker on your API key.
+- `USER_KEYS` -- **secret** -- `{"granite-otter-42":{"name":"Matthew","daily":200}}`
+- `ALLOWED_ORIGIN` -- plain text, in `wrangler.toml` -- your site's origin, exact,
+  no trailing slash. `*` lets any site on the internet spend your API credit.
+- KV namespace `USAGE` -- bound as the variable `USAGE`.
 
 ### Put the Worker on your domain
 
-Worker → *Settings → Domains & Routes → Add → Custom domain* →
-`tutor.your-domain`. DNS is created for you. Students then enter
-`https://tutor.your-domain` as the Tutor route, and the same-origin cookie story
-below stays simple if you later add the admin panel.
+Worker -> **Domains -> Add -> Custom domain** -> `tutor.your-domain`. DNS is
+created for you. Students then enter `https://tutor.your-domain` as the Tutor
+route.
 
 Health check: open `https://tutor.your-domain` in a browser. You want
-`{"ok":true,"service":"tutor-proxy"}`.
+`{"ok":true,"service":"tutor-proxy"}`. Then
+`https://tutor.your-domain/usage?key=<a key>` should report `today: 0` -- if it
+reports `null`, the KV binding is not attached.
+
+If the site and the Worker are on different origins -- `www.your-domain` versus
+`your-domain`, say -- the browser sends the other origin and the Worker rejects
+it. Pick one hostname for the site and use it everywhere, or redirect `www` to
+the apex with a redirect rule.
 
 ## 4. Hand out access
 

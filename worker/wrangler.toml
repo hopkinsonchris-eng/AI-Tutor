@@ -2,11 +2,19 @@ name = "tutor-proxy"
 main = "index.js"
 compatibility_date = "2026-01-01"
 
-# Optional KV for per-user daily limits and usage counts. Create with: wrangler kv namespace create USAGE
+# The site's origin, exactly — no trailing slash, no path.
+# Only this origin may call the Worker; "*" would let any site spend your API credit.
+[vars]
+ALLOWED_ORIGIN = "https://studyplatform.co.uk"
+
+# Per-user daily caps and usage counts. Without this the Worker still checks keys,
+# but `daily` is not enforced and /usage reports null.
+# Create the namespace (dashboard: Storage & databases -> KV -> Create a namespace,
+# or `npx wrangler kv namespace create USAGE`), then paste its id below and uncomment.
 # [[kv_namespaces]]
 # binding = "USAGE"
-# id = "<paste id here>"
+# id = "<paste the USAGE namespace id here>"
 
-[vars]
-ALLOWED_ORIGIN = "*"
-# Secrets are set with: wrangler secret put ANTHROPIC_API_KEY   and   wrangler secret put USER_KEYS
+# ANTHROPIC_API_KEY and USER_KEYS are secrets — never put them in this file.
+# Set them in the dashboard under Settings -> Variables and Secrets, or with
+# `npx wrangler secret put ANTHROPIC_API_KEY` and `npx wrangler secret put USER_KEYS`.

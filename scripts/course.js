@@ -5,7 +5,10 @@
    node scripts/course.js fetch <board> <code>        download the official PDF (catalogue URL, or --url), record
                                                       provenance, extract the text to scratch/courses/<id>/
    node scripts/course.js validate <id>               the spec in src/specs and every kit in src/kits, against the contracts
-   node scripts/course.js judge-prompt <id> <topic>   the judge's brief for that room's kit, for a fresh subagent
+   node scripts/course.js write-prompt <id> <topic> [--problems <file>]   the writer's brief for that room's kit (the Worker's, with the
+                                                      family rules); --problems lists the objections for a rewrite, one per line
+   node scripts/course.js check-kit <id> <topic> --kit <file>   the kit contract on a kit not yet shipped (a JSON file)
+   node scripts/course.js judge-prompt <id> <topic> [--kit <file>]   the judge's brief for that room's kit, for a fresh subagent
    node scripts/course.js current                     HEAD-check every hand-built spec's document against its provenance
    node scripts/course.js install <id>                register the spec in build.js if it is not there yet */
 const fs = require('fs'), path = require('path'), { execFileSync } = require('child_process');
@@ -70,18 +73,58 @@ function cmdValidate() {
   if (bad) process.exitCode = 1;
 }
 
-function cmdJudgePrompt() {
-  const id = arg(1), topic = arg(2); if (!id || !topic) throw new Error('usage: judge-prompt <id> <topic>');
-  const sf = specFile(id), kf = kitsFile(id); if (!sf || !kf || !kf.kits[topic]) throw new Error('need the spec and the kit first');
-  const t = sf.spec.topics.find(x => x.id === topic); if (!t) throw new Error('no such topic');
+/* The Worker's briefs, read from worker/depth.js and evaluated as the template literals they are, so a hand-built
+   kit is written and judged to exactly the standard the Worker applies. */
+function briefs() {
   const src = fs.readFileSync(path.join(ROOT, 'worker', 'depth.js'), 'utf8');
-  /* the same brief the Worker gives Opus, so a hand-built kit is judged to the same standard */
-  const m = /judge: \(\{ spec, topic, family, kit \}\) => `([\s\S]*?)`,\n\};/.exec(src); if (!m) throw new Error('could not read the judge brief from worker/depth.js');
+  const pick = (re) => { const m = re.exec(src); if (!m) throw new Error('could not read the kit briefs from worker/depth.js'); return m[1]; };
+  const shape = pick(/const KIT_SHAPE = `([\s\S]*?)`;/), rules = pick(/const KIT_RULES = `([\s\S]*?)`;/);
+  const write = pick(/write: \(\{ spec, topic, family, problems \}\) => `([\s\S]*?)`,\n  judge:/), judge = pick(/judge: \(\{ spec, topic, family, kit \}\) => `([\s\S]*?)`,\n\};/);
+  const version = pick(/KIT_PROMPT_VERSION = '([^']+)'/);
+  const pretty = { stringify: (x) => JSON.stringify(x, null, 1) };
   const { kitText } = require(path.join(ROOT, 'src', 'families.js'));
-  const family = familyFor(sf.spec.subject), spec = sf.spec, kit = kf.kits[topic];
-  const text = m[1].replace(/\$\{JSON\.stringify\(\{ ideas: topic\.ideas, caseStudies: topic\.caseStudies \|\| \[\] \}\)\}/, JSON.stringify({ ideas: t.ideas, caseStudies: t.caseStudies || [] }, null, 1))
-    .replace(/\$\{JSON\.stringify\(spec\.markConventions \|\| \{\}\)\}/, JSON.stringify(spec.markConventions || {})).replace(/\$\{kitText\(family\)\}/, kitText(family)).replace(/\$\{JSON\.stringify\(kit\)\}/, JSON.stringify(kit, null, 1));
-  console.log(text + '\n\nReply as JSON: {"score": 0-1, "wrong": [{"index": n, "why": "…"}], "problems": ["…"], "notes": "…"}');
+  const fill = (tpl, names, values) => new Function(...names, 'JSON', 'kitText', 'return `' + tpl + '`')(...values, pretty, kitText);
+  return {
+    version,
+    system: `You write the room kits for a study platform used by UK students: the lesson, worked examples, question bank, exit ticket and recall cards for one topic of one exam course. ${shape} ${rules}`,
+    write: (spec, topic, family, problems) => fill(write, ['spec', 'topic', 'family', 'problems'], [spec, topic, family, problems]),
+    judge: (spec, topic, family, kit) => fill(judge, ['spec', 'topic', 'family', 'kit'], [spec, topic, family, kit]),
+  };
+}
+function room(id, topic) {
+  const sf = specFile(id); if (!sf) throw new Error(`no spec with id ${id} in src/specs/`);
+  const t = sf.spec.topics.find(x => x.id === topic); if (!t) throw new Error('no such topic');
+  return { spec: sf.spec, topic: t, family: familyFor(sf.spec.subject) };
+}
+function kitFor(id, topic) {
+  const f = flag('kit'); if (f) return JSON.parse(fs.readFileSync(path.resolve(f), 'utf8'));
+  const kf = kitsFile(id); if (!kf || !kf.kits[topic]) throw new Error('no kit for that room in src/kits — pass --kit <file> for one not yet shipped');
+  return kf.kits[topic];
+}
+const KIT_JSON = 'Reply as JSON and nothing else: {"lesson": {"why": "…", "idea": [{"h": "…", "t": "…", "code": "…"}], "examples": [{"title": "…", "steps": ["…"]}], "check": [{"q": "…", "a": "…"}]}, "room": {"facts": ["…"], "questions": [{"q": "…", "a": "…", "sol": "…", "m": 2, "d": 1, "hints": ["…", "…", "…"], "codes": ["…"]}], "exit": [{"q": "…", "a": "…"}]}, "cards": [{"front": "…", "back": "…", "code": "…"}], "extras": [{"kind": "…", "title": "…", "items": ["…"]}]}';
+
+function cmdWritePrompt() {
+  const id = arg(1), topic = arg(2); if (!id || !topic) throw new Error('usage: write-prompt <id> <topic> [--problems <file>]');
+  const { spec, topic: t, family } = room(id, topic);
+  const pf = flag('problems'); const problems = pf ? fs.readFileSync(path.resolve(pf), 'utf8').split('\n').map(x => x.trim()).filter(Boolean) : null;
+  const b = briefs();
+  console.log(b.system + '\n\n' + b.write(spec, t, family, problems) + '\n\n' + KIT_JSON);
+}
+
+function cmdCheckKit() {
+  const id = arg(1), topic = arg(2); if (!id || !topic || !flag('kit')) throw new Error('usage: check-kit <id> <topic> --kit <file>');
+  const { topic: t, family } = room(id, topic); const kit = kitFor(id, topic);
+  const r = validateKit(kit, t, family);
+  console.log(`${id} ${topic}: ${r.ok ? 'passes the kit contract' : 'REFUSED'}`);
+  for (const p of r.problems) console.log('  - ' + p);
+  if (!r.ok) process.exitCode = 1;
+}
+
+function cmdJudgePrompt() {
+  const id = arg(1), topic = arg(2); if (!id || !topic) throw new Error('usage: judge-prompt <id> <topic> [--kit <file>]');
+  const { spec, topic: t, family } = room(id, topic); const kit = kitFor(id, topic);
+  /* the same brief the Worker gives Opus, so a hand-built kit is judged to the same standard */
+  console.log(briefs().judge(spec, t, family, kit) + '\n\nReply as JSON: {"score": 0-1, "wrong": [{"index": n, "why": "…"}], "problems": ["…"], "notes": "…"}');
 }
 
 async function cmdCurrent() {
@@ -109,7 +152,7 @@ function cmdInstall() {
 (async () => {
   const cmd = arg(0);
   try {
-    if (cmd === 'fetch') await cmdFetch(); else if (cmd === 'validate') cmdValidate(); else if (cmd === 'judge-prompt') cmdJudgePrompt(); else if (cmd === 'current') await cmdCurrent(); else if (cmd === 'install') cmdInstall();
-    else { console.log(fs.readFileSync(__filename, 'utf8').split('\n').slice(1, 10).join('\n')); }
+    if (cmd === 'fetch') await cmdFetch(); else if (cmd === 'validate') cmdValidate(); else if (cmd === 'write-prompt') cmdWritePrompt(); else if (cmd === 'check-kit') cmdCheckKit(); else if (cmd === 'judge-prompt') cmdJudgePrompt(); else if (cmd === 'current') await cmdCurrent(); else if (cmd === 'install') cmdInstall();
+    else { console.log(fs.readFileSync(__filename, 'utf8').split('\n').slice(1, 13).join('\n')); }
   } catch (e) { console.error('course.js:', e.message); process.exit(1); }
 })();

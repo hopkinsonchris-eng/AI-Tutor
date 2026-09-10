@@ -32,12 +32,15 @@ subject matter.
    a comment at the top of the file.
 3. **Kits, four at a time.** For each topic, one subagent writes the kit from the topic's spec entry,
    the mark conventions and the family kit rules (`references/families.md`), to the shape in
-   `src/kit-validator.js` — the `sampleKit` in `tests/_kit.js` shows the exact keys. Run up to four
-   writers in parallel; give each the topic JSON and the relevant pages of `spec.txt`, not the whole
-   document. Validate each kit before judging it.
-4. **Judge with a fresh context.** `npm run course -- judge-prompt <id> <topic>` prints the same
-   brief the Worker gives Opus. Give it to a new subagent with no memory of writing the kit; it re-solves
-   every question. Anything in `wrong` or a score under 0.8 goes back to a writer once, with the
+   `src/kit-validator.js` — the `sampleKit` in `tests/_kit.js` shows the exact keys.
+   `npm run course -- write-prompt <id> <topic>` prints the same brief the Worker gives Sonnet (add
+   `--problems <file>` for the rewrite, one objection per line); the writer saves its JSON under
+   `scratch/courses/<id>/kits/` and checks it with `npm run course -- check-kit <id> <topic> --kit <file>`
+   until the contract passes. Run up to four writers in parallel; give each the topic JSON and the
+   relevant pages of `spec.txt`, not the whole document.
+4. **Judge with a fresh context.** `npm run course -- judge-prompt <id> <topic> --kit <file>` prints the
+   same brief the Worker gives Opus (without `--kit` it reads the shipped kit). Give it to a new subagent
+   with no memory of writing the kit; it re-solves every question. Anything in `wrong` or a score under 0.8 goes back to a writer once, with the
    objections; a second failure means the room ships without a kit and is listed in the file's header
    comment for a later pass. Record `built.judge` from the verdict.
 5. **Ship.** `npm run course -- validate <id>`, `npm test` (tests/kits.test.js checks every kit and

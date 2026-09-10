@@ -1,7 +1,10 @@
 /* AQA GCSE Combined Science: Trilogy (8464) — built by hand in a Claude Code session from the official
    specification PDF (see spec.source for provenance) to the contract in src/spec-validator.js.
    Content statements are the board's own, condensed; codes are copied character for character.
-   Required practicals sit inside the content statement the document lists them under. */
+   Required practicals sit inside the content statement the document lists them under.
+   Judged 0.9 against the document by a fresh-context subagent: 225 of 225 content statements covered, nothing
+   invented, all 21 required practicals placed; five fidelity notes corrected. Every room has a hand-built kit,
+   judged 0.80–0.93 by a second model, in src/kits/AQA-8464.js. */
 const SPEC_8464 = {
  "id": "AQA-8464",
  "board": "AQA",

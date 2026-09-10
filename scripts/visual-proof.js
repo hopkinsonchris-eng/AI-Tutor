@@ -24,7 +24,7 @@ biology.topics = ['3.1 Biological molecules', '3.2 Cells', '3.3 Organisms exchan
 const CATALOGUE = JSON.parse(fs.readFileSync(path.join(ROOT, 'data', 'catalogue.json'), 'utf8')).qualifications.map(q => ({ ...q, id: (q.board === 'Pearson Edexcel' ? 'EDX' : q.board === 'Eduqas' ? 'EDQ' : q.board) + '-' + q.code, hasUrl: !!q.specUrl }));
 /* a student a term in: three courses, mixed mastery, cards due, a marked essay, four days' streak */
 const core = require(path.join(ROOT, 'src', 'core.js'));
-const SPECS = {}; for (const sp of Object.values({ ...require(path.join(ROOT, 'src', 'specs', 'ocr-h481.js')), ...require(path.join(ROOT, 'src', 'specs', 'edexcel-9ma0.js')) })) SPECS[sp.id] = sp; SPECS['AQA-7402'] = biology;
+const SPECS = {}; for (const sp of Object.values({ ...require(path.join(ROOT, 'src', 'specs', 'ocr-h481.js')), ...require(path.join(ROOT, 'src', 'specs', 'edexcel-9ma0.js')), ...require(path.join(ROOT, 'src', 'specs', 'aqa-8464.js')) })) SPECS[sp.id] = sp; SPECS['AQA-7402'] = biology;
 const setup = { student: 'Matthew', examYear: 2028, subjects: [{ specId: 'OCR-H481', options: { landscape: '1.1.1', globalSystems: '2.2.1', globalGovernance: '2.2.4', debates: ['3.1', '3.5'] } }, { specId: 'EDX-9MA0', options: {} }, { specId: 'AQA-7402', options: {} }] };
 const progress = core.newState(setup, SPECS); progress.created = '2026-09-01';
 const set = (id, st, last) => { const n = progress.nodes[id]; if (n) { n.state = st; n.lastPractised = last; } };
@@ -37,6 +37,9 @@ progress.errors = [{ date: daysAgo(1), node: 'OCR-H481|1.2', ref: 'To what exten
 progress.essays = [{ date: daysAgo(1), node: 'OCR-H481|1.2', q: 'To what extent are the water and carbon cycles linked?', marks: 33, level: 3, maxLevel: 4, mark: 21, max: 33, mode: 'EVALUATION' }];
 progress.dayHours = { [daysAgo(4)]: 1.2, [daysAgo(3)]: 0.8, [daysAgo(2)]: 1.5, [daysAgo(1)]: 1.1 }; progress.hours = 4.6;
 progress.boundaries['OCR-H481'] = { 'A*': 82, A: 74, B: 64, C: 54, D: 44, E: 34 };
+/* a GCSE student a week in on the hand-built course: every room has a kit shipped with the site */
+const gcse = core.newState({ student: 'Kitty', examYear: 2028, subjects: [{ specId: 'AQA-8464', options: {} }] }, SPECS); gcse.created = daysAgo(7);
+{ const n = gcse.nodes['AQA-8464|4.1']; if (n) { n.state = 'Learning'; n.lastPractised = daysAgo(1); } }
 /* a written and checked kit for one biology room, and the course's depth record: one room done, one failed, the rest being written */
 const kitTopic = () => biology.topics.find(t => t.id === '3.1');
 const kit = Object.assign(sampleKit(kitTopic(), 'science'), { id: 'AQA-7402', topic: '3.1', family: 'science', built: { at: '2026-09-10T15:40:00Z', models: ['claude-sonnet-5', 'claude-opus-5'], promptVersion: '2026-09-10.1', judge: { score: 0.93, notes: 'Answer keys verified; the lesson follows the specification statements.' } } });
@@ -48,7 +51,7 @@ kit.room.questions[0] = { q: 'Name the bond formed when two amino acids join, an
 kit.extras = [{ kind: 'practical', title: 'Required practical 1: microscopy — method sheet', items: ['Prepare a temporary mount: a drop of water, the specimen, a coverslip lowered at an angle to avoid air bubbles.', 'Independent variable: specimen; dependent: image; control: magnification and stain.', 'Skills assessed: AT d, AT e, WS 2.1.'] }, { kind: 'extended', title: 'Six-mark model answer: describe how you would test a solution for a non-reducing sugar', items: ['Test with Benedict’s first: no colour change. Hydrolyse with dilute HCl, neutralise with sodium hydrogencarbonate, re-test with Benedict’s: brick-red precipitate shows a non-reducing sugar was present. A Level 1 answer forgets the neutralising step.'] }];
 const depthRec = { status: 'building', total: biology.topics.length, done: { '3.1': kit.built.at }, failed: ['3.3'] };
 const nudge = { text: 'Matthew, your last two Geography essays lost the judgement marks: plan and mark one more 33-marker in Earth’s life support systems before the maths cards.', node: 'OCR-H481|1.2', station: 'essay' };
-const users = { 'tok-matthew': { username: 'matthew', name: 'Matthew', role: 'student', daily: 200 }, 'tok-student': { username: 'matthew', name: 'Matthew', role: 'student', daily: 200 }, 'tok-admin': { username: 'chris', name: 'Chris', role: 'admin', daily: 2000 } };
+const users = { 'tok-matthew': { username: 'matthew', name: 'Matthew', role: 'student', daily: 200 }, 'tok-student': { username: 'matthew', name: 'Matthew', role: 'student', daily: 200 }, 'tok-admin': { username: 'chris', name: 'Chris', role: 'admin', daily: 2000 }, 'tok-kitty': { username: 'kitty', name: 'Kitty', role: 'student', daily: 200 } };
 let build = null; const states = { 'OCR-H432': { status: 'retracted' } };
 const stages = ['Finding the official specification…', 'Reading the specification document…', 'Mapping topic 1 of 9…', 'Mapping topic 2 of 9…', 'Mapping topic 3 of 9…', 'Mapping topic 4 of 9…', 'Mapping topic 5 of 9…', 'Mapping topic 6 of 9…', 'Mapping topic 7 of 9…', 'Mapping topic 8 of 9…', 'Mapping topic 9 of 9…', 'Checking the whole map…', 'Judging the map against the document…'];
 const meta = { id: 'AQA-7402', level: 'A level', subject: 'Biology', board: 'AQA', code: '7402', family: 'science', status: 'published', source: { url: 'https://filestore.aqa.org.uk/resources/biology/specifications/AQA-7402-SP-2015.PDF', etag: '"5f2a-6132b0c7a1d80"', lastModified: 'Wed, 03 Sep 2025 09:12:44 GMT', length: 1849302, checkedAt: '2026-09-10T12:04:31Z' }, built: { at: '2026-09-10T12:04:31Z', models: ['claude-opus-5', 'claude-sonnet-5', 'claude-opus-5'], promptVersion: '2026-09-10.1', ideas: 18 }, judge: { score: 0.91 } };
@@ -59,12 +62,14 @@ const server = http.createServer((req, res) => {
   const send = (status, body, type = 'application/json') => { res.writeHead(status, { 'Content-Type': type, 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'Content-Type, Authorization', 'Access-Control-Allow-Methods': 'GET, POST, PUT, PATCH, DELETE, OPTIONS' }); res.end(typeof body === 'string' ? body : JSON.stringify(body)); };
   if (m === 'OPTIONS') return send(204, '');
   if (p === '/' && m === 'GET') return send(200, html, 'text/html; charset=utf-8');
+  /* hand-built kits are static files the site serves from dist/kits/ (build.js writes them); the tutor routes below never answer for them */
+  if (m === 'GET' && /^\/kits\//.test(p)) { const dir = path.join(ROOT, 'dist', 'kits'), f = path.normalize(path.join(ROOT, 'dist', decodeURIComponent(p))); return f.startsWith(dir) && fs.existsSync(f) ? send(200, fs.readFileSync(f, 'utf8')) : send(404, { error: 'no such kit' }); }
   const tok = (req.headers.authorization || '').replace('Bearer ', ''); const me = users[tok];
   let raw = ''; req.on('data', c => raw += c); req.on('end', () => {
     const body = raw ? JSON.parse(raw) : {};
     if (p === '/auth/me') return me ? send(200, { user: me }) : send(401, { error: 'not signed in' });
     if (p === '/' && m === 'POST') return send(200, { id: 'msg_1', content: [{ type: 'text', text: JSON.stringify(nudge) }] });
-    if (p === '/progress') return m === 'GET' ? (tok === 'tok-matthew' ? send(200, { updatedAt: new Date().toISOString(), device: 'an iPad', state: progress }) : send(404, { error: 'nothing saved yet' })) : send(200, { ok: true, updatedAt: new Date().toISOString() });
+    if (p === '/progress') return m === 'GET' ? (tok === 'tok-matthew' ? send(200, { updatedAt: new Date().toISOString(), device: 'an iPad', state: progress }) : tok === 'tok-kitty' ? send(200, { updatedAt: new Date().toISOString(), device: 'a phone', state: gcse }) : send(404, { error: 'nothing saved yet' })) : send(200, { ok: true, updatedAt: new Date().toISOString() });
     if (p === '/courses') return send(200, { catalogue: CATALOGUE, courses: states, building: build && build.status === 'building' ? { [build.id]: build } : {}, depth: { 'AQA-7402': depthRec } });
     if (/^\/courses\/AQA-7402\/kit\/3\.1$/.test(p)) return send(200, { kit });
     if (/^\/courses\/[^/]+\/kit\//.test(p)) return send(404, { error: 'no kit for that room yet' });
@@ -183,6 +188,20 @@ const server = http.createServer((req, res) => {
   await page.click('[data-station="practise"]');
   await page.waitForSelector('[data-ahint]');
   must(/Hint 1/.test(await page.locator('#v-rooms').textContent()) && /Peptide bond|amino acids/.test(await page.locator('#v-rooms').textContent()), 'room: practise draws from the checked bank with the hint ladder');
+  await page.context().close();
+
+  /* 12. a hand-built course: every room's kit ships with the site and is fetched from dist/kits/ — the stub's tutor kit route answers 404, so a rendered kit can only have come from the site */
+  page = await open('tok-kitty', { width: 1280, height: 900 }, '#rail-l .ccard');
+  await page.click('#rail-l [data-course="AQA-8464"]'); await page.waitForSelector('#rail-l [data-open="AQA-8464|4.1"]');
+  must((await page.locator('#rail-l .pen').count()) === 0, 'tree: no room of the hand-built course carries the being-written mark');
+  await page.click('#rail-l [data-open="AQA-8464|4.1"]');
+  await page.waitForFunction(() => /Written and checked/.test(document.querySelector('#v-rooms').textContent), null, { timeout: 10000 });
+  const roomText = await page.locator('#v-rooms').textContent();
+  must(/judged 92%/.test(roomText) && /Key facts & links/.test(await page.locator('.stations').textContent()) && /Required practical activity 1/.test(roomText) && (await page.locator('#v-rooms [data-lxrev]').count()) === 6, 'room: the shipped kit — the provenance line with its judge score, six faded worked examples, the required-practical method sheets and the Key facts tab');
+  await snap(page, '12-hand-built-room', 'A hand-built course served from the site: AQA 8464 Cell biology with its written and checked kit — one lesson section per key idea, six faded worked examples, the two required-practical method sheets, judged 92% by a second model');
+  await page.click('[data-station="practise"]');
+  await page.waitForSelector('[data-ahint]');
+  must(/Hint 1/.test(await page.locator('#v-rooms').textContent()), 'room: practise draws from the shipped bank with the hint ladder');
   await page.context().close();
 
   await browser.close(); server.close();

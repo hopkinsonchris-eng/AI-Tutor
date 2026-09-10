@@ -67,3 +67,9 @@ Phone: the course and topic drawer over the session, bottom nav and status strip
 A built course’s room after depth: the checked lesson with one section per key idea, faded worked examples, the required-practical method sheet, and the provenance line
 
 ![11-room-with-kit](11-room-with-kit.png)
+
+## 12-hand-built-room
+
+A hand-built course served from the site: AQA 8464 Cell biology with its written and checked kit — one lesson section per key idea, six faded worked examples, the two required-practical method sheets, judged 92% by a second model
+
+![12-hand-built-room](12-hand-built-room.png)

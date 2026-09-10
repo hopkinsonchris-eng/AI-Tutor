@@ -1,8 +1,8 @@
 # Study Platform
 
-A single-file web app for A level study, anchored to exam-board specifications. One room per topic the student actually studies; hand-authored depth where it exists (Edexcel Mathematics today), specification-anchored generated content everywhere else; spaced recall cards; essay and photo marking to each board's own conventions; a Socratic coach that never gives the answer; one scheduler across all subjects.
+A single-file web app for GCSE and A level study, anchored to exam-board specifications. One room per topic the student actually studies; hand-authored depth where it exists (Edexcel Mathematics, and a written and checked kit in every room of AQA Combined Science 8464), specification-anchored generated content everywhere else; spaced recall cards; essay and photo marking to each board's own conventions; a Socratic coach that never gives the answer; one scheduler across all subjects.
 
-Four subjects are hand-written and built in: **OCR Geography H481**, **Edexcel Business 9BS0**, **Edexcel Politics 9PL0**, **Edexcel Mathematics 9MA0**. Every other GCSE and A level in the catalogue (97 qualifications across AQA, Pearson Edexcel, OCR and Eduqas) is built on request: a student picks level, subject and board, presses **Add**, and the Worker builds the specification map from the board's own PDF while a progress bar shows the stages — then it's theirs. Built courses are held to the same validator as the hand-written ones, judged against the document before they go live, and checked against the document again every month (see *Courses*).
+Five courses are hand-written and built in: **OCR Geography H481**, **Edexcel Business 9BS0**, **Edexcel Politics 9PL0** and **Edexcel Mathematics 9MA0** at A level, and **AQA Combined Science 8464** at GCSE — the last built by hand from the board's specification PDF, judged against the document, with a written and checked kit in all 30 rooms (see *Course depth*). Every other GCSE and A level in the catalogue (97 qualifications across AQA, Pearson Edexcel, OCR and Eduqas) is built on request: a student picks level, subject and board, presses **Add**, and the Worker builds the specification map from the board's own PDF while a progress bar shows the stages — then it's theirs. Built courses are held to the same validator as the hand-written ones, judged against the document before they go live, and checked against the document again every month (see *Courses*).
 
 ## Layout
 
@@ -17,11 +17,17 @@ src/
   gen.js               generator: spec-anchored prompts + validators for lessons, cards, questions, essays, marking, coach
   specs/               one file per qualification — components, weights, AOs, command words, topics, key ideas
   authored/            hand-authored content (maths: 19 lessons, 262 questions, exit tickets, dojo, verified links)
+  kits/                one file per hand-built course: a written and checked kit for every room (AQA 8464, 30 rooms),
+                       served from dist/kits/ with an index the app reads
 worker/
   index.js             Cloudflare Worker: accounts, sessions, invites, daily caps, progress, the admin API,
                        courses, the Workflow classes, the monthly cron, and the forward to Anthropic
   builder.js           the course builder: document → outline → topics → validate → judge → resources → publish; the monthly review
   depth.js             course depth: for every room, a kit written by one model and checked by another, four rooms at a time
+scripts/
+  course.js            the hand-built course toolkit: fetch the PDF and record provenance, validate, the judge's brief, current, install
+  kits-bundle.js       collects src/kits/ for build.js: one JSON per room in dist/kits/ and the index
+  visual-proof.js      drives the built app in Chromium against a stub Worker and writes docs/proof/
 data/catalogue.json    qualification codes per board and level, with verified spec PDF links
 .claude/skills/course-builder/  the same procedure for a person, and the family reference generated from src/families.js
   wrangler.toml
@@ -83,6 +89,13 @@ fresh-context judge, and `build.js` serves the kits from the site. `npm run cour
 checks every hand-built course's document for changes. The procedure is
 `.claude/skills/course-builder/references/depth.md`.
 
+AQA Combined Science 8464 is the first course built this way: 30 rooms and 319 key ideas from the specification
+(Version 1.1, judged 0.9 against the document), a kit in every room judged 0.80–0.93 by a second model, shipped in
+`src/kits/AQA-8464.js` and photographed in `docs/proof/12-hand-built-room.png`. The four original hand-written A level
+specs predate the toolkit: their content is paraphrased from the boards' published structures and they carry no
+document provenance, so `npm run course -- current` lists them as unchecked until each is read against its PDF and
+given a `source` block.
+
 ## How it works on your site
 
 The site opens on a sign-in screen. A student signs in with a username and password, and everything after that -- the tutor, their progress, the admin tab -- is keyed to that sign-in. Progress is saved to the Worker as they go and cached on the device, so signing in on another device picks up where they left off.
@@ -135,7 +148,7 @@ Sonnet 5 at API rates ($2/$10 per million tokens in/out): coach turn well under 
 
 ## Extending
 
-**A new subject or board:** usually nothing — a student adds it and the Worker builds it. To hand-write one instead (or to give a built course the depth of the built-in four), follow the course-builder skill: `src/specs/<board>-<code>.js` exporting a spec object, required in `build.js`, passing `npm test`. Hand-written and Worker-built courses are the same shape.
+**A new subject or board:** usually nothing — a student adds it and the Worker builds it. To hand-write one instead, or to build one at full depth in a session (AQA 8464 is the worked example), follow the course-builder skill: `src/specs/<board>-<code>.js` exporting a spec object, required in `build.js`, passing `npm test`. Hand-written and Worker-built courses are the same shape.
 
 **Hand-authored depth for a subject:** add `src/authored/<subject>.js` and register it in `src/authored/index.js` under the spec id, keyed by topic id. Rooms with authored content get the authored lesson, a Formulae & links station, a checked question set with a hint ladder, and an authored exit ticket; everything else stays generated. Maths is the reference.
 

@@ -190,6 +190,9 @@ const click=async s=>L.click({target:T(s)});const change=async s=>L.change({targ
  await click({id:'signOut'});$('lgUser').value='chris';$('lgPass').value='adminpass1';await click({id:'loginGo'});
  ok('M1 an admin signs in',G.AUTH.user&&G.AUTH.user.role==='admin');
  ok('M1 an admin with no rooms lands on the Admin tab, not setup',G.S===null&&G.view==='admin'&&/id="adCreate"/.test(reg['v-admin'].innerHTML));
+ ok('M1 the Admin tab has its own Sign out, since an admin without rooms cannot reach Progress',/id="signOut"/.test(reg['v-admin'].innerHTML));
+ await click({id:'signOut'});ok('M1 signing out from the Admin tab returns to the login screen',!G.AUTH.user&&/id="loginGo"/.test(reg['v-login'].innerHTML));
+ $('lgUser').value='chris';$('lgPass').value='adminpass1';await click({id:'loginGo'});
  G.go('today');G.renderAll();ok('M1 the setup screen tells an admin they need not fill it in',/under the <b>Admin<\/b> tab/.test(reg['v-setup'].innerHTML));
  manageUsers=[{username:'chris',name:'Chris',role:'admin',daily:2000,created:'2026-09-10',disabled:false,hasPassword:true,today:3},{username:'matthew',name:'Matthew',role:'student',daily:200,created:'2026-09-10',disabled:false,hasPassword:true,today:12,lastSeen:'2026-09-10T11:00:00Z',device:'an iPad'}];
  G.S={nodes:{},setup:{subjects:[{specId:'OCR-H481',options:{}}],student:'Chris'},errors:[],transitions:[],practice:[],essays:[],papers:[],cards:{},generated:{},coach:{},pins:{},doneToday:{},coldDone:{},checklist:{},boundaries:{},dayHours:{}};

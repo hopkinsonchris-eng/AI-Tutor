@@ -4,15 +4,35 @@ const html=fs.readFileSync(__dirname+'/../dist/index.html','utf8');const script=
 function el(id){return{id,innerHTML:'',textContent:'',value:'',checked:false,files:null,dataset:{},attrs:{},classList:{toggle(){},add(){},remove(){}},setAttribute(k,v){this.attrs[k]=v},addEventListener(){},click(){},closest(){return null}}}
 const reg={};const secs=['v-setup','v-today','v-rooms','v-exam','v-prog'].map(i=>reg[i]=el(i));const L={};
 const document={getElementById(i){return reg[i]||(reg[i]=el(i))},querySelector(){return el('q')},querySelectorAll(s){return s==='main>section'?secs:[]},addEventListener(t,f){L[t]=f}};
-const store={};let lastFetch=null;let reply=()=>({content:[{type:'text',text:'OK'}]});
+const store={'platform:session':'tok-test'};let lastFetch=null;let reply=()=>({content:[{type:'text',text:'OK'}]});
+/* the tutor service: everything under /auth, /progress and /manage is answered here; anything else is the AI proxy */
+let ME={username:'matthew',name:'Matthew',role:'student',daily:200};let serverProgress=null;let lastPut=null;let manageUsers=[];let lastManage=null;
+const R=(status,body)=>({ok:status<300,status,text:async()=>JSON.stringify(body)});
+async function tutor(u,o){const path=u.replace('https://tutor.studyplatform.co.uk','');const m=o.method||'GET';const body=o.body?JSON.parse(o.body):null;const auth=(o.headers||{}).Authorization||'';
+  if((path===''||path==='/')&&m==='POST'&&auth==='Bearer expired')return R(401,{type:'error',error:{type:'authentication_error',message:'Sign in to use the tutor'}});
+  if(path==='/auth/me')return auth==='Bearer tok-test'||auth==='Bearer tok-2'?R(200,{user:ME}):R(401,{error:'not signed in'});
+  if(path==='/auth/login')return body.username==='matthew'&&body.password==='pw12345678'?R(200,{token:'tok-2',user:ME}):body.username==='chris'&&body.password==='adminpass1'?R(200,{token:'tok-2',user:{username:'chris',name:'Chris',role:'admin',daily:2000}}):R(401,{error:'Wrong username or password'});
+  if(path==='/auth/logout')return R(200,{ok:true});
+  if(path.startsWith('/auth/invite?token='))return path.endsWith('good')?R(200,{username:'kitty',name:'Kitty'}):R(404,{error:'This invite has expired or was already used'});
+  if(path==='/auth/invite')return body.token==='good'&&body.password.length>=8?R(200,{token:'tok-2',user:{username:'kitty',name:'Kitty',role:'student',daily:200}}):R(400,{error:'bad'});
+  if(path==='/auth/password')return body.current==='pw12345678'?R(200,{ok:true}):R(401,{error:'Current password is wrong'});
+  if(path==='/progress'&&m==='GET')return serverProgress?R(200,serverProgress):R(404,{error:'nothing saved yet'});
+  if(path==='/progress'&&m==='PUT'){lastPut=body;return R(200,{ok:true,updatedAt:'2026-09-10T12:00:00Z'});}
+  if(path==='/manage/users'&&m==='GET')return R(200,{users:manageUsers,site:'https://studyplatform.co.uk'});
+  if(path==='/manage/users'&&m==='POST'){lastManage={m,body};const u={username:body.username,name:body.name,role:'student',daily:+body.daily||200,created:'2026-09-10',disabled:false,hasPassword:false,today:0};manageUsers.push(u);return R(201,{user:u,invite:{token:'inv1',link:'https://studyplatform.co.uk/#invite=inv1',expires:'2026-09-17'}});}
+  if(path.startsWith('/manage/users/')){lastManage={m,path,body};if(m==='DELETE'){manageUsers=manageUsers.filter(x=>'/manage/users/'+x.username!==path);return R(200,{ok:true});}if(path.endsWith('/invite'))return R(200,{invite:{token:'inv2',link:'https://studyplatform.co.uk/#invite=inv2',expires:'2026-09-17'}});const u=manageUsers.find(x=>'/manage/users/'+x.username===path);Object.assign(u,body);return R(200,{user:u});}
+  return null;}
 const sb={document,console,setTimeout,clearTimeout,setInterval:()=>1,clearInterval(){},Date,Math,JSON,encodeURIComponent,parseInt,Number,String,isNaN,Object,Array,Set,Promise,Function,Error,FileReader:function(){},confirm:()=>true,
- navigator:{clipboard:{writeText:async()=>{}}},fetch:async(u,o)=>{lastFetch={url:u,body:JSON.parse(o.body)};return{ok:true,status:200,text:async()=>JSON.stringify(reply(lastFetch))}},
+ navigator:{clipboard:{writeText:async()=>{}}},alert(){},prompt:()=>'150',fetch:async(u,o)=>{const t=await tutor(u,o||{});if(t)return t;lastFetch={url:u,headers:o.headers,body:JSON.parse(o.body)};return{ok:true,status:200,text:async()=>JSON.stringify(reply(lastFetch))}},
  window:{storage:{async get(k){if(!(k in store))throw new Error('nokey');return{value:store[k]}},async set(k,v){store[k]=v;return{}}},scrollTo(){}}};
-sb.globalThis=sb;vm.createContext(sb);vm.runInContext(script+'\n;Object.defineProperties(globalThis,{S:{get:()=>S,set:v=>{S=v}},AUTHORED:{get:()=>AUTHORED},__load:{get:()=>load},__mirror:{get:()=>mirrorMaths},UI:{get:()=>UI},SPECS:{get:()=>SPECS},TODAY:{get:()=>TODAY},view:{get:()=>view}});',sb);
+sb.globalThis=sb;vm.createContext(sb);vm.runInContext(script+'\n;Object.defineProperties(globalThis,{S:{get:()=>S,set:v=>{S=v}},AUTHORED:{get:()=>AUTHORED},__load:{get:()=>load},__mirror:{get:()=>mirrorMaths},UI:{get:()=>UI},SPECS:{get:()=>SPECS},TODAY:{get:()=>TODAY},view:{get:()=>view},AUTH:{get:()=>AUTH,set:v=>{AUTH=v}},syncState:{get:()=>syncState}});',sb);
 const T=s=>{const t={id:s.id||'',dataset:s.dataset||{},className:s.className||'',checked:s.checked,value:s.value,files:s.files};t.closest=sel=>{if(sel.startsWith('.'))return t.className===sel.slice(1)?t:null;const m=sel.match(/\[data-([\w-]+)\]/);if(m){const k=m[1].replace(/-([a-z])/g,(_,c)=>c.toUpperCase());return k in t.dataset?t:null}return null};return t};
 const click=async s=>L.click({target:T(s)});const change=async s=>L.change({target:T(s)});const $=i=>document.getElementById(i);const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 (async()=>{await sleep(40);const G=sb;
- ok('A0 no state → setup shown',G.S===null&&/Set up your study environment/.test(reg['v-setup'].innerHTML)&&/Geography/.test(reg['v-setup'].innerHTML)&&/Politics/.test(reg['v-setup'].innerHTML));
+ ok('A0 signed in with nothing saved → setup shown',G.S===null&&G.AUTH.user&&G.AUTH.user.username==='matthew'&&/Set up your study environment/.test(reg['v-setup'].innerHTML)&&/Geography/.test(reg['v-setup'].innerHTML)&&/Politics/.test(reg['v-setup'].innerHTML));
+ ok('A0 level picker: A level on, GCSE greyed until a spec exists',/data-level="A level" aria-pressed="true"/.test(reg['v-setup'].innerHTML)&&/data-level="GCSE" aria-pressed="false" disabled/.test(reg['v-setup'].innerHTML)&&/GCSE — coming/.test(reg['v-setup'].innerHTML));
+ ok('A0 name prefilled from the account',/id="suName" value="Matthew"/.test(reg['v-setup'].innerHTML));
+ await click({dataset:{level:'GCSE'},disabled:true});ok('A0 a greyed level does nothing',G.UI.setup.level==='A level');
  /* setup: pick three subjects with options */
  $('suName').value='Matthew';$('suYear').value='2028';
  await change({dataset:{su:'OCR-H481'},checked:true});await change({dataset:{su:'EDX-9BS0'},checked:true});await change({dataset:{su:'EDX-9PL0'},checked:true});
@@ -20,7 +40,7 @@ const click=async s=>L.click({target:T(s)});const change=async s=>L.change({targ
  for(const o of ['OCR-H481|landscape|1.1.1','OCR-H481|globalSystems|2.2.1','OCR-H481|globalGovernance|2.2.4','EDX-9PL0|nonCore|2.5c','EDX-9PL0|comparative|3A'])await change({dataset:{opt:o},checked:true});
  await change({dataset:{opt:'OCR-H481|debates|3.1'},checked:true});await change({dataset:{opt:'OCR-H481|debates|3.5'},checked:true});
  await click({id:'suGo'});ok('A1 setup builds state',G.S&&G.S.setup.student==='Matthew'&&Object.keys(G.S.nodes).length===8+4+11,String(G.S&&Object.keys(G.S.nodes).length));
- ok('A1 state persisted',!!store['platform:state:v1']);
+ ok('A1 state persisted',!!store['platform:state:v1:matthew']);
  /* today */
  ok('A2 today lists steps across subjects with open buttons',/Today/.test(reg['v-today'].innerHTML)&&/data-open=/.test(reg['v-today'].innerHTML));
  /* rooms: subject chips and topic grid */
@@ -69,7 +89,7 @@ const click=async s=>L.click({target:T(s)});const change=async s=>L.change({targ
  ok('A10 command words shown for the board',/To what extent/.test(reg['v-exam'].innerHTML)&&/With reference to/.test(reg['v-exam'].innerHTML));
  /* progress + report */
  G.renderProg();ok('A11 progress per subject, report, error log',(reg['v-prog'].innerHTML.match(/<h2>(Geography|Business|Politics)/g)||[]).length===3&&/Week to/.test(reg['v-prog'].innerHTML)&&/EVALUATION/.test(reg['v-prog'].innerHTML));
- ok('A12 persistence round trip',JSON.parse(store['platform:state:v1']).essays.length===1&&Object.keys(JSON.parse(store['platform:state:v1']).cards).length===10);
+ ok('A12 persistence round trip',JSON.parse(store['platform:state:v1:matthew']).essays.length===1&&Object.keys(JSON.parse(store['platform:state:v1:matthew']).cards).length===10);
 
  /* v1.1 — manage subjects, maths mirror, mark station */
  ok('B0 Mathematics available at setup',!!G.SPECS['EDX-9MA0']&&G.SPECS['EDX-9MA0'].topics.length===19);
@@ -108,15 +128,48 @@ const click=async s=>L.click({target:T(s)});const change=async s=>L.change({targ
  ok('B3 essay tab renamed for non-essay subject',/>Exam question</.test(reg['v-rooms'].innerHTML));
 
 
- /* v1.4 — configurable tutor route */
- G.go('prog');G.renderProg();ok('R1 route fields present',/id="tuUrl"/.test(reg['v-prog'].innerHTML)&&/id="tuPass"/.test(reg['v-prog'].innerHTML));
- $('tuUrl').value='http://insecure.example';await click({id:'tuSave'});ok('R1 refuses non-https proxy',!G.S.tutor&&/must start with https/.test($('apiOut').innerHTML));
- $('tuUrl').value='https://tutor.example.workers.dev/';$('tuPass').value='sesame';await click({id:'tuSave'});ok('R2 saves route without trailing slash',G.S.tutor&&G.S.tutor.url==='https://tutor.example.workers.dev'&&G.S.tutor.pass==='sesame');
- let hdr=null,url=null;sb.fetch=async(u,o)=>{url=u;hdr=o.headers;return{ok:true,status:200,text:async()=>JSON.stringify({content:[{type:'text',text:'OK'}]})}};
- await click({id:'apiTest'});await sleep(30);ok('R3 calls the proxy with the passcode header',url==='https://tutor.example.workers.dev'&&hdr['X-Passcode']==='sesame'&&/Connected/.test($('apiOut').innerHTML));
- ok('R3 no api key anywhere in the request',!JSON.stringify(hdr).match(/x-api-key|sk-ant/i));
- await click({id:'tuClear'});await click({id:'apiTest'});await sleep(30);ok('R4 clearing route returns to built-in',!G.S.tutor&&url==='https://api.anthropic.com/v1/messages'&&!hdr['X-Passcode']);
- sb.fetch=async(u,o)=>{lastFetch={url:u,body:JSON.parse(o.body)};return{ok:true,status:200,text:async()=>JSON.stringify(reply(lastFetch))}};
+ /* accounts: every AI call carries the session, progress goes to the tutor */
+ ok('L1 the proxy is called with the session, never a key',lastFetch.url==='https://tutor.studyplatform.co.uk'&&lastFetch.headers.Authorization==='Bearer tok-test'&&!JSON.stringify(lastFetch.headers).match(/x-api-key|sk-ant|X-Passcode/i));
+ G.syncState.timer&&sb.clearTimeout(G.syncState.timer);G.syncState.timer=null;G.syncState.pending=true;await G.pushSync();
+ ok('L2 progress is saved to the tutor with the device',lastPut&&lastPut.state&&lastPut.state.setup.student==='Matthew'&&/device/.test(JSON.stringify(lastPut))&&G.syncState.at>0);
+ ok('L2 state cached per user on the device',!!store['platform:state:v1:matthew']);
+ G.go('prog');G.renderProg();ok('L3 account panel shown, no tutor-route fields',/Signed in as <b>Matthew<\/b>/.test(reg['v-prog'].innerHTML)&&/id="signOut"/.test(reg['v-prog'].innerHTML)&&!/id="tuUrl"/.test(reg['v-prog'].innerHTML));
+ $('pwCur').value='wrong';$('pwNew').value='newpassword1';await click({id:'pwGo'});ok('L4 password change reports the tutor’s refusal',/Current password is wrong/.test($('pwOut').innerHTML));
+ $('pwCur').value='pw12345678';await click({id:'pwGo'});ok('L4 password change succeeds',/Password changed/.test($('pwOut').innerHTML));
+ const stateBefore=JSON.stringify(G.S);
+ await click({id:'signOut'});ok('L5 sign out clears the session and shows the login screen',G.S===null&&!G.AUTH.user&&store['platform:session']===''&&/id="loginGo"/.test(reg['v-login'].innerHTML));
+ $('lgUser').value='matthew';$('lgPass').value='nope';await click({id:'loginGo'});ok('L6 wrong password shown, still signed out',/Wrong username or password/.test($('lgErr').innerHTML)&&!G.AUTH.user);
+ $('lgPass').value='pw12345678';await click({id:'loginGo'});ok('L7 sign in restores the same progress from the device cache when the tutor has none',G.AUTH.user&&G.AUTH.token==='tok-2'&&store['platform:session']==='tok-2'&&G.S&&JSON.stringify(G.S)===stateBefore);
+ ok('L7 and pushes it to the tutor',lastPut&&JSON.stringify(lastPut.state)===stateBefore);
+ serverProgress={updatedAt:'2026-09-09T10:00:00Z',device:'a Mac',state:JSON.parse(stateBefore)};serverProgress.state.hours=99;
+ await click({id:'signOut'});$('lgUser').value='matthew';$('lgPass').value='pw12345678';await click({id:'loginGo'});
+ ok('L8 when the tutor has a copy, it wins over the device cache',G.S&&G.S.hours===99);
+ /* a 401 from the tutor mid-session signs the student out cleanly */
+ G.AUTH.token='expired';delete G.S.generated['OCR-H481|1.2'];G.openRoom('OCR-H481|1.2','lesson');await click({dataset:{genkind:'lesson'}});await sleep(40);
+ ok('L9 an expired session shows the login screen instead of a broken tutor',!G.AUTH.user&&G.S===null&&/id="loginGo"/.test(reg['v-login'].innerHTML));
+ /* invite flow */
+ await G.renderInvite('bad');ok('I1 a dead invite explains itself',/doesn’t work/.test(reg['v-login'].innerHTML)&&/expired/.test(reg['v-login'].innerHTML));
+ await G.renderInvite('good');ok('I2 a live invite greets the student by name and username',/Welcome, Kitty/.test(reg['v-login'].innerHTML)&&/<b>kitty<\/b>/.test(reg['v-login'].innerHTML));
+ $('invPass').value='short';$('invPass2').value='short';await click({id:'invGo',dataset:{token:'good'}});ok('I3 short password refused client-side',/at least 8/.test($('invErr').innerHTML));
+ $('invPass').value='longenough1';$('invPass2').value='different1';await click({id:'invGo',dataset:{token:'good'}});ok('I3 mismatch refused',/don’t match/.test($('invErr').innerHTML));
+ serverProgress=null;$('invPass2').value='longenough1';await click({id:'invGo',dataset:{token:'good'}});
+ ok('I4 accepting the invite signs Kitty in and lands on setup, not Matthew’s progress',G.AUTH.user&&G.AUTH.user.username==='kitty'&&G.S===null&&/Set up your study environment/.test(reg['v-setup'].innerHTML)&&/value="Kitty"/.test(reg['v-setup'].innerHTML));
+ /* admin */
+ await click({id:'signOut'});$('lgUser').value='chris';$('lgPass').value='adminpass1';await click({id:'loginGo'});
+ ok('M1 an admin signs in',G.AUTH.user&&G.AUTH.user.role==='admin');
+ manageUsers=[{username:'chris',name:'Chris',role:'admin',daily:2000,created:'2026-09-10',disabled:false,hasPassword:true,today:3},{username:'matthew',name:'Matthew',role:'student',daily:200,created:'2026-09-10',disabled:false,hasPassword:true,today:12,lastSeen:'2026-09-10T11:00:00Z',device:'an iPad'}];
+ G.S={nodes:{},setup:{subjects:[{specId:'OCR-H481',options:{}}],student:'Chris'},errors:[],transitions:[],practice:[],essays:[],papers:[],cards:{},generated:{},coach:{},pins:{},doneToday:{},coldDone:{},checklist:{},boundaries:{},dayHours:{}};
+ G.go('admin');await G.renderAdmin();
+ ok('M2 admin tab lists accounts with usage and last device',/<b>Matthew<\/b> · matthew/.test($('adList').innerHTML)&&/12 of 200 AI requests today/.test($('adList').innerHTML)&&/from an iPad/.test($('adList').innerHTML));
+ ok('M2 admin cannot turn off or delete themselves',!/data-ad-toggle="chris"/.test($('adList').innerHTML)&&!/data-ad-del="chris"/.test($('adList').innerHTML)&&/data-ad-toggle="matthew"/.test($('adList').innerHTML));
+ $('adName').value='Kitty';$('adUser').value='Kitty';$('adDaily').value='150';await click({id:'adCreate'});
+ ok('M3 creating an account posts a lowercase username and the cap',lastManage&&lastManage.m==='POST'&&lastManage.body.username==='kitty'&&lastManage.body.daily==='150');
+ ok('M3 the invite card carries the link, a copy button and a mailto for Zoho',/#invite=inv1/.test($('adOut').innerHTML)&&/data-copy-link=/.test($('adOut').innerHTML)&&/href="mailto:\?subject=/.test($('adOut').innerHTML)&&/Your%20study%20platform%20login/.test($('adOut').innerHTML));
+ ok('M3 the new account appears in the list',/<b>Kitty<\/b> · kitty/.test($('adList').innerHTML)&&/Invite not accepted yet/.test($('adList').innerHTML));
+ await click({dataset:{adToggle:'matthew',to:'1'}});ok('M4 turning a student off patches disabled',lastManage.path==='/manage/users/matthew'&&lastManage.m==='PATCH'&&lastManage.body.disabled===true);
+ await click({dataset:{adCap:'matthew',daily:'200'}});ok('M5 changing a cap patches daily from the prompt',lastManage.m==='PATCH'&&lastManage.body.daily==='150');
+ await click({dataset:{adReset:'matthew'}});ok('M6 a reset mints a new invite and shows the card',lastManage.path==='/manage/users/matthew/invite'&&/#invite=inv2/.test($('adOut').innerHTML));
+ await click({dataset:{adDel:'kitty'}});ok('M7 delete removes the account',lastManage.m==='DELETE'&&!manageUsers.some(u=>u.username==='kitty'));
 
  console.log(`PASSED: ${pass}`);fails.forEach(f=>console.log('FAILED: '+f));console.log('-'.repeat(50));console.log(fails.length?`RESULT: ${fails.length} FAILURE(S)`:'RESULT: ALL GREEN');process.exit(fails.length?1:0);
 })().catch(e=>{console.log('CRASH',e);process.exit(2)});

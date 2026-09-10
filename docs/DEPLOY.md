@@ -9,10 +9,10 @@ Two things get deployed:
 | Piece | What it is | Where it lives |
 | --- | --- | --- |
 | The site | `dist/index.html`, built from `src/` | A Cloudflare Worker serving static assets, on your domain |
-| The proxy | `worker/index.js` | Cloudflare Worker, on a subdomain of your domain |
+| The tutor service | `worker/index.js` | Cloudflare Worker, on a subdomain of your domain |
 
 The Anthropic API key only ever exists as a Worker secret. The browser holds a
-per-user key that the Worker trades for access.
+session token from signing in, which the Worker checks on every request.
 
 ## 1. Buy the domain
 
@@ -96,10 +96,13 @@ front of the Worker and every API call from the app would fail.
 
 - `ANTHROPIC_API_KEY` -- **secret** -- from console.anthropic.com. Set a monthly
   spend limit there first; that limit is your real ceiling.
-- `USER_KEYS` -- **secret** -- `{"granite-otter-42":{"name":"Matthew","daily":200}}`
-- `ALLOWED_ORIGIN` -- plain text, in `wrangler.toml` -- your site's origin, exact,
-  no trailing slash. `*` lets any site on the internet spend your API credit.
-- KV namespace `USAGE` -- bound as the variable `USAGE`.
+- `ALLOWED_ORIGIN` and `SITE_ORIGIN` -- plain text, in `wrangler.toml` -- your
+  site's origin, exact, no trailing slash. `*` lets any site on the internet spend
+  your API credit.
+- `ADMIN_USERNAME` -- plain text -- the account the recovery console can mint an
+  invite for.
+- KV namespace `USAGE` -- bound as the variable `USAGE`. Accounts, sessions,
+  invites, progress and usage counts all live there.
 
 ### Put the Worker on your domain
 
@@ -108,132 +111,108 @@ created for you. Students then enter `https://tutor.your-domain` as the Tutor
 route.
 
 Health check: open `https://tutor.your-domain` in a browser. You want
-`{"ok":true,"service":"tutor-proxy"}`. Then
-`https://tutor.your-domain/usage?key=<a key>` should report `today: 0` -- if it
-reports `null`, the KV binding is not attached.
+`{"ok":true,"service":"tutor-proxy"}`. If you get a 503 saying the KV namespace
+is not bound, that is exactly what is wrong.
 
 If the site and the Worker are on different origins -- `www.your-domain` versus
 `your-domain`, say -- the browser sends the other origin and the Worker rejects
 it. Pick one hostname for the site and use it everywhere, or redirect `www` to
 the apex with a redirect rule.
 
-## 4. Hand out access
+## 4. Your account first
 
-Each student needs the site address, the Worker address and their own key. They
-enter the last two once under *Progress → Tutor connection → Tutor route* and
-press *Test the connection*. Progress lives in their browser on their device;
-*Back up and restore* under Progress is the only copy, so tell them to use it.
+The Worker will not create an admin out of thin air. It has a **recovery
+console** at `/admin`, behind Cloudflare Access, whose one job is to mint an
+invite for the account named in `ADMIN_USERNAME`.
 
-- Usage today: `GET https://tutor.your-domain/usage?key=<their key>`
-- Revoke: remove the key from `USER_KEYS` and redeploy the secret.
+1. **Zero Trust → Access controls → Applications → Add an application →
+   Self-hosted.** Subdomain `tutor`, domain `your-domain`, path `admin`. The path
+   matters: left empty, Access would put a login in front of every student's
+   request.
+2. Policy: Allow, Include → Emails → your address. Type it in lowercase -- a
+   phone keyboard capitalises the first letter, and Access will not match it.
+3. Copy the application's **Audience (AUD) tag** -- the 64-character hex string,
+   not the UUID-shaped application id -- into `ACCESS_AUD` in `wrangler.toml`,
+   and your team domain into `ACCESS_TEAM_DOMAIN`. Push.
+4. Open `https://tutor.your-domain/admin`, sign in through Access, press **Mint
+   an invite**. Open the link on your site, choose a password. You are signed in
+   as admin.
 
-## 5. Before real students
+Keep the console: it is also how you reset your own password. Everything else
+happens inside the app.
 
-- Spend limit set at console.anthropic.com.
+## 5. Then theirs
+
+In the app, **Admin → Add a student**: name, username, AI requests a day. You
+get an invite link, a copy button and an *Email invite* button that opens a
+prefilled message in whatever handles mail on your device -- send it from Zoho
+or paste it into a text. The link works once, for seven days. The student opens
+it, chooses a password, picks a level, subjects and boards, and builds their
+rooms.
+
+From the same tab: turn an account off (their session ends at once), delete it
+(progress goes too), change the cap, or mint a fresh invite -- which is how a
+forgotten password is reset, since you never see passwords.
+
+## 6. Before real students
+
+- Spend limit set at console.anthropic.com, or prepaid credits with auto-reload
+  off.
 - `ALLOWED_ORIGIN` is your domain, not `*`.
-- KV bound, so `daily` caps bite.
 - Anthropic's usage policy has requirements for products used by minors. Read it
-  before issuing a key to anyone under 18.
+  before inviting anyone under 18.
 
 ---
 
-# Issuing keys, and progress that follows the student
+# How accounts work
 
-Both are built. Student keys live in the `USAGE` KV namespace, the Worker serves
-an admin panel at `/admin`, and the app copies each student's progress to the
-Worker so they can carry on from another device.
+**Storage.** Everything is in the `USAGE` KV namespace:
+`user:<username>` holds the account -- name, role, daily cap, a salted PBKDF2
+hash of the password (100,000 iterations, the Workers ceiling), never the
+password. `session:<token>` maps a sign-in to a username and expires after 30
+days. `invite:<token>` is single-use and expires after 7 days.
+`progress:<username>` is the student's state with a timestamp and the device it
+came from.
 
-## Student keys
+**Sign-in.** The app posts username and password, gets a session token, and
+sends it as `Authorization: Bearer` on every request after that -- the AI proxy,
+progress, and the admin API alike. A 401 from any of them signs the student out
+cleanly rather than leaving a broken tutor. Ten wrong passwords against one
+account, or thirty from one address, stop further attempts for the day.
 
-A key is a KV record, `key:<passcode>` -> `{name, daily, created, disabled}`.
-Issuing one is a KV write, so a new student works immediately with no redeploy,
-and turning a key off takes effect on their next request.
+**Roles.** An `admin` sees the Admin tab and can use `/manage/*`; a `student`
+cannot, and the Worker enforces that, not the tab. An admin cannot turn off or
+delete their own account.
 
-The `USER_KEYS` secret still works as a fallback for keys issued before the
-panel existed — the panel lists those names and tells you to reissue them. Once
-nobody is using them, delete the secret.
+**Progress.** The copy on the Worker is the truth. On sign-in the app loads it;
+if there is none yet but the device has a cached copy for that user, it adopts
+that and pushes it. Saves go to the device and, throttled to one every fifteen
+seconds and flushed when the page is hidden, to the Worker. Last write wins: one
+student on two devices *at the same time* would lose the earlier push. Moving
+between devices is fine.
 
-Passcodes are generated by the Worker: two words and six random characters, for
-example `granite-otter-7k3m9x`. Readable enough to dictate over the phone, and
-about 10^12 combinations, which matters because anyone can POST a guess. Wrong
-keys are also counted per address, and an address that has had 50 wrong guesses
-in a day stops being counted further.
+**Moving from the old passcode model.** Passcodes stop working on deploy. Create
+each student an account with the same first name they used in the app; on their
+first sign-in on the same device the app recognises the old local progress by
+that name, adopts it, and pushes it. A different name, or a different device,
+starts fresh -- their old *Copy backup* text can be pasted into *Restore*.
 
-## The admin panel
-
-`https://tutor.your-domain/admin` lists every key with the student's name, their
-usage today against their cap, when it was issued, and whether their progress is
-synced. You can issue a key, change a cap, turn a key off and on, and delete one.
-"Copy link" gives a setup link — `https://your-site/#route=...&key=...` — which
-sets the student's tutor route in one tap instead of them typing two fields
-correctly. The app clears the link from the address bar once it has read it.
-
-### Putting Cloudflare Access in front of it
-
-**The panel is off until you do this.** With `ACCESS_TEAM_DOMAIN` and
-`ACCESS_AUD` unset, `/admin` returns 503 and explains itself. This is deliberate:
-an admin panel that is open by default is worse than no panel.
-
-1. Cloudflare dashboard -> **Zero Trust -> Access -> Applications -> Add an
-   application -> Self-hosted**.
-2. Application domain: `tutor.your-domain`, path `admin`.
-3. Policy: Action **Allow**, Include -> **Emails** -> your email address.
-4. Save, then open the application's **Overview** and copy the **Application
-   Audience (AUD) tag**.
-5. Put that tag in `ACCESS_AUD` and your team domain
-   (`<team>.cloudflareaccess.com`) in `ACCESS_TEAM_DOMAIN`, in the `[vars]` block
-   of `worker/wrangler.toml`, and push.
-
-The Worker does not trust the header on its own. On every `/admin` request it
-fetches your team's public keys, verifies the token's RS256 signature, and checks
-the issuer, the audience tag and the expiry. A request without a valid token gets
-a 401 whatever it claims. The test suite signs its own tokens and checks that
-forged signatures, expired tokens, tokens for another application and tokens from
-another issuer are all refused.
-
-Nothing else on the Worker is behind Access — students never see a login, they
-just send their passcode.
-
-## Progress sync
-
-Progress is stored per key at `progress:<passcode>`, holding the same JSON the
-"Copy backup" button produces, plus a timestamp and which kind of device it came
-from.
-
-The app pushes automatically. Every save marks the state dirty; a push follows at
-most once a minute, and one is flushed when the page is hidden — so the copy on
-the Worker is current without a write on every keystroke. Pulling is always
-manual: **Progress -> Tutor backup -> Load from tutor** names the device and the
-time and asks before replacing what is on the device.
-
-That asymmetry is the point. Automatic pushes mean nobody has to remember to back
-up; a manual pull means no student ever loses an afternoon's work to a silent
-restore.
-
-**The one sharp edge:** last write wins. If the same student works on two devices
-at once, the second push overwrites the first. For one student moving between an
-iPad and a laptop this is fine. If it ever matters, the fix is a version counter
-on the record and a merge when they diverge.
-
-**On KV write limits:** the free tier allows 1,000 writes a day per namespace.
-Each AI request writes a usage count, and each sync writes a progress record —
-which is why the sync is throttled to a minute. One student is nowhere near the
-limit; a class of thirty would want the paid tier.
+**Limits.** KV's free tier allows 1,000 writes a day per namespace. A sign-in
+writes one record, each AI request one usage count, each sync one progress
+record. A handful of students is nowhere near it; a class of thirty would want
+the paid tier.
 
 ## What is still worth building
 
-- **Self-serve signup.** One-time invite codes so a student can claim their own
-  key without you at a keyboard.
-- **Usage over time.** The usage counters are kept for 100 days, so the panel
-  could draw a sparkline per student — which is also how you would notice a key
-  that has leaked.
-- **D1 instead of KV**, when you want to ask questions across the data ("who has
-  not studied this week"). KV answers by key; SQL answers by question. Not before
-  you need it.
-
-
----
-
+- **GCSE specs.** The Level → Subject → Board picker already shows GCSE, greyed
+  until a spec file with `level: 'GCSE'` exists. Each subject is a specification
+  map, written the same way as the A-level ones.
+- **Usage over time.** Usage counts are kept for 100 days; the Admin tab could
+  draw a per-student sparkline from them.
+- **Self-serve signup with an invite code**, if you ever have more students than
+  you want to add by hand.
+- **A version counter on progress**, if a student ever works on two devices at
+  once.
 
 ---
 

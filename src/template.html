@@ -17,23 +17,27 @@
 <body>
 <header><div class="wrap hbar"><div><div class="hdate" id="hDate">—</div><div class="hphase" id="hPhase">Loading…</div></div><div class="gradechip" id="hGrade"></div></div></header>
 <main class="wrap">
- <section id="v-setup" class="hide"></section><section id="v-today"></section><section id="v-rooms" class="hide"></section><section id="v-exam" class="hide"></section><section id="v-prog" class="hide"></section>
+ <section id="v-login" class="hide"></section><section id="v-setup" class="hide"></section><section id="v-today"></section><section id="v-rooms" class="hide"></section><section id="v-exam" class="hide"></section><section id="v-prog" class="hide"></section><section id="v-admin" class="hide"></section>
 </main>
 <nav>
  <button data-v="today" aria-selected="true"><span class="ic">◉</span>Today</button>
  <button data-v="rooms" aria-selected="false"><span class="ic">▦</span>Rooms</button>
  <button data-v="exam" aria-selected="false"><span class="ic">◫</span>Exam</button>
  <button data-v="prog" aria-selected="false"><span class="ic">◔</span>Progress</button>
+ <button data-v="admin" aria-selected="false" id="navAdmin" class="hide"><span class="ic">⚙</span>Admin</button>
 </nav>
 <script>
 /*__CORE__*/
 /*__GEN__*/
 /*__SPECS__*/
 /*__AUTHORED__*/
+/*__CONFIG__*/
 const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const KEY='platform:state:v1', MATHS_KEY='companion:state:v2';
+const KEY='platform:state:v1', MATHS_KEY='companion:state:v2', SESSION_KEY='platform:session';
+const AUTH_MODE=!!(typeof CONFIG!=='undefined'&&CONFIG.tutorUrl);let AUTH={user:null,token:null};
+function stateKey(){return AUTH_MODE&&AUTH.user?KEY+':'+AUTH.user.username:KEY;}
 let S=null, TODAY=new Date().toISOString().slice(0,10), view='today', saveErr='', storeMode='memory';
-let syncState={at:0,serverAt:'',busy:false,err:'',pending:false,timer:null},PENDING_ROUTE=null;const SYNC_GAP=60000;
+let syncState={at:0,serverAt:'',busy:false,err:'',pending:false,timer:null};const SYNC_GAP=AUTH_MODE?15000:60000;
 let UI={subject:null,room:null,station:'lesson',revealed:{},practice:null,essay:null,exit:null,busy:'',err:'',coachBusy:false,coachErr:'',teach:{},setup:{subjects:[]},cards:null,mathsHours:0};
 const specById=id=>SPECS[id];
 const authoredFor=(specId,topicId)=>{const A=AUTHORED[specId];if(!A)return null;const room=A.rooms[topicId];if(!room)return null;return{room,lesson:A.lessons[topicId],sources:A.sources[topicId],official:A.official};};
@@ -48,43 +52,60 @@ async function rawSet(k,v){if(storeMode==='cloud'){const r=await window.storage.
 let MATHS=null;
 async function mirrorMaths(){if(!S||!MATHS)return;if(!S.setup.subjects.some(x=>x.specId==='EDX-9MA0'))return;for(const [mid,mn] of Object.entries(MATHS.nodes||{})){const id='EDX-9MA0|'+mid;if(S.nodes[id]&&!S.nodes[id].imported){S.nodes[id].state=mn.state;S.nodes[id].lastPractised=mn.lastPractised;S.nodes[id].imported=true;}}
   for(const p of (MATHS.papers||[])){if(!S.papers.some(x=>x.mirror===p.date+p.key+p.score)){S.papers.push({spec:'EDX-9MA0',component:p.key==='P3'||p.key==='M3'?'P3':'P12',series:p.series||p.kind,date:p.date,score:p.score,total:p.total,mirror:p.date+p.key+p.score});}}}
-async function load(){storeMode=await detectStore();let got=null;try{got=JSON.parse(await rawGet(KEY)||'null');}catch(e){}if(got&&got.nodes&&got.setup)S=got;
+function normaliseState(){if(!S)return;for(const k of ['errors','transitions','practice','essays','papers'])if(!S[k])S[k]=[];for(const k of ['cards','generated','coach','pins','doneToday','coldDone','checklist','boundaries','dayHours'])if(!S[k])S[k]={};}
+/* Signed in: the copy on the tutor is the truth; the device copy is a cache, and is adopted (and pushed) only when the tutor has nothing yet. */
+async function loadForUser(){S=null;UI.room=null;let server=null;try{server=await api('/progress');}catch(e){if(e.status!==404)syncState.err=e.message;}
+  let local=null;try{local=JSON.parse(await rawGet(stateKey())||'null');}catch(e){}
+  if(server&&server.state&&server.state.nodes&&server.state.setup){S=server.state;syncState.at=Date.now();syncState.serverAt=server.updatedAt||'';}
+  else if(local&&local.nodes&&local.setup){S=local;syncState.pending=true;}
+  else{let old=null;try{old=JSON.parse(await rawGet(KEY)||'null');}catch(e){}
+    const mine=old&&old.nodes&&old.setup&&AUTH.user&&String(old.setup.student||'').trim().toLowerCase()===String(AUTH.user.name||'').trim().toLowerCase();
+    if(mine){S=old;syncState.pending=true;}}
+  if(S)delete S.tutor;
+  try{MATHS=JSON.parse(await rawGet(MATHS_KEY)||'null');if(MATHS&&MATHS.dayHours)UI.mathsHours=MATHS.dayHours[TODAY]||0;UI.mathsPresent=!!MATHS;}catch(e){}
+  await mirrorMaths();normaliseState();if(S&&syncState.pending){await save();pushSync();}}
+async function load(){let got=null;try{got=JSON.parse(await rawGet(KEY)||'null');}catch(e){}if(got&&got.nodes&&got.setup)S=got;
   try{MATHS=JSON.parse(await rawGet(MATHS_KEY)||'null');if(MATHS&&MATHS.dayHours)UI.mathsHours=MATHS.dayHours[TODAY]||0;UI.mathsPresent=!!MATHS;}catch(e){}
   await mirrorMaths();
   if(S){for(const k of ['errors','transitions','practice','essays','papers'])if(!S[k])S[k]=[];for(const k of ['cards','generated','coach','pins','doneToday','coldDone','checklist','boundaries','dayHours'])if(!S[k])S[k]={};}}
-async function save(){if(!S)return;if(storeMode==='memory'){saveErr='Saving isn\u2019t available where this is open — back up from Progress before you close.';return;}try{await rawSet(KEY,JSON.stringify(S));saveErr='';queueSync();}catch(e){saveErr=`Could not save (${e.message}). Back up from Progress.`;}}
-/* ---- tutor backup: the same JSON the backup button produces, kept on the tutor route ---- */
-function syncable(){return !!(S&&S.tutor&&S.tutor.url&&S.tutor.pass);}
+async function save(){if(!S)return;if(storeMode==='memory'){saveErr='Saving isn\u2019t available where this is open — back up from Progress before you close.';return;}try{await rawSet(stateKey(),JSON.stringify(S));saveErr='';queueSync();}catch(e){saveErr=`Could not save (${e.message}). Back up from Progress.`;}}
+/* ---- talking to the tutor service ---- */
+async function api(path,opts={}){const headers=Object.assign({'Content-Type':'application/json'},opts.headers||{});if(AUTH.token)headers.Authorization='Bearer '+AUTH.token;
+  let res;try{res=await fetch(CONFIG.tutorUrl+path,{method:opts.method||'GET',headers,body:opts.body?JSON.stringify(opts.body):undefined});}catch(e){const err=new Error('No connection to the tutor');err.status=0;throw err;}
+  let data={};try{data=JSON.parse(await res.text()||'{}');}catch(e){}
+  if(res.status===401&&AUTH.token&&!/^\/auth\/(login|invite|password)/.test(path)){await signedOut();const err=new Error('Signed out');err.status=401;throw err;}
+  if(!res.ok){const err=new Error(data.error||('HTTP '+res.status));err.status=res.status;throw err;}return data;}
+async function signedOut(){AUTH={user:null,token:null};try{await rawSet(SESSION_KEY,'');}catch(e){}S=null;UI.room=null;UI.setup={subjects:[]};syncState={at:0,serverAt:'',busy:false,err:'',pending:false,timer:null};renderAll();}
+function syncable(){return AUTH_MODE?!!(AUTH.token&&S):!!(S&&S.tutor&&S.tutor.url&&S.tutor.pass);}
 function deviceName(){try{const u=(typeof navigator!=='undefined'&&navigator.userAgent)||'';return /iPad/.test(u)?'an iPad':/iPhone/.test(u)?'an iPhone':/Android/.test(u)?'an Android device':/Macintosh/.test(u)?'a Mac':/Windows/.test(u)?'a PC':'a device';}catch(e){return 'a device';}}
 function queueSync(){if(!syncable())return;syncState.pending=true;if(syncState.timer)return;const wait=Math.max(2000,SYNC_GAP-(Date.now()-syncState.at));syncState.timer=setTimeout(()=>{syncState.timer=null;pushSync();},wait);}
 async function pushSync(){if(!syncable()||syncState.busy||!syncState.pending)return;syncState.busy=true;
-  try{const res=await fetch(S.tutor.url+'/progress',{method:'PUT',headers:{'Content-Type':'application/json','X-Passcode':S.tutor.pass},body:JSON.stringify({device:deviceName(),state:S})});
-   if(!res.ok)throw new Error('HTTP '+res.status);const b=JSON.parse(await res.text());syncState.at=Date.now();syncState.serverAt=b.updatedAt||'';syncState.err='';syncState.pending=false;}
+  try{let b;if(AUTH_MODE){b=await api('/progress',{method:'PUT',body:{device:deviceName(),state:S}});}
+    else{const res=await fetch(S.tutor.url+'/progress',{method:'PUT',headers:{'Content-Type':'application/json','X-Passcode':S.tutor.pass},body:JSON.stringify({device:deviceName(),state:S})});if(!res.ok)throw new Error('HTTP '+res.status);b=JSON.parse(await res.text());}
+    syncState.at=Date.now();syncState.serverAt=b.updatedAt||'';syncState.err='';syncState.pending=false;}
   catch(e){syncState.err=e.message||'failed';}
   finally{syncState.busy=false;if(view==='prog')renderProg();}}
-async function pullSync(){if(!syncable())throw new Error('Set the tutor route first.');
-  const res=await fetch(S.tutor.url+'/progress',{headers:{'X-Passcode':S.tutor.pass}});
-  if(res.status===404)throw new Error('Nothing has been backed up to the tutor yet.');
-  if(!res.ok)throw new Error('HTTP '+res.status);
-  const b=JSON.parse(await res.text());
-  if(!b||!b.state||!b.state.nodes||!b.state.setup)throw new Error('The backup on the tutor is not readable.');
-  return b;}
-/* A setup link (#route=...&key=...) sets the tutor route in one tap. */
-function applySetupLink(){try{const h=(typeof location!=='undefined'&&location.hash)||'';if(h.indexOf('route=')<0)return;
-  const q={};h.replace(/^#/,'').split('&').forEach(pair=>{const i=pair.indexOf('=');if(i>0)q[decodeURIComponent(pair.slice(0,i))]=decodeURIComponent(pair.slice(i+1));});
-  const u=(q.route||'').trim(),k=(q.key||'').trim();if(!/^https:\/\//.test(u)||!k)return;
-  const route={url:u.replace(/\/$/,''),pass:k};if(S){S.tutor=route;save();}else{PENDING_ROUTE=route;}
-  if(typeof history!=='undefined'&&history.replaceState)history.replaceState(null,'',location.pathname+location.search);}catch(e){}}
+async function pullSync(){if(!syncable())throw new Error(AUTH_MODE?'Sign in first.':'Set the tutor route first.');let b;
+  if(AUTH_MODE){try{b=await api('/progress');}catch(e){throw new Error(e.status===404?'Nothing has been saved to the tutor yet.':e.message);}}
+  else{const res=await fetch(S.tutor.url+'/progress',{headers:{'X-Passcode':S.tutor.pass}});if(res.status===404)throw new Error('Nothing has been backed up to the tutor yet.');if(!res.ok)throw new Error('HTTP '+res.status);b=JSON.parse(await res.text());}
+  if(!b||!b.state||!b.state.nodes||!b.state.setup)throw new Error('The copy on the tutor is not readable.');return b;}
+function hashParam(name){try{const h=(typeof location!=='undefined'&&location.hash)||'';const m=new RegExp('[#&]'+name+'=([^&]+)').exec(h);return m?decodeURIComponent(m[1]):'';}catch(e){return '';}}
+function clearHash(){try{if(typeof history!=='undefined'&&history.replaceState)history.replaceState(null,'',location.pathname+location.search);}catch(e){}}
+/* Legacy route-less build: a setup link (#route=...&key=...) sets the tutor route in one tap. */
+function applySetupLink(){if(AUTH_MODE)return;try{const u=hashParam('route').trim(),k=hashParam('key').trim();if(!/^https:\/\//.test(u)||!k)return;
+  const route={url:u.replace(/\/$/,''),pass:k};if(S){S.tutor=route;save();}else{PENDING_ROUTE=route;}clearHash();}catch(e){}}
+let PENDING_ROUTE=null;
 function withT(id,fn){const b=S.nodes[id].state;fn();const a=S.nodes[id].state;if(b!==a)S.transitions.push({date:TODAY,node:id,from:b,to:a});}
 function addHours(h){S.hours=(S.hours||0)+h;S.dayHours[TODAY]=(S.dayHours[TODAY]||0)+h;}
 
 /* ============ API (retrying, diagnosable) ============ */
 const RETRY=new Set([408,409,425,429,500,502,503,504,529]);let LAST_API_ERROR=null;
 async function callClaude(parts,max=1500,retries=6){let lastErr='';for(let a=0;a<=retries;a++){if(a)await new Promise(r=>setTimeout(r,Math.min(8000,600*Math.pow(2,a-1))+Math.random()*400));let res;
-  const route=(S&&S.tutor&&S.tutor.url)?{url:S.tutor.url,headers:{'Content-Type':'application/json','X-Passcode':S.tutor.pass||''}}:{url:'https://api.anthropic.com/v1/messages',headers:{'Content-Type':'application/json'}};
+  const route=AUTH_MODE?{url:CONFIG.tutorUrl,headers:{'Content-Type':'application/json','Authorization':'Bearer '+(AUTH.token||'')}}:(S&&S.tutor&&S.tutor.url)?{url:S.tutor.url,headers:{'Content-Type':'application/json','X-Passcode':S.tutor.pass||''}}:{url:'https://api.anthropic.com/v1/messages',headers:{'Content-Type':'application/json'}};
   try{res=await fetch(route.url,{method:'POST',headers:route.headers,body:JSON.stringify({model:'claude-sonnet-5',max_tokens:max,messages:[{role:'user',content:parts}]})});}catch(e){lastErr='network';continue;}
   let raw='';try{raw=await res.text();}catch(e){lastErr='unreadable body';continue;}
   let data=null;try{data=JSON.parse(raw);}catch(e){lastErr='HTTP '+res.status+', non-JSON reply: '+(raw||'(empty)').slice(0,120)+(!raw?' — the tutor route isn\u2019t reaching Claude from here':'');LAST_API_ERROR={status:res.status,body:raw.slice(0,400),when:new Date().toISOString()};if(a<retries)continue;break;}
+  if(AUTH_MODE&&res.status===401){await signedOut();throw new Error('You were signed out — sign in again to carry on.');}
   if(!res.ok||(data&&data.type==='error')){const m=(data&&data.error&&data.error.message)||('HTTP '+res.status);lastErr=res.status===429?'rate limited':res.status===529||res.status===503?'service busy':('HTTP '+res.status+': '+m);LAST_API_ERROR={status:res.status,body:raw.slice(0,400),when:new Date().toISOString()};if(RETRY.has(res.status))continue;break;}
   const text=(data.content||[]).filter(c=>c.type==='text').map(c=>c.text).join('').replace(/```json|```/g,'').trim();if(!text){lastErr='empty reply';continue;}return text;}
   throw new Error(lastErr||'unknown');}
@@ -97,12 +118,17 @@ async function ensure(kind,id,builder,validator,max){S.generated[id]=S.generated
   try{const o=await generate(builder(),validator,max);S.generated[id][kind]=o;UI.err='';await save();return o;}catch(e){UI.err=e.message;return null;}finally{UI.busy='';}}
 
 /* ============ SETUP ============ */
-function renderSetup(){const el=document.getElementById('v-setup');const st=UI.setup;const editing=!!S;
-  el.innerHTML=`<div class="panel">${editing?'<button class="open" id="suCancel">← Back without changing</button>':''}<h2>${editing?'Add or change subjects':'Set up your study environment'}</h2><p class="sub">Choose the A levels and the exam board for each. The platform builds a room for every topic you actually study, from the board\u2019s own specification.</p>
-   <label for="suName">First name</label><input id="suName" value="${esc(st.student||'')}" placeholder="e.g. Matthew"><label for="suYear">Exam summer</label><select id="suYear">${[2027,2028,2029].map(y=>`<option ${st.examYear===y||(!st.examYear&&y===2028)?'selected':''}>${y}</option>`).join('')}</select>
-   <h3>Subjects</h3>${Object.values(SPECS).map(sp=>{const chosen=st.subjects.find(x=>x.specId===sp.id);return `<div class="qcard"><label class="chk" style="border:none;padding:0"><input type="checkbox" data-su="${sp.id}" ${chosen?'checked':''}><span><b>${esc(sp.subject)}</b> — ${esc(sp.board)} ${esc(sp.code)}<br><small style="color:var(--pencil)">${sp.components.filter(c=>!c.nea).length} papers${sp.components.some(c=>c.nea)?' + NEA':''} · ${sp.topics.length} topics in the spec</small></span></label>
-    ${chosen&&sp.options.length?sp.options.map(o=>`<label>${esc(o.label)} — choose ${o.choose}</label>${o.from.map(f=>{const tp=sp.topics.find(t=>t.id===f);const sel=o.choose>1?(chosen.options[o.id]||[]).includes(f):chosen.options[o.id]===f;return `<label class="chk" style="padding:6px 0"><input type="${o.choose>1?'checkbox':'radio'}" name="${sp.id}-${o.id}" data-opt="${sp.id}|${o.id}|${f}" ${sel?'checked':''}><span>${esc(tp.name)}</span></label>`;}).join('')}`).join(''):''}</div>`;}).join('')}
-   <div class="note">Other subjects or boards: tell Chris which, and a specification map is added — the platform then generates that subject\u2019s rooms the same way.</div>
+function renderSetup(){const el=document.getElementById('v-setup');const st=UI.setup;const editing=!!S;st.level=st.level||'A level';
+  const levels=['GCSE','A level'];const avail=new Set(Object.values(SPECS).map(sp=>sp.level));
+  const bySubject={};for(const sp of Object.values(SPECS)){if(sp.level!==st.level)continue;(bySubject[sp.subject]=bySubject[sp.subject]||[]).push(sp);}
+  el.innerHTML=`<div class="panel">${editing?'<button class="open" id="suCancel">← Back without changing</button>':''}<h2>${editing?'Add or change subjects':'Set up your study environment'}</h2><p class="sub">Choose your level, then each subject and its exam board. The platform builds a room for every topic you actually study, from the board’s own specification.</p>
+   <label for="suName">First name</label><input id="suName" value="${esc(st.student||(AUTH.user&&AUTH.user.name)||'')}" placeholder="e.g. Matthew"><label for="suYear">Exam summer</label><select id="suYear">${[2027,2028,2029].map(y=>`<option ${st.examYear===y||(!st.examYear&&y===2028)?'selected':''}>${y}</option>`).join('')}</select>
+   <h3>Level</h3><div class="row">${levels.map(l=>`<button class="act ghost small" data-level="${l}" aria-pressed="${st.level===l}" ${avail.has(l)?'':'disabled'} style="${st.level===l?'background:var(--ink);color:var(--paper)':''}">${l}${avail.has(l)?'':' — coming'}</button>`).join('')}</div>
+   ${!avail.has('GCSE')&&st.level==='A level'?'<p class="sub" style="margin-top:6px">GCSE subjects are on the way — each one is a specification map, added as it is written.</p>':''}
+   <h3>Subjects</h3>${Object.entries(bySubject).sort(([a],[b])=>a.localeCompare(b)).map(([subject,specs])=>{const chosen=st.subjects.find(x=>specs.some(sp=>sp.id===x.specId));const sp=chosen?specById(chosen.specId):specs[0];return `<div class="qcard"><label class="chk" style="border:none;padding:0"><input type="checkbox" data-su="${sp.id}" ${chosen?'checked':''}><span><b>${esc(subject)}</b> — ${esc(sp.board)} ${esc(sp.code)}<br><small style="color:var(--pencil)">${sp.components.filter(c=>!c.nea).length} papers${sp.components.some(c=>c.nea)?' + NEA':''} · ${sp.topics.length} topics in the spec</small></span></label>
+    ${specs.length>1?`<label>Exam board</label><select data-board="${esc(subject)}">${specs.map(x=>`<option value="${x.id}" ${x.id===sp.id?'selected':''}>${esc(x.board)} ${esc(x.code)}</option>`).join('')}</select>`:''}
+    ${chosen&&sp.options.length?sp.options.map(o=>`<label>${esc(o.label)} — choose ${o.choose}</label>${o.from.map(f=>{const tp=sp.topics.find(t=>t.id===f);const sel=o.choose>1?(chosen.options[o.id]||[]).includes(f):chosen.options[o.id]===f;return `<label class="chk" style="padding:6px 0"><input type="${o.choose>1?'checkbox':'radio'}" name="${sp.id}-${o.id}" data-opt="${sp.id}|${o.id}|${f}" ${sel?'checked':''}><span>${esc(tp.name)}</span></label>`;}).join('')}`).join(''):''}</div>`;}).join('')||'<p class="empty">No subjects mapped at this level yet.</p>'}
+   <div class="note">Other subjects or boards: tell Chris which, and a specification map is added — the platform then generates that subject’s rooms the same way.</div>
    <button class="act" id="suGo">${editing?'Apply changes — progress in existing rooms is kept':'Build my rooms'}</button><div id="suErr"></div></div>`;}
 function presetBoundaries(){for(const sub of S.setup.subjects){const A=AUTHORED[sub.specId];if(A&&A.boundaries&&!S.boundaries[sub.specId]){const b=A.boundaries.overall[0];const total=300;S.boundaries[sub.specId]={};for(const g of ['A*','A','B','C','D','E'])S.boundaries[sub.specId][g]=Math.round(b[g]/total*100);}}}
 function mergeSetup(newSetup){const fresh=newState(newSetup,SPECS);for(const [id,n] of Object.entries(fresh.nodes)){if(S.nodes[id])fresh.nodes[id]=S.nodes[id];}S.nodes=fresh.nodes;S.setup=newSetup;
@@ -227,6 +253,15 @@ function dojoHtml(D){const i=(UI.dojo||0)%D.length;const d=D[i];const sel=UI.doj
   return `<h3>Spot the lost mark</h3><p class="sub">A solution that loses marks. Tap every line where a mark goes, then check. ${i+1} of ${D.length}.</p><div class="qcard"><div class="qhead"><span>Question</span><span>${d.m} marks</span></div><div class="qtext">${esc(d.q)}</div><h3 style="margin-top:12px">The student wrote</h3>${d.lines.map((l,j)=>`<div class="dline ${done?(d.lost.includes(j)?'hit':sel.includes(j)?'miss':''):(sel.includes(j)?'sel':'')}" data-dl="${j}">${esc(l)}</div>`).join('')}
    ${done?`<div class="${right?'good':'remedy'}"><b>${right?'Exactly right.':'Not quite.'}</b> ${esc(d.why)}</div><button class="act" id="dojoNext">Next one</button>`:`<button class="act" id="dojoCheck" ${sel.length?'':'disabled'}>Check</button>`}</div>`;}
 /* ============ PROGRESS ============ */
+function legacyTutorPanels(){return `   <div class="panel"><h2>Tutor connection</h2><h3 style="margin-top:14px">Tutor route</h3><p class="sub">Leave blank inside Claude. On the website, enter the proxy address and passcode Chris set up — the app then talks to the tutor directly.</p>
+    <input id="tuUrl" value="${esc((S.tutor&&S.tutor.url)||'')}" placeholder="https://your-worker.workers.dev"><input id="tuPass" type="password" autocomplete="off" value="${esc((S.tutor&&S.tutor.pass)||'')}" placeholder="Passcode" style="margin-top:6px"><div class="row"><button class="act ghost small" id="tuSave">Save route</button>${(S.tutor&&S.tutor.url)?'<button class="act danger small" id="tuClear">Use built-in route</button>':''}</div>
+    <button class="act ghost" id="apiTest">Test the connection</button><div id="apiOut">${LAST_API_ERROR?`<div class="remedy"><b>Last failure</b> HTTP ${LAST_API_ERROR.status}: <span class="mono">${esc(LAST_API_ERROR.body.slice(0,200))}</span></div>`:''}</div></div>
+   <div class="panel"><h2>Tutor backup</h2>${(S.tutor&&S.tutor.url)?`<p class="sub">Your progress is copied to the tutor whenever it changes, so you can carry on from another device. ${syncState.err?`<span class="err">Last attempt failed: ${esc(syncState.err)}</span>`:syncState.at?`Last backed up ${esc(new Date(syncState.at).toLocaleTimeString())}.`:syncState.pending?'Waiting to back up\u2026':'Nothing to back up yet.'}</p>
+    <div class="row"><button class="act ghost small" id="syncNow">Back up now</button><button class="act ghost small" id="syncPull">Load from tutor</button></div><div id="syncOut"></div>`:'<p class="sub">Set the tutor route above and your progress will be backed up to it automatically.</p>'}</div>
+`;}
+function accountPanel(){const u=AUTH.user||{};return `<div class="panel"><h2>Your account</h2><p class="sub">Signed in as <b>${esc(u.name||'')}</b> (${esc(u.username||'')}). Your progress is saved to the tutor as you go${syncState.err?` — <span class="err">last save failed: ${esc(syncState.err)}</span>`:syncState.at?`; last saved ${esc(new Date(syncState.at).toLocaleTimeString())}`:''}. Sign in on another device and it is there.</p>
+    <div class="row"><button class="act ghost small" id="syncNow">Save now</button><button class="act ghost small" id="syncPull">Load the tutor’s copy</button><button class="act danger small" id="signOut">Sign out</button></div><div id="syncOut"></div>
+    <h3 style="margin-top:16px">Change password</h3><input id="pwCur" type="password" autocomplete="current-password" placeholder="Current password"><input id="pwNew" type="password" autocomplete="new-password" placeholder="New password (8+ characters)" style="margin-top:6px"><button class="act ghost small" id="pwGo">Change password</button><div id="pwOut"></div></div>`;}
 function renderProg(){const el=document.getElementById('v-prog');if(!S)return;const rep=weeklyReport(S,SPECS,TODAY);const days12=[];for(let i=83;i>=0;i--){const d=new Date(new Date(TODAY)-i*DAY).toISOString().slice(0,10);const h=S.dayHours[d]||0;days12.push(h===0?'':h<1?'h1':h<2.5?'h2':'h3');}
   const modes={};for(const e of S.errors)modes[e.mode]=(modes[e.mode]||0)+1;const dom=Object.keys(modes).sort((a,b)=>modes[b]-modes[a])[0];
   el.innerHTML=`${S.setup.subjects.map(sub=>{const sp=specById(sub.specId);const p=predictSubject(S,sp,sub.options);const ns=Object.entries(S.nodes).filter(([,n])=>n.spec===sp.id);return `<div class="panel"><h2>${esc(sp.subject)} <span class="score" style="font-size:26px;float:right">${esc(p.grade)}</span></h2><p class="sub">Range ${esc(p.gradeLow)}–${esc(p.gradeHigh)} · about ${p.pct}%${p.papersUsed?` · ${p.papersUsed} paper${p.papersUsed>1?'s':''} used`:''}${p.estimatedBounds?' · boundaries estimated':''}</p><div class="bar"><i style="width:${p.pct}%"></i></div>
@@ -234,29 +269,69 @@ function renderProg(){const el=document.getElementById('v-prog');if(!S)return;co
    <div class="panel"><h2>Effort</h2><div class="cal">${days12.map(c=>`<i class="${c}"></i>`).join('')}</div><p class="sub" style="margin-top:10px">${(S.hours||0).toFixed(1)} hours logged in this platform.</p></div>
    <div class="panel"><h2>This week, for Chris</h2><pre class="report" id="repText">${esc(rep.text)}</pre><button class="act ghost" id="repCopy">Copy report</button></div>
    <div class="panel"><h2>Error log</h2>${dom?`<div class="remedy"><b>Your pattern: ${esc(dom)}</b> (${modes[dom]} of ${S.errors.length})<br>${esc(REMEDY[dom]||'')}</div>`:''}${S.errors.slice(0,15).map(e=>`<div class="entry"><div class="emeta"><span class="tag">${esc(e.mode)}</span><span>${esc(nodeTopic(e.node).spec.subject)}</span><span>${esc(e.date)}</span></div><div>${esc(e.ref||'')}</div><div style="color:var(--pencil);font-size:13.5px">${esc(e.fix||'')}</div></div>`).join('')||'<p class="empty">Nothing logged yet.</p>'}</div>
-   <div class="panel"><h2>Tutor connection</h2><h3 style="margin-top:14px">Tutor route</h3><p class="sub">Leave blank inside Claude. On the website, enter the proxy address and passcode Chris set up — the app then talks to the tutor directly.</p>
-    <input id="tuUrl" value="${esc((S.tutor&&S.tutor.url)||'')}" placeholder="https://your-worker.workers.dev"><input id="tuPass" type="password" autocomplete="off" value="${esc((S.tutor&&S.tutor.pass)||'')}" placeholder="Passcode" style="margin-top:6px"><div class="row"><button class="act ghost small" id="tuSave">Save route</button>${(S.tutor&&S.tutor.url)?'<button class="act danger small" id="tuClear">Use built-in route</button>':''}</div>
-    <button class="act ghost" id="apiTest">Test the connection</button><div id="apiOut">${LAST_API_ERROR?`<div class="remedy"><b>Last failure</b> HTTP ${LAST_API_ERROR.status}: <span class="mono">${esc(LAST_API_ERROR.body.slice(0,200))}</span></div>`:''}</div></div>
-   <div class="panel"><h2>Tutor backup</h2>${(S.tutor&&S.tutor.url)?`<p class="sub">Your progress is copied to the tutor whenever it changes, so you can carry on from another device. ${syncState.err?`<span class="err">Last attempt failed: ${esc(syncState.err)}</span>`:syncState.at?`Last backed up ${esc(new Date(syncState.at).toLocaleTimeString())}.`:syncState.pending?'Waiting to back up\u2026':'Nothing to back up yet.'}</p>
-    <div class="row"><button class="act ghost small" id="syncNow">Back up now</button><button class="act ghost small" id="syncPull">Load from tutor</button></div><div id="syncOut"></div>`:'<p class="sub">Set the tutor route above and your progress will be backed up to it automatically.</p>'}</div>
-   <div class="panel"><h2>Back up and restore</h2><p class="sub">${storeMode==='cloud'?'Saved to your Claude account.':storeMode==='local'?'Saved on this device only.':'Not being saved where this is open.'}</p><button class="act ghost" id="bkCopy">Copy backup</button><label>Restore</label><textarea id="bkIn" style="min-height:60px"></textarea><button class="act danger" id="bkRestore">Restore (replaces current progress)</button><div id="bkMsg"></div><button class="act ghost" id="suEdit" style="margin-top:18px">Add or change subjects</button><button class="act danger" id="reset">Start again from scratch</button></div>`;}
+   ${AUTH_MODE?accountPanel():legacyTutorPanels()}
+   <div class="panel"><h2>Back up and restore</h2><p class="sub">${AUTH_MODE?'Saved to the tutor as you go, and cached on this device. This is a copy you can keep yourself.':storeMode==='cloud'?'Saved to your Claude account.':storeMode==='local'?'Saved on this device only.':'Not being saved where this is open.'}</p><button class="act ghost" id="bkCopy">Copy backup</button><label>Restore</label><textarea id="bkIn" style="min-height:60px"></textarea><button class="act danger" id="bkRestore">Restore (replaces current progress)</button><div id="bkMsg"></div><button class="act ghost" id="suEdit" style="margin-top:18px">Add or change subjects</button><button class="act danger" id="reset">Start again from scratch</button></div>`;}
 
-function renderAll(){renderHeader();if(!S){document.querySelectorAll('main>section').forEach(s=>s.classList.toggle('hide',s.id!=='v-setup'));renderSetup();return;}renderToday();renderRooms();renderExam();renderProg();document.querySelectorAll('main>section').forEach(s=>s.classList.toggle('hide',s.id!=='v-'+view));}
+function renderLogin(msg){const el=document.getElementById('v-login');el.innerHTML=`<div class="panel" style="max-width:420px;margin:40px auto"><h2>Sign in</h2><p class="sub">Your study platform. Use the username and password you chose from your invite.</p>
+   <label for="lgUser">Username</label><input id="lgUser" autocapitalize="none" autocomplete="username" spellcheck="false"><label for="lgPass">Password</label><input id="lgPass" type="password" autocomplete="current-password">
+   <button class="act" id="loginGo">Sign in</button><div id="lgErr">${msg?`<p class="err">${esc(msg)}</p>`:''}</div><p class="sub" style="margin-top:14px">No account? Ask Chris for an invite. Forgotten your password? Chris can send a new invite, which lets you choose another.</p></div>`;}
+async function renderInvite(token){const el=document.getElementById('v-login');document.querySelectorAll('main>section').forEach(x=>x.classList.toggle('hide',x.id!=='v-login'));el.innerHTML='<div class="panel"><p class="sub">Checking your invite…</p></div>';
+  let inv;try{inv=await api('/auth/invite?token='+encodeURIComponent(token));}catch(e){el.innerHTML=`<div class="panel" style="max-width:420px;margin:40px auto"><h2>This invite doesn’t work</h2><p class="sub">${esc(e.message)}</p><button class="act ghost" id="toLogin">Go to sign in</button></div>`;return;}
+  el.innerHTML=`<div class="panel" style="max-width:420px;margin:40px auto"><h2>Welcome, ${esc(inv.name)}</h2><p class="sub">Your username is <b>${esc(inv.username)}</b>. Choose a password and you’re in.</p>
+   <label for="invPass">Password (8+ characters)</label><input id="invPass" type="password" autocomplete="new-password"><label for="invPass2">Type it again</label><input id="invPass2" type="password" autocomplete="new-password">
+   <button class="act" id="invGo" data-token="${esc(token)}">Set my password</button><div id="invErr"></div></div>`;}
+async function renderAdmin(){const el=document.getElementById('v-admin');if(!(AUTH.user&&AUTH.user.role==='admin'))return;
+  el.innerHTML=`<div class="panel"><h2>Add a student</h2><p class="sub">Creates the account and gives you an invite link. Send it however you like — the student opens it and chooses their own password.</p>
+   <label for="adName">Name</label><input id="adName" placeholder="Kitty"><label for="adUser">Username</label><input id="adUser" autocapitalize="none" spellcheck="false" placeholder="kitty"><label for="adDaily">AI requests a day</label><input id="adDaily" type="number" value="200" min="1" max="2000">
+   <button class="act" id="adCreate">Create account and invite</button><div id="adOut"></div></div><div class="panel" id="adList"><p class="sub">Loading…</p></div>`;
+  let d;try{d=await api('/manage/users');}catch(e){document.getElementById('adList').innerHTML=`<p class="err">${esc(e.message)}</p>`;return;}
+  UI.adminSite=d.site||'';
+  renderAdminList(d);}
+function renderAdminList(d){document.getElementById('adList').innerHTML=`<h2>Accounts</h2>${d.users.map(u=>`<div class="entry" style="${u.disabled?'opacity:.55':''}"><div class="emeta"><span class="tag">${u.role==='admin'?'admin':'student'}</span><span><b>${esc(u.name)}</b> · ${esc(u.username)}</span>${u.disabled?'<span class="err">off</span>':''}</div>
+    <div style="font-size:13.5px;color:var(--pencil)">${u.hasPassword?`${u.today} of ${u.daily} AI requests today${u.lastSeen?` · last saved ${esc(new Date(u.lastSeen).toLocaleString())} from ${esc(u.device||'a device')}`:' · no progress saved yet'}`:'Invite not accepted yet'}</div>
+    <div class="row" style="flex-wrap:wrap">${u.username===AUTH.user.username?'':`<button class="act ghost small" data-ad-toggle="${esc(u.username)}" data-to="${u.disabled?'0':'1'}">${u.disabled?'Turn on':'Turn off'}</button>`}<button class="act ghost small" data-ad-reset="${esc(u.username)}">${u.hasPassword?'New invite (reset password)':'New invite'}</button><button class="act ghost small" data-ad-cap="${esc(u.username)}" data-daily="${u.daily}">Change cap</button>${u.username===AUTH.user.username?'':`<button class="act danger small" data-ad-del="${esc(u.username)}">Delete</button>`}</div></div>`).join('')||'<p class="empty">No accounts yet.</p>'}`;}
+function inviteCard(inv,u){const link=inv.link;const body=`Hi ${u.name},\n\nHere is your login for the study platform. Open this link and choose a password:\n\n${link}\n\nYour username is ${u.username}. The link works until ${inv.expires}.\n\nChris`;const mail='mailto:?subject='+encodeURIComponent('Your study platform login')+'&body='+encodeURIComponent(body);
+  return `<div class="good"><b>${esc(u.name)}</b> — username <b>${esc(u.username)}</b><br><span class="mono" style="word-break:break-all;font-size:13px">${esc(link)}</span><div class="row" style="margin-top:8px"><button class="act ghost small" data-copy-link="${esc(link)}">Copy link</button><a class="act ghost small" style="text-align:center;text-decoration:none;display:block" href="${mail}">Email invite</a></div><p class="sub" style="margin-top:6px">Works until ${esc(inv.expires)}, once.</p></div>`;}
+function showSection(id){document.querySelectorAll('main>section').forEach(x=>x.classList.toggle('hide',x.id!==id));}
+function renderAll(){renderHeader();const na=document.getElementById('navAdmin');if(na)na.classList.toggle('hide',!(AUTH.user&&AUTH.user.role==='admin'));
+  if(AUTH_MODE&&!AUTH.user){showSection('v-login');renderLogin();return;}
+  if(!S){document.querySelectorAll('main>section').forEach(s=>s.classList.toggle('hide',s.id!=='v-setup'));renderSetup();return;}renderToday();renderRooms();renderExam();renderProg();if(view==='admin')renderAdmin();document.querySelectorAll('main>section').forEach(s=>s.classList.toggle('hide',s.id!=='v-'+view));}
 function go(v){view=v;document.querySelectorAll('nav button').forEach(x=>x.setAttribute('aria-selected',String(x.dataset.v===v)));document.querySelectorAll('main>section').forEach(s=>s.classList.toggle('hide',s.id!=='v-'+v));window.scrollTo(0,0);}
 function openRoom(id,st){UI.room=id;UI.subject=S.nodes[id].spec;UI.station=st||'lesson';UI.revealed={};UI.practice=null;UI.apr=null;UI.useGenerated=false;UI.exit=null;UI.err='';go('rooms');renderRooms();}
 async function fileToImg(file){const data=await new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result.split(',')[1]);r.onerror=()=>rej(new Error('read failed'));r.readAsDataURL(file);});return{data,media:file.type||'image/jpeg'};}
 
 /* ============ EVENTS ============ */
-document.querySelector('nav').addEventListener('click',e=>{const b=e.target.closest('button[data-v]');if(b&&S)go(b.dataset.v);});
+document.querySelector('nav').addEventListener('click',e=>{const b=e.target.closest('button[data-v]');if(!b||!S)return;if(b.dataset.v==='admin'&&!(AUTH.user&&AUTH.user.role==='admin'))return;go(b.dataset.v);if(b.dataset.v==='admin')renderAdmin();});
 document.addEventListener('change',async e=>{const t=e.target;
   if(t.dataset&&t.dataset.su){const id=t.dataset.su;if(t.checked)UI.setup.subjects.push({specId:id,options:{}});else UI.setup.subjects=UI.setup.subjects.filter(x=>x.specId!==id);UI.setup.student=document.getElementById('suName').value;renderSetup();return;}
+  if(t.dataset&&t.dataset.board){const sub=UI.setup.subjects.find(x=>specById(x.specId).subject===t.dataset.board);if(sub){sub.specId=t.value;sub.options={};}UI.setup.student=document.getElementById('suName').value;renderSetup();return;}
   if(t.dataset&&t.dataset.opt){const [sid,oid,f]=t.dataset.opt.split('|');const sub=UI.setup.subjects.find(x=>x.specId===sid);const o=specById(sid).options.find(x=>x.id===oid);if(o.choose>1){const arr=sub.options[oid]||[];sub.options[oid]=t.checked?[...new Set([...arr,f])]:arr.filter(x=>x!==f);}else sub.options[oid]=f;return;}
   if(t.id==='esPhoto'){const files=[...(t.files||[])];const E=UI.essay;E.photos=E.photos||[];for(const f of files){try{E.photos.push(await fileToImg(f));}catch(e){}}renderRooms();return;}
   if(t.id==='mkPhoto'){const files=[...(t.files||[])];const M=UI.mark;for(const f of files){try{M.photos.push(await fileToImg(f));}catch(e){}}renderRooms();return;}});
 document.addEventListener('click',async e=>{const t=e.target;
   if(t.id==='suGo'){UI.setup.student=document.getElementById('suName').value.trim();UI.setup.examYear=+document.getElementById('suYear').value;const bad=setupValid();if(bad){document.getElementById('suErr').innerHTML=`<p class="err">${esc(bad)}</p>`;return;}
-    if(S)mergeSetup(JSON.parse(JSON.stringify(UI.setup)));else{S=newState(UI.setup,SPECS);S.created=TODAY;if(PENDING_ROUTE){S.tutor=PENDING_ROUTE;PENDING_ROUTE=null;}}presetBoundaries();UI.subject=S.setup.subjects[0].specId;UI.room=null;await mirrorMaths();await save();go('today');renderAll();return;}
+    if(S)mergeSetup(JSON.parse(JSON.stringify(UI.setup)));else{S=newState(UI.setup,SPECS);S.created=TODAY;if(!AUTH_MODE&&PENDING_ROUTE){S.tutor=PENDING_ROUTE;PENDING_ROUTE=null;}}presetBoundaries();UI.subject=S.setup.subjects[0].specId;UI.room=null;await mirrorMaths();await save();go('today');renderAll();return;}
+  if(t.dataset&&t.dataset.level){if(t.disabled||!Object.values(SPECS).some(sp=>sp.level===t.dataset.level))return;UI.setup.level=t.dataset.level;UI.setup.subjects=UI.setup.subjects.filter(x=>specById(x.specId).level===t.dataset.level);UI.setup.student=document.getElementById('suName').value;renderSetup();return;}
   if(t.id==='suCancel'){go('today');renderAll();return;}
+  /* ---- sign in, invites, account ---- */
+  if(t.id==='loginGo'){const u=document.getElementById('lgUser').value.trim(),pw=document.getElementById('lgPass').value;const out=document.getElementById('lgErr');if(!u||!pw){out.innerHTML='<p class="err">Enter your username and password.</p>';return;}out.innerHTML='<p class="sub">Signing in…</p>';
+    try{const r=await api('/auth/login',{method:'POST',body:{username:u,password:pw}});AUTH={user:r.user,token:r.token};try{await rawSet(SESSION_KEY,r.token);}catch(e){}await loadForUser();if(S)UI.subject=S.setup.subjects[0].specId;go('today');renderAll();}
+    catch(e){out.innerHTML=`<p class="err">${esc(e.message)}</p>`;}return;}
+  if(t.id==='toLogin'){clearHash();renderAll();return;}
+  if(t.id==='invGo'){const p1=document.getElementById('invPass').value,p2=document.getElementById('invPass2').value,out=document.getElementById('invErr');if(p1.length<8){out.innerHTML='<p class="err">Use at least 8 characters.</p>';return;}if(p1!==p2){out.innerHTML='<p class="err">The two passwords don’t match.</p>';return;}out.innerHTML='<p class="sub">Setting up…</p>';
+    try{const r=await api('/auth/invite',{method:'POST',body:{token:t.dataset.token,password:p1}});AUTH={user:r.user,token:r.token};try{await rawSet(SESSION_KEY,r.token);}catch(e){}clearHash();await loadForUser();if(S)UI.subject=S.setup.subjects[0].specId;go('today');renderAll();}
+    catch(e){out.innerHTML=`<p class="err">${esc(e.message)}</p>`;}return;}
+  if(t.id==='signOut'){if(syncState.pending){syncState.timer&&clearTimeout(syncState.timer);syncState.timer=null;await pushSync();}try{await api('/auth/logout',{method:'POST'});}catch(e){}await signedOut();return;}
+  if(t.id==='pwGo'){const out=document.getElementById('pwOut');try{await api('/auth/password',{method:'POST',body:{current:document.getElementById('pwCur').value,next:document.getElementById('pwNew').value}});out.innerHTML='<div class="good">Password changed.</div>';document.getElementById('pwCur').value='';document.getElementById('pwNew').value='';}catch(e){out.innerHTML=`<p class="err">${esc(e.message)}</p>`;}return;}
+  /* ---- admin ---- */
+  if(t.id==='adCreate'){const name=document.getElementById('adName').value.trim(),username=document.getElementById('adUser').value.trim().toLowerCase(),daily=document.getElementById('adDaily').value,out=document.getElementById('adOut');if(!name||!username){out.innerHTML='<p class="err">Give the student a name and a username.</p>';return;}out.innerHTML='<p class="sub">Creating…</p>';
+    try{const r=await api('/manage/users',{method:'POST',body:{name,username,daily}});out.innerHTML=inviteCard(r.invite,r.user);document.getElementById('adName').value='';document.getElementById('adUser').value='';const list=document.getElementById('adList');const fresh=await api('/manage/users');UI.adminSite=fresh.site||'';list.innerHTML='';renderAdminList(fresh);}
+    catch(e){out.innerHTML=`<p class="err">${esc(e.message)}</p>`;}return;}
+  if(t.dataset&&t.dataset.copyLink){try{await navigator.clipboard.writeText(t.dataset.copyLink);t.textContent='Copied';}catch(e){prompt('Copy this link:',t.dataset.copyLink);}return;}
+  if(t.dataset&&t.dataset.adToggle){try{await api('/manage/users/'+encodeURIComponent(t.dataset.adToggle),{method:'PATCH',body:{disabled:t.dataset.to==='1'}});renderAdmin();}catch(e){alert(e.message);}return;}
+  if(t.dataset&&t.dataset.adReset){try{const r=await api('/manage/users/'+encodeURIComponent(t.dataset.adReset)+'/invite',{method:'POST'});const d=await api('/manage/users');const u=d.users.find(x=>x.username===t.dataset.adReset);document.getElementById('adOut').innerHTML=inviteCard(r.invite,u||{name:t.dataset.adReset,username:t.dataset.adReset});window.scrollTo(0,0);}catch(e){alert(e.message);}return;}
+  if(t.dataset&&t.dataset.adCap){const v=prompt('AI requests a day for '+t.dataset.adCap+':',t.dataset.daily);if(v===null)return;try{await api('/manage/users/'+encodeURIComponent(t.dataset.adCap),{method:'PATCH',body:{daily:v}});renderAdmin();}catch(e){alert(e.message);}return;}
+  if(t.dataset&&t.dataset.adDel){if(!confirm('Delete '+t.dataset.adDel+'? Their account and saved progress go with it.'))return;try{await api('/manage/users/'+encodeURIComponent(t.dataset.adDel),{method:'DELETE'});renderAdmin();}catch(e){alert(e.message);}return;}
   if(t.id==='suEdit'){UI.setup=JSON.parse(JSON.stringify(S.setup));document.querySelectorAll('main>section').forEach(x=>x.classList.toggle('hide',x.id!=='v-setup'));renderSetup();return;}
   if(!S)return;
   const tick=t.closest('.tick');if(tick){const i=+tick.dataset.step;const arr=S.doneToday[TODAY]||(S.doneToday[TODAY]=[]);const sess=buildSession(S,SPECS,TODAY);const at=arr.indexOf(i);if(at>=0){arr.splice(at,1);addHours(-sess.steps[i].minutes/60);}else{arr.push(i);addHours(sess.steps[i].minutes/60);}await save();renderHeader();renderToday();return;}
@@ -304,7 +379,7 @@ document.addEventListener('click',async e=>{const t=e.target;
   if(t.id==='rpSave'){const sp=specById(UI.subject||S.setup.subjects[0].specId);const comp=document.getElementById('rpComp').value;const score=+document.getElementById('rpScore').value,total=+document.getElementById('rpTotal').value;if(!(score>=0)||!(total>0))return;S.papers.push({spec:sp.id,component:comp,series:document.getElementById('rpSeries').value.trim(),date:TODAY,score,total});addHours((sp.components.find(c=>c.id===comp)?.minutes||90)/60);await save();renderAll();return;}
   if(t.id==='bndSave'){const sp=specById(UI.subject||S.setup.subjects[0].specId);const b={};document.querySelectorAll('[data-bnd]').forEach(i=>b[i.dataset.bnd]=+i.value);S.boundaries[sp.id]=b;await save();renderAll();return;}
   if(t.id==='repCopy'){try{await navigator.clipboard.writeText(document.getElementById('repText').textContent);t.textContent='Copied';}catch(e){}return;}
-  if(t.id==='tuSave'){const u=document.getElementById('tuUrl').value.trim(),pw=document.getElementById('tuPass').value;if(u&&!/^https:\/\//.test(u)){document.getElementById('apiOut').innerHTML='<p class="err">The proxy address must start with https://</p>';return;}S.tutor=u?{url:u.replace(/\/$/,''),pass:pw}:null;await save();renderAll();return;}
+  if(t.id==='tuSave'&&!AUTH_MODE){const u=document.getElementById('tuUrl').value.trim(),pw=document.getElementById('tuPass').value;if(u&&!/^https:\/\//.test(u)){document.getElementById('apiOut').innerHTML='<p class="err">The proxy address must start with https://</p>';return;}S.tutor=u?{url:u.replace(/\/$/,''),pass:pw}:null;await save();renderAll();return;}
   if(t.id==='tuClear'){S.tutor=null;await save();renderAll();return;}
   if(t.id==='apiTest'){const out=document.getElementById('apiOut');out.innerHTML='<p class="sub">Testing…</p>';const t0=Date.now();try{const txt=await callClaude([{type:'text',text:'Reply with exactly the single word OK.'}],10,1);out.innerHTML=`<div class="good">Connected in ${Date.now()-t0} ms: ${esc(txt)}</div>`;}catch(e){out.innerHTML=`<div class="remedy"><b>Failed:</b> ${esc(e.message)}<br>Where this is open: ${esc((typeof location!=='undefined'&&location.hostname)||'file')} · ${storeMode==='cloud'?'artifact storage available':'artifact storage not available'} · route: ${(S&&S.tutor&&S.tutor.url)?'your proxy':'built-in'}</div>`;}return;}
   if(t.id==='syncNow'){const out=document.getElementById('syncOut');out.innerHTML='<p class="sub">Backing up\u2026</p>';syncState.pending=true;await pushSync();out.innerHTML=syncState.err?`<p class="err">${esc(syncState.err)}</p>`:'<div class="good">Backed up.</div>';return;}
@@ -318,7 +393,12 @@ document.addEventListener('click',async e=>{const t=e.target;
   if(t.id==='reset'){if(!confirm('This clears all progress in this platform. Copy a backup first?'))return;UI.setup={subjects:[]};S=null;try{await rawSet(KEY,'');}catch(e){}renderAll();return;}
 });
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'&&syncState.pending){if(syncState.timer){clearTimeout(syncState.timer);syncState.timer=null;}pushSync();}});
-(async function(){await load();applySetupLink();if(S){UI.subject=S.setup.subjects[0].specId;}renderAll();})();
+(async function(){storeMode=await detectStore();
+  if(AUTH_MODE){const inv=hashParam('invite');if(inv){await renderInvite(inv);return;}
+    const tok=await rawGet(SESSION_KEY);if(tok){AUTH.token=tok;try{AUTH.user=(await api('/auth/me')).user;}catch(e){AUTH={user:null,token:null};}}
+    if(AUTH.user)await loadForUser();}
+  else{await load();applySetupLink();}
+  if(S){UI.subject=S.setup.subjects[0].specId;}renderAll();})();
 </script>
 </body>
 </html>

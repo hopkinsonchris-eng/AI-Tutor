@@ -10,9 +10,14 @@ ALLOWED_ORIGIN = "https://studyplatform.co.uk"
 # Where the app lives, used for the one-tap setup links the admin panel builds.
 SITE_ORIGIN = "https://studyplatform.co.uk"
 
-# Admin panel (/admin). It stays off until BOTH of these are set AND a Cloudflare
-# Access policy sits in front of /admin* — the Worker verifies the Access token's
-# signature, issuer, audience and expiry on every request, and refuses without one.
+# The account the recovery console (/admin) can mint an invite for. Adding students,
+# invites and caps all happen inside the app, under its Admin tab.
+ADMIN_USERNAME = "chris"
+ADMIN_NAME = "Chris"
+
+# Recovery console (/admin). Off until BOTH of these are set AND a Cloudflare Access
+# policy sits in front of /admin* — the Worker verifies the Access token's signature,
+# issuer, audience and expiry on every request, and refuses without one.
 ACCESS_TEAM_DOMAIN = "hoppyc.cloudflareaccess.com"
 ACCESS_AUD = "b77150c77c9a5256b929ff1708b80cc7ee7bf334a7c45b237ed690cc2427cf08"
 

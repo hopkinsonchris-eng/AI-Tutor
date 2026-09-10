@@ -15,19 +15,26 @@ src/
   specs/               one file per qualification — components, weights, AOs, command words, topics, key ideas
   authored/            hand-authored content (maths: 19 lessons, 262 questions, exit tickets, dojo, verified links)
 worker/
-  index.js             Cloudflare Worker: per-student keys, daily caps, an admin panel for issuing keys,
-                       progress sync, and the forward to Anthropic with your API key
+  index.js             Cloudflare Worker: accounts, sessions, invites, daily caps, progress, the admin API,
+                       and the forward to Anthropic with your API key
   wrangler.toml
-tests/                 spec validator, engine, generator, worker (keys, caps, sync, Access-guarded admin),
+tests/                 spec validator, engine, generator, worker (accounts, sessions, invites, caps, admin),
                        and app-level smoke tests (a DOM stub drives the real handlers)
+config.json            where the app talks to (the tutor Worker); empty builds the route-less app
 build.js               assembles dist/index.html
 ```
 
 `npm test` runs everything and builds. `npm run serve` builds and serves locally.
 
-## How the AI route works
+## How it works on your site
 
-The app talks to `/v1/messages`. Inside claude.ai (as a published artifact) that call is proxied by Claude on the user's plan. On your own site, the user enters the **Tutor route** under *Progress → Tutor connection*: your Worker's address and their personal key. Every AI call then goes through the Worker, which adds your Anthropic API key server-side. The key never reaches the browser.
+The site opens on a sign-in screen. A student signs in with a username and password, and everything after that -- the tutor, their progress, the admin tab -- is keyed to that sign-in. Progress is saved to the Worker as they go and cached on the device, so signing in on another device picks up where they left off.
+
+The Worker holds your Anthropic API key and forwards each request under the student's session, counting it against their daily cap. The key never reaches a browser.
+
+Accounts are created from the **Admin** tab inside the app, which only an admin sees. Creating one gives you an invite link; the student opens it, chooses a password, and is in. There is no self-signup and no email sending -- you pass the link on however you like (the tab offers a prefilled email).
+
+Built with an empty `tutorUrl` in `config.json`, the app has no sign-in and talks to `/v1/messages` directly -- the shape it had when published inside claude.ai.
 
 ## Deploy on Cloudflare from GitHub
 
@@ -42,26 +49,18 @@ Cloudflare dashboard → **Workers & Pages → Create → Pages → Connect to G
 - Build output directory: `dist`
 Every push to `main` redeploys. Attach your domain under *Custom domains*.
 
-### 3. Worker (the proxy)
-Two routes. **Dashboard:** *Workers & Pages → Create → Create Worker*, paste `worker/index.js`, deploy, then *Settings → Variables and Secrets*:
-- `ANTHROPIC_API_KEY` — **secret** — from console.anthropic.com (set a monthly spend limit there first)
-- `USER_KEYS` — **secret** — JSON mapping key → user, e.g. `{"granite-otter-42":{"name":"Matthew","daily":200}}`
-- `ALLOWED_ORIGIN` — text — `https://your-domain` (exact, no trailing slash)
-Optional but recommended: *Settings → Bindings → KV namespace*, variable `USAGE` — enforces the per-user daily caps and keeps counts.
-
-**Or with Wrangler** from `worker/`: `npx wrangler deploy`, then `npx wrangler secret put ANTHROPIC_API_KEY` and `npx wrangler secret put USER_KEYS`.
+### 3. Worker (the tutor service)
+Deployed from `worker/` (see *docs/DEPLOY.md* for the Git route). Values in `worker/wrangler.toml`: `ALLOWED_ORIGIN` and `SITE_ORIGIN` (your site, exact), `ADMIN_USERNAME`, and the two Cloudflare Access values for the recovery console. One secret, set in the dashboard: `ANTHROPIC_API_KEY` (set a spend limit at console.anthropic.com first). One KV namespace bound as `USAGE` -- accounts, sessions, invites, progress and usage counts all live there.
 
 Health check: open the Worker URL in a browser → `{"ok":true,"service":"tutor-proxy"}`.
 
-### 4. Users
-Issue keys from the panel at `<worker>/admin` — put a Cloudflare Access policy in front of it first, or it stays off (see *docs/DEPLOY.md*). The panel gives each student a setup link that fills in the tutor route in one tap; failing that they enter the Worker address and their key under *Progress → Tutor connection → Tutor route*, then *Test the connection*.
+### 4. Your account, then theirs
+Put a Cloudflare Access policy in front of `/admin*` on the Worker (your email only). Open `<worker>/admin`, sign in through Access, and press the button: it mints an invite for the admin account named in `ADMIN_USERNAME`. Open that link on the site, choose a password, and you are signed in as admin -- the recovery console is also how you reset your own password if you ever forget it.
 
-Progress is stored in the browser and, once a route is set, copied to the Worker so a student can carry on from another device: pushed automatically, pulled on request from *Progress → Tutor backup*. `Back up and restore` under Progress still gives a copy-paste backup.
-
-Turn a key off or delete it from the panel — it takes effect on the student's next request. Usage today: `GET <worker>/usage?key=<their key>`.
+Then, in the app, **Admin → Add a student**: name, username, requests a day. Copy the invite link or press *Email invite*. The student opens it, chooses a password, picks their level, subjects and boards, and builds their rooms. Turn an account off, delete it, change its cap, or mint a fresh invite (which resets the password) from the same tab.
 
 ### Costs
-Sonnet 5 at API rates ($2/$10 per million tokens in/out): coach turn well under 1p, lesson ≈ 2–3p, essay marked from photos ≈ 7–10p. One active student ≈ £3–10/month. Your console spend limit — or your prepaid credit balance with auto-reload off — is the ceiling.
+Sonnet 5 at API rates ($2/$10 per million tokens in/out): coach turn well under 1p, lesson ≈ 2–3p, essay marked from photos ≈ 7–10p. One active student ≈ £3–10/month, and each account has a daily cap. Your console spend limit — or your prepaid credit balance with auto-reload off — is the ceiling.
 
 ## Extending
 

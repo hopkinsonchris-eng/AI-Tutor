@@ -14,7 +14,7 @@ SITE_ORIGIN = "https://studyplatform.co.uk"
 # Access policy sits in front of /admin* — the Worker verifies the Access token's
 # signature, issuer, audience and expiry on every request, and refuses without one.
 ACCESS_TEAM_DOMAIN = "hoppyc.cloudflareaccess.com"
-ACCESS_AUD = "952d8ea1-a06f-4625-8e59-cd82504e4d45"
+ACCESS_AUD = "b77150c77c9a5256b929ff1708b80cc7ee7bf334a7c45b237ed690cc2427cf08"
 
 # Per-student daily caps, issued keys, and synced progress all live here.
 [[kv_namespaces]]

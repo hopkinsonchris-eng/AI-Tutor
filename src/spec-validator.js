@@ -18,7 +18,7 @@ function validateSpec(spec) {
   const comps = Array.isArray(spec.components) ? spec.components : [];
   if (!comps.length) bad('components: at least one is required');
   const w = comps.reduce((a, c) => a + (Number(c.weight) || 0), 0);
-  if (comps.length && w !== 100) bad(`components: weights must sum to 100, they sum to ${w}`);
+  if (comps.length && Math.abs(w - 100) > 1) bad(`components: weights must sum to 100 (the document's own percentages, within 1), they sum to ${Math.round(w * 100) / 100}`);
   for (const c of comps) {
     if (!c.id || !c.name) bad(`component "${c.id || '?'}": needs id and name`);
     if (!(c.marks > 0)) bad(`component "${c.id}": marks must be > 0`);

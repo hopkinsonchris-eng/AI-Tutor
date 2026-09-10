@@ -13,7 +13,7 @@ tone — the content is written in the board's own terms, not paraphrased.
   firstExam: 2018,
   essaySubject: true,          // essay family only
 
-  components: [                // every paper, weights sum to exactly 100
+  components: [                // every paper, weights are the document's own percentages and sum to 100 within rounding
     { id: 'C1', name: 'Physical systems', paperCode: 'H481/01', marks: 66, weight: 22, minutes: 90,
       sections: ['A: Landscape systems (the chosen option)', 'B: Earth’s life support systems'],
       resourceBooklet: true },

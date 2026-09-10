@@ -276,3 +276,13 @@ mismatch either fails or replaces the wrong Worker.
 hand in the dashboard, so set `ALLOWED_ORIGIN` and the KV binding in the file.
 Secrets live outside the repo and survive deploys, so set those in the dashboard
 once.
+
+**The first real build (AQA Combined Science 8464, 10 Sep).** 34 topics, 416 key ideas, 52 minutes, and
+the judge scored it 0.4: every content statement was there in the board's wording, but the draft
+invented paper codes the document never prints, rounded six 16.7% papers to 17/16, split single
+statements into "a/b" codes, appended "HT" to codes, listed the 21 required practicals twice (inside
+their topics and again in three aggregate "RP-" topics), and put apparatus in caseStudies that the
+specification does not mention. Prompt version 2026-09-10.4 forbids each of these by name, the
+validator accepts the document's own percentages within rounding, and the science family rule now
+says a practical appears once, under its content statement, with only what the document lists.
+Reject a 0.4 build from the review queue and press Rebuild once the new Worker is deployed.

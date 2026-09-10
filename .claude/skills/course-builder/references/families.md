@@ -36,7 +36,7 @@ essaySubject: false. Mark style: points.
 1. Marking is by points: markConventions.style = "points". Extended-response questions exist and are levels-marked; describe them in markConventions.summary and give their shapes in essayShapes (a 6-mark and, at A level, a 9- or 15-mark shape) — so essayShapes is non-empty even though essaySubject is false.
 2. Command words follow the board’s published science list: Describe, Explain, Compare, Evaluate, Calculate, Determine, Suggest, Justify, Predict — include the mathematical ones.
 3. Each key idea pairs the content statement with what the student must be able to do with it: idea = the concept, content = the specification statement plus the calculation, equation or mechanism it entails.
-4. Every required practical (RP / PAG / core practical) in the specification is its own topic or a clearly labelled key idea within the topic it belongs to, with the technique, the variables, and the AO3 skills it assesses. Put the practical’s apparatus and method summary in caseStudies.
+4. Every required practical (RP / PAG / core practical) appears exactly once: as a key idea inside the content topic the document lists it under, coded with that content statement’s own number and named “Required practical N: title” as the document names it — never as an aggregate practicals topic as well. Its content is what the document says: the activity and the AT / WS / MS skills it lists against it. caseStudies holds the practical titles for the topic, nothing the document does not state (no apparatus or methods from outside it).
 5. Include a topic for the working-scientifically / practical-skills strand if the specification assesses it separately, mapped to the component that examines it.
 ```
 

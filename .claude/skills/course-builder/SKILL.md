@@ -46,7 +46,9 @@ progress is keyed to topic ids — and is never applied without the admin's appr
 
 ## Never
 
-- Never build from memory when the document is available. Codes and weightings come from the PDF.
+- Never build from memory when the document is available. Codes and weightings come from the PDF, copied
+  character for character: no invented sub-codes, no tier suffixes, no aggregate topics, no paper codes the
+  document does not print, and nothing in caseStudies the document does not say.
 - Never publish a spec the validator refuses, and never weaken the validator to let one through.
 - Never rename a topic id in a published course as part of an update; add the new topic and leave
   the old one in place until the admin approves the proposal.

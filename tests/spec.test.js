@@ -18,6 +18,7 @@ console.log(`key ideas indexed: ${total}`);
 const good=JSON.parse(JSON.stringify(Object.values(require(path.join(dir,'edexcel-9ma0.js')))[0]));
 const mut=(fn)=>{const s=JSON.parse(JSON.stringify(good));fn(s);return validateSpec(s);};
 let r=mut(s=>{s.components[0].weight+=5;});ok('V1 weights off 100 are refused and named',!r.ok&&/sum to 100/.test(r.problems[0]),r.problems[0]);
+r=mut(s=>{s.components=[1,2,3,4,5,6].map(i=>({id:'P'+i,name:'Paper '+i,marks:70,weight:16.7,minutes:75}));s.topics.forEach((t,i)=>{t.component='P'+(i%6+1);});});ok('V14 six papers at the document\'s own 16.7% each are accepted',r.ok,r.problems.join('|'));
 r=mut(s=>{s.topics[0].ideas=[s.topics[0].ideas[0]];});ok('V2 a topic with one idea is refused',!r.ok&&/at least two key ideas/.test(r.problems.join()));
 r=mut(s=>{s.topics[0].ideas[0].content='short';});ok('V3 thin content is refused',!r.ok&&/too thin/.test(r.problems.join()));
 r=mut(s=>{s.topics[1].id=s.topics[0].id;});ok('V4 duplicate topic ids are refused',!r.ok&&/duplicated/.test(r.problems.join()));

@@ -1,31 +1,21 @@
-/* Tutor service tests: accounts, sessions, invites, the proxy, progress, the in-app admin API,
-   and the Access-guarded recovery console. The Worker is an ES module and the suite is CommonJS,
-   so it is loaded as text with the one export rewritten — the deployed file is never touched. */
-const fs = require('fs'), vm = require('vm');
+/* Tutor service tests: accounts, sessions, invites, the proxy, progress, the in-app admin API, the
+   Access-guarded recovery console, and courses (catalogue, builds, coalescing, retract, the review
+   queue, the cron). The Worker is ES modules deployed by wrangler; here they are loaded as text with
+   their imports satisfied from stubs (tests/_load.js). The deployed files are never touched. */
+const fs = require('fs'), path = require('path');
+const { loadModule, kv, inlineStep } = require('./_load.js');
+const validator = require('../src/spec-validator.js'), families = require('../src/families.js');
+const CATALOGUE = require('../data/catalogue.json');
 let pass = 0; const fails = [];
 const ok = (label, cond, detail = '') => cond ? pass++ : fails.push(label + (detail ? ' — ' + detail : ''));
 
-const src = fs.readFileSync(__dirname + '/../worker/index.js', 'utf8').replace('export default {', 'module.exports = {');
-const sandbox = {
-  module: { exports: {} }, console, crypto, fetch: (...a) => sandbox.__fetch(...a),
-  Response, Request, Headers, URL, URLSearchParams, TextEncoder, TextDecoder,
-  atob, btoa, Uint8Array, Date, Math, JSON, parseInt, String, Number, Object, Array, Error, Promise, RegExp,
-};
-sandbox.globalThis = sandbox;
-vm.createContext(sandbox);
-vm.runInContext(src, sandbox);
-const worker = sandbox.module.exports;
+const builder = loadModule(path.join(__dirname, '..', 'worker', 'builder.js'), { '../src/spec-validator.js': validator, '../src/families.js': families });
+class WorkflowEntrypoint { constructor(ctx, env) { this.ctx = ctx; this.env = env; } }
+const loaded = loadModule(path.join(__dirname, '..', 'worker', 'index.js'), { 'cloudflare:workers': { WorkflowEntrypoint }, './builder.js': builder.exports, '../data/catalogue.json': { default: CATALOGUE } });
+const worker = loaded.exports.default;
+const sandbox = loaded.sandbox;
+builder.sandbox.__fetch = (...a) => sandbox.__fetch(...a);
 
-function kv() {
-  const m = new Map();
-  return {
-    async get(k, type) { const v = m.get(k); if (v === undefined) return null; return type === 'json' ? JSON.parse(v) : v; },
-    async put(k, v) { m.set(k, String(v)); },
-    async delete(k) { m.delete(k); },
-    async list({ prefix }) { return { keys: [...m.keys()].filter(k => k.startsWith(prefix)).map(name => ({ name })) }; },
-    _map: m,
-  };
-}
 let upstreamSeen = null;
 const req = (path, init = {}) => new Request('https://tutor.example.com' + path, init);
 const J = (method, body, extra = {}) => ({ method, body: JSON.stringify(body), headers: { 'Content-Type': 'application/json', ...extra } });
@@ -206,6 +196,172 @@ const baseEnv = () => ({ ANTHROPIC_API_KEY: 'sk-ant-test', ALLOWED_ORIGIN: 'http
     await worker.fetch(req('/auth/invite', J('POST', { token: b.invite.link.split('#invite=')[1], password: 'hash me please' })), e);
     return e.USAGE.get('user:chris', 'json'); })();
   ok('W32 passwords are stored as salted PBKDF2 hashes, never plain', rec.pw && rec.pw.salt && rec.pw.hash && rec.pw.iter === 100000 && !JSON.stringify(rec).includes('hash me please'));
+
+
+  /* ================= courses: catalogue, builds, coalescing, retract, review queue, cron ================= */
+  {
+    /* an admin and a student, the short way */
+    const e = baseEnv(); e.ACCESS_TEAM_DOMAIN = TEAM; e.ACCESS_AUD = AUD;
+    const boot2 = await (await worker.fetch(req('/admin/bootstrap', { method: 'POST', headers: await A() }), e)).json();
+    const adm = await (await worker.fetch(req('/auth/invite', J('POST', { token: boot2.invite.link.split('#invite=')[1], password: 'admin pass phrase' })), e)).json();
+    const ADM2 = bearer(adm.token);
+    const mk = await (await worker.fetch(req('/manage/users', J('POST', { username: 'kitty', name: 'Kitty', daily: 200 }, ADM2)), e)).json();
+    const stu = await (await worker.fetch(req('/auth/invite', J('POST', { token: mk.invite.link.split('#invite=')[1], password: 'kitty pass phrase' })), e)).json();
+    const STU2 = bearer(stu.token);
+
+    /* canned model answers and a Workflow binding that runs the pipeline when the test says so */
+    const idea = (c) => ({ code: c, q: 'What does ' + c + ' require?', idea: 'Idea ' + c, content: 'The specification statement for ' + c + ', in the board\'s own words, with what the student must do.' });
+    let judgeScore = 0.9;
+    const cannedAI = () => ({
+      async outline({ subject, board, code, level }) { return { board, subject, code, level, version: 'Issue 2 (2019)', firstExam: 2017, essaySubject: false, family: 'science',
+        components: [{ id: 'P1', name: 'Paper 1', paperCode: code + '/1', marks: 91, weight: 50, minutes: 120, nea: false, coversAll: false, sections: [] }, { id: 'P2', name: 'Paper 2', paperCode: code + '/2', marks: 91, weight: 50, minutes: 120, nea: false, coversAll: false, sections: [] }],
+        options: [], ao: [{ id: 'AO1', label: 'K', text: 'Knowledge.' }, { id: 'AO2', label: 'A', text: 'Application.' }],
+        markConventions: { style: 'points', summary: 'Points.', commandWords: ['Describe', 'Explain', 'Compare', 'Evaluate', 'Calculate'].map(w => ({ word: w, means: w + ' demands…' })), essayShapes: [{ marks: 6, minutes: 8, structure: 'Levels-marked.' }] },
+        topics: [{ id: '3.1', component: 'P1', option: null, name: 'Proof' }, { id: '3.2', component: 'P2', option: null, name: 'Algebra and functions' }] }; },
+      async topic({ topic }) { return { ideas: [idea(topic.id + '.1'), idea(topic.id + '.2')], caseStudies: ['RP1'], skills: [] }; },
+      async judge() { return { score: judgeScore, coverage: 0.9, fidelity: 0.9, options: 1, familyFit: 0.9, invented: [], missing: judgeScore < 0.8 ? ['3.3 Exchange'] : [], changes: [], notes: 'ok' }; },
+      async locate() { return { url: 'https://evil.example/not-allowed.pdf' }; },
+      async docChanges() { return { changes: ['Issue 2 corrects a mark total.'], notes: '' }; },
+    });
+    let headEtag = '"v1"';
+    const head = async (url) => ({ ok: true, status: 200, contentType: 'application/pdf', etag: headEtag, lastModified: 'Mon, 01 Sep 2025 00:00:00 GMT', length: 1000, url });
+    const pending = [];
+    e.COURSE_BUILDER = { created: [], async create({ id, params }) { this.created.push(id); pending.push(() => builder.exports.runBuild(params, { kv: e.USAGE, step: inlineStep(), ai: cannedAI(), head, now: () => new Date().toISOString(), boardDomains: CATALOGUE.boardDomains })); return { id }; } };
+    e.COURSE_REVIEW = { created: [], async create({ id, params }) { this.created.push(id); pending.push(() => builder.exports.runReview(params.id, { kv: e.USAGE, step: inlineStep(), ai: cannedAI(), head, now: () => new Date().toISOString(), boardDomains: CATALOGUE.boardDomains })); return { id }; } };
+    const runPending = async () => { while (pending.length) await pending.shift()(); };
+
+    r = await worker.fetch(req('/courses'), e);
+    ok('C1 the catalogue needs a session', r.status === 401);
+    r = await worker.fetch(req('/courses', { headers: STU2 }), e);
+    let cat = await r.json();
+    ok('C1 the catalogue lists every qualification with an id, both levels, and which have a verified link', cat.catalogue.length === CATALOGUE.qualifications.length && cat.catalogue.some(q => q.id === 'AQA-7357' && q.level === 'A level') && cat.catalogue.some(q => q.level === 'GCSE') && cat.catalogue.filter(q => q.hasUrl).length === 14, String(cat.catalogue.length));
+
+    r = await worker.fetch(req('/courses/build', J('POST', { level: 'A level', subject: 'Astrology', board: 'AQA' }, STU2)), e);
+    ok('C2 an unknown qualification is refused with a pointer to the admin', r.status === 404 && /catalogue/.test((await r.json()).error));
+
+    r = await worker.fetch(req('/courses/build', J('POST', { level: 'A level', subject: 'Mathematics', board: 'AQA' }, STU2)), e);
+    let b = await r.json();
+    ok('C3 a student\'s Add starts one build and gets a progress record', r.status === 202 && b.status === 'building' && b.joined === false && e.COURSE_BUILDER.created.length === 1 && /^AQA-7357-\d+$/.test(e.COURSE_BUILDER.created[0]) && b.build.total === 4, JSON.stringify(b));
+    r = await worker.fetch(req('/courses/build', J('POST', { level: 'A level', subject: 'mathematics', board: 'aqa', code: '7357' }, ADM2)), e);
+    b = await r.json();
+    ok('C4 a second Add for the same course joins the running build — no second instance (criterion 3)', r.status === 202 && b.joined === true && e.COURSE_BUILDER.created.length === 1);
+    r = await worker.fetch(req('/courses/AQA-7357/status', { headers: STU2 }), e);
+    ok('C4 the status endpoint reports the build to anyone signed in', (await r.json()).status === 'building');
+    r = await worker.fetch(req('/courses/AQA-7357/spec', { headers: STU2 }), e);
+    ok('C4 the spec is not readable until published', r.status === 404);
+
+    await runPending();
+    r = await worker.fetch(req('/courses/AQA-7357/status', { headers: STU2 }), e);
+    let st = await r.json();
+    ok('C5 when the build finishes the status is published with provenance', st.status === 'published' && st.build.done === st.build.total && st.meta.source.url && st.meta.judge.score === 0.9 && st.meta.built.promptVersion, JSON.stringify(st));
+    r = await worker.fetch(req('/courses/AQA-7357/spec', { headers: STU2 }), e);
+    const got = await r.json();
+    ok('C5 a student can read the published spec and it passes the contract', r.status === 200 && validator.validateSpec(got.spec).ok && got.spec.id === 'AQA-7357');
+    r = await worker.fetch(req('/courses/build', J('POST', { level: 'A level', subject: 'Mathematics', board: 'AQA' }, STU2)), e);
+    ok('C6 Add for a published course returns it at once, no build (criterion 1)', r.status === 200 && (await r.json()).status === 'published' && e.COURSE_BUILDER.created.length === 1);
+    r = await worker.fetch(req('/courses', { headers: STU2 }), e);
+    cat = await r.json();
+    ok('C6 the catalogue now shows the course as published', cat.courses['AQA-7357'] && cat.courses['AQA-7357'].status === 'published');
+
+    r = await worker.fetch(req('/manage/courses', { headers: STU2 }), e);
+    ok('C7 a student cannot see the admin course list', r.status === 403);
+    r = await worker.fetch(req('/manage/courses', { headers: ADM2 }), e);
+    const mc = await r.json(); 
+    ok('C7 the admin course list carries full provenance and the requester', mc.courses.length === 1 && mc.courses[0].source.etag === '"v1"' && mc.courses[0].built.models.length === 3 && mc.courses[0].build.status === 'published');
+
+    /* retract / restore (criterion 7) */
+    r = await worker.fetch(req('/manage/courses/AQA-7357/retract', { method: 'POST', headers: STU2 }), e);
+    ok('C8 a student cannot retract', r.status === 403);
+    r = await worker.fetch(req('/manage/courses/AQA-7357/retract', { method: 'POST', headers: ADM2 }), e);
+    ok('C8 admin retracts', r.status === 200 && (await r.json()).meta.status === 'retracted');
+    r = await worker.fetch(req('/courses/AQA-7357/spec', { headers: STU2 }), e);
+    ok('C8 a retracted course cannot be fetched by a new student', r.status === 404);
+    r = await worker.fetch(req('/courses/build', J('POST', { level: 'A level', subject: 'Mathematics', board: 'AQA' }, STU2)), e);
+    ok('C8 and cannot be added', r.status === 409 && /withdrawn/.test((await r.json()).error));
+    r = await worker.fetch(req('/manage/courses/AQA-7357/restore', { method: 'POST', headers: ADM2 }), e);
+    r = await worker.fetch(req('/courses/AQA-7357/spec', { headers: STU2 }), e);
+    ok('C8 restore makes it readable again', r.status === 200);
+
+    /* the review queue: a doubtful build (criterion 5), approve as admin override */
+    judgeScore = 0.6;
+    r = await worker.fetch(req('/courses/build', J('POST', { level: 'GCSE', subject: 'Mathematics', board: 'AQA' }, STU2)), e);
+    ok('C9 a GCSE course builds through the same route', r.status === 202);
+    await runPending();
+    r = await worker.fetch(req('/courses/AQA-8300/status', { headers: STU2 }), e);
+    st = await r.json();
+    ok('C9 a doubtful build is in review, with a student-facing message', st.status === 'review' && /checked/i.test(st.build.message));
+    r = await worker.fetch(req('/courses/AQA-8300/spec', { headers: STU2 }), e);
+    ok('C9 and is not readable', r.status === 404);
+    r = await worker.fetch(req('/manage/reviews', { headers: ADM2 }), e);
+    let q = await r.json();
+    ok('C9 the review queue shows it with the judge\'s missing sections', q.items.some(i => i.kind === 'build' && i.id === 'AQA-8300' && i.judge.missing[0] === '3.3 Exchange'), JSON.stringify(q.items.map(i => [i.kind, i.id])));
+    r = await worker.fetch(req('/manage/reviews/AQA-8300/approve', { method: 'POST', headers: ADM2 }), e);
+    ok('C9 the admin can approve it regardless', r.status === 200 && (await r.json()).meta.status === 'published');
+    r = await worker.fetch(req('/courses/AQA-8300/spec', { headers: STU2 }), e);
+    ok('C9 and then students can read it', r.status === 200);
+    judgeScore = 0.9;
+
+    /* the monthly pass: unchanged → nothing; changed → proposal; dismiss and approve (criteria 8, 9) */
+    r = await worker.fetch(req('/manage/courses/AQA-7357/check', { method: 'POST', headers: ADM2 }), e);
+    ok('C10 check now starts a review instance', r.status === 202 && e.COURSE_REVIEW.created.length === 1);
+    await runPending();
+    r = await worker.fetch(req('/manage/reviews', { headers: ADM2 }), e);
+    q = await r.json();
+    ok('C10 an unchanged document files no proposal', !q.items.some(i => i.kind === 'proposal'));
+    headEtag = '"v2"';
+    await worker.fetch(req('/manage/courses/AQA-7357/check', { method: 'POST', headers: ADM2 }), e);
+    await runPending();
+    r = await worker.fetch(req('/manage/reviews', { headers: ADM2 }), e);
+    q = await r.json();
+    const prop = q.items.find(i => i.kind === 'proposal' && i.id === 'AQA-7357');
+    ok('C11 a changed document files a proposal with the document\'s own statement of changes', !!prop && prop.docChanges[0].includes('Issue 2') && Array.isArray(prop.changes), JSON.stringify(q.items.map(i => [i.kind, i.id])));
+    r = await worker.fetch(req('/courses/AQA-7357/spec', { headers: STU2 }), e);
+    ok('C11 the published spec is untouched while the proposal waits', r.status === 200 && (await r.json()).spec.version === 'Issue 2 (2019)');
+    r = await worker.fetch(req('/manage/reviews/AQA-7357/dismiss', { method: 'POST', headers: ADM2 }), e);
+    r = await worker.fetch(req('/manage/reviews', { headers: ADM2 }), e);
+    ok('C12 dismiss removes the proposal and records the decision', r.status === 200 && !(await r.json()).items.some(i => i.kind === 'proposal') && (await e.USAGE.list({ prefix: 'decision:AQA-7357' })).keys.length === 1);
+    await worker.fetch(req('/manage/courses/AQA-7357/check', { method: 'POST', headers: ADM2 }), e);
+    await runPending();
+    r = await worker.fetch(req('/manage/reviews/AQA-7357/approve', { method: 'POST', headers: ADM2 }), e);
+    const approved = await r.json();
+    r = await worker.fetch(req('/manage/courses', { headers: ADM2 }), e);
+    const after = (await r.json()).courses.find(c => c.id === 'AQA-7357');
+    ok('C13 approve publishes the draft and moves provenance on', r.status === 200 && approved.meta.status === 'published' && after.source.etag === '"v2"' && after.pending === false && !after.proposal, JSON.stringify(after && after.source));
+
+    /* catalogue additions and the needs-link path (criterion 10) */
+    r = await worker.fetch(req('/manage/catalogue', J('POST', { level: 'A level', subject: 'Astrology', board: 'AQA', code: '9999' }, ADM2)), e);
+    ok('C14 admin adds a qualification without a link', r.status === 200);
+    r = await worker.fetch(req('/courses/build', J('POST', { level: 'A level', subject: 'Astrology', board: 'AQA' }, STU2)), e);
+    ok('C14 a student can now request it', r.status === 202);
+    await runPending();
+    r = await worker.fetch(req('/courses/AQA-9999/status', { headers: STU2 }), e);
+    ok('C14 with no link and a located URL off the board\'s domain, it needs a link', (await r.json()).status === 'needs-link');
+    r = await worker.fetch(req('/manage/reviews', { headers: ADM2 }), e);
+    ok('C14 which the review queue shows', (await r.json()).items.some(i => i.kind === 'needs-link' && i.id === 'AQA-9999'));
+    r = await worker.fetch(req('/manage/catalogue', J('POST', { level: 'A level', subject: 'Astrology', board: 'AQA', code: '9999', specUrl: 'https://filestore.aqa.org.uk/resources/astrology/AQA-9999-SP.PDF' }, ADM2)), e);
+    r = await worker.fetch(req('/courses/build', J('POST', { level: 'A level', subject: 'Astrology', board: 'AQA' }, STU2)), e);
+    await runPending();
+    r = await worker.fetch(req('/courses/AQA-9999/status', { headers: STU2 }), e);
+    ok('C15 with a link added, the same request builds and publishes', (await r.json()).status === 'published');
+    r = await worker.fetch(req('/manage/catalogue', J('POST', { level: 'Degree', subject: 'X', board: 'AQA', code: '1' }, ADM2)), e);
+    ok('C15 a bad level is refused', r.status === 400);
+
+    /* a dead build does not block a new one */
+    await e.USAGE.put('build:OCR-H432', JSON.stringify({ id: 'OCR-H432', status: 'building', updatedAt: new Date(Date.now() - 40 * 60 * 1000).toISOString(), done: 1, total: 4 }));
+    r = await worker.fetch(req('/courses/build', J('POST', { level: 'A level', subject: 'Chemistry', board: 'OCR' }, STU2)), e);
+    ok('C16 a build record with no progress for 30 minutes is treated as dead and a new build starts', r.status === 202 && (await r.json()).joined === false);
+
+    /* the cron (criterion 8) */
+    await runPending();
+    e.COURSE_REVIEW.created.length = 0;
+    await worker.scheduled({ cron: '0 6 1 * *' }, e, {});
+    const lastRun = await e.USAGE.get('review:last-run', 'json');
+    ok('C17 the monthly cron starts one review per published course and records the run', e.COURSE_REVIEW.created.length === 4 && lastRun.courses.length === 4 && lastRun.cron === '0 6 1 * *', String(e.COURSE_REVIEW.created.length) + ' ' + JSON.stringify(lastRun));
+    await runPending();
+    r = await worker.fetch(req('/manage/reviews', { headers: ADM2 }), e);
+    const props = (await r.json()).items.filter(i => i.kind === 'proposal').map(i => i.id);
+    ok('C17 only the course whose document changed since it was built gets a proposal', props.length === 1 && props[0] === 'AQA-8300', JSON.stringify(props));
+  }
 
   console.log('PASSED: ' + pass);
   console.log('-'.repeat(50));

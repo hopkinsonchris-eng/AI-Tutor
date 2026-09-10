@@ -164,6 +164,22 @@ forgotten password is reset, since you never see passwords.
 
 ---
 
+# Courses: what to set up, and what the free plan can do
+
+The Worker's `wrangler.toml` now declares two Workflows and a Cron Trigger; a Git deploy creates all
+three. Nothing else to configure — the same `ANTHROPIC_API_KEY` secret pays for builds.
+
+- **Workflows** (free plan): 1,024 steps per instance, unlimited wall-clock per step, 100 concurrent
+  instances, 10 ms of CPU per step. A course build is 4 + topics steps; model calls are I/O and do
+  not count against CPU. If a step ever trips the CPU limit, the Workers Paid plan ($5/month) raises
+  it to 30 seconds — that is the fix, not code.
+- **Cron Triggers** (free plan): five per account; this uses one, `0 6 1 * *`.
+- **Cost**: roughly £2–4 per course at API rates, mostly the per-topic calls reading a cached copy of
+  the document. Your credit balance is still the ceiling. Builds are coalesced, capped at 40 topics,
+  and the monthly pass costs nothing for an unchanged document.
+- **Watching a build**: `GET https://tutor.your-domain/courses/<id>/status` with a session, or the
+  Admin tab. Cloudflare's dashboard also lists Workflow instances under the Worker.
+
 # How accounts work
 
 **Storage.** Everything is in the `USAGE` KV namespace:
@@ -204,9 +220,6 @@ the paid tier.
 
 ## What is still worth building
 
-- **GCSE specs.** The Level → Subject → Board picker already shows GCSE, greyed
-  until a spec file with `level: 'GCSE'` exists. Each subject is a specification
-  map, written the same way as the A-level ones.
 - **Usage over time.** Usage counts are kept for 100 days; the Admin tab could
   draw a per-student sparkline from them.
 - **Self-serve signup with an invite code**, if you ever have more students than

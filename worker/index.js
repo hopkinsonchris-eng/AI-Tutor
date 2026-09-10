@@ -43,7 +43,12 @@
  * KV binding USAGE — required.
  */
 
+import { WorkflowEntrypoint } from 'cloudflare:workers';
+import { runBuild, runReview, anthropicAI, headOf, specIdFor } from './builder.js';
+import CATALOGUE from '../data/catalogue.json';
+
 const MODELS = ['claude-sonnet-5', 'claude-haiku-4-5'];
+const BUILD_STALE_MS = 30 * 60 * 1000;   // a build record older than this with no progress is treated as dead
 const DEFAULT_DAILY = 200;
 const MAX_PROGRESS_BYTES = 1_000_000;
 const SESSION_DAYS = 30, INVITE_DAYS = 7;
@@ -64,6 +69,8 @@ export default {
       if (p === '/admin' || p.startsWith('/admin/')) return recovery(request, env, url);
       if (p.startsWith('/auth/')) return auth(request, env, url, cors);
       if (p === '/progress') return progress(request, env, cors);
+      if (p === '/courses' || p.startsWith('/courses/')) return courses(request, env, url, cors);
+      if (p.startsWith('/manage/courses') || p.startsWith('/manage/reviews') || p === '/manage/catalogue') return manageCourses(request, env, url, cors);
       if (p.startsWith('/manage/')) return manage(request, env, url, cors);
       if (request.method === 'GET') return json({ ok: true, service: 'tutor-proxy' }, 200, cors);
       if (request.method === 'POST' && (p === '/' || p === '/v1/messages')) return proxy(request, env, cors);
@@ -72,7 +79,213 @@ export default {
       return json({ error: 'server error', detail: String(e && e.message || e) }, 500, cors);
     }
   },
+
+  /* The monthly pass: one review instance per published course. Most will HEAD the document, find it
+     unchanged, and stop — no model call. */
+  async scheduled(controller, env, ctx) {
+    if (!env.USAGE || !env.COURSE_REVIEW) return;
+    const list = await env.USAGE.list({ prefix: 'spec-meta:' });
+    const started = [];
+    for (const entry of list.keys) {
+      const meta = await env.USAGE.get(entry.name, 'json');
+      if (!meta || meta.status !== 'published') continue;
+      const id = `${meta.id}-review-${Date.now()}`;
+      await env.COURSE_REVIEW.create({ id, params: { id: meta.id } });
+      started.push(meta.id);
+    }
+    await env.USAGE.put('review:last-run', JSON.stringify({ at: new Date().toISOString(), cron: controller && controller.cron, courses: started }));
+  },
 };
+
+/* ---------- durable execution: the Workflow classes wrap the pipeline ---------- */
+
+function builderDeps(env, step) {
+  return { kv: env.USAGE, step, ai: anthropicAI(env), head: headOf, now: () => new Date().toISOString(), boardDomains: CATALOGUE.boardDomains };
+}
+export class CourseBuilder extends WorkflowEntrypoint {
+  async run(event, step) { return runBuild(event.payload, builderDeps(this.env, step)); }
+}
+export class CourseReview extends WorkflowEntrypoint {
+  async run(event, step) { return runReview(event.payload.id, builderDeps(this.env, step)); }
+}
+
+/* ---------- courses: what students see and ask for ---------- */
+
+async function catalogueEntries(env) {
+  const extra = (await env.USAGE.get('catalogue:extra', 'json')) || [];
+  const byId = {};
+  for (const q of [...CATALOGUE.qualifications, ...extra]) byId[specIdFor(q.board, q.code)] = { ...byId[specIdFor(q.board, q.code)], ...q, id: specIdFor(q.board, q.code) };
+  return Object.values(byId);
+}
+async function courseState(env, id) {
+  const meta = await env.USAGE.get(`spec-meta:${id}`, 'json');
+  const build = await env.USAGE.get(`build:${id}`, 'json');
+  const stale = build && build.status === 'building' && Date.now() - Date.parse(build.updatedAt || 0) > BUILD_STALE_MS;
+  const status = meta && meta.status === 'published' ? 'published' : meta && meta.status === 'retracted' ? 'retracted' : meta && meta.status === 'review' ? 'review'
+    : build && build.status === 'building' ? (stale ? 'none' : 'building') : build && build.status ? build.status : 'none';
+  return { status, meta, build, stale };
+}
+const publicMeta = m => m ? { id: m.id, level: m.level, subject: m.subject, board: m.board, code: m.code, family: m.family, status: m.status, version: m.version, source: m.source ? { url: m.source.url, checkedAt: m.source.checkedAt, lastModified: m.source.lastModified } : null, built: m.built ? { at: m.built.at, promptVersion: m.built.promptVersion, ideas: m.built.ideas } : null, judge: m.judge ? { score: m.judge.score } : null, pending: !!m.pending } : null;
+const publicBuild = b => b ? { id: b.id, status: b.status, stage: b.stage, done: b.done, total: b.total, message: b.message, startedAt: b.startedAt, updatedAt: b.updatedAt, error: b.error } : null;
+
+async function courses(request, env, url, cors) {
+  const s = await sessionUser(request, env);
+  if (!s) return json({ error: 'not signed in' }, 401, cors);
+  const p = url.pathname;
+
+  if (p === '/courses' && request.method === 'GET') {
+    const entries = await catalogueEntries(env);
+    const states = {};
+    const list = await env.USAGE.list({ prefix: 'spec-meta:' });
+    for (const e of list.keys) { const m = await env.USAGE.get(e.name, 'json'); if (m) states[m.id] = publicMeta(m); }
+    const builds = await env.USAGE.list({ prefix: 'build:' });
+    const building = {};
+    for (const e of builds.keys) { const b = await env.USAGE.get(e.name, 'json'); if (b && b.status === 'building' && Date.now() - Date.parse(b.updatedAt || 0) <= BUILD_STALE_MS) building[b.id] = publicBuild(b); }
+    return json({ catalogue: entries.map(q => ({ id: q.id, level: q.level, subject: q.subject, board: q.board, code: q.code, hasUrl: !!q.specUrl })), courses: states, building }, 200, cors);
+  }
+
+  if (p === '/courses/build' && request.method === 'POST') {
+    const body = await readJson(request);
+    const level = String(body.level || '').trim(), subject = String(body.subject || '').trim(), board = String(body.board || '').trim(), code = String(body.code || '').trim();
+    const entries = await catalogueEntries(env);
+    const q = entries.find(x => x.level === level && x.subject.toLowerCase() === subject.toLowerCase() && x.board.toLowerCase() === board.toLowerCase() && (!code || x.code.toUpperCase() === code.toUpperCase()));
+    if (!q) return json({ error: 'That qualification is not in the catalogue yet — ask Chris to add it from the Admin tab.' }, 404, cors);
+    const id = q.id;
+    const st = await courseState(env, id);
+    if (st.status === 'published') return json({ status: 'published', id, meta: publicMeta(st.meta) }, 200, cors);
+    if (st.status === 'retracted') return json({ error: 'This course has been withdrawn by Chris.' }, 409, cors);
+    if (st.status === 'review') return json({ status: 'review', id, build: publicBuild(st.build), message: 'Built, and being checked by Chris before it goes live.' }, 202, cors);
+    if (st.status === 'building') return json({ status: 'building', id, build: publicBuild(st.build), joined: true }, 202, cors);
+    if (!env.COURSE_BUILDER) return json({ error: 'the course builder is not configured on this Worker' }, 503, cors);
+    const params = { level: q.level, subject: q.subject, board: q.board, code: q.code, specUrl: q.specUrl || null, requestedBy: s.user.username };
+    const instanceId = `${id}-${Date.now()}`;
+    const rec = { id, level: q.level, subject: q.subject, board: q.board, code: q.code, status: 'building', stage: 'Queued', done: 0, total: 4, message: 'Starting…', startedAt: new Date().toISOString(), updatedAt: new Date().toISOString(), instanceId, requestedBy: s.user.username };
+    await env.USAGE.put(`build:${id}`, JSON.stringify(rec));
+    await env.COURSE_BUILDER.create({ id: instanceId, params });
+    return json({ status: 'building', id, build: publicBuild(rec), joined: false }, 202, cors);
+  }
+
+  const m = /^\/courses\/([^/]+)\/(status|spec)$/.exec(p);
+  if (m && request.method === 'GET') {
+    const id = decodeURIComponent(m[1]);
+    if (m[2] === 'status') { const st = await courseState(env, id); return json({ id, status: st.status, build: publicBuild(st.build), meta: publicMeta(st.meta) }, 200, cors); }
+    const meta = await env.USAGE.get(`spec-meta:${id}`, 'json');
+    if (!meta || meta.status !== 'published') return json({ error: 'not published' }, 404, cors);
+    const spec = await env.USAGE.get(`spec:${id}`, 'json');
+    if (!spec) return json({ error: 'not published' }, 404, cors);
+    return json({ spec, meta: publicMeta(meta) }, 200, cors);
+  }
+  return json({ error: 'not found' }, 404, cors);
+}
+
+/* ---------- admin: courses, the review queue, the catalogue ---------- */
+
+async function manageCourses(request, env, url, cors) {
+  const s = await sessionUser(request, env);
+  if (!s) return json({ error: 'not signed in' }, 401, cors);
+  if (s.user.role !== 'admin') return json({ error: 'admin only' }, 403, cors);
+  const p = url.pathname;
+
+  if (p === '/manage/courses' && request.method === 'GET') {
+    const out = [];
+    const list = await env.USAGE.list({ prefix: 'spec-meta:' });
+    for (const e of list.keys) {
+      const meta = await env.USAGE.get(e.name, 'json'); if (!meta) continue;
+      const build = await env.USAGE.get(`build:${meta.id}`, 'json');
+      const proposal = await env.USAGE.get(`proposal:${meta.id}`, 'json');
+      out.push({ ...meta, build: publicBuild(build), proposal: proposal ? { createdAt: proposal.createdAt, breaking: proposal.breaking, count: proposal.changes.length } : null });
+    }
+    const builds = await env.USAGE.list({ prefix: 'build:' });
+    for (const e of builds.keys) { const b = await env.USAGE.get(e.name, 'json'); if (b && !out.some(x => x.id === b.id)) out.push({ id: b.id, level: b.level, subject: b.subject, board: b.board, code: b.code, status: b.status, build: publicBuild(b) }); }
+    const lastRun = await env.USAGE.get('review:last-run', 'json');
+    return json({ courses: out, lastRun, catalogueExtra: (await env.USAGE.get('catalogue:extra', 'json')) || [] }, 200, cors);
+  }
+
+  if (p === '/manage/reviews' && request.method === 'GET') {
+    const items = [];
+    const metas = await env.USAGE.list({ prefix: 'spec-meta:' });
+    for (const e of metas.keys) {
+      const meta = await env.USAGE.get(e.name, 'json'); if (!meta) continue;
+      if (meta.status === 'review') items.push({ kind: 'build', id: meta.id, subject: meta.subject, board: meta.board, level: meta.level, code: meta.code, judge: meta.judge, built: meta.built, source: meta.source });
+      const proposal = await env.USAGE.get(`proposal:${meta.id}`, 'json');
+      if (proposal) items.push({ kind: 'proposal', id: meta.id, subject: meta.subject, board: meta.board, level: meta.level, code: meta.code, ...proposal });
+    }
+    const builds = await env.USAGE.list({ prefix: 'build:' });
+    for (const e of builds.keys) { const b = await env.USAGE.get(e.name, 'json'); if (b && (b.status === 'needs-link' || b.status === 'failed')) items.push({ kind: b.status, id: b.id, subject: b.subject, board: b.board, level: b.level, code: b.code, error: b.error, requestedBy: b.requestedBy, updatedAt: b.updatedAt }); }
+    return json({ items }, 200, cors);
+  }
+
+  if (p === '/manage/catalogue' && request.method === 'POST') {
+    const body = await readJson(request);
+    const q = { level: String(body.level || '').trim(), subject: String(body.subject || '').trim(), board: String(body.board || '').trim(), code: String(body.code || '').trim().toUpperCase(), specUrl: String(body.specUrl || '').trim() || null, verified: null, addedBy: s.user.username };
+    if (!['A level', 'GCSE'].includes(q.level) || !q.subject || !q.board || !q.code) return json({ error: 'level (A level or GCSE), subject, board and code are all required' }, 400, cors);
+    if (q.specUrl && !/^https:\/\//.test(q.specUrl)) return json({ error: 'the specification link must start with https://' }, 400, cors);
+    const extra = ((await env.USAGE.get('catalogue:extra', 'json')) || []).filter(x => specIdFor(x.board, x.code) !== specIdFor(q.board, q.code));
+    extra.push(q);
+    await env.USAGE.put('catalogue:extra', JSON.stringify(extra));
+    const id = specIdFor(q.board, q.code);
+    const build = await env.USAGE.get(`build:${id}`, 'json');
+    if (build && build.status === 'needs-link') await env.USAGE.delete(`build:${id}`);
+    return json({ ok: true, id, entry: q }, 200, cors);
+  }
+
+  let m = /^\/manage\/courses\/([^/]+)\/(retract|restore|check|rebuild)$/.exec(p);
+  if (m && request.method === 'POST') {
+    const id = decodeURIComponent(m[1]), action = m[2];
+    const meta = await env.USAGE.get(`spec-meta:${id}`, 'json');
+    if (action === 'retract' || action === 'restore') {
+      if (!meta) return json({ error: 'no such course' }, 404, cors);
+      if (action === 'retract' && meta.status !== 'published') return json({ error: 'only a published course can be retracted' }, 400, cors);
+      if (action === 'restore' && meta.status !== 'retracted') return json({ error: 'only a retracted course can be restored' }, 400, cors);
+      meta.status = action === 'retract' ? 'retracted' : 'published';
+      meta[action === 'retract' ? 'retractedAt' : 'restoredAt'] = new Date().toISOString();
+      await env.USAGE.put(`spec-meta:${id}`, JSON.stringify(meta));
+      return json({ ok: true, meta: publicMeta(meta) }, 200, cors);
+    }
+    if (action === 'check') {
+      if (!meta || meta.status !== 'published') return json({ error: 'only a published course can be checked' }, 400, cors);
+      if (!env.COURSE_REVIEW) return json({ error: 'the reviewer is not configured on this Worker' }, 503, cors);
+      const instanceId = `${id}-review-${Date.now()}`;
+      await env.COURSE_REVIEW.create({ id: instanceId, params: { id } });
+      return json({ ok: true, instanceId }, 202, cors);
+    }
+    if (action === 'rebuild') {
+      const entries = await catalogueEntries(env);
+      const q = entries.find(x => x.id === id);
+      if (!q) return json({ error: 'not in the catalogue' }, 404, cors);
+      if (!env.COURSE_BUILDER) return json({ error: 'the course builder is not configured on this Worker' }, 503, cors);
+      const instanceId = `${id}-${Date.now()}`;
+      const rec = { id, level: q.level, subject: q.subject, board: q.board, code: q.code, status: 'building', stage: 'Queued', done: 0, total: 4, message: 'Starting…', startedAt: new Date().toISOString(), updatedAt: new Date().toISOString(), instanceId, requestedBy: s.user.username };
+      await env.USAGE.put(`build:${id}`, JSON.stringify(rec));
+      await env.COURSE_BUILDER.create({ id: instanceId, params: { level: q.level, subject: q.subject, board: q.board, code: q.code, specUrl: q.specUrl || null, requestedBy: s.user.username } });
+      return json({ ok: true, build: publicBuild(rec) }, 202, cors);
+    }
+  }
+
+  m = /^\/manage\/reviews\/([^/]+)\/(approve|dismiss)$/.exec(p);
+  if (m && request.method === 'POST') {
+    const id = decodeURIComponent(m[1]), action = m[2];
+    const meta = await env.USAGE.get(`spec-meta:${id}`, 'json');
+    const proposal = await env.USAGE.get(`proposal:${id}`, 'json');
+    const draft = await env.USAGE.get(`spec-draft:${id}`, 'json');
+    if (!meta || (!proposal && meta.status !== 'review')) return json({ error: 'nothing to review for that course' }, 404, cors);
+    if (action === 'approve') {
+      if (!draft) return json({ error: 'the draft is missing' }, 409, cors);
+      await env.USAGE.put(`spec:${id}`, JSON.stringify(draft));
+      await env.USAGE.delete(`spec-draft:${id}`);
+      const next = { ...meta, status: 'published', pending: false, approvedAt: new Date().toISOString(), approvedBy: s.user.username };
+      if (meta.draft) { next.source = meta.draft.source; next.built = meta.draft.built; next.judge = meta.draft.judge; delete next.draft; }
+      await env.USAGE.put(`spec-meta:${id}`, JSON.stringify(next));
+      if (proposal) { await env.USAGE.delete(`proposal:${id}`); await env.USAGE.put(`decision:${id}:${Date.now()}`, JSON.stringify({ action: 'approved', by: s.user.username, at: next.approvedAt, breaking: proposal.breaking, changes: proposal.changes.length })); }
+      return json({ ok: true, meta: publicMeta(next) }, 200, cors);
+    }
+    await env.USAGE.delete(`spec-draft:${id}`);
+    if (proposal) { await env.USAGE.delete(`proposal:${id}`); await env.USAGE.put(`decision:${id}:${Date.now()}`, JSON.stringify({ action: 'dismissed', by: s.user.username, at: new Date().toISOString(), breaking: proposal.breaking, changes: proposal.changes.length })); const next = { ...meta, pending: false }; delete next.draft; await env.USAGE.put(`spec-meta:${id}`, JSON.stringify(next)); }
+    else { await env.USAGE.put(`spec-meta:${id}`, JSON.stringify({ ...meta, status: 'rejected', rejectedAt: new Date().toISOString(), rejectedBy: s.user.username })); await env.USAGE.delete(`build:${id}`); }
+    return json({ ok: true }, 200, cors);
+  }
+  return json({ error: 'not found' }, 404, cors);
+}
 
 /* ---------- sessions ---------- */
 

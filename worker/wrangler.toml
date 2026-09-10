@@ -21,7 +21,24 @@ ADMIN_NAME = "Chris"
 ACCESS_TEAM_DOMAIN = "hoppyc.cloudflareaccess.com"
 ACCESS_AUD = "b77150c77c9a5256b929ff1708b80cc7ee7bf334a7c45b237ed690cc2427cf08"
 
-# Per-student daily caps, issued keys, and synced progress all live here.
+# Course building runs as durable Workflows: a build survives minutes of model calls with per-step
+# retries and reports progress; the reviewer is what the monthly cron starts, one instance per course.
+[[workflows]]
+name = "course-builder"
+binding = "COURSE_BUILDER"
+class_name = "CourseBuilder"
+
+[[workflows]]
+name = "course-review"
+binding = "COURSE_REVIEW"
+class_name = "CourseReview"
+
+# The monthly pass: 06:00 UTC on the first of the month. It HEAD-checks each course's document and
+# only reads it again if it changed, so most months it costs nothing.
+[triggers]
+crons = ["0 6 1 * *"]
+
+# Accounts, sessions, invites, progress, usage counts, courses and their provenance all live here.
 [[kv_namespaces]]
 binding = "USAGE"
 id = "236116d082d047559b1e5c94337412de"

@@ -2,12 +2,14 @@
 
 A single-file web app for A level study, anchored to exam-board specifications. One room per topic the student actually studies; hand-authored depth where it exists (Edexcel Mathematics today), specification-anchored generated content everywhere else; spaced recall cards; essay and photo marking to each board's own conventions; a Socratic coach that never gives the answer; one scheduler across all subjects.
 
-Subjects and boards currently mapped: **OCR Geography H481**, **Edexcel Business 9BS0**, **Edexcel Politics 9PL0**, **Edexcel Mathematics 9MA0**. Adding another is a spec file (see *Extending*).
+Four subjects are hand-written and built in: **OCR Geography H481**, **Edexcel Business 9BS0**, **Edexcel Politics 9PL0**, **Edexcel Mathematics 9MA0**. Every other GCSE and A level in the catalogue (97 qualifications across AQA, Pearson Edexcel, OCR and Eduqas) is built on request: a student picks level, subject and board, presses **Add**, and the Worker builds the specification map from the board's own PDF while a progress bar shows the stages — then it's theirs. Built courses are held to the same validator as the hand-written ones, judged against the document before they go live, and checked against the document again every month (see *Courses*).
 
 ## Layout
 
 ```
 src/
+  spec-validator.js    the contract every spec meets — shared by the tests and the Worker
+  families.js          essay / quantitative / science / language: how the same schema is filled differently
   template.html        the app shell (HTML + JS); placeholders are filled by build.js
   styles.css           stylesheet
   core.js              engine: state, mastery rules, scheduling, prediction, reports (pure logic)
@@ -16,9 +18,13 @@ src/
   authored/            hand-authored content (maths: 19 lessons, 262 questions, exit tickets, dojo, verified links)
 worker/
   index.js             Cloudflare Worker: accounts, sessions, invites, daily caps, progress, the admin API,
-                       and the forward to Anthropic with your API key
+                       courses, the Workflow classes, the monthly cron, and the forward to Anthropic
+  builder.js           the course builder: document → outline → topics → validate → judge → publish; the monthly review
+data/catalogue.json    qualification codes per board and level, with verified spec PDF links
+.claude/skills/course-builder/  the same procedure for a person, and the family reference generated from src/families.js
   wrangler.toml
-tests/                 spec validator, engine, generator, worker (accounts, sessions, invites, caps, admin),
+tests/                 spec validator, engine, generator, builder (families, retry, judge, provenance, monthly pass),
+                       worker (accounts, sessions, invites, caps, admin, courses, cron),
                        and app-level smoke tests (a DOM stub drives the real handlers)
 config.json            where the app talks to (the tutor Worker); empty builds the route-less app
 build.js               assembles dist/index.html
@@ -62,9 +68,23 @@ Then, in the app, **Admin → Add a student**: name, username, requests a day. C
 ### Costs
 Sonnet 5 at API rates ($2/$10 per million tokens in/out): coach turn well under 1p, lesson ≈ 2–3p, essay marked from photos ≈ 7–10p. One active student ≈ £3–10/month, and each account has a daily cap. Your console spend limit — or your prepaid credit balance with auto-reload off — is the ceiling.
 
+## Courses
+
+**How a build works.** `POST /courses/build` starts a Cloudflare Workflow (`CourseBuilder`): locate or verify the board's PDF (HEAD: must be a PDF on the board's domain) → outline with Opus 5 reading the document (identity, papers, weights, AOs, options, command words, mark style, topic list) → one call per topic with Sonnet 5 (key ideas in the board's terms, case studies / worked examples / practicals per family) → the shared validator, with one corrective retry per failing topic → a judge pass with Opus 5 against the document → publish at 0.8 or above, otherwise the admin's review queue. The document is cached for the hour so the per-topic calls are cheap; a course costs roughly £2–4 and takes 4–8 minutes. Two students asking for the same course share one build.
+
+**Families.** `src/families.js` — essay, quantitative, science with practicals, modern language — is the one place a maths course differs from a history one. The Worker's prompts are built from it; the course-builder skill's reference is generated from it; a test fails if they diverge.
+
+**Provenance.** Every built course records the document URL, ETag, size and date, the build date, the models and prompt version, the judge's score and notes. Students see one line; the Admin tab sees all of it.
+
+**The monthly pass.** A Cron Trigger on the 1st starts a `CourseReview` per published course. It HEAD-checks the document; if nothing changed it records the check and stops. If the document changed it rebuilds to a draft, diffs it against the published course at topic level, asks the document what it says changed, and files a proposal. Nothing is applied: the admin approves or dismisses. A proposal that removes or moves a topic is marked **breaking**, because student progress is keyed to topic ids.
+
+**The catalogue.** `data/catalogue.json` lists qualification codes per board and level, with the PDF URL where it was verified live. An admin can add a qualification or a link from the Admin tab; the builder finds the PDF on the board's domain when there is no link, and asks for one when it can't.
+
+**The skill.** `.claude/skills/course-builder/` is the same procedure for a person: identify the document, choose the family, outline, topics, validate, judge, ship — and how to run the monthly pass by hand.
+
 ## Extending
 
-**A new subject or board:** add `src/specs/<board>-<code>.js` exporting a spec object (copy `ocr-h481.js` for the shape), require it in `build.js`, run `npm test` — the spec validator has to pass before anything ships. The app generates that subject's rooms from the key ideas.
+**A new subject or board:** usually nothing — a student adds it and the Worker builds it. To hand-write one instead (or to give a built course the depth of the built-in four), follow the course-builder skill: `src/specs/<board>-<code>.js` exporting a spec object, required in `build.js`, passing `npm test`. Hand-written and Worker-built courses are the same shape.
 
 **Hand-authored depth for a subject:** add `src/authored/<subject>.js` and register it in `src/authored/index.js` under the spec id, keyed by topic id. Rooms with authored content get the authored lesson, a Formulae & links station, a checked question set with a hint ladder, and an authored exit ticket; everything else stays generated. Maths is the reference.
 

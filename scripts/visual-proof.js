@@ -67,6 +67,7 @@ const server = http.createServer((req, res) => {
 
 (async () => {
   await new Promise(r => server.listen(PORT, r));
+  if (process.argv.includes('--serve')) { console.log('stub tutor and app serving at', ORIGIN, '— sign in with tok-student, tok-matthew or tok-admin in localStorage platform:session'); return; }
   const browser = await chromium.launch(fs.existsSync('/opt/pw-browsers/chromium') ? { executablePath: '/opt/pw-browsers/chromium' } : {});
   const shots = [];
   const snap = async (page, name, note) => { const file = path.join(OUT, name + '.png'); await page.screenshot({ path: file, fullPage: false }); shots.push({ name, note, file }); console.log('  shot', name); };
@@ -119,6 +120,16 @@ const server = http.createServer((req, res) => {
   await page.fill('#jump', 'stationary');
   await page.waitForSelector('#jumpOut .tnode', { timeout: 5000 });
   must(/Mathematics/.test(await page.locator('#jumpOut').textContent()), 'quick-jump finds a maths topic by a key-idea word');
+  await page.context().close();
+
+  /* iPad landscape: a room with eight station tabs must not push the centre under the right rail */
+  page = await open('tok-matthew', { width: 1180, height: 820 }, '#rail-l .ccard');
+  await page.click('#rail-l [data-course="EDX-9MA0"]'); await page.waitForSelector('#rail-l [data-open="EDX-9MA0|P2"]');
+  await page.click('#rail-l [data-open="EDX-9MA0|P2"]'); await page.waitForSelector('[data-station="formulae"]'); await page.click('[data-station="formulae"]');
+  c = await box(page, 'main.centre'); r = await box(page, '#rail-r'); const pnl = await box(page, '#v-rooms .panel');
+  must(c.x + c.width <= r.x + 1 && pnl.x + pnl.width <= r.x - 8 && Math.abs((pnl.x - c.x) - ((c.x + c.width) - (pnl.x + pnl.width))) <= 2, `1180px room: the panel stays centred in its column (centre ${Math.round(c.x)}–${Math.round(c.x + c.width)}, panel ${Math.round(pnl.x)}–${Math.round(pnl.x + pnl.width)}, right rail from ${Math.round(r.x)})`);
+  must(/data-act="signout"/.test(await page.locator('#rail-l').innerHTML()) && /data-act="courses"/.test(await page.locator('#rail-l').innerHTML()), 'left rail: Add or change courses and Sign out present');
+  await snap(page, '10-ipad-room', 'iPad landscape inside a maths room: the station tabs scroll within the panel, the panel stays centred, and the rail ends with Add or change courses and Sign out');
   await page.context().close();
 
   page = await open('tok-matthew', { width: 900, height: 1100 }, '#rail-l .ccard');

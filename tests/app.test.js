@@ -153,6 +153,9 @@ const click=async s=>L.click({target:T(s)});const change=async s=>L.change({targ
  reply=()=>({content:[{type:'text',text:'OK'}]});
  ok('G10 the status strip shows streak, minutes today, cards due and the sync state',/day streak/.test(reg['status'].innerHTML)&&/min today/.test(reg['status'].innerHTML)&&/cards due/.test(reg['status'].innerHTML)&&/Saved|Saving|saved/.test(reg['status'].innerHTML),reg['status'].innerHTML);
  G.syncState.timer&&sb.clearTimeout(G.syncState.timer);G.syncState.timer=null;G.syncState.pending=true;await G.pushSync();ok('G10 after a save the strip shows when',/Saved \d/.test(reg['status'].innerHTML),reg['status'].innerHTML);
+ G.go('today');ok('G11 the left rail offers Add or change courses and Sign out from every view',/data-act="courses"/.test(reg['rail-l'].innerHTML)&&/data-act="signout"/.test(reg['rail-l'].innerHTML)&&/Signed in as <b>Matthew<\/b>/.test(reg['rail-l'].innerHTML));
+ await click({dataset:{act:'courses'}});ok('G11 Add or change courses opens the setup screen with the current courses ticked',/Add or change subjects/.test(reg['v-setup'].innerHTML)&&/data-su="OCR-H481" checked/.test(reg['v-setup'].innerHTML));
+ await click({id:'suCancel'});
  await click({dataset:{drawer:'l'}});ok('G2 the edge button opens the left drawer on a narrow screen',G.UI.drawer==='l'&&reg['rail-l'].attrs['aria-expanded']==='true');
  await L.keydown({target:{id:'x'},key:'Escape',preventDefault(){}});ok('G2 Escape closes it',G.UI.drawer===null&&reg['rail-l'].attrs['aria-expanded']==='false');
  await click({dataset:{drawer:'r'}});await click({id:'scrim'});ok('G2 tapping outside closes the right drawer',G.UI.drawer===null);

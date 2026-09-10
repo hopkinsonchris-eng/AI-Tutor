@@ -44,6 +44,12 @@ Inside a room: the tree marks the current topic; the right rail is contextual â€
 
 ![7-wide-room](7-wide-room.png)
 
+## 10-ipad-room
+
+iPad landscape inside a maths room: the station tabs scroll within the panel, the panel stays centred, and the rail ends with Add or change courses and Sign out
+
+![10-ipad-room](10-ipad-room.png)
+
 ## 8-tablet-drawer
 
 iPad width: the left rail is part of the page; the right rail opens as a drawer from the header button

@@ -64,7 +64,7 @@ nav button{flex:1;background:none;border:none;font:inherit;font-size:11.5px;font
 nav button .ic{font-size:17px;line-height:1}nav button[aria-selected="true"]{color:var(--ink);border-top-color:var(--ink)}
 .hide{display:none}.empty{font-size:14px;color:var(--pencil);padding:14px 0;text-align:center}.err{color:var(--red);font-size:14px;margin-top:10px}
 /* rooms */
-.stations{display:flex;border-bottom:1px solid var(--rule);margin:0 -16px 14px;padding:0 8px;overflow-x:auto}
+.stations{display:flex;border-bottom:1px solid var(--rule);margin:0 -16px 14px;padding:0 8px;overflow-x:auto;contain:inline-size}   /* eight no-wrap tabs must scroll, never widen the column */
 .stations button{background:none;border:none;font:inherit;font-size:13.5px;font-weight:600;color:var(--pencil);padding:10px 10px;cursor:pointer;border-bottom:2.5px solid transparent;margin-bottom:-1px;white-space:nowrap}
 .stations button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--ink)}
 .formula{font-family:ui-monospace,'SF Mono',Menlo,monospace;font-size:13.5px;padding:8px 0;border-top:1px solid var(--rule);line-height:1.5}
@@ -161,6 +161,7 @@ details.links{margin-top:8px;font-size:14px}details.links summary{cursor:pointer
 @media (min-width:760px){
  .wrap{max-width:1400px}
  body.three .shell{display:grid;grid-template-columns:262px minmax(0,1fr);max-width:1400px;margin:0 auto;align-items:start}
+ body.three .centre{min-width:0}
  body.three .hbar [data-drawer="l"]{display:none}
  body.three .rail-l{position:sticky;top:0;height:100vh;transform:none;width:auto;z-index:1;box-shadow:none;padding:16px 14px 24px}
  body.three header{position:static}

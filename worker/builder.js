@@ -17,7 +17,7 @@
 import { validateSpec } from '../src/spec-validator.js';
 import { FAMILIES, familyFor, familyText } from '../src/families.js';
 
-export const PROMPT_VERSION = '2026-09-10.1';
+export const PROMPT_VERSION = '2026-09-10.2';
 export const PUBLISH_SCORE = 0.8;
 export const MAX_TOPICS = 40;
 export const MODELS = { outline: 'claude-opus-5', topic: 'claude-sonnet-5', judge: 'claude-opus-5', locate: 'claude-sonnet-5', docChanges: 'claude-sonnet-5' };
@@ -53,12 +53,14 @@ const RULES = 'Work only from the document provided. Every code, number, weight 
 
 export const prompts = {
   system: () => `You build specification maps for a study platform used by UK students. ${SHAPE} ${RULES}`,
-  outline: ({ level, subject, board, code, family }) => `The document is the official ${board} ${level} ${subject} (${code}) specification. Produce the outline of its specification map: identity, components, options, assessment objectives, mark conventions, and the list of topics — WITHOUT key ideas (those come next, topic by topic).
+  outline: ({ level, subject, board, code, family, problems }) => `The document is the official ${board} ${level} ${subject} (${code}) specification. Produce the outline of its specification map: identity, components, options, assessment objectives, mark conventions, and the list of topics — WITHOUT key ideas (those come next, topic by topic).
 
 Family rules for this subject:
 ${familyText(family)}
 
-Set "family" to the family that fits the document (the rules above are the prior; the document decides). Topics are the sections a student is examined on, in the document's order, with the document's own codes as ids; at most ${MAX_TOPICS}. Components' weights must sum to exactly 100.`,
+Set "family" to the family that fits the document (the rules above are the prior; the document decides). Topics are the sections a student is examined on, in the document's order, with the document's own codes as ids; at most ${MAX_TOPICS}. Components' weights must sum to exactly 100.
+
+Every topic belongs to exactly ONE component, and its "component" must be one of the ids in your components list — never a made-up id such as "all". Content the document assesses on every paper (working scientifically, key ideas, mathematical skills, practical skills) goes under the component that examines it most, or is split into one topic per component; if a component genuinely has no sections of its own (a synoptic paper), mark it coversAll and give it no topics.${problems ? `\n\nYour previous outline was refused by the validator for these reasons — fix every one:\n- ${problems.join('\n- ')}` : ''}`,
   topic: ({ outline, topic, family, problems }) => `From the document, fill in topic ${topic.id} "${topic.name}" (component ${topic.component}${topic.option ? ', option ' + topic.option : ''}) of the ${outline.board} ${outline.level} ${outline.subject} (${outline.code}) specification map.
 
 Family rules for this subject:
@@ -104,13 +106,17 @@ export async function runBuild(params, deps, opts = {}) {
     await save({ done: 1, stage: 'Reading the specification', message: 'Reading the specification document…', sourceUrl: source.url });
 
     /* 2. outline */
-    const outline = await step.do('outline', () => ai.outline({ prompt: prompts.outline({ ...params, family: family0 }), url: source.url, schema: schemas.outline, model: MODELS.outline }));
+    const outlined = await step.do('outline', async () => {
+      const ask = (problems) => ai.outline({ prompt: prompts.outline({ ...params, family: family0, problems }), url: source.url, schema: schemas.outline, model: MODELS.outline, problems });
+      let outline = await ask(null);
+      let problems = outlineProblems(skeleton(outline, id, params));
+      if (problems.length) { outline = await ask(problems); problems = outlineProblems(skeleton(outline, id, params)); }
+      return { outline, problems };
+    });
+    if (outlined.problems.length) return fail('outline refused twice: ' + outlined.problems.slice(0, 4).join('; '));
+    const outline = outlined.outline;
     const family = FAMILIES[outline.family] ? outline.family : family0;
     const spec = skeleton(outline, id, params);
-    if (!spec.topics.length) return fail('the outline has no topics');
-    if (spec.topics.length > MAX_TOPICS) return fail(`the outline has ${spec.topics.length} topics; the limit is ${MAX_TOPICS}`);
-    const outlineProblems = validateSpec(withDummyIdeas(spec)).problems;
-    if (outlineProblems.length) return fail('outline refused: ' + outlineProblems.slice(0, 4).join('; '));
     const total = 4 + spec.topics.length;
     await save({ done: 2, total, family, stage: 'Mapping topics', message: `Mapping topic 1 of ${spec.topics.length}…` });
 
@@ -229,6 +235,11 @@ function skeleton(o, id, params) {
     ao: o.ao || [], markConventions: o.markConventions || {},
     topics: (o.topics || []).map(t => ({ id: t.id, component: t.component, option: t.option || null, name: t.name, caseStudies: [], ideas: [] })),
   };
+}
+function outlineProblems(spec) {
+  if (!spec.topics.length) return ['the outline has no topics'];
+  if (spec.topics.length > MAX_TOPICS) return [`the outline has ${spec.topics.length} topics; the limit is ${MAX_TOPICS} — merge sub-sections into their parent sections`];
+  return validateSpec(withDummyIdeas(spec)).problems;
 }
 const DUMMY = [{ code: '_1', q: 'placeholder', idea: 'placeholder', content: 'placeholder content long enough to pass the contract' }, { code: '_2', q: 'placeholder', idea: 'placeholder', content: 'placeholder content long enough to pass the contract' }];
 function withDummyIdeas(spec) { return { ...spec, topics: spec.topics.map(t => ({ ...t, ideas: t.ideas && t.ideas.length >= 2 ? t.ideas : DUMMY, caseStudies: t.caseStudies || [] })) }; }

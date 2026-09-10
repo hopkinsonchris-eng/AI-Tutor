@@ -83,15 +83,22 @@ const deps = (f, over = {}) => ({ kv: kv(), step: inlineStep(), ai: ai(f), head:
   }
   {
     const d = deps('essay');
-    d.ai.outline = async () => outlineFor('essay', { components: [{ id: 'P1', name: 'Paper 1', marks: 100, weight: 60, minutes: 120 }, { id: 'P2', name: 'Paper 2', marks: 100, weight: 60, minutes: 120 }] });
+    let n5 = 0; d.ai.outline = async () => { n5++; return outlineFor('essay', { components: [{ id: 'P1', name: 'Paper 1', marks: 100, weight: 60, minutes: 120 }, { id: 'P2', name: 'Paper 2', marks: 100, weight: 60, minutes: 120 }] }); };
     const rec = await runBuild(params('essay'), d);
-    ok('B5 an outline whose weights do not sum to 100 is refused before any topic is built', rec.status === 'failed' && /sum to 100/.test(rec.error) && d.ai.calls.topic === 0, rec.error);
+    ok('B5 an outline that is still wrong after one corrective retry is refused before any topic is built', rec.status === 'failed' && /sum to 100/.test(rec.error) && n5 === 2 && d.ai.calls.topic === 0, rec.error + ' n=' + n5);
+  }
+  {
+    /* the real first build: cross-cutting sections put on a component called "all" */
+    let n = 0, retryPrompt = null; const d = deps('science');
+    d.ai.outline = async (input) => { n++; if (input.problems) retryPrompt = input.prompt; if (n === 1) return outlineFor('science', { topics: [{ id: '3', component: 'all', option: null, name: 'Working scientifically' }, { id: '4.1', component: 'P1', option: null, name: 'Cell biology' }, { id: '5.1', component: 'P2', option: null, name: 'Atomic structure' }] }); return outlineFor('science'); };
+    const rec = await runBuild(params('science'), d);
+    ok('B5b a topic on a made-up component is sent back once with the validator\'s words, then builds', rec.status === 'published' && n === 2 && /component "all" is not one of P1, P2/.test(retryPrompt) && /exactly ONE component/.test(retryPrompt), (rec.error || rec.status) + ' n=' + n);
   }
   {
     const d = deps('essay');
-    d.ai.outline = async () => outlineFor('essay', { topics: Array.from({ length: 45 }, (_, i) => ({ id: 'T' + i, component: 'P1', option: null, name: 'T' + i })) });
+    let n6 = 0; d.ai.outline = async () => { n6++; return outlineFor('essay', { topics: Array.from({ length: 45 }, (_, i) => ({ id: 'T' + i, component: 'P1', option: null, name: 'T' + i })) }); };
     const rec = await runBuild(params('essay'), d);
-    ok('B6 a runaway outline (over 40 topics) is refused before spending on topics', rec.status === 'failed' && /40/.test(rec.error) && d.ai.calls.topic === 0);
+    ok('B6 a runaway outline (over 40 topics) is refused before spending on topics', rec.status === 'failed' && /40/.test(rec.error) && d.ai.calls.topic === 0 && n6 === 2, rec.error + ' n=' + n6);
   }
 
   /* ---------- criterion 5: judge below 0.8 → review queue ---------- */

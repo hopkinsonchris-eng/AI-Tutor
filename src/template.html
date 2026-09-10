@@ -37,6 +37,7 @@
 /*__GEN__*/
 /*__SPECS__*/
 /*__AUTHORED__*/
+/*__KITS__*/
 /*__CONFIG__*/
 const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const KEY='platform:state:v1', MATHS_KEY='companion:state:v2', SESSION_KEY='platform:session';
@@ -45,10 +46,12 @@ function stateKey(){return AUTH_MODE&&AUTH.user?KEY+':'+AUTH.user.username:KEY;}
 let COURSES={catalogue:[],courses:{},building:{},depth:{}},SPEC_META={};const SPEC_CACHE='platform:spec:v1:';
 /* Room kits: the depth the Worker wrote and checked for a built course, fetched per room and cached on the device by build stamp. */
 let KITS={};const KIT_CACHE='platform:kit:v1:';
-function kitInfo(specId,topicId){const d=COURSES.depth&&COURSES.depth[specId];if(!d)return null;const at=d.done&&d.done[topicId];return {at:at||null,failed:(d.failed||[]).includes(topicId),building:d.status==='building'};}
+/* Hand-built kits ship with the site (KIT_INDEX, dist/kits/); Worker-built ones come from the tutor. Either way a room's kit is fetched on first open and cached by build stamp. */
+function kitInfo(specId,topicId){const bi=typeof KIT_INDEX!=='undefined'&&KIT_INDEX[specId];if(bi&&bi[topicId])return {at:bi[topicId],failed:false,building:false,builtIn:true};if(bi)return null;const d=COURSES.depth&&COURSES.depth[specId];if(!d)return null;const at=d.done&&d.done[topicId];return {at:at||null,failed:(d.failed||[]).includes(topicId),building:d.status==='building'};}
 async function ensureKit(specId,topicId){if(AUTHORED[specId])return false;const info=kitInfo(specId,topicId);if(!info||!info.at)return false;const key=specId+'|'+topicId;if(KITS[key]&&KITS[key].built&&KITS[key].built.at===info.at)return false;
   try{const c=JSON.parse(await rawGet(KIT_CACHE+key)||'null');if(c&&c.built&&c.built.at===info.at){KITS[key]=c;return true;}}catch(e){}
-  if(!AUTH_MODE)return false;try{const r=await api('/courses/'+encodeURIComponent(specId)+'/kit/'+encodeURIComponent(topicId));KITS[key]=r.kit;try{await rawSet(KIT_CACHE+key,JSON.stringify(r.kit));}catch(e){}return true;}catch(e){return false;}}
+  try{let kit;if(info.builtIn){const res=await fetch('./kits/'+encodeURIComponent(specId)+'/'+encodeURIComponent(encodeURIComponent(topicId))+'.json');if(!res.ok)return false;kit=JSON.parse(await res.text());}else{if(!AUTH_MODE)return false;kit=(await api('/courses/'+encodeURIComponent(specId)+'/kit/'+encodeURIComponent(topicId))).kit;}
+    KITS[key]=kit;try{await rawSet(KIT_CACHE+key,JSON.stringify(kit));}catch(e){}return true;}catch(e){return false;}}
 /* Courses built by the Worker join the built-in specs at runtime. A copy is kept on the device so a student who has a course keeps it even if it is later withdrawn for new students. */
 async function loadCourses(){if(!AUTH_MODE||!AUTH.user)return;try{COURSES=await api('/courses');}catch(e){}}
 async function ensureSpec(id){const stamp=x=>(x&&x.resources&&x.resources.at)||'';if(SPECS[id]&&!(SPEC_META[id]&&COURSES.courses[id]&&stamp(COURSES.courses[id])&&stamp(COURSES.courses[id])!==stamp(SPEC_META[id])))return true;

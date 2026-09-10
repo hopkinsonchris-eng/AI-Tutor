@@ -76,6 +76,13 @@ still to come. Kits are fetched per room and cached on the device by build stamp
 proposal that changes a topic's key ideas rebuilds only that room's kit. About £12 to £20 per
 34-topic course; the Admin card shows the model-call count.
 
+Courses can also be built at full depth by hand in a Claude Code session, on a subscription rather
+than the API: `npm run course -- fetch <board> <code>` downloads the document and extracts its text,
+the spec and the kits are written to `src/specs/` and `src/kits/` with the same contracts and the same
+fresh-context judge, and `build.js` serves the kits from the site. `npm run course -- current`
+checks every hand-built course's document for changes. The procedure is
+`.claude/skills/course-builder/references/depth.md`.
+
 ## How it works on your site
 
 The site opens on a sign-in screen. A student signs in with a username and password, and everything after that -- the tutor, their progress, the admin tab -- is keyed to that sign-in. Progress is saved to the Worker as they go and cached on the device, so signing in on another device picks up where they left off.

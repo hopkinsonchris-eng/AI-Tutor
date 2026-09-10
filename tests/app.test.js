@@ -5,7 +5,7 @@ const html=fs.readFileSync(__dirname+'/../dist/index.html','utf8');const script=
 function el(id){return{id,innerHTML:'',textContent:'',value:'',checked:false,files:null,dataset:{},attrs:{},classList:{toggle(){},add(){},remove(){}},setAttribute(k,v){this.attrs[k]=v},addEventListener(){},click(){},closest(){return null}}}
 const reg={};const secs=['v-setup','v-today','v-rooms','v-exam','v-prog'].map(i=>reg[i]=el(i));const L={};
 const document={getElementById(i){return reg[i]||(reg[i]=el(i))},querySelector(){return el('q')},querySelectorAll(s){return s==='main>section'?secs:[]},addEventListener(t,f){L[t]=f}};
-const store={'platform:session':'tok-test'};let lastFetch=null;let reply=()=>({content:[{type:'text',text:'OK'}]});
+const store={'platform:session':'tok-test'};let siteKitFetches=0;let G0=null;let lastFetch=null;let reply=()=>({content:[{type:'text',text:'OK'}]});
 /* the tutor service: everything under /auth, /progress and /manage is answered here; anything else is the AI proxy */
 let ME={username:'matthew',name:'Matthew',role:'student',daily:200};
 /* a small catalogue: two built-in courses, an A-level science not yet built, a GCSE maths that will be queued for review, and a retracted one */
@@ -43,12 +43,12 @@ async function tutor(u,o){const path=u.replace('https://tutor.studyplatform.co.u
   if(path.startsWith('/manage/users/')){lastManage={m,path,body};if(m==='DELETE'){manageUsers=manageUsers.filter(x=>'/manage/users/'+x.username!==path);return R(200,{ok:true});}if(path.endsWith('/invite'))return R(200,{invite:{token:'inv2',link:'https://studyplatform.co.uk/#invite=inv2',expires:'2026-09-17'}});const u=manageUsers.find(x=>'/manage/users/'+x.username===path);Object.assign(u,body);return R(200,{user:u});}
   return null;}
 const sb={document,console,setTimeout,clearTimeout,setInterval:()=>1,clearInterval(){},Date,Math,JSON,encodeURIComponent,parseInt,Number,String,isNaN,Object,Array,Set,Promise,Function,Error,FileReader:function(){},confirm:()=>true,
- navigator:{clipboard:{writeText:async()=>{}}},alert(){},prompt:()=>'150',fetch:async(u,o)=>{const t=await tutor(u,o||{});if(t)return t;lastFetch={url:u,headers:o.headers,body:JSON.parse(o.body)};return{ok:true,status:200,text:async()=>JSON.stringify(reply(lastFetch))}},
+ navigator:{clipboard:{writeText:async()=>{}}},alert(){},prompt:()=>'150',fetch:async(u,o)=>{if(/^\.\/kits\//.test(u)){siteKitFetches++;const [,,id,file]=u.split('/');const topic=decodeURIComponent(decodeURIComponent(file.replace(/\.json$/,'')));const sp=G0.SPECS[id];const t=sp&&sp.topics.find(x=>x.id===topic);if(!t)return{ok:false,status:404,text:async()=>'{}'};return{ok:true,status:200,text:async()=>JSON.stringify(Object.assign(sampleKit(t,'essay'),{built:{at:'2026-09-11T10:00:00Z',by:'claude-code',judge:{score:0.9,notes:'ok'}}}))};}const t=await tutor(u,o||{});if(t)return t;lastFetch={url:u,headers:o.headers,body:JSON.parse(o.body)};return{ok:true,status:200,text:async()=>JSON.stringify(reply(lastFetch))}},
  window:{storage:{async get(k){if(!(k in store))throw new Error('nokey');return{value:store[k]}},async set(k,v){store[k]=v;return{}}},scrollTo(){}}};
-sb.globalThis=sb;vm.createContext(sb);vm.runInContext(script+'\n;Object.defineProperties(globalThis,{S:{get:()=>S,set:v=>{S=v}},AUTHORED:{get:()=>AUTHORED},__load:{get:()=>load},__mirror:{get:()=>mirrorMaths},UI:{get:()=>UI},SPECS:{get:()=>SPECS},TODAY:{get:()=>TODAY},view:{get:()=>view},AUTH:{get:()=>AUTH,set:v=>{AUTH=v}},syncState:{get:()=>syncState},CONFIG:{get:()=>CONFIG},COURSES:{get:()=>COURSES}});',sb);
+sb.globalThis=sb;vm.createContext(sb);vm.runInContext(script+'\n;Object.defineProperties(globalThis,{KIT_INDEX:{get:()=>KIT_INDEX,set:v=>{KIT_INDEX=v}},S:{get:()=>S,set:v=>{S=v}},AUTHORED:{get:()=>AUTHORED},__load:{get:()=>load},__mirror:{get:()=>mirrorMaths},UI:{get:()=>UI},SPECS:{get:()=>SPECS},TODAY:{get:()=>TODAY},view:{get:()=>view},AUTH:{get:()=>AUTH,set:v=>{AUTH=v}},syncState:{get:()=>syncState},CONFIG:{get:()=>CONFIG},COURSES:{get:()=>COURSES}});',sb);
 const T=s=>{const t={id:s.id||'',dataset:s.dataset||{},className:s.className||'',checked:s.checked,value:s.value,files:s.files};t.closest=sel=>{if(sel.startsWith('.'))return t.className===sel.slice(1)?t:null;const m=sel.match(/\[data-([\w-]+)\]/);if(m){const k=m[1].replace(/-([a-z])/g,(_,c)=>c.toUpperCase());return k in t.dataset?t:null}return null};return t};
 const click=async s=>L.click({target:T(s)});const change=async s=>L.change({target:T(s)});const $=i=>document.getElementById(i);const sleep=ms=>new Promise(r=>setTimeout(r,ms));
-(async()=>{await sleep(40);const G=sb;
+(async()=>{await sleep(40);const G=sb;G0=sb;
  ok('A0 signed in with nothing saved → setup shown',G.S===null&&G.AUTH.user&&G.AUTH.user.username==='matthew'&&/Set up your study environment/.test(reg['v-setup'].innerHTML)&&/Geography/.test(reg['v-setup'].innerHTML)&&/Politics/.test(reg['v-setup'].innerHTML));
  ok('A0 level picker: A level selected, GCSE offered because the catalogue has GCSE courses',/data-level="A level" aria-pressed="true"/.test(reg['v-setup'].innerHTML)&&!/data-level="GCSE"[^>]*disabled/.test(reg['v-setup'].innerHTML));
  ok('P1 subject and board dropdowns and an Add button, built from built-in specs plus the catalogue',/id="crsSubject"/.test(reg['v-setup'].innerHTML)&&/id="crsBoard"/.test(reg['v-setup'].innerHTML)&&/id="crsAdd"/.test(reg['v-setup'].innerHTML)&&/<option (selected)?>Biology<\/option>/.test(reg['v-setup'].innerHTML)&&/<option (selected)?>Geography<\/option>/.test(reg['v-setup'].innerHTML));
@@ -181,6 +181,12 @@ const click=async s=>L.click({target:T(s)});const change=async s=>L.change({targ
  G.openRoom('AQA-7402|P4','lesson');await sleep(20);ok('K5 a room still being written says so and keeps the generated tools',/being written/.test(reg['v-rooms'].innerHTML)&&/data-genkind="lesson"/.test(reg['v-rooms'].innerHTML)&&kitFetches===1);
  ok('K5 the tree marks every room without a kit yet',(reg['rail-l'].innerHTML.match(/class="pen"/g)||[]).length===18,String((reg['rail-l'].innerHTML.match(/class="pen"/g)||[]).length));
  G.UI.setup=JSON.parse(JSON.stringify(G.S.setup));G.UI.setup.subjects=G.UI.setup.subjects.filter(x=>x.specId!=='AQA-7402');$('suName').value='Matthew';await click({id:'suGo'});ok('K0 and leaves again cleanly',!G.S.nodes['AQA-7402|P2']&&!Object.values(G.S.cards).some(c=>c.node==='AQA-7402|P2'));
+
+ /* hand-built kits ship with the site: the index says which rooms have one, the JSON is fetched from ./kits/ */
+ G.KIT_INDEX={'OCR-H481':{'1.2':'2026-09-11T10:00:00Z'}};G.openRoom('OCR-H481|1.2','lesson');await sleep(30);
+ ok('H3 a hand-built kit is fetched from the site, not the tutor, and renders as a kit room',siteKitFetches===1&&/Written and checked/.test(reg['v-rooms'].innerHTML)&&/Model paragraph/.test(reg['v-rooms'].innerHTML)&&!!store['platform:kit:v1:OCR-H481|1.2']);
+ G.openRoom('OCR-H481|2.1','lesson');await sleep(20);ok('H3 a room of that course without a hand-built kit works as before, with no note and no fetch',siteKitFetches===1&&!/being written/.test(reg['v-rooms'].innerHTML)&&/data-genkind="lesson"/.test(reg['v-rooms'].innerHTML));
+ G.KIT_INDEX={};
 
  /* v1.1 — manage subjects, maths mirror, mark station */
  ok('B0 Mathematics available at setup',!!G.SPECS['EDX-9MA0']&&G.SPECS['EDX-9MA0'].topics.length===19);

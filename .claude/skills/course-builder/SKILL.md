@@ -38,7 +38,10 @@ hand and a course built by the Worker are indistinguishable in shape.
    it is published to KV and appears in the app's catalogue with its provenance line.
 8. **Depth.** Once published, every room gets a kit (`worker/depth.js`, contract `src/kit-validator.js`,
    family kit rules in `references/families.md`): written by one model, re-solved and read by another,
-   rewritten once on objections. By hand, the same shape is what `src/authored/` holds for maths.
+   rewritten once on objections. To build a course at full depth by hand in a session, on the
+   subscription rather than the API, follow `references/depth.md`: `npm run course -- fetch`, write the
+   spec and kits with parallel subagents, judge each kit with a fresh subagent, ship in `src/kits/`.
+   `npm run course -- current` keeps hand-built courses checked against their documents.
 
 ## Monthly update pass
 

@@ -1,7 +1,7 @@
 const fs=require('fs'),path=require('path');
 const css=fs.readFileSync(path.join(__dirname,'src','styles.css'),'utf8');
 const core=fs.readFileSync(path.join(__dirname,'src','core.js'),'utf8'),gen=fs.readFileSync(path.join(__dirname,'src','gen.js'),'utf8');
-const specs={...require('./src/specs/ocr-h481.js'),...require('./src/specs/edexcel-9bs0-9pl0.js'),...require('./src/specs/edexcel-9ma0.js')};const byId={};for(const s of Object.values(specs))byId[s.id]=s;
+const specs={...require('./src/specs/ocr-h481.js'),...require('./src/specs/edexcel-9bs0-9pl0.js'),...require('./src/specs/edexcel-9ma0.js'),...require('./src/specs/aqa-8464.js')};const byId={};for(const s of Object.values(specs))byId[s.id]=s;
 const {AUTHORED}=require('./src/authored/index.js');
 const {collectKits,kitIndex,writeKits}=require('./scripts/kits-bundle.js');const KITS=collectKits(path.join(__dirname,'src','kits'));
 // Where the app talks to. config.json sets it for the site; TUTOR_URL in the environment overrides;

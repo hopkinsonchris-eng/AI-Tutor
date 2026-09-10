@@ -1,8 +1,8 @@
 # Study Platform
 
-A single-file web app for GCSE and A level study, anchored to exam-board specifications. One room per topic the student actually studies; hand-authored depth where it exists (Edexcel Mathematics, and a written and checked kit in every room of AQA Combined Science 8464), specification-anchored generated content everywhere else; spaced recall cards; essay and photo marking to each board's own conventions; a Socratic coach that never gives the answer; one scheduler across all subjects.
+A single-file web app for GCSE and A level study, anchored to exam-board specifications. One room per topic the student actually studies; hand-authored depth where it exists (Edexcel Mathematics, and a written and checked kit in every room of AQA Combined Science 8464 and AQA Mathematics 8300), specification-anchored generated content everywhere else; spaced recall cards; essay and photo marking to each board's own conventions; a Socratic coach that never gives the answer; one scheduler across all subjects.
 
-Five courses are hand-written and built in: **OCR Geography H481**, **Edexcel Business 9BS0**, **Edexcel Politics 9PL0** and **Edexcel Mathematics 9MA0** at A level, and **AQA Combined Science 8464** at GCSE — the last built by hand from the board's specification PDF, judged against the document, with a written and checked kit in all 30 rooms (see *Course depth*). Every other GCSE and A level in the catalogue (97 qualifications across AQA, Pearson Edexcel, OCR and Eduqas) is built on request: a student picks level, subject and board, presses **Add**, and the Worker builds the specification map from the board's own PDF while a progress bar shows the stages — then it's theirs. Built courses are held to the same validator as the hand-written ones, judged against the document before they go live, and checked against the document again every month (see *Courses*).
+Six courses are hand-written and built in: **OCR Geography H481**, **Edexcel Business 9BS0**, **Edexcel Politics 9PL0** and **Edexcel Mathematics 9MA0** at A level, and **AQA Combined Science 8464** and **AQA Mathematics 8300** at GCSE — the last two built by hand from the board's specification PDFs, judged against the document, with a written and checked kit in every room (30 and 14 rooms; see *Course depth*). Every other GCSE and A level in the catalogue (97 qualifications across AQA, Pearson Edexcel, OCR and Eduqas) is built on request: a student picks level, subject and board, presses **Add**, and the Worker builds the specification map from the board's own PDF while a progress bar shows the stages — then it's theirs. Built courses are held to the same validator as the hand-written ones, judged against the document before they go live, and checked against the document again every month (see *Courses*).
 
 ## Layout
 
@@ -17,7 +17,7 @@ src/
   gen.js               generator: spec-anchored prompts + validators for lessons, cards, questions, essays, marking, coach
   specs/               one file per qualification — components, weights, AOs, command words, topics, key ideas
   authored/            hand-authored content (maths: 19 lessons, 262 questions, exit tickets, dojo, verified links)
-  kits/                one file per hand-built course: a written and checked kit for every room (AQA 8464, 30 rooms),
+  kits/                one file per hand-built course: a written and checked kit for every room (AQA 8464, 30 rooms; AQA 8300, 14 rooms),
                        served from dist/kits/ with an index the app reads
 worker/
   index.js             Cloudflare Worker: accounts, sessions, invites, daily caps, progress, the admin API,
@@ -91,7 +91,11 @@ checks every hand-built course's document for changes. The procedure is
 
 AQA Combined Science 8464 is the first course built this way: 30 rooms and 319 key ideas from the specification
 (Version 1.1, judged 0.9 against the document), a kit in every room judged 0.80–0.93 by a second model, shipped in
-`src/kits/AQA-8464.js` and photographed in `docs/proof/12-hand-built-room.png`. The four original hand-written A level
+`src/kits/AQA-8464.js` and photographed in `docs/proof/12-hand-built-room.png`. AQA Mathematics 8300 followed: 14 rooms
+(the document's own sub-sections plus its formulae appendix) and 100 key ideas, every statement labelled with the tier
+column the document places it in (judged 0.9), a kit in every room judged 0.80–0.90, shipped in `src/kits/AQA-8300.js`.
+On the way the toolkit gained `write-prompt`, `check-kit`, `judge-prompt --kit` and `ship-kit`, so a writer and a judge
+get the Worker's own briefs from the command line and a kit is stored with its verdict. The four original hand-written A level
 specs predate the toolkit: their content is paraphrased from the boards' published structures and they carry no
 document provenance, so `npm run course -- current` lists them as unchecked until each is read against its PDF and
 given a `source` block.

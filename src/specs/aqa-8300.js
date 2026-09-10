@@ -9,7 +9,8 @@
    Judged 0.9 against the document by a fresh-context subagent: coverage 1.0 (all 97 references once, in order, every
    column and Notes line carried), fidelity 0.93, nothing invented, nothing missing; its ten wording corrections are
    applied (approximate weightings, the appendix sentence verbatim, mark-scheme practice attributed in the command
-   words, Find added, one prompt re-tiered). */
+   words, Find added, one prompt re-tiered). Every room has a hand-built kit, judged 0.80–0.90 by a second model, in
+   src/kits/AQA-8300.js. */
 const SPEC_8300 = {
  id: 'AQA-8300',
  board: 'AQA',

@@ -36,6 +36,9 @@ hand and a course built by the Worker are indistinguishable in shape.
    invented codes, option correctness, family fit. Below 0.8, the course is not ready.
 7. **Ship.** Hand-written: the file goes in `src/specs/` and is required in `build.js`. Worker-built:
    it is published to KV and appears in the app's catalogue with its provenance line.
+8. **Depth.** Once published, every room gets a kit (`worker/depth.js`, contract `src/kit-validator.js`,
+   family kit rules in `references/families.md`): written by one model, re-solved and read by another,
+   rewritten once on objections. By hand, the same shape is what `src/authored/` holds for maths.
 
 ## Monthly update pass
 

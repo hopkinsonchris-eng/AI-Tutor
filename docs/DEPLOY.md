@@ -166,8 +166,9 @@ forgotten password is reset, since you never see passwords.
 
 # Courses: what to set up, and what the free plan can do
 
-The Worker's `wrangler.toml` now declares two Workflows and a Cron Trigger; a Git deploy creates all
-three. Nothing else to configure — the same `ANTHROPIC_API_KEY` secret pays for builds.
+The Worker's `wrangler.toml` now declares three Workflows (build, monthly review, depth) and a Cron
+Trigger; a Git deploy creates all four. Nothing else to configure — the same `ANTHROPIC_API_KEY`
+secret pays for builds.
 
 - **Workflows** (free plan): 1,024 steps per instance, unlimited wall-clock per step, 100 concurrent
   instances, 10 ms of CPU per step. A course build is 5 + topics steps (the last finds revision hub
@@ -178,6 +179,10 @@ three. Nothing else to configure — the same `ANTHROPIC_API_KEY` secret pays fo
 - **Cost**: roughly £2–4 per course at API rates, mostly the per-topic calls reading a cached copy of
   the document. Your credit balance is still the ceiling. Builds are coalesced, capped at 40 topics,
   and the monthly pass costs nothing for an unchanged document.
+- **Depth**: a published course's rooms are written and checked automatically (about £12 to £20 and
+  20 to 30 minutes for 34 topics; rooms fill in as they land). The Admin course card shows rooms
+  done, model calls, and any room the second model refused twice, with Retry and Rebuild depth. Depth
+  only starts on publish, approval, or those buttons, so cost is never open-ended.
 - **Revision links**: each built course carries the hub pages the builder found. Edit them under the
   course in the Admin tab (one per line, `name | kind | https://…`); students see them in every room.
   The four built-in courses get search links only, plus the maths course's hand-checked videos.

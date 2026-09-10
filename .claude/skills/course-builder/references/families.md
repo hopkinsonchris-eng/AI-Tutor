@@ -16,6 +16,17 @@ essaySubject: true. Mark style: levels.
 5. Where the specification offers options (choose one of several topics), model them as options with the topic ids they choose between, and set topic.option on each choice.
 ```
 
+Room kit (the depth the Worker writes and checks for every room of a course in this family; src/kit-validator.js is the contract):
+
+```
+Essay-based kit.
+1. Model paragraphs: at least two, each titled with the level it would earn under the board’s levels (for example "Model paragraph — Level 4") and written to that level, with the point, the named evidence, the developed chain of reasoning and the mini-judgement; one strong and one weaker, so the student can see the difference.
+2. A case-study fact file for each named example the specification requires for the topic: the dates, figures, places and names an examiner rewards, one per item.
+3. An essay plan for one question in the board’s own command words: the decoded question, the paragraphs in order, the evaluation thread, and what the conclusion must say.
+4. Questions are exam-style in the board’s command words, with the marks each carries; `a` is the indicative content an examiner expects in one or two lines, `sol` is a model answer at the top level.
+5. The lesson teaches the argument, not the heading: every section ends with what a top-level answer does with the idea.
+```
+
 ## Quantitative — `quantitative`
 
 ```
@@ -26,6 +37,17 @@ essaySubject: false. Mark style: points.
 3. Each key idea is a technique or result the student must be able to perform: idea = the technique, content = the standard forms, the conditions under which it applies, and the step the mark scheme looks for.
 4. caseStudies holds worked-example prompts rather than case studies: the archetypal question each key idea is tested with, one line each. Empty is not acceptable for a quantitative topic.
 5. Keep the specification’s own section numbering as topic and idea codes (for example "P1", "P1.1") so a student and a teacher can find the line in the document.
+```
+
+Room kit (the depth the Worker writes and checks for every room of a course in this family; src/kit-validator.js is the contract):
+
+```
+Quantitative kit.
+1. A formulae sheet: every result the student must write from memory for this topic, one per item, in the board’s notation, saying which ones the exam formulae booklet provides.
+2. Worked examples are faded: each step is one line the student can predict before revealing it, ending in the answer; include the line the mark scheme awards the method mark for.
+3. Every question has a single checkable answer in `a` and the full method in `sol`; difficulty 1 is a one-idea question, 2 is exam standard, 3 combines this topic with an earlier one or an unfamiliar context.
+4. Hints go from a nudge, to the method, to the first line of working — never the answer.
+5. Cards hold definitions, standard forms and results, not questions.
 ```
 
 ## Science with practicals — `science`
@@ -40,6 +62,17 @@ essaySubject: false. Mark style: points.
 5. Include a topic for the working-scientifically / practical-skills strand if the specification assesses it separately, mapped to the component that examines it.
 ```
 
+Room kit (the depth the Worker writes and checks for every room of a course in this family; src/kit-validator.js is the contract):
+
+```
+Science with practicals kit.
+1. A method sheet for every required practical the topic names: the title as the specification gives it, the method in numbered steps, the independent, dependent and control variables, the apparatus the document lists, the likely errors, and the AT / WS skills it assesses.
+2. At least one extended-response model answer (six marks at GCSE, nine at A level) written to the levels, with a note on what a bottom-level answer misses.
+3. Questions mix recall, explanation and calculation; every calculation question gives the equation, the substitution and the answer with its unit in `sol`, and the intermediate mark-scheme step in a hint.
+4. The lesson pairs each content statement with what the student must do with it: the mechanism, the equation, the graph or the practical.
+5. Cards hold definitions, equations with units, and the key figures.
+```
+
 ## Modern foreign language — `language`
 
 ```
@@ -50,4 +83,15 @@ essaySubject: false. Mark style: levels.
 3. Topics are the specification’s themes and sub-themes (for example "Identity and culture — family and relationships"); key ideas within a topic are the vocabulary fields and the grammar the theme is used to test.
 4. A grammar topic per tier or level lists the structures the specification requires (tenses, agreement, negation, subjunctive where relevant) as key ideas with content naming the forms.
 5. caseStudies holds the set texts and films at A level, and the speaking-task role-play and photo-card formats at GCSE. Command words are the task instructions in the target language and English.
+```
+
+Room kit (the depth the Worker writes and checks for every room of a course in this family; src/kit-validator.js is the contract):
+
+```
+Modern foreign language kit.
+1. Vocabulary fields: at least two per topic, each a titled list of the words and phrases the theme is tested with, target language first, then English.
+2. A grammar sheet for the structures the theme is used to test, with the form and one example sentence for each.
+3. Questions are the exam’s task types: comprehension in the target language, translation both ways, and a writing task with the marks it carries; `sol` gives a model answer.
+4. The lesson is written in English about the theme and its grammar, with every example in the target language.
+5. Cards are the word or phrase on the front and the translation on the back.
 ```

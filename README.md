@@ -9,6 +9,7 @@ Four subjects are hand-written and built in: **OCR Geography H481**, **Edexcel B
 ```
 src/
   spec-validator.js    the contract every spec meets — shared by the tests and the Worker
+  kit-validator.js     the contract every room kit meets — lesson, worked examples, question bank, exit ticket, cards, family extras
   families.js          essay / quantitative / science / language: how the same schema is filled differently
   template.html        the app shell (HTML + JS); placeholders are filled by build.js
   styles.css           stylesheet
@@ -20,6 +21,7 @@ worker/
   index.js             Cloudflare Worker: accounts, sessions, invites, daily caps, progress, the admin API,
                        courses, the Workflow classes, the monthly cron, and the forward to Anthropic
   builder.js           the course builder: document → outline → topics → validate → judge → resources → publish; the monthly review
+  depth.js             course depth: for every room, a kit written by one model and checked by another, four rooms at a time
 data/catalogue.json    qualification codes per board and level, with verified spec PDF links
 .claude/skills/course-builder/  the same procedure for a person, and the family reference generated from src/families.js
   wrangler.toml
@@ -54,6 +56,25 @@ The course builder's last stage finds hub pages for each built course (BBC Bites
 Tutor, Save My Exams, Seneca, the board's own page), checks each exists, and stores them with the
 spec; an admin can edit them per course from the Admin tab. `npm run proof` photographs all of this at
 1280, 900 and 390 pixels wide and asserts the layout (`docs/proof/`).
+
+## Course depth
+
+A built course starts with the specification map alone. As soon as it is published, a second
+Workflow writes a **kit** for every room, four rooms at a time: a lesson with one section per key
+idea, four to six faded worked examples, 12 to 16 questions in three difficulty tiers with a
+three-hint ladder, a marked answer and a full solution, a four-question exit ticket, 12 to 15 recall
+cards, and the family's extras (a formulae sheet; required-practical method sheets and an
+extended-response model; model paragraphs marked to the board's levels, case-study fact files and an
+essay plan; vocabulary fields and a grammar sheet). Sonnet writes it, `src/kit-validator.js` proves
+the shape, and Opus re-solves every question and reads the lesson against the key ideas before it is
+stored. A kit that fails is rewritten once with the objections; a second failure leaves that room
+spec-only and lists it on the Admin course card with a Retry.
+
+Students see a room's kit the moment it lands: the same Lesson, Key facts & links, Practise, Exit
+ticket and Cards stations the hand-authored maths rooms use, with a "being written" mark on rooms
+still to come. Kits are fetched per room and cached on the device by build stamp. Approving a monthly
+proposal that changes a topic's key ideas rebuilds only that room's kit. About £12 to £20 per
+34-topic course; the Admin card shows the model-call count.
 
 ## How it works on your site
 

@@ -61,3 +61,9 @@ iPad width: the left rail is part of the page; the right rail opens as a drawer 
 Phone: the course and topic drawer over the session, bottom nav and status strip kept
 
 ![9-phone-drawer](9-phone-drawer.png)
+
+## 11-room-with-kit
+
+A built course’s room after depth: the checked lesson with one section per key idea, faded worked examples, the required-practical method sheet, and the provenance line
+
+![11-room-with-kit](11-room-with-kit.png)

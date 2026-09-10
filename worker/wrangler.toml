@@ -33,6 +33,13 @@ name = "course-review"
 binding = "COURSE_REVIEW"
 class_name = "CourseReview"
 
+# Depth: after a course is published, every room's lesson, worked examples, question bank, exit ticket and
+# cards are written by one model and checked by another, four rooms at a time.
+[[workflows]]
+name = "course-depth"
+binding = "COURSE_DEPTH"
+class_name = "CourseDepth"
+
 # The monthly pass: 06:00 UTC on the first of the month. It HEAD-checks each course's document and
 # only reads it again if it changed, so most months it costs nothing.
 [triggers]

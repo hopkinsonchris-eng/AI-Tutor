@@ -10,7 +10,7 @@
  * diffSpecs(a, b)          topic-level diff, with `breaking` set when student progress would be orphaned
  * anthropicAI(env)         the real `deps.ai`; tests supply canned answers
  *
- * deps = { kv, step, ai: {outline, topic, judge, locate, docChanges, resources}, head(url), now(), boardDomains }
+ * deps = { kv, step, ai: {outline, topic, judge, locate, docChanges, resources}, head(url), now(), boardDomains, onPublished?(id) }
  *                          (resources is optional: without it a course is published with no hub pages)
  * The Workflow classes that give this durability live in index.js; this file has no Cloudflare imports
  * so the pipeline can be run and tested anywhere.
@@ -181,7 +181,9 @@ export async function runBuild(params, deps, opts = {}) {
       await kv.put(`spec:${id}`, JSON.stringify(spec));
       await kv.delete(`spec-draft:${id}`);
       await kv.put(metaKey, JSON.stringify({ ...meta, status: 'published' }));
-      return save({ status: 'published', done: total, stage: 'Done', message: `Published — judged ${Math.round(score * 100)}% faithful to the document.`, judge, family });
+      const out = await save({ status: 'published', done: total, stage: 'Done', message: `Published — judged ${Math.round(score * 100)}% faithful to the document.`, judge, family });
+      if (typeof deps.onPublished === 'function') { try { await deps.onPublished(id); } catch (e) { /* depth is a second phase; a failure to start it never unpublishes */ } }
+      return out;
     }
     await kv.put(`spec-draft:${id}`, JSON.stringify(spec));
     await kv.put(metaKey, JSON.stringify({ ...meta, status: 'review' }));

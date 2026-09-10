@@ -3,7 +3,8 @@
    6 provenance, 11 all four families pass the contract, 12 skill and prompts share one source. */
 const path = require('path'), { execFileSync } = require('child_process');
 const { loadModule, kv, inlineStep } = require('./_load.js');
-const validator = require('../src/spec-validator.js'), families = require('../src/families.js');
+const validator = require('../src/spec-validator.js'), families = require('../src/families.js'), kitValidator = require('../src/kit-validator.js');
+const { sampleKit } = require('./_kit.js');
 let pass = 0; const fails = [];
 const ok = (l, c, d = '') => c ? pass++ : fails.push(l + (d ? ' — ' + d : ''));
 
@@ -11,6 +12,8 @@ const B = loadModule(path.join(__dirname, '..', 'worker', 'builder.js'), {
   '../src/spec-validator.js': validator, '../src/families.js': families,
 }).exports;
 const { runBuild, runReview, diffSpecs, prompts, specIdFor, PROMPT_VERSION } = B;
+const D = loadModule(path.join(__dirname, '..', 'worker', 'depth.js'), { '../src/kit-validator.js': kitValidator, '../src/families.js': families }).exports;
+const { runDepth, kitPrompts, KIT_BATCH } = D;
 
 /* ---------- canned documents: what the model returns, per family ---------- */
 const idea = (code, n) => ({ code, q: `What does ${code} require?`, idea: `Idea ${code}`, content: `The specification statement for ${code}, in the board's own terms, with what the student must be able to do — number ${n}.` });
@@ -182,6 +185,53 @@ const deps = (f, over = {}) => ({ kv: kv(), step: inlineStep(), ai: ai(f), head:
     const rec = await runBuild(params('science'), d);
     ok('R3 an AI client without a resources method still builds and publishes', rec.status === 'published' && (await d.kv.get('spec:' + rec.id, 'json')).resources.hubs.length === 0);
   }
+
+  /* ---------- course depth (tooler criteria 1–4, 8): write → validate → judge → one rewrite ---------- */
+  const kitAI = (over = {}) => { const calls = { kit: 0, judge: 0, prompts: [], inflight: 0, maxInflight: 0 }; return { calls,
+    async kit({ topic, family, prompt, problems }) { calls.kit++; calls.prompts.push(prompt); calls.inflight++; calls.maxInflight = Math.max(calls.maxInflight, calls.inflight); await new Promise(r => setTimeout(r, 5)); calls.inflight--; return over.kit ? over.kit(topic, family, problems, calls) : sampleKit(topic, family); },
+    async judgeKit({ topic, kit }) { calls.judge++; return over.judge ? over.judge(topic, kit, calls) : { score: 0.95, wrong: [], problems: [], notes: 'Faithful and correct.' }; } }; };
+  const publishedKv = async (f = 'science', topicCount = 3) => { const d = deps(f); if (topicCount !== 3) d.ai.outline = async () => outlineFor(f, { topics: Array.from({ length: topicCount }, (_, i) => ({ id: '3.' + (i + 1), component: i % 2 ? 'P2' : 'P1', option: null, name: 'Topic ' + (i + 1) })) }); const rec = await runBuild(params(f), d); if (rec.status !== 'published') throw new Error('setup: ' + rec.error); return { kv: d.kv, id: rec.id }; };
+  const depthDeps = (kv, ai) => ({ kv, step: inlineStep(), ai, now: () => '2026-09-10T15:00:00.000Z' });
+  {
+    const { kv, id } = await publishedKv('science'); const ai = kitAI(); const d = depthDeps(kv, ai);
+    const rec = await runDepth({ id }, d);
+    const kit = await kv.get(`kit:${id}:3.1`, 'json');
+    ok('D1 depth writes a kit for every topic, judges each, and records progress to done', rec.status === 'done' && rec.total === 3 && Object.keys(rec.done).length === 3 && rec.failed.length === 0 && ai.calls.kit === 3 && ai.calls.judge === 3 && rec.calls === 6, JSON.stringify({ status: rec.status, done: rec.done, failed: rec.failed, calls: ai.calls.kit + '/' + ai.calls.judge }));
+    ok('D1 a stored kit passes the contract and carries provenance', kit && kitValidator.validateKit(kit, (await kv.get('spec:' + id, 'json')).topics[0], 'science').ok && kit.built.judge.score === 0.95 && kit.built.promptVersion && kit.built.models.length === 2 && kit.family === 'science', JSON.stringify(kit && kit.built));
+    ok('D1 the steps are named per room', d.step.names.includes('kit write 3.1') && d.step.names.includes('kit judge 3.1'), d.step.names.join(','));
+    ok('D7 the writer prompt carries the topic\'s key ideas, the mark conventions and the family\'s kit rules', /3\.1\.1/.test(ai.calls.prompts[0]) && /commandWords|command words/i.test(ai.calls.prompts[0]) && families.FAMILIES.science.kit.rules.every(r => ai.calls.prompts[0].includes(r)) && /12/.test(ai.calls.prompts[0]));
+  }
+  {
+    const { kv, id } = await publishedKv('science'); let first = true;
+    const ai = kitAI({ judge: (topic) => { if (topic.id === '3.2' && first) { first = false; return { score: 0.9, wrong: [{ index: 4, why: 'the answer key says 12 but the solution gives 10' }], problems: [], notes: '' }; } return { score: 0.95, wrong: [], problems: [], notes: '' }; } });
+    const rec = await runDepth({ id }, depthDeps(kv, ai));
+    ok('D2 a wrong answer key forces one rewrite carrying the judge\'s objection, then a second judgement', rec.status === 'done' && Object.keys(rec.done).length === 3 && ai.calls.kit === 4 && ai.calls.judge === 4 && ai.calls.prompts.some(p => /answer key says 12/.test(p) && /question 5/i.test(p)), JSON.stringify([ai.calls.kit, ai.calls.judge, rec.failed]));
+  }
+  {
+    const { kv, id } = await publishedKv('science');
+    const ai = kitAI({ judge: (topic) => topic.id === '3.3' ? { score: 0.5, wrong: [], problems: ['the lesson contradicts idea 3.3.2'], notes: '' } : { score: 0.95, wrong: [], problems: [], notes: '' } });
+    const rec = await runDepth({ id }, depthDeps(kv, ai));
+    ok('D3 a room the judge fails twice is listed with its problems, not stored, and the rest of the course completes', rec.status === 'done' && Object.keys(rec.done).length === 2 && rec.failed.length === 1 && rec.failed[0].topic === '3.3' && /contradicts/.test(rec.failed[0].problems.join()) && (await kv.get(`kit:${id}:3.3`)) === null, JSON.stringify(rec.failed));
+  }
+  {
+    const { kv, id } = await publishedKv('science'); let bad = true;
+    const ai = kitAI({ kit: (topic, family) => { if (topic.id === '3.1' && bad) { bad = false; return sampleKit(topic, family, { room: { questions: sampleKit(topic, family).room.questions.slice(0, 11) } }); } return sampleKit(topic, family); } });
+    const rec = await runDepth({ id }, depthDeps(kv, ai));
+    ok('D4 a kit the validator refuses is rewritten with the validator\'s problems before any judge call', rec.status === 'done' && rec.failed.length === 0 && ai.calls.kit === 4 && ai.calls.judge === 3 && ai.calls.prompts.some(p => /12/.test(p) && /refused/.test(p)), JSON.stringify([ai.calls.kit, ai.calls.judge]));
+  }
+  {
+    const { kv, id } = await publishedKv('science');
+    const ai1 = kitAI({ judge: (topic) => topic.id === '3.2' ? { score: 0.3, wrong: [], problems: ['x'], notes: '' } : { score: 0.95, wrong: [], problems: [], notes: '' } });
+    await runDepth({ id }, depthDeps(kv, ai1));
+    const ai2 = kitAI(); const rec = await runDepth({ id, only: ['3.2'] }, depthDeps(kv, ai2));
+    ok('D5 a retry of one room rebuilds only that room, clears its failure and keeps the others', rec.status === 'done' && ai2.calls.kit === 1 && Object.keys(rec.done).length === 3 && rec.failed.length === 0 && rec.total === 3 && !!(await kv.get(`kit:${id}:3.2`)), JSON.stringify([ai2.calls.kit, rec.done, rec.failed]));
+  }
+  {
+    const { kv, id } = await publishedKv('science', 9); const ai = kitAI();
+    const rec = await runDepth({ id }, depthDeps(kv, ai));
+    ok(`D6 rooms are written ${KIT_BATCH} at a time, never more, never one by one`, rec.status === 'done' && Object.keys(rec.done).length === 9 && ai.calls.maxInflight === KIT_BATCH, String(ai.calls.maxInflight));
+  }
+  ok('D7 the kit rules reach the skill reference too', require('fs').readFileSync(path.join(__dirname, '..', '.claude', 'skills', 'course-builder', 'references', 'families.md'), 'utf8').includes(families.FAMILIES.essay.kit.rules[0]));
 
   console.log('PASSED: ' + pass); console.log('-'.repeat(50));
   if (fails.length) { console.log('FAILED:'); fails.forEach(f => console.log('  ' + f)); process.exit(1); }

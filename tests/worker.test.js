@@ -4,14 +4,16 @@
    their imports satisfied from stubs (tests/_load.js). The deployed files are never touched. */
 const fs = require('fs'), path = require('path');
 const { loadModule, kv, inlineStep } = require('./_load.js');
-const validator = require('../src/spec-validator.js'), families = require('../src/families.js');
+const validator = require('../src/spec-validator.js'), families = require('../src/families.js'), kitValidator = require('../src/kit-validator.js');
+const { sampleKit } = require('./_kit.js');
 const CATALOGUE = require('../data/catalogue.json');
 let pass = 0; const fails = [];
 const ok = (label, cond, detail = '') => cond ? pass++ : fails.push(label + (detail ? ' — ' + detail : ''));
 
 const builder = loadModule(path.join(__dirname, '..', 'worker', 'builder.js'), { '../src/spec-validator.js': validator, '../src/families.js': families });
 class WorkflowEntrypoint { constructor(ctx, env) { this.ctx = ctx; this.env = env; } }
-const loaded = loadModule(path.join(__dirname, '..', 'worker', 'index.js'), { 'cloudflare:workers': { WorkflowEntrypoint }, './builder.js': builder.exports, '../data/catalogue.json': { default: CATALOGUE } });
+const depth = loadModule(path.join(__dirname, '..', 'worker', 'depth.js'), { '../src/kit-validator.js': kitValidator, '../src/families.js': families });
+const loaded = loadModule(path.join(__dirname, '..', 'worker', 'index.js'), { 'cloudflare:workers': { WorkflowEntrypoint }, './builder.js': builder.exports, './depth.js': depth.exports, '../data/catalogue.json': { default: CATALOGUE } });
 const worker = loaded.exports.default;
 const sandbox = loaded.sandbox;
 builder.sandbox.__fetch = (...a) => sandbox.__fetch(...a);
@@ -226,7 +228,9 @@ const baseEnv = () => ({ ANTHROPIC_API_KEY: 'sk-ant-test', ALLOWED_ORIGIN: 'http
     let headEtag = '"v1"';
     const head = async (url) => ({ ok: true, status: 200, contentType: 'application/pdf', etag: headEtag, lastModified: 'Mon, 01 Sep 2025 00:00:00 GMT', length: 1000, url });
     const pending = [];
-    e.COURSE_BUILDER = { created: [], async create({ id, params }) { this.created.push(id); pending.push(() => builder.exports.runBuild(params, { kv: e.USAGE, step: inlineStep(), ai: cannedAI(), head, now: () => new Date().toISOString(), boardDomains: CATALOGUE.boardDomains })); return { id }; } };
+    e.COURSE_BUILDER = { created: [], async create({ id, params }) { this.created.push(id); pending.push(() => builder.exports.runBuild(params, { ...loaded.exports.builderDeps(e, inlineStep()), ai: cannedAI(), head })); return { id }; } };
+    const cannedKit = () => ({ async kit({ topic, family }) { return sampleKit(topic, family); }, async judgeKit() { return { score: 0.95, wrong: [], problems: [], notes: 'ok' }; } });
+    e.COURSE_DEPTH = { created: [], async create({ id, params }) { this.created.push(params); pending.push(() => depth.exports.runDepth(params, { kv: e.USAGE, step: inlineStep(), ai: cannedKit(), now: () => new Date().toISOString() })); return { id }; } };
     e.COURSE_REVIEW = { created: [], async create({ id, params }) { this.created.push(id); pending.push(() => builder.exports.runReview(params.id, { kv: e.USAGE, step: inlineStep(), ai: cannedAI(), head, now: () => new Date().toISOString(), boardDomains: CATALOGUE.boardDomains })); return { id }; } };
     const runPending = async () => { while (pending.length) await pending.shift()(); };
 
@@ -280,6 +284,35 @@ const baseEnv = () => ({ ANTHROPIC_API_KEY: 'sk-ant-test', ALLOWED_ORIGIN: 'http
     r = await worker.fetch(req('/manage/courses/AQA-9999/links', J('POST', { hubs: [] }, ADM2)), e);
     ok('L1 links for a course that is not published are refused', r.status === 404);
 
+    /* course depth (tooler criteria 1, 5, 6): starts on publish, served per room, retried and rebuilt by the admin */
+    ok('K1 publishing a course starts its depth build automatically, for every room', e.COURSE_DEPTH.created.some(p => p.id === 'AQA-7357' && !p.only), JSON.stringify(e.COURSE_DEPTH.created));
+    await runPending();
+    r = await worker.fetch(req('/courses/AQA-7357/kit/3.1', { headers: STU2 }), e);
+    const kit = await r.json();
+    ok('K2 a student reads a room\'s kit once it is written, with its provenance', r.status === 200 && kit.kit && kit.kit.lesson.why.length > 200 && kit.kit.room.questions.length === 12 && kit.kit.built.judge.score === 0.95, JSON.stringify(kit).slice(0, 200));
+    r = await worker.fetch(req('/courses/AQA-7357/kit/9.9', { headers: STU2 }), e);
+    ok('K2 a room with no kit is a clean 404', r.status === 404);
+    r = await worker.fetch(req('/courses/AQA-7357/kit/3.1'), e);
+    ok('K2 kits need a session', r.status === 401);
+    r = await worker.fetch(req('/courses', { headers: STU2 }), e);
+    const dep = (await r.json()).depth;
+    ok('K2 the course list carries each course\'s depth: which rooms are written, with their stamps', dep && dep['AQA-7357'] && dep['AQA-7357'].status === 'done' && dep['AQA-7357'].total === 2 && dep['AQA-7357'].done['3.1'] && Array.isArray(dep['AQA-7357'].failed), JSON.stringify(dep));
+    r = await worker.fetch(req('/manage/courses/AQA-7357/depth/3.1', { method: 'POST', headers: STU2 }), e);
+    ok('K3 students cannot start depth builds', r.status === 403);
+    r = await worker.fetch(req('/manage/courses/AQA-7357/depth/3.1', { method: 'POST', headers: ADM2 }), e);
+    ok('K3 the admin retries one room', r.status === 202 && e.COURSE_DEPTH.created.some(p => p.id === 'AQA-7357' && p.only && p.only[0] === '3.1'));
+    r = await worker.fetch(req('/manage/courses/AQA-7357/depth', { method: 'POST', headers: ADM2 }), e);
+    ok('K3 the admin rebuilds a course\'s depth', r.status === 202 && e.COURSE_DEPTH.created.filter(p => p.id === 'AQA-7357' && !p.only).length === 2);
+    r = await worker.fetch(req('/manage/courses/AQA-9999/depth', { method: 'POST', headers: ADM2 }), e);
+    ok('K3 depth needs a published course', r.status === 404);
+    await runPending();
+    r = await worker.fetch(req('/manage/courses', { headers: ADM2 }), e);
+    const mcd = (await r.json()).courses.find(c => c.id === 'AQA-7357');
+    ok('K3 the admin course list carries the depth record with its call count', mcd.depth && mcd.depth.total === 2 && mcd.depth.calls > 0 && mcd.depth.status === 'done', JSON.stringify(mcd.depth));
+    const targets = loaded.exports.depthTargets([{ kind: 'idea-changed', topic: '3.1' }, { kind: 'topic-added', topic: '3.4' }, { kind: 'topic-removed', topic: '3.3' }, { kind: 'version', topic: null }, { kind: 'component-changed', topic: null }]);
+    ok('K4 approving a proposal rebuilds only the rooms whose ideas changed or were added, and drops removed ones', targets.rebuild.join() === '3.1,3.4' && targets.remove.join() === '3.3', JSON.stringify(targets));
+    ok('K4 a proposal with no topic-level change rebuilds nothing', loaded.exports.depthTargets([{ kind: 'version', topic: null }]).rebuild.length === 0);
+
     r = await worker.fetch(req('/manage/courses', { headers: STU2 }), e);
     ok('C7 a student cannot see the admin course list', r.status === 403);
     r = await worker.fetch(req('/manage/courses', { headers: ADM2 }), e);
@@ -314,6 +347,7 @@ const baseEnv = () => ({ ANTHROPIC_API_KEY: 'sk-ant-test', ALLOWED_ORIGIN: 'http
     ok('C9 the review queue shows it with the judge\'s missing sections', q.items.some(i => i.kind === 'build' && i.id === 'AQA-8300' && i.judge.missing[0] === '3.3 Exchange'), JSON.stringify(q.items.map(i => [i.kind, i.id])));
     r = await worker.fetch(req('/manage/reviews/AQA-8300/approve', { method: 'POST', headers: ADM2 }), e);
     ok('C9 the admin can approve it regardless', r.status === 200 && (await r.json()).meta.status === 'published');
+    ok('K1 approving a build from the review queue starts its depth too', e.COURSE_DEPTH.created.some(p => p.id === 'AQA-8300' && !p.only));
     r = await worker.fetch(req('/courses/AQA-8300/spec', { headers: STU2 }), e);
     ok('C9 and then students can read it', r.status === 200);
     judgeScore = 0.9;

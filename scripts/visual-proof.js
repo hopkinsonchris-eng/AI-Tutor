@@ -4,6 +4,7 @@
    The stub answers the same routes the Worker does, with a build that advances one step per poll. */
 const http = require('http'), fs = require('fs'), path = require('path'), { execSync } = require('child_process');
 const { chromium } = require('playwright');
+const { sampleKit } = require('../tests/_kit.js');
 
 const ROOT = path.join(__dirname, '..'), OUT = path.join(ROOT, 'docs', 'proof');
 const PORT = 8787, ORIGIN = `http://127.0.0.1:${PORT}`;
@@ -36,6 +37,16 @@ progress.errors = [{ date: daysAgo(1), node: 'OCR-H481|1.2', ref: 'To what exten
 progress.essays = [{ date: daysAgo(1), node: 'OCR-H481|1.2', q: 'To what extent are the water and carbon cycles linked?', marks: 33, level: 3, maxLevel: 4, mark: 21, max: 33, mode: 'EVALUATION' }];
 progress.dayHours = { [daysAgo(4)]: 1.2, [daysAgo(3)]: 0.8, [daysAgo(2)]: 1.5, [daysAgo(1)]: 1.1 }; progress.hours = 4.6;
 progress.boundaries['OCR-H481'] = { 'A*': 82, A: 74, B: 64, C: 54, D: 44, E: 34 };
+/* a written and checked kit for one biology room, and the course's depth record: one room done, one failed, the rest being written */
+const kitTopic = () => biology.topics.find(t => t.id === '3.1');
+const kit = Object.assign(sampleKit(kitTopic(), 'science'), { id: 'AQA-7402', topic: '3.1', family: 'science', built: { at: '2026-09-10T15:40:00Z', models: ['claude-sonnet-5', 'claude-opus-5'], promptVersion: '2026-09-10.1', judge: { score: 0.93, notes: 'Answer keys verified; the lesson follows the specification statements.' } } });
+kit.lesson.why = 'Biological molecules underpin every other topic in this course: enzymes, membranes, DNA and metabolism are all questions about carbohydrates, lipids, proteins and nucleic acids. Paper 1 examines this section directly and Paper 3 draws on it in the essay, so the definitions and the tests have to be automatic.';
+kit.lesson.idea[0] = { h: 'Monomers, polymers and condensation', t: 'Carbohydrates, proteins and nucleic acids are polymers built from monomers by condensation reactions that remove a molecule of water; hydrolysis reverses this by adding one. The exam asks you to name the bond formed (glycosidic, peptide, phosphodiester) and to draw or recognise the reaction, so learn the pattern once and apply it to every family.', code: kitTopic().ideas[0].code };
+kit.lesson.examples[0] = { title: 'Explain how a disaccharide is formed from two monosaccharides', steps: ['Two monosaccharides are joined by a condensation reaction.', 'A molecule of water is removed.', 'A glycosidic bond forms between the two monosaccharides.'] };
+kit.room.facts = ['Condensation joins monomers with the loss of water; hydrolysis splits them by adding water.', 'Glycosidic bonds join monosaccharides; peptide bonds join amino acids; phosphodiester bonds join nucleotides.', 'Benedict’s test: reducing sugars give a brick-red precipitate on heating; non-reducing sugars need acid hydrolysis first.'];
+kit.room.questions[0] = { q: 'Name the bond formed when two amino acids join, and the type of reaction that forms it.', a: 'Peptide bond; condensation', sol: 'A condensation reaction between the amine group of one amino acid and the carboxyl group of the next removes a molecule of water and forms a peptide bond.', m: 2, d: 1, hints: ['Think about what is removed when monomers join.', 'The reaction that removes water has a name.', 'Amine + carboxyl → … bond, with H₂O lost.'], codes: [kitTopic().ideas[0].code] };
+kit.extras = [{ kind: 'practical', title: 'Required practical 1: microscopy — method sheet', items: ['Prepare a temporary mount: a drop of water, the specimen, a coverslip lowered at an angle to avoid air bubbles.', 'Independent variable: specimen; dependent: image; control: magnification and stain.', 'Skills assessed: AT d, AT e, WS 2.1.'] }, { kind: 'extended', title: 'Six-mark model answer: describe how you would test a solution for a non-reducing sugar', items: ['Test with Benedict’s first: no colour change. Hydrolyse with dilute HCl, neutralise with sodium hydrogencarbonate, re-test with Benedict’s: brick-red precipitate shows a non-reducing sugar was present. A Level 1 answer forgets the neutralising step.'] }];
+const depthRec = { status: 'building', total: biology.topics.length, done: { '3.1': kit.built.at }, failed: ['3.3'] };
 const nudge = { text: 'Matthew, your last two Geography essays lost the judgement marks: plan and mark one more 33-marker in Earth’s life support systems before the maths cards.', node: 'OCR-H481|1.2', station: 'essay' };
 const users = { 'tok-matthew': { username: 'matthew', name: 'Matthew', role: 'student', daily: 200 }, 'tok-student': { username: 'matthew', name: 'Matthew', role: 'student', daily: 200 }, 'tok-admin': { username: 'chris', name: 'Chris', role: 'admin', daily: 2000 } };
 let build = null; const states = { 'OCR-H432': { status: 'retracted' } };
@@ -54,12 +65,14 @@ const server = http.createServer((req, res) => {
     if (p === '/auth/me') return me ? send(200, { user: me }) : send(401, { error: 'not signed in' });
     if (p === '/' && m === 'POST') return send(200, { id: 'msg_1', content: [{ type: 'text', text: JSON.stringify(nudge) }] });
     if (p === '/progress') return m === 'GET' ? (tok === 'tok-matthew' ? send(200, { updatedAt: new Date().toISOString(), device: 'an iPad', state: progress }) : send(404, { error: 'nothing saved yet' })) : send(200, { ok: true, updatedAt: new Date().toISOString() });
-    if (p === '/courses') return send(200, { catalogue: CATALOGUE, courses: states, building: build && build.status === 'building' ? { [build.id]: build } : {} });
+    if (p === '/courses') return send(200, { catalogue: CATALOGUE, courses: states, building: build && build.status === 'building' ? { [build.id]: build } : {}, depth: { 'AQA-7402': depthRec } });
+    if (/^\/courses\/AQA-7402\/kit\/3\.1$/.test(p)) return send(200, { kit });
+    if (/^\/courses\/[^/]+\/kit\//.test(p)) return send(404, { error: 'no kit for that room yet' });
     if (p === '/courses/build') { if (states['AQA-7402'] && states['AQA-7402'].status === 'published') return send(200, { status: 'published', id: 'AQA-7402' }); build = { id: 'AQA-7402', status: 'building', stage: 'Finding the specification', done: 0, total: 13, message: stages[0] }; return send(202, { status: 'building', id: 'AQA-7402', joined: false, build }); }
     if (/^\/courses\/[^/]+\/status$/.test(p)) { if (build && build.status === 'building') { build.done = Math.min(build.done + 1, build.total); build.message = stages[build.done] || 'Judging the map against the document…'; build.stage = build.done < 2 ? 'Reading the specification' : build.done < 11 ? 'Mapping topics' : 'Judging against the document'; if (build.done >= build.total) { build.status = 'published'; build.message = 'Published — judged 91% faithful to the document.'; states['AQA-7402'] = { status: 'published' }; } } return send(200, { id: 'AQA-7402', status: build ? build.status : 'none', build, meta: build && build.status === 'published' ? meta : null }); }
     if (/^\/courses\/[^/]+\/spec$/.test(p)) return (tok === 'tok-matthew' || (states['AQA-7402'] && states['AQA-7402'].status === 'published')) ? send(200, { spec: biology, meta }) : send(404, { error: 'not published' });
     if (p === '/manage/users') return send(200, { users: [users['tok-admin'], { ...users['tok-student'], created: '2026-09-10', hasPassword: true, today: 14, lastSeen: '2026-09-10T11:40:00Z', device: 'an iPad' }], site: ORIGIN });
-    if (p === '/manage/courses') return send(200, { courses: [{ ...meta, build: { status: 'published', done: 13, total: 13 }, proposal: { createdAt: proposal.createdAt, breaking: true, count: 4 }, pending: true }], lastRun: { at: '2026-10-01T06:00:00Z', courses: ['AQA-7402'] }, catalogueExtra: [] });
+    if (p === '/manage/courses') return send(200, { courses: [{ ...meta, depth: { ...depthRec, failed: [{ topic: '3.3', problems: ['question 7: the answer key gives 0.25 mm but the solution works to 0.025 mm', 'lesson.idea[2]: contradicts the specification on the direction of water movement'] }], calls: 27, promptVersion: '2026-09-10.1' }, build: { status: 'published', done: 13, total: 13 }, proposal: { createdAt: proposal.createdAt, breaking: true, count: 4 }, pending: true }], lastRun: { at: '2026-10-01T06:00:00Z', courses: ['AQA-7402'] }, catalogueExtra: [] });
     if (p === '/manage/reviews') return send(200, { items: [proposal, { kind: 'needs-link', id: 'OCR-H420', subject: 'Biology', board: 'OCR', code: 'H420', level: 'A level', requestedBy: 'kitty', error: 'the located URL is not on OCR\'s domain', updatedAt: '2026-09-10T13:10:00Z' }] });
     return send(404, { error: 'not found' });
   });
@@ -157,6 +170,19 @@ const server = http.createServer((req, res) => {
   await page.click('#scrim', { position: { x: 380, y: 400 } });
   await page.waitForFunction(() => document.querySelector('#rail-l').getBoundingClientRect().left < -1, null, { timeout: 5000 });
   must(true, '390px: tapping outside closes the drawer');
+  await page.context().close();
+
+  /* 11. a room with a written and checked kit (tooler course depth, criterion 5) */
+  page = await open('tok-matthew', { width: 1280, height: 900 }, '#rail-l .ccard');
+  await page.click('#rail-l [data-course="AQA-7402"]'); await page.waitForSelector('#rail-l [data-open="AQA-7402|3.1"]');
+  must((await page.locator('#rail-l .pen').count()) === biology.topics.length - 1, 'tree: every biology room without a kit yet carries the being-written mark');
+  await page.click('#rail-l [data-open="AQA-7402|3.1"]');
+  await page.waitForFunction(() => /Written and checked/.test(document.querySelector('#v-rooms').textContent), null, { timeout: 10000 });
+  must(/Key facts & links/.test(await page.locator('.stations').textContent()) && /Required practical 1/.test(await page.locator('#v-rooms').textContent()) && (await page.locator('#v-rooms [data-lxrev]').count()) === 4, 'room: kit lesson with worked examples, the practical method sheet and the Key facts tab');
+  await snap(page, '11-room-with-kit', 'A built course’s room after depth: the checked lesson with one section per key idea, faded worked examples, the required-practical method sheet, and the provenance line');
+  await page.click('[data-station="practise"]');
+  await page.waitForSelector('[data-ahint]');
+  must(/Hint 1/.test(await page.locator('#v-rooms').textContent()) && /Peptide bond|amino acids/.test(await page.locator('#v-rooms').textContent()), 'room: practise draws from the checked bank with the hint ladder');
   await page.context().close();
 
   await browser.close(); server.close();

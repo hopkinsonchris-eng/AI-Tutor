@@ -182,3 +182,4 @@ details.links{margin-top:8px;font-size:14px}details.links summary{cursor:pointer
  body.three .status{position:sticky;bottom:0;background:var(--paper)}
  body.three .scrim.show{display:none}
 }
+.pen{font-style:normal;color:var(--pencil);font-size:11px;margin-left:5px}

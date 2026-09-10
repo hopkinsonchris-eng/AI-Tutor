@@ -45,6 +45,7 @@
 
 import { WorkflowEntrypoint } from 'cloudflare:workers';
 import { runBuild, runReview, anthropicAI, headOf, specIdFor } from './builder.js';
+import { runDepth, kitAI } from './depth.js';
 import CATALOGUE from '../data/catalogue.json';
 
 const MODELS = ['claude-sonnet-5', 'claude-haiku-4-5'];
@@ -99,8 +100,28 @@ export default {
 
 /* ---------- durable execution: the Workflow classes wrap the pipeline ---------- */
 
-function builderDeps(env, step) {
-  return { kv: env.USAGE, step, ai: anthropicAI(env), head: headOf, now: () => new Date().toISOString(), boardDomains: CATALOGUE.boardDomains };
+export function builderDeps(env, step) {
+  return { kv: env.USAGE, step, ai: anthropicAI(env), head: headOf, now: () => new Date().toISOString(), boardDomains: CATALOGUE.boardDomains, onPublished: (id) => startDepth(env, id) };
+}
+/* Depth is a second phase: it starts when a course is published or approved, and the admin can start it again. */
+async function startDepth(env, id, only) {
+  if (!env.COURSE_DEPTH) return false;
+  await env.COURSE_DEPTH.create({ id: `depth-${id}-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`, params: only && only.length ? { id, only } : { id } });
+  return true;
+}
+/* Which rooms a proposal's changes touch: rebuild the kits whose ideas changed or that are new; drop removed ones. */
+export function depthTargets(changes) {
+  const rebuild = [], remove = [];
+  for (const c of changes || []) {
+    if (!c || !c.topic) continue;
+    if (c.kind === 'topic-removed') { if (!remove.includes(c.topic)) remove.push(c.topic); continue; }
+    if (/^idea-|^topic-added$|^topic-renamed$|^case-studies-changed$/.test(c.kind) && !rebuild.includes(c.topic)) rebuild.push(c.topic);
+  }
+  return { rebuild, remove };
+}
+const publicDepth = d => d ? { status: d.status, total: d.total, done: d.done || {}, failed: (d.failed || []).map(f => f.topic), updatedAt: d.updatedAt } : null;
+export class CourseDepth extends WorkflowEntrypoint {
+  async run(event, step) { return runDepth(event.payload, { kv: this.env.USAGE, step, ai: kitAI(this.env), now: () => new Date().toISOString() }); }
 }
 export class CourseBuilder extends WorkflowEntrypoint {
   async run(event, step) { return runBuild(event.payload, builderDeps(this.env, step)); }
@@ -141,7 +162,20 @@ async function courses(request, env, url, cors) {
     const builds = await env.USAGE.list({ prefix: 'build:' });
     const building = {};
     for (const e of builds.keys) { const b = await env.USAGE.get(e.name, 'json'); if (b && b.status === 'building' && Date.now() - Date.parse(b.updatedAt || 0) <= BUILD_STALE_MS) building[b.id] = publicBuild(b); }
-    return json({ catalogue: entries.map(q => ({ id: q.id, level: q.level, subject: q.subject, board: q.board, code: q.code, hasUrl: !!q.specUrl })), courses: states, building }, 200, cors);
+    const depth = {};
+    const dl = await env.USAGE.list({ prefix: 'depth:' });
+    for (const e of dl.keys) { const d = await env.USAGE.get(e.name, 'json'); if (d) depth[d.id] = publicDepth(d); }
+    return json({ catalogue: entries.map(q => ({ id: q.id, level: q.level, subject: q.subject, board: q.board, code: q.code, hasUrl: !!q.specUrl })), courses: states, building, depth }, 200, cors);
+  }
+
+  let km = /^\/courses\/([^/]+)\/kit\/([^/]+)$/.exec(p);
+  if (km && request.method === 'GET') {
+    const id = decodeURIComponent(km[1]), topic = decodeURIComponent(km[2]);
+    const st = await courseState(env, id);
+    if (st.status !== 'published') return json({ error: 'that course is not published' }, 404, cors);
+    const kit = await env.USAGE.get(`kit:${id}:${topic}`, 'json');
+    if (!kit) return json({ error: 'no kit for that room yet' }, 404, cors);
+    return json({ kit }, 200, cors);
   }
 
   if (p === '/courses/build' && request.method === 'POST') {
@@ -193,7 +227,8 @@ async function manageCourses(request, env, url, cors) {
       const meta = await env.USAGE.get(e.name, 'json'); if (!meta) continue;
       const build = await env.USAGE.get(`build:${meta.id}`, 'json');
       const proposal = await env.USAGE.get(`proposal:${meta.id}`, 'json');
-      out.push({ ...meta, build: publicBuild(build), proposal: proposal ? { createdAt: proposal.createdAt, breaking: proposal.breaking, count: proposal.changes.length } : null });
+      const depthRec = await env.USAGE.get(`depth:${meta.id}`, 'json');
+      out.push({ ...meta, build: publicBuild(build), depth: depthRec, proposal: proposal ? { createdAt: proposal.createdAt, breaking: proposal.breaking, count: proposal.changes.length } : null });
     }
     const builds = await env.USAGE.list({ prefix: 'build:' });
     for (const e of builds.keys) { const b = await env.USAGE.get(e.name, 'json'); if (b && !out.some(x => x.id === b.id)) out.push({ id: b.id, level: b.level, subject: b.subject, board: b.board, code: b.code, status: b.status, build: publicBuild(b) }); }
@@ -227,6 +262,17 @@ async function manageCourses(request, env, url, cors) {
     const build = await env.USAGE.get(`build:${id}`, 'json');
     if (build && build.status === 'needs-link') await env.USAGE.delete(`build:${id}`);
     return json({ ok: true, id, entry: q }, 200, cors);
+  }
+
+  /* depth: build or rebuild every room's kit, or retry one room */
+  let dm = /^\/manage\/courses\/([^/]+)\/depth(?:\/([^/]+))?$/.exec(p);
+  if (dm && request.method === 'POST') {
+    const id = decodeURIComponent(dm[1]);
+    const meta = await env.USAGE.get(`spec-meta:${id}`, 'json');
+    if (!meta || meta.status !== 'published') return json({ error: 'depth needs a published course' }, 404, cors);
+    if (!env.COURSE_DEPTH) return json({ error: 'the depth Workflow is not deployed' }, 503, cors);
+    await startDepth(env, id, dm[2] ? [decodeURIComponent(dm[2])] : null);
+    return json({ ok: true, started: dm[2] ? [decodeURIComponent(dm[2])] : 'all' }, 202, cors);
   }
 
   /* the course's hub links, edited by the admin: written into the published spec and stamped so devices refresh */
@@ -301,7 +347,12 @@ async function manageCourses(request, env, url, cors) {
       const next = { ...meta, status: 'published', pending: false, approvedAt: new Date().toISOString(), approvedBy: s.user.username };
       if (meta.draft) { next.source = meta.draft.source; next.built = meta.draft.built; next.judge = meta.draft.judge; if (meta.draft.resources) next.resources = meta.draft.resources; delete next.draft; }
       await env.USAGE.put(`spec-meta:${id}`, JSON.stringify(next));
-      if (proposal) { await env.USAGE.delete(`proposal:${id}`); await env.USAGE.put(`decision:${id}:${Date.now()}`, JSON.stringify({ action: 'approved', by: s.user.username, at: next.approvedAt, breaking: proposal.breaking, changes: proposal.changes.length })); }
+      if (proposal) {
+        await env.USAGE.delete(`proposal:${id}`); await env.USAGE.put(`decision:${id}:${Date.now()}`, JSON.stringify({ action: 'approved', by: s.user.username, at: next.approvedAt, breaking: proposal.breaking, changes: proposal.changes.length }));
+        const t = depthTargets(proposal.changes);
+        for (const r of t.remove) await env.USAGE.delete(`kit:${id}:${r}`);
+        if (t.rebuild.length) await startDepth(env, id, t.rebuild);
+      } else await startDepth(env, id);
       return json({ ok: true, meta: publicMeta(next) }, 200, cors);
     }
     await env.USAGE.delete(`spec-draft:${id}`);

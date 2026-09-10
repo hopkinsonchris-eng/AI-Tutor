@@ -13,6 +13,14 @@ the API path is too expensive or a course should be kept in Git.
 - `build.js` requires the spec (`npm run course -- install <id>` adds it); the kits are picked up by
   name and written to `dist/kits/<id>/<topic>.json` with an index the app reads.
 
+## Models
+
+Run the session on Opus 5 (`/model`). Write kits with Sonnet 5 subagents (`model: "sonnet"` on the
+Agent tool) — the Worker uses the same model for the same job and the validator refuses malformed
+work. Judge with Opus 5 subagents (`model: "opus"`): re-solving every question is where the stronger
+model earns its cost. Fable is not needed; reach for it only if a course keeps failing the judge on
+subject matter.
+
 ## Procedure
 
 1. **Fetch.** `npm run course -- fetch <board> <code>` (add `--url` if the catalogue has no verified

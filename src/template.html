@@ -15,16 +15,22 @@
 </style>
 </head>
 <body>
-<header><div class="wrap hbar"><div><div class="hdate" id="hDate">—</div><div class="hphase" id="hPhase">Loading…</div></div><div class="gradechip" id="hGrade"></div></div></header>
-<main class="wrap">
- <section id="v-login" class="hide"></section><section id="v-setup" class="hide"></section><section id="v-today"></section><section id="v-rooms" class="hide"></section><section id="v-exam" class="hide"></section><section id="v-prog" class="hide"></section><section id="v-admin" class="hide"></section>
-</main>
-<nav>
+<header><div class="wrap hbar"><button class="edge" data-drawer="l" aria-label="Courses and topics" title="Courses and topics">▤</button><div class="hmid"><div class="hdate" id="hDate">—</div><div class="hphase" id="hPhase">Loading…</div></div><div class="gradechip" id="hGrade"></div><button class="edge" data-drawer="r" aria-label="Now: next step, cards, resources" title="Now">◧</button></div></header>
+<div class="shell" id="shell">
+ <aside class="rail rail-l hide" id="rail-l" aria-label="Courses and topics" aria-expanded="false"></aside>
+ <main class="centre">
+  <section id="v-login" class="hide"></section><section id="v-setup" class="hide"></section><section id="v-today"></section><section id="v-rooms" class="hide"></section><section id="v-exam" class="hide"></section><section id="v-prog" class="hide"></section><section id="v-admin" class="hide"></section>
+  <div class="status" id="status"></div>
+ </main>
+ <aside class="rail rail-r hide" id="rail-r" aria-label="Now" aria-expanded="false"></aside>
+</div>
+<div class="scrim" id="scrim"></div>
+<nav class="bottom">
  <button data-v="today" aria-selected="true"><span class="ic">◉</span>Today</button>
  <button data-v="rooms" aria-selected="false"><span class="ic">▦</span>Rooms</button>
  <button data-v="exam" aria-selected="false"><span class="ic">◫</span>Exam</button>
  <button data-v="prog" aria-selected="false"><span class="ic">◔</span>Progress</button>
- <button data-v="admin" aria-selected="false" id="navAdmin" class="hide"><span class="ic">⚙</span>Admin</button>
+ <button data-v="admin" aria-selected="false" class="navAdmin hide"><span class="ic">⚙</span>Admin</button>
 </nav>
 <script>
 /*__CORE__*/
@@ -39,7 +45,7 @@ function stateKey(){return AUTH_MODE&&AUTH.user?KEY+':'+AUTH.user.username:KEY;}
 let COURSES={catalogue:[],courses:{},building:{}},SPEC_META={};const SPEC_CACHE='platform:spec:v1:';
 /* Courses built by the Worker join the built-in specs at runtime. A copy is kept on the device so a student who has a course keeps it even if it is later withdrawn for new students. */
 async function loadCourses(){if(!AUTH_MODE||!AUTH.user)return;try{COURSES=await api('/courses');}catch(e){}}
-async function ensureSpec(id){if(SPECS[id])return true;
+async function ensureSpec(id){const stamp=x=>(x&&x.resources&&x.resources.at)||'';if(SPECS[id]&&!(SPEC_META[id]&&COURSES.courses[id]&&stamp(COURSES.courses[id])&&stamp(COURSES.courses[id])!==stamp(SPEC_META[id])))return true;
   try{const r=await api('/courses/'+encodeURIComponent(id)+'/spec');SPECS[id]=r.spec;SPEC_META[id]=r.meta;try{await rawSet(SPEC_CACHE+id,JSON.stringify(r));}catch(e){}return true;}
   catch(e){try{const c=JSON.parse(await rawGet(SPEC_CACHE+id)||'null');if(c&&c.spec){SPECS[id]=c.spec;SPEC_META[id]=c.meta;return true;}}catch(e2){}return false;}}
 async function ensureSpecsFor(state){if(!state||!state.setup)return;for(const sub of state.setup.subjects)await ensureSpec(sub.specId);}
@@ -51,7 +57,7 @@ function offer(level){const subj={};const put=(subject,board,code,id,builtIn)=>{
 function pushSubject(id){if(!UI.setup.subjects.some(x=>x.specId===id))UI.setup.subjects.push({specId:id,options:{}});}
 let S=null, TODAY=new Date().toISOString().slice(0,10), view='today', saveErr='', storeMode='memory';
 let syncState={at:0,serverAt:'',busy:false,err:'',pending:false,timer:null};const SYNC_GAP=AUTH_MODE?15000:60000;
-let UI={subject:null,room:null,station:'lesson',revealed:{},practice:null,essay:null,exit:null,busy:'',err:'',coachBusy:false,coachErr:'',teach:{},setup:{subjects:[]},cards:null,mathsHours:0};
+let UI={subject:null,room:null,station:'lesson',revealed:{},practice:null,essay:null,exit:null,busy:'',err:'',coachBusy:false,coachErr:'',teach:{},setup:{subjects:[]},cards:null,mathsHours:0,drawer:null,jumpQ:'',nudgeBusy:false};
 const specById=id=>SPECS[id];
 const authoredFor=(specId,topicId)=>{const A=AUTHORED[specId];if(!A)return null;const room=A.rooms[topicId];if(!room)return null;return{room,lesson:A.lessons[topicId],sources:A.sources[topicId],official:A.official};};
 const MATHS_MODES={'ALGEBRAIC-SLIP':'RECALL-GAP','METHOD-CHOICE':'APPLICATION','CONCEPT-GAP':'KNOWLEDGE-GAP','EXAM-TECHNIQUE':'EXAM-TECHNIQUE','RECALL-GAP':'RECALL-GAP'};
@@ -65,7 +71,7 @@ async function rawSet(k,v){if(storeMode==='cloud'){const r=await window.storage.
 let MATHS=null;
 async function mirrorMaths(){if(!S||!MATHS)return;if(!S.setup.subjects.some(x=>x.specId==='EDX-9MA0'))return;for(const [mid,mn] of Object.entries(MATHS.nodes||{})){const id='EDX-9MA0|'+mid;if(S.nodes[id]&&!S.nodes[id].imported){S.nodes[id].state=mn.state;S.nodes[id].lastPractised=mn.lastPractised;S.nodes[id].imported=true;}}
   for(const p of (MATHS.papers||[])){if(!S.papers.some(x=>x.mirror===p.date+p.key+p.score)){S.papers.push({spec:'EDX-9MA0',component:p.key==='P3'||p.key==='M3'?'P3':'P12',series:p.series||p.kind,date:p.date,score:p.score,total:p.total,mirror:p.date+p.key+p.score});}}}
-function normaliseState(){if(!S)return;for(const k of ['errors','transitions','practice','essays','papers'])if(!S[k])S[k]=[];for(const k of ['cards','generated','coach','pins','doneToday','coldDone','checklist','boundaries','dayHours'])if(!S[k])S[k]={};}
+function normaliseState(){if(!S)return;for(const k of ['errors','transitions','practice','essays','papers'])if(!S[k])S[k]=[];for(const k of ['cards','generated','coach','pins','doneToday','coldDone','checklist','boundaries','dayHours','pinned'])if(!S[k])S[k]={};}
 /* Signed in: the copy on the tutor is the truth; the device copy is a cache, and is adopted (and pushed) only when the tutor has nothing yet. */
 async function loadForUser(){S=null;UI.room=null;let server=null;try{server=await api('/progress');}catch(e){if(e.status!==404)syncState.err=e.message;}
   let local=null;try{local=JSON.parse(await rawGet(stateKey())||'null');}catch(e){}
@@ -81,8 +87,8 @@ async function loadForUser(){S=null;UI.room=null;let server=null;try{server=awai
 async function load(){let got=null;try{got=JSON.parse(await rawGet(KEY)||'null');}catch(e){}if(got&&got.nodes&&got.setup)S=got;
   try{MATHS=JSON.parse(await rawGet(MATHS_KEY)||'null');if(MATHS&&MATHS.dayHours)UI.mathsHours=MATHS.dayHours[TODAY]||0;UI.mathsPresent=!!MATHS;}catch(e){}
   await mirrorMaths();
-  if(S){for(const k of ['errors','transitions','practice','essays','papers'])if(!S[k])S[k]=[];for(const k of ['cards','generated','coach','pins','doneToday','coldDone','checklist','boundaries','dayHours'])if(!S[k])S[k]={};}}
-async function save(){if(!S)return;if(storeMode==='memory'){saveErr='Saving isn\u2019t available where this is open — back up from Progress before you close.';return;}try{await rawSet(stateKey(),JSON.stringify(S));saveErr='';queueSync();}catch(e){saveErr=`Could not save (${e.message}). Back up from Progress.`;}}
+  if(S){for(const k of ['errors','transitions','practice','essays','papers'])if(!S[k])S[k]=[];for(const k of ['cards','generated','coach','pins','doneToday','coldDone','checklist','boundaries','dayHours','pinned'])if(!S[k])S[k]={};}}
+async function save(){if(!S)return;if(storeMode==='memory'){saveErr='Saving isn\u2019t available where this is open — back up from Progress before you close.';return;}try{await rawSet(stateKey(),JSON.stringify(S));saveErr='';queueSync();}catch(e){saveErr=`Could not save (${e.message}). Back up from Progress.`;}renderStatus();}
 /* ---- talking to the tutor service ---- */
 async function api(path,opts={}){const headers=Object.assign({'Content-Type':'application/json'},opts.headers||{});if(AUTH.token)headers.Authorization='Bearer '+AUTH.token;
   let res;try{res=await fetch(CONFIG.tutorUrl+path,{method:opts.method||'GET',headers,body:opts.body?JSON.stringify(opts.body):undefined});}catch(e){const err=new Error('No connection to the tutor');err.status=0;throw err;}
@@ -98,7 +104,7 @@ async function pushSync(){if(!syncable()||syncState.busy||!syncState.pending)ret
     else{const res=await fetch(S.tutor.url+'/progress',{method:'PUT',headers:{'Content-Type':'application/json','X-Passcode':S.tutor.pass},body:JSON.stringify({device:deviceName(),state:S})});if(!res.ok)throw new Error('HTTP '+res.status);b=JSON.parse(await res.text());}
     syncState.at=Date.now();syncState.serverAt=b.updatedAt||'';syncState.err='';syncState.pending=false;}
   catch(e){syncState.err=e.message||'failed';}
-  finally{syncState.busy=false;if(view==='prog')renderProg();}}
+  finally{syncState.busy=false;if(view==='prog')renderProg();renderStatus();}}
 async function pullSync(){if(!syncable())throw new Error(AUTH_MODE?'Sign in first.':'Set the tutor route first.');let b;
   if(AUTH_MODE){try{b=await api('/progress');}catch(e){throw new Error(e.status===404?'Nothing has been saved to the tutor yet.':e.message);}}
   else{const res=await fetch(S.tutor.url+'/progress',{headers:{'X-Passcode':S.tutor.pass}});if(res.status===404)throw new Error('Nothing has been backed up to the tutor yet.');if(!res.ok)throw new Error('HTTP '+res.status);b=JSON.parse(await res.text());}
@@ -181,7 +187,7 @@ function renderToday(){const el=document.getElementById('v-today');if(!S)return;
    <ol class="steps">${s.steps.map((x,i)=>`<li class="${done.includes(i)?'done':''}"><button class="tick" data-step="${i}" aria-label="Mark step ${i+1} done"></button><div class="sbody"><div class="stitle"><span>${esc(x.title)}</span><span class="smins">${x.minutes} min</span></div><div class="sdetail">${esc(x.detail)}</div>
      ${x.kind==='cards'&&due.length?`<button class="open" data-cards="1">Review ${due.length} cards →</button>`:''}${x.nodes.length?`<button class="open" data-open="${esc(x.nodes[0])}" data-st="${x.kind==='new'?'lesson':x.kind==='essay'?'essay':'practise'}">Open room →</button>`:''}</div></li>`).join('')}</ol>
    ${done.length===s.steps.length?'<div class="good">Session complete.</div>':''}</div>
-   ${UI.cards?renderCards(due):''}${saveErr?`<p class="err">${esc(saveErr)}</p>`:''}`;}
+   ${UI.cards?renderCards(due):''}${saveErr?`<p class="err">${esc(saveErr)}</p>`:''}`;renderRails();}
 function renderCards(due){if(!due.length){UI.cards=null;return '<div class="good">Cards cleared for today.</div>';}const c=due[0];const id=Object.keys(S.cards).find(k=>S.cards[k]===c);
   return `<div class="panel"><h2>Recall · ${due.length} due</h2><p class="sub">${esc(nodeTopic(c.node).spec.subject)} — ${esc(nodeTopic(c.node).topic.name)}<span class="cite">${esc(c.code||'')}</span></p>
    <div class="card">${esc(c.front)}${UI.revealed['card']?`<div class="back">${esc(c.back)}</div>`:''}</div>
@@ -193,13 +199,13 @@ function renderRooms(){const el=document.getElementById('v-rooms');if(!S)return;
   const nodes=Object.entries(S.nodes).filter(([,n])=>n.spec===sp.id);
   el.innerHTML=`<div class="panel"><div class="chips">${subs.map(x=>`<button class="chip" data-subject="${x.specId}" aria-selected="${UI.subject===x.specId}">${esc(specById(x.specId).subject)}</button>`).join('')}</div>
    <h2>${esc(sp.subject)} <span class="sub" style="display:inline">· ${esc(sp.board)} ${esc(sp.code)}</span></h2><p class="sub">${nodes.length} rooms. ${sp.components.map(c=>`${c.name} ${c.weight}%`).join(' · ')}</p>
-   <div class="tgrid">${nodes.map(([id,n])=>{const t=sp.topics.find(x=>x.id===n.topic);const c=sp.components.find(x=>x.id===t.component);return `<button class="tcell" data-s="${n.state}" data-open="${esc(id)}" data-st="lesson"><b>${esc(c.name)}</b><span>${esc(t.name)}</span><i>${n.state} · ${t.ideas.length} key ideas</i></button>`;}).join('')}</div></div>`;}
+   <div class="tgrid">${nodes.map(([id,n])=>{const t=sp.topics.find(x=>x.id===n.topic);const c=sp.components.find(x=>x.id===t.component);return `<button class="tcell" data-s="${n.state}" data-open="${esc(id)}" data-st="lesson"><b>${esc(c.name)}</b><span>${esc(t.name)}</span><i>${n.state} · ${t.ideas.length} key ideas</i></button>`;}).join('')}</div></div>`;renderRails();}
 function renderRoom(el){const {spec,topic,n}=nodeTopic(UI.room);const st=UI.station;const AU=authoredFor(spec.id,topic.id);const tabs=[['lesson','Lesson'],...(AU?[['formulae','Formulae & links']]:[]),['cards','Cards'],['practise','Practise'],['essay',spec.essaySubject?'Essay':'Exam question'],['mark','Mark'],['exit','Exit ticket'],['coach','Coach']];let body='';
   if(st==='formulae'&&AU)body=stFormulae(AU);
   if(st==='mark')body=stMark(spec,topic);
   if(st==='lesson')body=stLesson(spec,topic);if(st==='cards')body=stCards(spec,topic);if(st==='practise')body=stPractise(spec,topic,n);if(st==='essay')body=stEssay(spec,topic);if(st==='exit')body=stExit(spec,topic,n);if(st==='coach')body=stCoach(spec,topic);
   el.innerHTML=`<div class="panel"><button class="open" id="backRooms">← ${esc(spec.subject)} rooms</button><h2 style="margin-top:8px">${esc(topic.name)}</h2><p class="sub">${esc(spec.board)} ${esc(spec.code)} · ${esc(topic.id)} · ${n.state}${n.lastPractised?` · last worked ${n.lastPractised}`:''}</p>
-   <div class="stations">${tabs.map(([k,l])=>`<button data-station="${k}" aria-selected="${st===k}">${l}</button>`).join('')}</div>${UI.busy?`<div class="note">${esc(UI.busy)} This is generated from the specification and checked before it\u2019s shown — about 20 seconds.</div>`:''}${UI.err?`<div class="remedy">${esc(UI.err)} <button class="act small ghost" id="retryGen">Try again</button></div>`:''}${body}</div>`;}
+   <div class="stations">${tabs.map(([k,l])=>`<button data-station="${k}" aria-selected="${st===k}">${l}</button>`).join('')}</div>${UI.busy?`<div class="note">${esc(UI.busy)} This is generated from the specification and checked before it\u2019s shown — about 20 seconds.</div>`:''}${UI.err?`<div class="remedy">${esc(UI.err)} <button class="act small ghost" id="retryGen">Try again</button></div>`:''}${body}</div>`;renderRails();}
 function stFormulae(AU){const r=AU.room,src=AU.sources||{tl:[],es:''},O=AU.official||{};
   return `<h3 style="margin-top:4px">Key formulae — what you must be able to write from memory</h3>${r.formulae.map(f=>`<div class="formula">${esc(f)}</div>`).join('')}
    <h3>Worked examples (faded)</h3>${r.examples.map((e,ei)=>{const shown=UI.revealed['ax'+ei]||0;return `<div class="qcard"><div class="qtext" style="font-weight:600">${esc(e.title)}</div>${e.steps.map((x,si)=>`<div class="stepline ${si<shown?'':'hid'}">${esc(x)}</div>`).join('')}${shown<e.steps.length?`<button class="act ghost small" data-axrev="${ei}">${shown===0?'Reveal first line':'Predicted it — reveal next'}</button>`:'<div class="good">Now reproduce it on paper.</div>'}</div>`;}).join('')}
@@ -337,6 +343,7 @@ async function renderAdminCourses(){const rv=document.getElementById('adReviews'
   }).join(''):'<p class="empty">Nothing waiting.</p>'}`;
   cs.innerHTML=`<h2>Courses</h2>${C.lastRun?`<p class="sub">Monthly check last ran ${when(C.lastRun.at)} over ${C.lastRun.courses.length} course${C.lastRun.courses.length===1?'':'s'}.</p>`:'<p class="sub">The monthly check runs on the 1st at 06:00 UTC.</p>'}${C.courses.length?C.courses.map(c=>`<div class="entry" style="${c.status==='retracted'?'opacity:.55':''}"><div class="emeta"><span class="tag">${esc(c.status||'')}</span><span>${title(c)}</span>${c.pending?'<span class="err">proposal waiting</span>':''}</div>
     ${c.source?`<div class="prov">${esc(c.source.url||'')}<br>built ${when(c.built&&c.built.at)} · ${esc((c.built&&c.built.models||[]).join(', '))} · prompt ${esc(c.built&&c.built.promptVersion||'')} · ${c.built&&c.built.ideas?c.built.ideas+' key ideas · ':''}judged ${Math.round((c.judge&&c.judge.score||0)*100)}% · document ${esc(c.source.lastModified||'')}${c.source.etag?` ${esc(c.source.etag)}`:''} · checked ${when(c.source.checkedAt)}</div>`:c.build?`<div class="sub">${esc(c.build.stage||'')} — ${esc(c.build.message||'')}${c.build.total?` (${c.build.done}/${c.build.total})`:''}</div>`:''}
+    ${c.status==='published'?`<details class="links"><summary>Revision links (${(c.resources&&c.resources.hubs||[]).length})</summary><p class="sub">One per line: <span class="mono">name | kind | https://…</span> — kind is video, notes, practice or official. Found by the builder and checked to exist; edit freely. Students see them in every room of this course.</p><textarea id="links-${esc(c.id)}" class="mono" style="min-height:80px">${esc((c.resources&&c.resources.hubs||[]).map(h=>`${h.name} | ${h.kind} | ${h.url}`).join('\n'))}</textarea><button class="act ghost small" data-links-save="${esc(c.id)}">Save links</button><div id="linksOut-${esc(c.id)}"></div></details>`:''}
     <div class="row" style="flex-wrap:wrap">${c.status==='published'?`<button class="act ghost small" data-crs-check="${esc(c.id)}">Check now</button><button class="act danger small" data-crs-retract="${esc(c.id)}">Retract</button>`:''}${c.status==='retracted'?`<button class="act ghost small" data-crs-restore="${esc(c.id)}">Restore</button>`:''}${c.status==='published'||c.status==='retracted'||c.status==='failed'||c.status==='rejected'?`<button class="act ghost small" data-crs-rebuild="${esc(c.id)}">Rebuild</button>`:''}</div></div>`).join(''):'<p class="empty">No courses built yet — the four built-in subjects live in the app itself.</p>'}`;}
 function renderAdminList(d){document.getElementById('adList').innerHTML=`<h2>Accounts</h2>${d.users.map(u=>`<div class="entry" style="${u.disabled?'opacity:.55':''}"><div class="emeta"><span class="tag">${u.role==='admin'?'admin':'student'}</span><span><b>${esc(u.name)}</b> · ${esc(u.username)}</span>${u.disabled?'<span class="err">off</span>':''}</div>
     <div style="font-size:13.5px;color:var(--pencil)">${u.hasPassword?`${u.today} of ${u.daily} AI requests today${u.lastSeen?` · last saved ${esc(new Date(u.lastSeen).toLocaleString())} from ${esc(u.device||'a device')}`:' · no progress saved yet'}`:'Invite not accepted yet'}</div>
@@ -346,16 +353,79 @@ function inviteCard(inv,u){const link=inv.link;const body=`Hi ${u.name},\n\nHere
 function isAdmin(){return !!(AUTH.user&&AUTH.user.role==='admin');}
 function landing(){return isAdmin()&&!S?'admin':'today';}
 function showSection(id){document.querySelectorAll('main>section').forEach(x=>x.classList.toggle('hide',x.id!==id));}
-function renderAll(){renderHeader();const na=document.getElementById('navAdmin');if(na)na.classList.toggle('hide',!(AUTH.user&&AUTH.user.role==='admin'));
-  if(AUTH_MODE&&!AUTH.user){showSection('v-login');renderLogin();return;}
-  if(!S&&isAdmin()&&view==='admin'){showSection('v-admin');renderAdmin();return;}
-  if(!S){document.querySelectorAll('main>section').forEach(s=>s.classList.toggle('hide',s.id!=='v-setup'));renderSetup();return;}renderToday();renderRooms();renderExam();renderProg();if(view==='admin')renderAdmin();document.querySelectorAll('main>section').forEach(s=>s.classList.toggle('hide',s.id!=='v-'+view));}
-function go(v){view=v;document.querySelectorAll('nav button').forEach(x=>x.setAttribute('aria-selected',String(x.dataset.v===v)));document.querySelectorAll('main>section').forEach(s=>s.classList.toggle('hide',s.id!=='v-'+v));window.scrollTo(0,0);}
-function openRoom(id,st){UI.room=id;UI.subject=S.nodes[id].spec;UI.station=st||'lesson';UI.revealed={};UI.practice=null;UI.apr=null;UI.useGenerated=false;UI.exit=null;UI.err='';go('rooms');renderRooms();}
+function renderAll(){renderHeader();document.querySelectorAll('.navAdmin').forEach(x=>x.classList.toggle('hide',!isAdmin()));
+  if(AUTH_MODE&&!AUTH.user){showSection('v-login');renderLogin();renderRails();return;}
+  if(!S&&isAdmin()&&view==='admin'){showSection('v-admin');renderAdmin();renderRails();return;}
+  if(!S){document.querySelectorAll('main>section').forEach(s=>s.classList.toggle('hide',s.id!=='v-setup'));renderSetup();renderRails();return;}renderToday();renderRooms();renderExam();renderProg();if(view==='admin')renderAdmin();document.querySelectorAll('main>section').forEach(s=>s.classList.toggle('hide',s.id!=='v-'+view));renderRails();}
+function go(v){view=v;document.querySelectorAll('nav button').forEach(x=>x.setAttribute('aria-selected',String(x.dataset.v===v)));document.querySelectorAll('main>section').forEach(s=>s.classList.toggle('hide',s.id!=='v-'+v));window.scrollTo(0,0);renderRails();}
+function openRoom(id,st){UI.room=id;UI.subject=S.nodes[id].spec;UI.station=st||'lesson';UI.revealed={};UI.practice=null;UI.apr=null;UI.useGenerated=false;UI.exit=null;UI.err='';if(UI.drawer)setDrawer(null);go('rooms');renderRooms();}
 async function fileToImg(file){const data=await new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result.split(',')[1]);r.onerror=()=>rej(new Error('read failed'));r.readAsDataURL(file);});return{data,media:file.type||'image/jpeg'};}
 
+/* ============ THE RAILS: left = where you are, right = what now, strip = how it's going ============ */
+const NAV=[['today','◉','Today'],['rooms','▦','Rooms'],['exam','◫','Exam'],['prog','◔','Progress'],['admin','⚙','Admin']];
+function navHtml(cls){return `<nav class="${cls}">${NAV.filter(([v])=>v!=='admin'||isAdmin()).map(([v,ic,l])=>`<button data-v="${v}" aria-selected="${view===v}"${v==='admin'?' class="navAdmin"':''}><span class="ic">${ic}</span>${l}</button>`).join('')}</nav>`;}
+function railView(){return !!S&&['today','rooms','exam','prog'].includes(view);}
+function setDrawer(which){UI.drawer=which||null;for(const [k,id] of [['l','rail-l'],['r','rail-r']]){const el=document.getElementById(id);if(!el)continue;const open=UI.drawer===k;el.classList.toggle('open',open);el.setAttribute('aria-expanded',String(open));}const sc=document.getElementById('scrim');if(sc)sc.classList.toggle('show',!!UI.drawer);}
+function renderRails(){const on=railView();try{if(document.body&&document.body.classList)document.body.classList.toggle('three',on);}catch(e){}
+  const L=document.getElementById('rail-l'),R=document.getElementById('rail-r');if(!L||!R)return;
+  if(!on){L.innerHTML='';R.innerHTML='';L.classList.add('hide');R.classList.add('hide');if(UI.drawer)setDrawer(null);renderStatus();return;}
+  L.classList.remove('hide');R.classList.remove('hide');renderRailL(L);renderRailR(R);renderStatus();
+  if(view==='today'&&nudgeStale()&&!UI.nudgeBusy)requestNudge(false);}
+function courseOrder(){const pinned=S.pinned||{};return S.setup.subjects.slice().sort((a,b)=>(pinned[b.specId]?1:0)-(pinned[a.specId]?1:0));}
+function activeSpec(){return specById((UI.subject&&S.setup.subjects.some(x=>x.specId===UI.subject))?UI.subject:S.setup.subjects[0].specId);}
+function renderRailL(L){const sp=activeSpec();const due=new Set(dueForReview(S,TODAY));
+  const cards=courseOrder().map(sub=>{const c=specById(sub.specId);const p=predictSubject(S,c,sub.options);const pin=!!(S.pinned&&S.pinned[c.id]);return `<div class="ccard${c.id===sp.id?' on':''}"><button class="cmain" data-course="${esc(c.id)}"><b>${esc(c.subject)}</b><small>${esc(c.board)} ${esc(c.code)}</small><span class="cg">${esc(p.grade)}</span></button><div class="bar mini"><i style="width:${p.pct}%"></i></div><button class="pin" data-pin="${esc(c.id)}" aria-pressed="${pin}" title="${pin?'Unpin':'Pin to the top'}">${pin?'★':'☆'}</button></div>`;}).join('');
+  const nodes=Object.entries(S.nodes).filter(([,n])=>n.spec===sp.id);
+  const tree=sp.components.map(c=>{const mine=nodes.filter(([,n])=>{const t=sp.topics.find(x=>x.id===n.topic);return t&&t.component===c.id;});if(!mine.length)return '';return `<div class="comp"><div class="cname">${esc(c.name)} · ${c.weight}%</div>${mine.map(([id,n])=>{const t=sp.topics.find(x=>x.id===n.topic);return `<button class="tnode${UI.room===id?' cur':''}" data-open="${esc(id)}" data-st="lesson"><i class="dot" data-s="${n.state}"${due.has(id)?' data-due="1"':''}></i><span><small>${esc(t.id)}</small> ${esc(t.name)}</span></button>`;}).join('')}</div>`;}).join('');
+  L.innerHTML=`${navHtml('side')}<div class="rblock"><input id="jump" placeholder="Jump to a topic or code…" autocomplete="off" value="${esc(UI.jumpQ||'')}"><div id="jumpOut">${jumpHtml()}</div></div><div class="rblock"><h4>Courses</h4>${cards}</div><div class="rblock"><h4>Where you are · ${esc(sp.subject)}</h4><div class="tree">${tree}</div><div class="legend" style="margin-top:10px"><span><i class="dot" data-s="Unassessed"></i>New</span><span><i class="dot" data-s="Learning"></i>Learning</span><span><i class="dot" data-s="Fluent"></i>Fluent</span><span><i class="dot" data-s="Secure"></i>Secure</span><span><i class="dot" data-due="1"></i>Due</span></div></div>`;}
+function jumpMatches(q){q=String(q||'').trim().toLowerCase();if(q.length<2)return [];const first=[],later=[];
+  for(const sub of S.setup.subjects){const sp=specById(sub.specId);if(!sp)continue;for(const [id,n] of Object.entries(S.nodes)){if(n.spec!==sp.id)continue;const t=sp.topics.find(x=>x.id===n.topic);if(!t)continue;
+    if(t.name.toLowerCase().includes(q)||String(t.id).toLowerCase().includes(q))first.push({id,sp,t,hit:null});
+    else{const k=(t.ideas||[]).find(i=>String(i.code).toLowerCase().includes(q)||String(i.idea||'').toLowerCase().includes(q)||String(i.content||'').toLowerCase().includes(q));if(k)later.push({id,sp,t,hit:k});}}}
+  return first.concat(later).slice(0,8);}
+function jumpHtml(){if(String(UI.jumpQ||'').trim().length<2)return '';const m=jumpMatches(UI.jumpQ);return m.length?m.map(x=>`<button class="tnode" data-open="${esc(x.id)}" data-st="lesson"><i class="dot" data-s="${S.nodes[x.id].state}"></i><span><small>${esc(x.sp.subject)} · ${esc(x.t.id)}</small> ${esc(x.t.name)}${x.hit?`<br><small>${esc(x.hit.code)} ${esc(x.hit.idea)}</small>`:''}</span></button>`).join(''):'<div class="empty">No topic matches.</div>';}
+function ringHtml(pct,grade,label){const r=15.9;return `<div class="ringwrap"><svg class="ring" viewBox="0 0 36 36" aria-hidden="true"><circle cx="18" cy="18" r="${r}" fill="none" stroke="#E6E1D5" stroke-width="3"/><circle cx="18" cy="18" r="${r}" fill="none" stroke="#2E6B4E" stroke-width="3" stroke-dasharray="${Math.max(0,Math.min(100,pct))} 100" stroke-linecap="round" transform="rotate(-90 18 18)"/><text x="18" y="21.5" text-anchor="middle" font-size="10" font-weight="700" fill="#191D23">${esc(grade)}</text></svg><div><b>${esc(label)}</b><small>${pct}% · predicted ${esc(grade)}</small></div></div>`;}
+function linkHtml(l){return `<a class="link" href="${esc(l.url)}" target="_blank" rel="noopener"><span>${esc(l.t)}<small>${esc(l.why||'')}</small></span><span class="lgo">${l.kind==='video'?'▶':'→'}</span></a>`;}
+/* Every course gets links: the maths course's hand-checked ones, a built course's checked hub pages and per-topic links, and searches that always exist. */
+function resourcesFor(spec,topic){const AU=authoredFor(spec.id,topic.id);const out=[];if(AU&&AU.sources){for(const x of (AU.sources.tl||[]))out.push({t:'TLMaths — '+x.t,url:x.url,kind:'video',why:'Spec-ordered videos, hand-checked'});if(AU.sources.es)out.push({t:'ExamSolutions tutorials',url:AU.sources.es,kind:'video',why:'Find '+((AU.room&&AU.room.name)||topic.name)});}
+  return out.concat(topicLinks(spec,topic));}
+function streakLine(){const n=streakDays(S,TODAY);const mins=Math.round((S.dayHours[TODAY]||0)*60);return `<b>${n}</b> day streak · ${mins} min today`;}
+function renderRailR(R){const due=dueCards(S,TODAY);let html='';
+  if(view==='today'){const N=S.nudge&&S.nudge.date===TODAY?S.nudge:null;
+    html+=`<div class="rblock nudge"><h4>Next step</h4><p>${N?esc(N.text):UI.nudgeBusy?'Working out the best thing to do first…':'Working it out…'}</p><div class="row">${N&&N.node&&S.nodes[N.node]?`<button class="act small" data-open="${esc(N.node)}" data-st="${esc(N.station||'lesson')}">Open room →</button>`:N&&N.station==='cards'&&due.length?`<button class="act small" data-cards="1">Review cards →</button>`:''}<button class="act ghost small" data-nudge-refresh="1" ${UI.nudgeBusy?'disabled':''}>Another suggestion</button></div>${N&&N.ai?'<small class="fine">Written by the tutor from your own progress and mistakes.</small>':''}</div>`;
+    html+=`<div class="rblock"><h4>Cards due</h4><div class="bigrow"><b class="big">${due.length}</b>${due.length?`<button class="act small" data-cards="1">Review now →</button>`:'<span class="fine">All clear for today</span>'}</div></div>`;
+    html+=`<div class="rblock"><h4>Progress</h4>${S.setup.subjects.map(sub=>{const sp=specById(sub.specId);const p=predictSubject(S,sp,sub.options);return ringHtml(p.pct,p.grade,sp.subject);}).join('')}</div>`;
+    html+=`<div class="rblock"><h4>Streak</h4><p>${streakLine()}</p></div>`;}
+  else if(view==='rooms'&&UI.room&&S.nodes[UI.room]){const {spec,topic,n}=nodeTopic(UI.room);const mine=Object.values(S.cards).filter(c=>c.node===UI.room);const dueHere=mine.filter(c=>!c.due||c.due<=TODAY);const errs=S.errors.filter(e=>e.node===UI.room).slice(0,5);const comp=spec.components.find(c=>c.id===topic.component);
+    html+=`<div class="rblock"><h4>This room</h4><p><i class="dot" data-s="${n.state}" style="display:inline-block;vertical-align:middle;margin:0 6px 2px 0"></i><b>${n.state}</b>${n.lastPractised?` · last worked ${esc(n.lastPractised)}`:' · not started yet'}</p><p class="fine">${topic.ideas.length} key ideas · ${esc(comp?comp.name:'')}${comp?` · ${comp.weight}% of the qualification`:''}</p><div class="ideas">${topic.ideas.map(i=>`<span class="cite" title="${esc(i.idea)}">${esc(i.code)}</span>`).join('')}</div></div>`;
+    html+=`<div class="rblock"><h4>Cards</h4><div class="bigrow"><b class="big">${dueHere.length}</b><span class="fine">of ${mine.length} due</span>${dueHere.length?`<button class="act small" data-cards="1">Review now →</button>`:`<button class="act ghost small" data-station="cards">${mine.length?'Cards':'Make cards'} →</button>`}</div></div>`;
+    html+=`<div class="rblock"><h4>Your mistakes here</h4>${errs.length?errs.map(e=>`<div class="entry"><div class="emeta"><span class="tag">${esc(e.mode)}</span><span>${esc(e.date)}</span></div><div>${esc(e.ref||'')}</div></div>`).join(''):'<p class="fine">None logged in this room.</p>'}</div>`;
+    html+=`<div class="rblock"><h4>Watch and read</h4>${resourcesFor(spec,topic).map(linkHtml).join('')}</div>`;}
+  else if(view==='rooms'){const sp=activeSpec();const ns=Object.entries(S.nodes).filter(([,n])=>n.spec===sp.id);const by={};for(const [,n] of ns)by[n.state]=(by[n.state]||0)+1;const next=ns.find(([,n])=>n.state==='Unassessed');const nt=next&&sp.topics.find(t=>t.id===next[1].topic);
+    html+=`<div class="rblock"><h4>${esc(sp.subject)} · ${esc(sp.board)} ${esc(sp.code)}</h4>${sp.components.map(c=>`<div class="mstone"><span>${esc(c.name)}</span><b>${c.weight}%</b></div>`).join('')}</div><div class="rblock"><h4>Rooms</h4>${['Secure','Fluent','Learning','Unassessed'].map(st=>`<div class="mstone"><span><i class="dot" data-s="${st}" style="display:inline-block;vertical-align:middle;margin:0 6px 2px 0"></i>${st==='Unassessed'?'Not started':st}</span><b>${by[st]||0}</b></div>`).join('')}${nt?`<button class="act small" data-open="${esc(next[0])}" data-st="lesson">Start ${esc(nt.name)} →</button>`:'<p class="fine">Every room started.</p>'}</div>`;}
+  else if(view==='exam'){const sp=activeSpec();const mc=sp.markConventions||{};
+    html+=`<div class="rblock"><h4>Command words · ${esc(sp.board)}</h4>${(mc.commandWords||[]).map(c=>`<div class="cw"><b>${esc(c.word)}</b>${esc(c.means)}</div>`).join('')}</div>`;
+    if(mc.essayShapes&&mc.essayShapes.length)html+=`<div class="rblock"><h4>Essay shapes</h4>${mc.essayShapes.map(x=>`<div class="cw"><b>${x.marks} marks · ${x.minutes} min</b>${esc(x.structure)}</div>`).join('')}</div>`;
+    if(sp.ao&&sp.ao.length)html+=`<div class="rblock"><h4>Assessment objectives</h4>${sp.ao.map(a=>`<div class="cw"><b>${esc(a.id)}</b>${esc(a.text)}</div>`).join('')}</div>`;}
+  else if(view==='prog'){const modes={};for(const e of S.errors)modes[e.mode]=(modes[e.mode]||0)+1;const dom=Object.keys(modes).sort((a,b)=>modes[b]-modes[a])[0];const rep=weeklyReport(S,SPECS,TODAY);
+    html+=`<div class="rblock"><h4>Your pattern</h4>${dom?`<p><span class="tag">${esc(dom)}</span> ${modes[dom]} of ${S.errors.length} errors</p><p class="fine">${esc(REMEDY[dom]||'')}</p>`:'<p class="fine">No errors logged yet — that changes as soon as you practise.</p>'}</div><div class="rblock"><h4>This week</h4><p>${rep.hours.toFixed(1)} hours · ${rep.errors} error${rep.errors===1?'':'s'} · ${rep.essays} essay${rep.essays===1?'':'s'} marked</p></div><div class="rblock"><h4>Streak</h4><p>${streakLine()}</p></div>`;}
+  R.innerHTML=html;}
+function renderStatus(){const el=document.getElementById('status');if(!el)return;if(!railView()){el.innerHTML='';return;}const due=dueCards(S,TODAY).length;const n=streakDays(S,TODAY);const mins=Math.round((S.dayHours[TODAY]||0)*60);
+  const sync=storeMode==='memory'?'<span class="err" style="margin:0">Not saving</span>':AUTH_MODE?(syncState.busy||syncState.pending?'Saving…':syncState.err?`<span class="err" style="margin:0">Not saved — ${esc(syncState.err)}</span>`:syncState.at?`Saved ${esc(new Date(syncState.at).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}))}`:'Saved on this device'):(storeMode==='cloud'?'Saved to your Claude account':'Saved on this device');
+  el.innerHTML=`<span>🔥 ${n} day streak</span><span>${mins} min today</span><span>${due} cards due</span><span class="sync">${sync}</span>`;}
+/* The next-step nudge: one small tutor call a day, cached in state; a deterministic sentence when the tutor cannot be asked. */
+function nudgeStale(){return !(S&&S.nudge&&S.nudge.date===TODAY);}
+async function requestNudge(force){if(!S||UI.nudgeBusy)return;if(!force&&!nudgeStale())return;UI.nudgeBusy=true;renderRails();
+  try{const txt=await callClaude([{type:'text',text:nudgePrompt(S,SPECS,TODAY)}],300,0);let o=null;try{o=JSON.parse(txt);}catch(e){}
+    if(!S)return;if(!o||typeof o.text!=='string'||!o.text.trim())throw new Error('no usable suggestion');
+    S.nudge={date:TODAY,text:o.text.trim().slice(0,240),node:o.node&&S.nodes[o.node]?o.node:null,station:['lesson','cards','practise','essay','exit'].includes(o.station)?o.station:'lesson',ai:true};}
+  catch(e){if(!S){UI.nudgeBusy=false;return;}const f=nudgeFallback(S,SPECS,TODAY);S.nudge={date:TODAY,text:f.text,node:f.node,station:f.station,ai:false};}
+  finally{UI.nudgeBusy=false;}
+  if(!S)return;await save();renderRails();}
+
 /* ============ EVENTS ============ */
-document.querySelector('nav').addEventListener('click',e=>{const b=e.target.closest('button[data-v]');if(!b)return;if(b.dataset.v==='admin'){if(!isAdmin())return;go('admin');renderAdmin();return;}if(!S)return;go(b.dataset.v);});
+document.addEventListener('input',e=>{const t=e.target;if(t&&t.id==='jump'&&S){UI.jumpQ=t.value;const o=document.getElementById('jumpOut');if(o)o.innerHTML=jumpHtml();}});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&UI.drawer){setDrawer(null);return;}if(e.key==='Enter'&&e.target&&e.target.id==='jump'&&S){e.preventDefault&&e.preventDefault();const m=jumpMatches(UI.jumpQ);if(m.length){UI.jumpQ='';openRoom(m[0].id,'lesson');}}});
 document.addEventListener('change',async e=>{const t=e.target;
   if(t.dataset&&t.dataset.su){const id=t.dataset.su;if(t.checked)UI.setup.subjects.push({specId:id,options:{}});else UI.setup.subjects=UI.setup.subjects.filter(x=>x.specId!==id);UI.setup.student=document.getElementById('suName').value;renderSetup();return;}
   if(t.id==='crsSubject'){UI.setup.pickSubject=t.value;UI.setup.pickBoard=null;UI.setup.student=document.getElementById('suName').value;renderSetup();return;}
@@ -364,6 +434,9 @@ document.addEventListener('change',async e=>{const t=e.target;
   if(t.id==='esPhoto'){const files=[...(t.files||[])];const E=UI.essay;E.photos=E.photos||[];for(const f of files){try{E.photos.push(await fileToImg(f));}catch(e){}}renderRooms();return;}
   if(t.id==='mkPhoto'){const files=[...(t.files||[])];const M=UI.mark;for(const f of files){try{M.photos.push(await fileToImg(f));}catch(e){}}renderRooms();return;}});
 document.addEventListener('click',async e=>{const t=e.target;
+  const nb=t.closest('button[data-v]');if(nb){if(nb.dataset.v==='admin'){if(!isAdmin())return;go('admin');renderAdmin();return;}if(!S)return;go(nb.dataset.v);return;}
+  const dr=t.closest('[data-drawer]');if(dr){setDrawer(UI.drawer===dr.dataset.drawer?null:dr.dataset.drawer);return;}
+  if(t.id==='scrim'){setDrawer(null);return;}
   if(t.id==='suGo'){UI.setup.subjects=UI.setup.subjects.filter(x=>SPECS[x.specId]);UI.setup.student=document.getElementById('suName').value.trim();UI.setup.examYear=+document.getElementById('suYear').value;const bad=setupValid();if(bad){document.getElementById('suErr').innerHTML=`<p class="err">${esc(bad)}</p>`;return;}
     if(S)mergeSetup(JSON.parse(JSON.stringify(UI.setup)));else{S=newState(UI.setup,SPECS);S.created=TODAY;if(!AUTH_MODE&&PENDING_ROUTE){S.tutor=PENDING_ROUTE;PENDING_ROUTE=null;}}presetBoundaries();UI.subject=S.setup.subjects[0].specId;UI.room=null;await mirrorMaths();await save();go('today');renderAll();return;}
   if(t.dataset&&t.dataset.level){if(t.disabled||!(Object.values(SPECS).some(sp=>sp.level===t.dataset.level)||COURSES.catalogue.some(q=>q.level===t.dataset.level)))return;UI.setup.level=t.dataset.level;UI.setup.pickSubject=null;UI.setup.pickBoard=null;UI.setup.subjects=UI.setup.subjects.filter(x=>specById(x.specId).level===t.dataset.level);UI.setup.student=document.getElementById('suName').value;renderSetup();return;}
@@ -396,8 +469,13 @@ document.addEventListener('click',async e=>{const t=e.target;
   if(t.id==='adCatAdd'){const out=document.getElementById('catOut');const body={level:document.getElementById('catLevel').value,subject:document.getElementById('catSubject').value.trim(),board:document.getElementById('catBoard').value,code:document.getElementById('catCode').value.trim().toUpperCase(),specUrl:document.getElementById('catUrl').value.trim()};
     try{const r=await api('/manage/catalogue',{method:'POST',body});out.innerHTML=`<div class="good">Added ${esc(r.id)}. Students can add it now${body.specUrl?'':' — the builder will look for the PDF on the board’s site'}.</div>`;await loadCourses();await renderAdminCourses();}catch(e){out.innerHTML=`<p class="err">${esc(e.message)}</p>`;}return;}
   if(t.dataset&&t.dataset.adDel){if(!confirm('Delete '+t.dataset.adDel+'? Their account and saved progress go with it.'))return;try{await api('/manage/users/'+encodeURIComponent(t.dataset.adDel),{method:'DELETE'});renderAdmin();}catch(e){alert(e.message);}return;}
+  if(t.dataset&&t.dataset.linksSave){const id=t.dataset.linksSave;const ta=document.getElementById('links-'+id);const out=document.getElementById('linksOut-'+id);const hubs=String(ta?ta.value:'').split('\n').map(l=>l.trim()).filter(Boolean).map(l=>{const p=l.split('|').map(x=>x.trim());return p.length>=3?{name:p[0],kind:p[1].toLowerCase(),url:p.slice(2).join('|')}:{name:p[0],kind:'notes',url:p[1]||''};});
+    try{const r=await api('/manage/courses/'+encodeURIComponent(id)+'/links',{method:'POST',body:{hubs}});if(out)out.innerHTML=`<div class="good">Saved ${r.hubs.length} link${r.hubs.length===1?'':'s'}. Students see them in every room of this course.</div>`;await loadCourses();}catch(e){if(out)out.innerHTML=`<p class="err">${esc(e.message)}</p>`;}return;}
   if(t.id==='suEdit'){await loadCourses();UI.setup=JSON.parse(JSON.stringify(S.setup));document.querySelectorAll('main>section').forEach(x=>x.classList.toggle('hide',x.id!=='v-setup'));renderSetup();return;}
   if(!S)return;
+  const pn=t.closest('[data-pin]');if(pn){S.pinned=S.pinned||{};if(S.pinned[pn.dataset.pin])delete S.pinned[pn.dataset.pin];else S.pinned[pn.dataset.pin]=true;await save();renderRails();return;}
+  const cc=t.closest('[data-course]');if(cc){UI.subject=cc.dataset.course;UI.room=null;if(UI.drawer)setDrawer(null);if(view!=='exam')go('rooms');renderRooms();renderExam();return;}
+  if(t.closest('[data-nudge-refresh]')){await requestNudge(true);return;}
   const tick=t.closest('.tick');if(tick){const i=+tick.dataset.step;const arr=S.doneToday[TODAY]||(S.doneToday[TODAY]=[]);const sess=buildSession(S,SPECS,TODAY);const at=arr.indexOf(i);if(at>=0){arr.splice(at,1);addHours(-sess.steps[i].minutes/60);}else{arr.push(i);addHours(sess.steps[i].minutes/60);}await save();renderHeader();renderToday();return;}
   const op=t.closest('[data-open]');if(op){openRoom(op.dataset.open,op.dataset.st);return;}
   const sj=t.closest('[data-subject]');if(sj){UI.subject=sj.dataset.subject;UI.room=null;renderRooms();renderExam();return;}

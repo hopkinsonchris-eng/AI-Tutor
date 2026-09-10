@@ -32,13 +32,14 @@ const topicFor = (f, t) => ({ ideas: [idea(t.id + '.1', 1), idea(t.id + '.2', 2)
 const goodJudge = () => ({ score: 0.92, coverage: 0.95, fidelity: 0.92, options: 1, familyFit: 0.95, invented: [], missing: [], changes: [], notes: 'Faithful to the document.' });
 
 function ai(f, over = {}) {
-  const calls = { outline: 0, topic: 0, judge: 0, locate: 0, docChanges: 0, topicPrompts: [], fixPrompts: [] };
+  const calls = { outline: 0, topic: 0, judge: 0, locate: 0, docChanges: 0, resources: 0, topicPrompts: [], fixPrompts: [], resourcePrompts: [] };
   return { calls, ...{
     async outline() { calls.outline++; return outlineFor(f); },
     async topic(input) { calls.topic++; calls.topicPrompts.push(input.prompt); if (input.problems) calls.fixPrompts.push(input.prompt); return topicFor(f, input.topic); },
     async judge() { calls.judge++; return goodJudge(); },
     async locate() { calls.locate++; return { url: 'https://filestore.aqa.org.uk/resources/x/AQA-7402-SP-2015.PDF' }; },
     async docChanges() { calls.docChanges++; return { changes: ['Issue 3 corrects the mark allocation for Paper 2 Section B.'], notes: '' }; },
+    async resources(input) { calls.resources++; calls.resourcePrompts.push(input.prompt); return { links: [{ name: 'BBC Bitesize', url: 'https://www.bbc.co.uk/bitesize/examspecs/x', kind: 'notes' }, { name: 'Physics & Maths Tutor', url: 'https://www.physicsandmathstutor.com/x/', kind: 'notes' }, { name: 'Dead link', url: 'https://gone.example/404', kind: 'video' }, { name: 'Not secure', url: 'http://insecure.example/', kind: 'video' }] }; },
   }, ...over };
 }
 const headOk = async (url) => ({ ok: true, status: 200, contentType: 'application/pdf', etag: '"abc123"', lastModified: 'Mon, 01 Sep 2025 00:00:00 GMT', length: 1035984, url });
@@ -65,7 +66,7 @@ const deps = (f, over = {}) => ({ kv: kv(), step: inlineStep(), ai: ai(f), head:
     const d = deps('science'); const rec = await runBuild(params('science'), d);
     const meta = await d.kv.get('spec-meta:' + rec.id, 'json');
     ok('B2 provenance recorded: source, etag, size, date, models, prompt version, judge, family', meta && meta.source.url && meta.source.etag === '"abc123"' && meta.source.length === 1035984 && meta.source.lastModified && meta.built.at === '2026-09-10T12:00:00.000Z' && meta.built.promptVersion === PROMPT_VERSION && Array.isArray(meta.built.models) && meta.judge.score === 0.92 && meta.family === 'science' && meta.status === 'published', JSON.stringify(meta));
-    ok('B2 progress record advances through named stages to done', rec.done === rec.total && rec.total === 3 + 3 + 1 && /published/i.test(rec.message) && d.step.names.some(n => /outline/i.test(n)) && d.step.names.filter(n => /^topic /.test(n)).length === 3);
+    ok('B2 progress record advances through named stages to done', rec.done === rec.total && rec.total === 3 + 3 + 2 && d.step.names.includes('resources') && /published/i.test(rec.message) && d.step.names.some(n => /outline/i.test(n)) && d.step.names.filter(n => /^topic /.test(n)).length === 3);
   }
 
   /* ---------- criterion 4: validator gate, corrective retry, refusal ---------- */
@@ -158,6 +159,29 @@ const deps = (f, over = {}) => ({ kv: kv(), step: inlineStep(), ai: ai(f), head:
   try { execFileSync(process.execPath, [path.join(__dirname, '..', 'scripts', 'sync-skill.js'), '--check'], { stdio: 'pipe' }); ok('B14 skill families.md is in sync with src/families.js', true); }
   catch (e) { ok('B14 skill families.md is in sync with src/families.js', false, String(e.stdout || e.stderr || e.message)); }
   ok('B15 the outline and judge prompts quote the family rules too', families.FAMILIES.language.rules.every(r => prompts.outline({ level: 'GCSE', subject: 'French', board: 'AQA', code: '8652', family: 'language' }).includes(r)) && prompts.judge({ family: 'science' }).includes(families.FAMILIES.science.rules[3]));
+
+  /* ---------- three-panel GUI, criterion 11: the resources step ---------- */
+  {
+    const d = deps('science', { head: async (url) => /gone\.example/.test(url) ? { ok: false, status: 404, contentType: '' } : headOk(url) });
+    const rec = await runBuild(params('science'), d);
+    const spec = await d.kv.get('spec:' + rec.id, 'json');
+    ok('R1 the resources step finds hub pages, checks each one and keeps only the live https ones', rec.status === 'published' && spec && spec.resources && spec.resources.hubs.length === 2 && spec.resources.hubs.every(h => /^https:\/\//.test(h.url)) && !spec.resources.hubs.some(h => /gone|insecure/.test(h.url)) && d.step.names.includes('resources'), JSON.stringify(spec && spec.resources) + ' ' + rec.status + ' ' + (rec.error || ''));
+    ok('R1 the resources prompt names the board, level, subject and code', d.ai.calls.resources === 1 && /AQA/.test(d.ai.calls.resourcePrompts[0]) && /Biology/.test(d.ai.calls.resourcePrompts[0]) && /7402/.test(d.ai.calls.resourcePrompts[0]) && /A level/.test(d.ai.calls.resourcePrompts[0]));
+    ok('R1 the hubs are on the course record for the admin too, with a stamp', (() => { const m = d.kv._map.get('spec-meta:' + rec.id); const j = m && JSON.parse(m); return j && j.resources && j.resources.hubs.length === 2 && !!j.resources.at; })());
+    ok('R1 the published spec still passes the contract with resources in it', validator.validateSpec(spec).ok);
+    ok('R1 the build’s progress counted the resources stage', rec.total === 5 + 3 && rec.done === rec.total, `${rec.done}/${rec.total}`);
+  }
+  {
+    const d = deps('science'); d.ai.resources = async () => { throw new Error('search unavailable'); };
+    const rec = await runBuild(params('science'), d);
+    const spec = await d.kv.get('spec:' + rec.id, 'json');
+    ok('R2 a failure in the resources step never fails the build: published with no hubs and the reason recorded', rec.status === 'published' && spec && spec.resources && spec.resources.hubs.length === 0 && /search unavailable/.test(spec.resources.error || ''), rec.status + ' ' + JSON.stringify(spec && spec.resources));
+  }
+  {
+    const d = deps('science'); delete d.ai.resources;
+    const rec = await runBuild(params('science'), d);
+    ok('R3 an AI client without a resources method still builds and publishes', rec.status === 'published' && (await d.kv.get('spec:' + rec.id, 'json')).resources.hubs.length === 0);
+  }
 
   console.log('PASSED: ' + pass); console.log('-'.repeat(50));
   if (fails.length) { console.log('FAILED:'); fails.forEach(f => console.log('  ' + f)); process.exit(1); }

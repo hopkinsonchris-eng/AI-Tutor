@@ -48,6 +48,7 @@ function validateSpec(spec) {
     if (!tp.name) bad(`topic "${tp.id}": needs a name`);
     if (!compIds.has(tp.component)) bad(`topic "${tp.id}": component "${tp.component}" is not one of ${[...compIds].join(', ')}`);
     if (!Array.isArray(tp.caseStudies)) bad(`topic "${tp.id}": caseStudies must be an array (empty is fine)`);
+    if (tp.links !== undefined) { if (!Array.isArray(tp.links)) bad(`topic "${tp.id}": links must be an array`); else for (const l of tp.links) { if (!l || !l.t || !l.url) bad(`topic "${tp.id}": each link needs t (a title) and url`); else if (!/^https:\/\//.test(l.url)) bad(`topic "${tp.id}": link "${l.t}" must start with https://`); } }
     const ideas = Array.isArray(tp.ideas) ? tp.ideas : [];
     if (ideas.length < 2) bad(`topic "${tp.id}": needs at least two key ideas, has ${ideas.length}`);
     const codes = new Set();
@@ -70,6 +71,13 @@ function validateSpec(spec) {
   for (const tp of topics) if (tp.option !== undefined && tp.option !== null && !optIds.has(tp.option)) bad(`topic "${tp.id}": option "${tp.option}" does not exist`);
 
   for (const c of comps) if (!c.coversAll && !topics.some(tp => tp.component === c.id)) bad(`component "${c.id}": has no topics and is not marked coversAll`);
+
+  /* resources are optional: checked hub pages the rail shows in every room of the course */
+  if (spec.resources !== undefined) {
+    const res = spec.resources;
+    if (!res || typeof res !== 'object' || !Array.isArray(res.hubs)) bad('resources: must be an object with a hubs array');
+    else for (const h of res.hubs) { if (!h || !h.name || !h.url) bad(`resources hub "${(h && h.name) || '?'}": needs name and url`); else if (!/^https:\/\//.test(h.url)) bad(`resources hub "${h.name}": url must start with https://`); }
+  }
 
   const ideas = topics.reduce((n, tp) => n + (Array.isArray(tp.ideas) ? tp.ideas.length : 0), 0);
   return { ok: problems.length === 0, problems, ideas };

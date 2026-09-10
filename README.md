@@ -19,7 +19,7 @@ src/
 worker/
   index.js             Cloudflare Worker: accounts, sessions, invites, daily caps, progress, the admin API,
                        courses, the Workflow classes, the monthly cron, and the forward to Anthropic
-  builder.js           the course builder: document → outline → topics → validate → judge → publish; the monthly review
+  builder.js           the course builder: document → outline → topics → validate → judge → resources → publish; the monthly review
 data/catalogue.json    qualification codes per board and level, with verified spec PDF links
 .claude/skills/course-builder/  the same procedure for a person, and the family reference generated from src/families.js
   wrangler.toml
@@ -31,6 +31,29 @@ build.js               assembles dist/index.html
 ```
 
 `npm test` runs everything and builds. `npm run serve` builds and serves locally.
+
+## Three panels
+
+On a wide screen the app is three columns; on an iPad in portrait the left rail is part of the page and
+the right rail is a drawer; on a phone both are drawers behind the two buttons in the header.
+
+- **Left rail — where you are.** The nav, a quick-jump box (type a topic name, a code, or a word from a
+  key idea; Enter opens the first match), the course switcher (predicted grade, mastery bar, pin to
+  the top), and the active course's topics as a tree grouped by paper, a status dot on each room and a
+  red ring when it is due. The open room is marked.
+- **Right rail — what now.** It changes with the view. *Today*: the next step (one sentence the tutor
+  writes from the student's own errors and mastery, once a day, with a deterministic fallback), cards
+  due, a progress ring per course, the streak. *In a room*: state, key-idea codes, cards due here, the
+  mistakes logged here, and *Watch and read* — the course's checked hub pages, the topic's own links,
+  and searches that always exist. *Rooms grid*: papers and weights, rooms by state, the next room to
+  start. *Exam*: the board's command words, essay shapes and assessment objectives. *Progress*: the
+  error pattern and remedy, this week, the streak.
+- **Status strip.** Streak, minutes today, cards due, and whether progress is saved.
+
+The course builder's last stage finds hub pages for each built course (BBC Bitesize, Physics & Maths
+Tutor, Save My Exams, Seneca, the board's own page), checks each exists, and stores them with the
+spec; an admin can edit them per course from the Admin tab. `npm run proof` photographs all of this at
+1280, 900 and 390 pixels wide and asserts the layout (`docs/proof/`).
 
 ## How it works on your site
 

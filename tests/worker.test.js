@@ -263,6 +263,23 @@ const baseEnv = () => ({ ANTHROPIC_API_KEY: 'sk-ant-test', ALLOWED_ORIGIN: 'http
     cat = await r.json();
     ok('C6 the catalogue now shows the course as published', cat.courses['AQA-7357'] && cat.courses['AQA-7357'].status === 'published');
 
+    /* three-panel GUI, criterion 12: an admin edits a course's hub links and students see them */
+    r = await worker.fetch(req('/manage/courses/AQA-7357/links', J('POST', { hubs: [{ name: 'Physics & Maths Tutor', url: 'https://www.physicsandmathstutor.com/maths-revision/', kind: 'notes' }] }, STU2)), e);
+    ok('L1 students cannot edit a course\'s links', r.status === 403);
+    r = await worker.fetch(req('/manage/courses/AQA-7357/links', J('POST', { hubs: [{ name: 'Physics & Maths Tutor', url: 'http://www.physicsandmathstutor.com/maths-revision/', kind: 'notes' }] }, ADM2)), e);
+    ok('L1 a link that is not https is refused and named', r.status === 400 && /https/.test((await r.json()).error));
+    r = await worker.fetch(req('/manage/courses/AQA-7357/links', J('POST', { hubs: [{ name: 'Physics & Maths Tutor', url: 'https://www.physicsandmathstutor.com/maths-revision/', kind: 'notes' }, { name: 'AQA', url: 'https://www.aqa.org.uk/subjects/mathematics/as-and-a-level/mathematics-7357', kind: 'official' }] }, ADM2)), e);
+    ok('L1 the admin saves hub links for a published course', r.status === 200 && (await r.json()).hubs.length === 2);
+    r = await worker.fetch(req('/courses/AQA-7357/spec', { headers: STU2 }), e);
+    const withLinks = await r.json();
+    ok('L2 the student\'s spec carries the saved links and a resources stamp so devices refresh their cache', withLinks.spec.resources.hubs.length === 2 && withLinks.spec.resources.hubs[1].kind === 'official' && withLinks.meta.resources && !!withLinks.meta.resources.at, JSON.stringify(withLinks.meta && withLinks.meta.resources));
+    r = await worker.fetch(req('/courses', { headers: STU2 }), e);
+    ok('L2 the course list shows the same stamp', (await r.json()).courses['AQA-7357'].resources.at === withLinks.meta.resources.at);
+    r = await worker.fetch(req('/manage/courses', { headers: ADM2 }), e);
+    ok('L2 the admin course list carries the links to edit', (await r.json()).courses.find(c => c.id === 'AQA-7357').resources.hubs.length === 2);
+    r = await worker.fetch(req('/manage/courses/AQA-9999/links', J('POST', { hubs: [] }, ADM2)), e);
+    ok('L1 links for a course that is not published are refused', r.status === 404);
+
     r = await worker.fetch(req('/manage/courses', { headers: STU2 }), e);
     ok('C7 a student cannot see the admin course list', r.status === 403);
     r = await worker.fetch(req('/manage/courses', { headers: ADM2 }), e);

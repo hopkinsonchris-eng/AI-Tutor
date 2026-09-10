@@ -183,5 +183,66 @@ function weeklyReport(state, specs, today) {
   return { text: lines.join('\n'), hours, errors: errs.length, dominant, essays: essays.length };
 }
 
+/* ---------- Three-panel GUI helpers (pure) ---------- */
+/* Consecutive days with logged hours ending today; a day not yet studied today still counts from yesterday. */
+function streakDays(state, today) {
+  const dh = (state && state.dayHours) || {};
+  let n = 0, d = new Date(today).getTime();
+  if (!(dh[iso(d)] > 0)) d -= DAY;
+  while (dh[iso(d)] > 0) { n++; d -= DAY; }
+  return n;
+}
+/* The deterministic "next step": the first undone step of today's session. Used when the tutor cannot be asked. */
+function nudgeFallback(state, specs, today) {
+  const s = buildSession(state, specs, today);
+  const done = (state.doneToday || {})[today] || [];
+  const i = s.steps.findIndex((x, j) => !done.includes(j));
+  if (i < 0) return { text: s.steps.length ? 'Session complete. With twenty minutes left, clear the recall queue so tomorrow starts lighter.' : 'Nothing is scheduled today. Open any room and review its cards.', node: null, station: 'cards' };
+  const st = s.steps[i];
+  const station = st.kind === 'new' ? 'lesson' : st.kind === 'essay' ? 'essay' : st.kind === 'cards' ? 'cards' : 'practise';
+  return { text: `${st.title} (${st.minutes} min): ${st.detail}`.slice(0, 200), node: st.nodes[0] || null, station };
+}
+/* What the tutor is asked when writing the next-step nudge: the session, mastery, recent errors, due cards, candidate rooms. */
+function nudgePrompt(state, specs, today) {
+  const s = buildSession(state, specs, today);
+  const done = (state.doneToday || {})[today] || [];
+  const name = (state.setup && state.setup.student) || 'the student';
+  const courses = state.setup.subjects.map(sub => { const sp = specs[sub.specId]; if (!sp) return null; const p = predictSubject(state, sp, sub.options); const ns = Object.values(state.nodes).filter(n => n.spec === sp.id); const by = {}; for (const n of ns) by[n.state] = (by[n.state] || 0) + 1; return `${sp.subject} (${sp.board} ${sp.code}): predicted ${p.grade}, ${ns.length} topics — ${STATES.map(st => `${by[st] || 0} ${st.toLowerCase()}`).join(', ')}`; }).filter(Boolean);
+  const cand = []; const push = id => { if (id && state.nodes[id] && !cand.includes(id) && cand.length < 12) cand.push(id); };
+  for (const st of s.steps) for (const id of st.nodes) push(id);
+  for (const id of dueForReview(state, today)) push(id);
+  for (const e of state.errors.slice(0, 8)) push(e.node);
+  const nodeLine = id => { const n = state.nodes[id]; const sp = specs[n.spec]; const t = sp && sp.topics.find(x => x.id === n.topic); return `${id} = ${sp ? sp.subject : ''}: ${t ? t.name : n.topic} [${n.state}${n.lastPractised ? ', last worked ' + n.lastPractised : ''}]`; };
+  const errs = state.errors.slice(0, 8).map(e => { const n = state.nodes[e.node]; const sp = n && specs[n.spec]; return `${e.date} ${sp ? sp.subject : ''} ${e.node}: ${e.mode} — ${String(e.ref || '').slice(0, 70)}`; });
+  const due = dueCards(state, today).length, streak = streakDays(state, today);
+  return `You are the study coach inside ${name}'s revision platform. Today is ${today}. Decide the single best thing to do now and say why, in one sentence of at most 35 words, addressed to ${name} by name and specific to the data below. Prefer the weakest, most heavily examined thing over the most pleasant.
+
+Today's session plan (done: ${done.length ? done.map(i => i + 1).join(', ') : 'none yet'}):
+${s.steps.map((x, i) => `${i + 1}. ${x.title} — ${x.minutes} min — ${x.detail}${x.nodes[0] ? ` [${x.nodes[0]}]` : ''}`).join('\n') || 'nothing scheduled'}
+
+Courses:
+${courses.join('\n')}
+
+Recent mistakes (newest first):
+${errs.join('\n') || 'none logged'}
+
+Recall cards due: ${due}. Study streak: ${streak} day${streak === 1 ? '' : 's'}.
+
+Rooms you may point to (use the id exactly as written):
+${cand.map(nodeLine).join('\n') || 'none'}
+
+Reply with ONLY this JSON and nothing else: {"text": "<the sentence>", "node": "<one id from the list, or null>", "station": "<one of lesson, cards, practise, essay, exit>"}`;
+}
+/* Where to look things up for a topic: the topic's own links, the course's checked hub pages, then searches that always exist. */
+function topicLinks(spec, topic) {
+  const out = [];
+  for (const l of (topic && topic.links) || []) if (l && l.url) out.push({ t: l.t, url: l.url, kind: l.kind || 'notes', why: 'Chosen for this topic' });
+  for (const h of (spec.resources && spec.resources.hubs) || []) if (h && h.url) out.push({ t: h.name, url: h.url, kind: h.kind || 'notes', why: `${spec.board} ${spec.code} hub page` });
+  const q = `${spec.board} ${spec.level} ${spec.subject} ${topic.name}`;
+  out.push({ t: `Videos: ${topic.name}`, url: 'https://www.youtube.com/results?search_query=' + encodeURIComponent(q), kind: 'video', why: 'YouTube search for this topic' });
+  out.push({ t: `BBC Bitesize: ${topic.name}`, url: 'https://www.bbc.co.uk/bitesize/search?q=' + encodeURIComponent(`${spec.subject} ${topic.name}`), kind: 'notes', why: 'Bitesize search' });
+  return out;
+}
+
 if (typeof module !== 'undefined') module.exports = { DAY, STATES, FAILURE_MODES, REMEDY, BLOCKS, phaseFor, days, iso, resolveTopics, nodeId, newState, topicWeights,
-  recordResult, recordWrong, applyDecay, dueForReview, scheduleCard, dueCards, subjectPriority, buildSession, MASTERY_FACTOR, DEFAULT_BOUNDS, gradeFor, predictSubject, weeklyReport };
+  recordResult, recordWrong, applyDecay, dueForReview, scheduleCard, dueCards, subjectPriority, buildSession, MASTERY_FACTOR, DEFAULT_BOUNDS, gradeFor, predictSubject, weeklyReport, streakDays, nudgeFallback, nudgePrompt, topicLinks };

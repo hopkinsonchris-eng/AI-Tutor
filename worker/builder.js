@@ -4,23 +4,27 @@
  * in src/families.js deciding how a maths course differs from a history one.
  *
  * runBuild(params, deps)   the pipeline: locate/verify the document → outline → one call per topic →
- *                          validate (one corrective retry per topic) → judge → publish or queue
+ *                          validate (one corrective retry per topic) → judge → resources (never fatal) → publish or queue
  * runReview(specId, deps)  the monthly pass: HEAD-compare provenance; only if the document changed,
  *                          rebuild to a draft, diff against the published spec, file a proposal
  * diffSpecs(a, b)          topic-level diff, with `breaking` set when student progress would be orphaned
  * anthropicAI(env)         the real `deps.ai`; tests supply canned answers
  *
- * deps = { kv, step, ai: {outline, topic, judge, locate, docChanges}, head(url), now(), boardDomains }
+ * deps = { kv, step, ai: {outline, topic, judge, locate, docChanges, resources}, head(url), now(), boardDomains }
+ *                          (resources is optional: without it a course is published with no hub pages)
  * The Workflow classes that give this durability live in index.js; this file has no Cloudflare imports
  * so the pipeline can be run and tested anywhere.
  */
 import { validateSpec } from '../src/spec-validator.js';
 import { FAMILIES, familyFor, familyText } from '../src/families.js';
 
-export const PROMPT_VERSION = '2026-09-10.2';
+export const PROMPT_VERSION = '2026-09-10.3';
 export const PUBLISH_SCORE = 0.8;
 export const MAX_TOPICS = 40;
-export const MODELS = { outline: 'claude-opus-5', topic: 'claude-sonnet-5', judge: 'claude-opus-5', locate: 'claude-sonnet-5', docChanges: 'claude-sonnet-5' };
+export const MODELS = { outline: 'claude-opus-5', topic: 'claude-sonnet-5', judge: 'claude-opus-5', locate: 'claude-sonnet-5', docChanges: 'claude-sonnet-5', resources: 'claude-sonnet-5' };
+/* Sites the resources step may search for revision hub pages, on top of the board's own domains. */
+export const RESOURCE_DOMAINS = ['bbc.co.uk', 'physicsandmathstutor.com', 'savemyexams.com', 'senecalearning.com'];
+const LINK_KINDS = ['video', 'notes', 'practice', 'official'];
 
 const PREFIX = { 'aqa': 'AQA', 'pearson edexcel': 'EDX', 'edexcel': 'EDX', 'pearson': 'EDX', 'ocr': 'OCR', 'eduqas': 'EDQ', 'wjec': 'WJEC', 'ccea': 'CCEA', 'cambridge': 'CIE' };
 export function specIdFor(board, code) {
@@ -75,6 +79,7 @@ ${familyText(family)}
 Draft:
 ${spec ? JSON.stringify(spec) : ''}`,
   locate: ({ level, subject, board, code, domains }) => `Find the URL of the current official ${board} ${level} ${subject} specification PDF (qualification code ${code}). It must be a PDF on one of these domains: ${domains.join(', ')}. Search, then reply with the URL alone on the last line.`,
+  resources: ({ level, subject, board, code }) => `Find the best free revision hub pages for ${board} ${level} ${subject} (qualification code ${code}) — one page per site where one exists, specific to this board and level, not a generic subject page: BBC Bitesize, Physics & Maths Tutor, Save My Exams, Seneca Learning, and ${board}'s own page for the qualification. Search, then reply with the links alone on the last lines, one per line, exactly as: name | kind | url — where kind is one of video, notes, practice, official. Nothing after the list.`,
   docChanges: ({ oldVersion, newVersion }) => `The previous edition of this specification map was built from "${oldVersion}"; this document is "${newVersion}". From the document alone, list what it says has changed since the previous issue — errata, changed mark allocations, added or withdrawn options, first-assessment dates — as short plain statements. If it says nothing about changes, return an empty list.`,
 };
 
@@ -117,7 +122,7 @@ export async function runBuild(params, deps, opts = {}) {
     const outline = outlined.outline;
     const family = FAMILIES[outline.family] ? outline.family : family0;
     const spec = skeleton(outline, id, params);
-    const total = 4 + spec.topics.length;
+    const total = 5 + spec.topics.length;
     await save({ done: 2, total, family, stage: 'Mapping topics', message: `Mapping topic 1 of ${spec.topics.length}…` });
 
     /* 3. topics, one call each, one corrective retry */
@@ -138,21 +143,39 @@ export async function runBuild(params, deps, opts = {}) {
     /* 4. the whole thing */
     const v = await step.do('validate', () => validateSpec(spec));
     if (!v.ok) return fail('refused by the validator: ' + v.problems.slice(0, 4).join('; '));
-    await save({ done: total - 1, stage: 'Judging against the document', message: 'Judging the map against the document…' });
+    await save({ done: total - 2, stage: 'Judging against the document', message: 'Judging the map against the document…' });
 
     /* 5. judge */
     const judge = await step.do('judge', () => ai.judge({ prompt: prompts.judge({ family, spec }), url: source.url, schema: schemas.judge, model: MODELS.judge }));
     const score = Number(judge.score) || 0;
     const built = { at: now(), models: [MODELS.outline, MODELS.topic, MODELS.judge], promptVersion: PROMPT_VERSION, ideas: v.ideas };
+
+    /* 6. resources: the hub pages the rail shows in every room of this course. Never fatal — a course
+       with no hub pages still has its derived search links. Each page is checked to exist. */
+    await save({ done: total - 1, stage: 'Finding revision resources', message: 'Finding revision hub pages…' });
+    spec.resources = await step.do('resources', async () => {
+      try {
+        if (typeof ai.resources !== 'function') return { hubs: [], at: now() };
+        const r = await ai.resources({ prompt: prompts.resources(params), ...params, domains: RESOURCE_DOMAINS.concat(domains) });
+        const hubs = [];
+        for (const l of ((r && r.links) || []).slice(0, 12)) {
+          if (!l || !l.url || !/^https:\/\/\S+$/.test(l.url)) continue;
+          const h = await head(l.url); if (!h || !h.ok) continue;
+          let name = String(l.name || '').trim(); if (!name) { try { name = new URL(l.url).hostname; } catch { name = 'Link'; } }
+          hubs.push({ name: name.slice(0, 80), url: l.url, kind: LINK_KINDS.includes(l.kind) ? l.kind : 'notes' });
+        }
+        return { hubs, at: now() };
+      } catch (e) { return { hubs: [], at: now(), error: String((e && e.message) || e).slice(0, 200) }; }
+    });
     const metaKey = `spec-meta:${id}`;
     const existing = (await kv.get(metaKey, 'json')) || {};
 
     if (draft) {
       await kv.put(`spec-draft:${id}`, JSON.stringify(spec));
-      await kv.put(metaKey, JSON.stringify({ ...existing, id, level: params.level, subject: params.subject, board: params.board, code: params.code, family, draft: { source, built, judge } }));
+      await kv.put(metaKey, JSON.stringify({ ...existing, id, level: params.level, subject: params.subject, board: params.board, code: params.code, family, draft: { source, built, judge, resources: spec.resources } }));
       return save({ status: 'draft', done: total, stage: 'Done', message: 'Draft built for review.', judge, family });
     }
-    const meta = { id, level: params.level, subject: params.subject, board: params.board, code: params.code, family, source, built, judge, students: existing.students || [] };
+    const meta = { id, level: params.level, subject: params.subject, board: params.board, code: params.code, family, source, built, judge, resources: spec.resources, students: existing.students || [] };
     if (score >= PUBLISH_SCORE) {
       await kv.put(`spec:${id}`, JSON.stringify(spec));
       await kv.delete(`spec-draft:${id}`);
@@ -285,7 +308,27 @@ export function anthropicAI(env) {
     const m = said.match(/https?:\/\/[^\s"')<>]+\.pdf/gi);
     return { url: m ? m[m.length - 1] : null };
   }
-  return { outline: structured, topic: structured, judge: structured, docChanges: structured, locate };
+  /* Hub pages for the rail: a web search over the revision sites, answered as `name | kind | url` lines. */
+  async function resources({ prompt, domains }) {
+    const body = { model: MODELS.resources, max_tokens: 4000, tools: [{ type: 'web_search_20260209', name: 'web_search', max_uses: 6, allowed_domains: domains.slice(0, 20) }], messages: [{ role: 'user', content: prompt }] };
+    let data, turns = 0;
+    while (turns++ < 4) {
+      const res = await fetch('https://api.anthropic.com/v1/messages', { method: 'POST', headers, body: JSON.stringify(body) });
+      const text = await res.text();
+      if (!res.ok) throw new Error(`Anthropic ${res.status}: ${text.slice(0, 300)}`);
+      data = JSON.parse(text);
+      if (data.stop_reason !== 'pause_turn') break;
+      body.messages.push({ role: 'assistant', content: data.content });
+    }
+    const said = (data.content || []).filter(c => c.type === 'text').map(c => c.text).join('\n');
+    const links = [];
+    for (const line of said.split('\n')) {
+      const m = /^\s*[-*]?\s*([^|]+?)\s*\|\s*(video|notes|practice|official)\s*\|\s*(https:\/\/\S+)\s*$/i.exec(line);
+      if (m) links.push({ name: m[1].trim(), kind: m[2].toLowerCase(), url: m[3].replace(/[.,)]+$/, '') });
+    }
+    return { links };
+  }
+  return { outline: structured, topic: structured, judge: structured, docChanges: structured, locate, resources };
 }
 
 export async function headOf(url) {

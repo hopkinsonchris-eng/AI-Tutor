@@ -59,7 +59,7 @@ button.small{width:auto;padding:8px 12px;font-size:13.5px;margin-top:8px;margin-
 .bar{height:9px;background:var(--grid);border-radius:5px;overflow:hidden;margin:7px 0 3px}.bar i{display:block;height:100%;background:var(--green)}
 .mstone{display:flex;justify-content:space-between;padding:9px 0;border-top:1px solid var(--rule);font-size:14px}.mstone b{font-weight:600}.urgent{color:var(--red)}
 .chk{display:flex;gap:10px;align-items:flex-start;padding:9px 0;border-top:1px solid var(--rule);font-size:14.5px}.chk input{width:20px;height:20px;flex:0 0 20px;margin-top:1px}
-nav{position:fixed;bottom:0;left:0;right:0;z-index:30;background:var(--paper);border-top:1px solid var(--rule);display:flex;padding-bottom:env(safe-area-inset-bottom)}
+nav.bottom{position:fixed;bottom:0;left:0;right:0;z-index:30;background:var(--paper);border-top:1px solid var(--rule);display:flex;padding-bottom:env(safe-area-inset-bottom)}
 nav button{flex:1;background:none;border:none;font:inherit;font-size:11.5px;font-weight:600;color:var(--pencil);padding:9px 2px 11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;border-top:2.5px solid transparent;margin-top:-1px}
 nav button .ic{font-size:17px;line-height:1}nav button[aria-selected="true"]{color:var(--ink);border-top-color:var(--ink)}
 .hide{display:none}.empty{font-size:14px;color:var(--pencil);padding:14px 0;text-align:center}.err{color:var(--red);font-size:14px;margin-top:10px}
@@ -110,3 +110,74 @@ pre.report{white-space:pre-wrap;font-family:inherit;font-size:14px;background:#F
 .crs{display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap}.crs>label{flex:1 1 160px;display:block}.crs>label select{margin-top:4px}.crs>button{flex:0 0 auto;margin-top:0}
 .prov{font-size:12.5px;color:var(--pencil);margin-top:6px}
 .diff{font-size:13.5px;margin-top:8px}.diff li{margin:2px 0}.diff .brk{color:var(--red);font-weight:600}
+
+/* ===== three panels: left rail (where you are), centre, right rail (what now), status strip ===== */
+.hbar .edge{display:none;background:#fff;border:1.5px solid var(--rule);border-radius:3px;font:inherit;font-size:17px;line-height:1;padding:7px 9px;cursor:pointer;color:var(--ink)}
+body.three .hbar .edge{display:inline-block}
+.hmid{flex:1;min-width:0}
+.shell{display:block}
+.centre{max-width:600px;margin:0 auto;padding:0 16px}
+.rail{position:fixed;top:0;bottom:0;left:0;width:min(86vw,330px);background:var(--paper);z-index:40;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:14px 14px 100px;border-right:1px solid var(--rule);transform:translateX(-103%);transition:transform .22s ease;font-size:14px}
+.rail-r{left:auto;right:0;border-right:none;border-left:1px solid var(--rule);transform:translateX(103%)}
+.rail.open{transform:none;box-shadow:0 0 34px rgba(25,29,35,.22)}
+.rail.hide{display:none}
+.scrim{position:fixed;inset:0;background:rgba(25,29,35,.28);z-index:39;display:none}.scrim.show{display:block}
+@media (prefers-reduced-motion:reduce){.rail{transition:none}}
+nav.side{display:none}
+.status{display:none}
+body.three .status{display:flex;gap:14px;flex-wrap:wrap;align-items:center;font-size:12.5px;color:var(--pencil);position:fixed;left:0;right:0;bottom:calc(60px + env(safe-area-inset-bottom));z-index:29;background:var(--paper);border-top:1px solid var(--rule);padding:5px 16px;white-space:nowrap;overflow-x:auto}
+.status .sync{margin-left:auto}
+body.three{padding-bottom:108px}
+.rblock{padding:13px 0;border-top:1px solid var(--rule)}.rblock:first-child{border-top:none;padding-top:0}
+.rblock h4{margin:0 0 8px;font-size:11.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--pencil)}
+.rblock p{margin:0;font-size:14px;line-height:1.5}
+.rblock .row{margin-top:8px}.rblock .row .act.small{margin:0;flex:0 1 auto}
+.fine{display:block;font-size:12.5px;color:var(--pencil);margin-top:4px;line-height:1.4}
+.ccard{position:relative;margin-bottom:8px}
+.ccard .cmain{width:100%;text-align:left;background:#fff;border:1.5px solid var(--rule);border-radius:3px;padding:9px 34px 8px 10px;font:inherit;cursor:pointer;color:var(--ink);display:grid;grid-template-columns:1fr auto;align-items:center;column-gap:8px}
+.ccard .cmain b{font-size:14.5px;display:block;line-height:1.25}.ccard .cmain small{color:var(--pencil);font-size:12px;grid-column:1}.ccard .cmain .cg{grid-column:2;grid-row:1/3;font-size:21px;font-weight:700;letter-spacing:-.02em}
+.ccard.on .cmain{border-color:var(--ink)}
+.ccard .bar.mini{height:4px;margin:4px 0 0;background:var(--grid)}.ccard .bar.mini i{background:var(--green)}
+.ccard .pin{position:absolute;top:5px;right:5px;background:none;border:none;font-size:15px;cursor:pointer;color:var(--pencil);padding:2px 5px;line-height:1}.ccard .pin[aria-pressed="true"]{color:var(--amber)}
+.tree .comp{margin-top:8px}.cname{font-size:11.5px;font-weight:700;color:var(--pencil);margin:6px 0 2px}
+.tnode{display:flex;gap:8px;align-items:flex-start;width:100%;text-align:left;background:none;border:none;border-radius:3px;padding:6px 6px;font:inherit;font-size:13.5px;line-height:1.35;color:var(--ink);cursor:pointer}
+.tnode:hover{background:#fff}.tnode.cur{background:#fff;box-shadow:inset 3px 0 0 var(--ink)}
+.tnode small{color:var(--pencil);font-size:11.5px}
+.dot{width:10px;height:10px;border-radius:50%;border:1.5px solid var(--pencil);flex:0 0 10px;margin-top:4px;background:transparent;display:inline-block}
+.dot[data-s="Learning"]{background:var(--amber);border-color:var(--amber)}.dot[data-s="Fluent"]{background:var(--blue);border-color:var(--blue)}.dot[data-s="Secure"]{background:var(--green);border-color:var(--green)}
+.dot[data-due="1"]{box-shadow:0 0 0 2px var(--paper),0 0 0 3.5px var(--red)}
+.legend .dot{margin-top:0}
+#jump{font-size:14px;padding:8px 10px}
+#jumpOut .tnode{background:#fff;margin-top:4px;border:1px solid var(--rule)}
+.ringwrap{display:flex;align-items:center;gap:10px;margin:6px 0}.ring{width:46px;height:46px;flex:0 0 46px}.ringwrap b{display:block;font-size:14px}.ringwrap small{color:var(--pencil);font-size:12px}
+.bigrow{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.big{font-size:28px;font-weight:700;letter-spacing:-.03em;line-height:1}.bigrow .act.small{margin:0}.bigrow .fine{margin:0}
+.cw{font-size:13px;padding:6px 0;border-top:1px solid var(--rule);line-height:1.4}.cw:first-of-type{border-top:none}.cw b{display:block}
+.ideas{display:flex;flex-wrap:wrap;gap:4px;margin-top:8px}.ideas .cite{margin:0}
+.nudge p{font-size:15px;line-height:1.5;font-weight:500}
+.rail .link{padding:8px 0;font-size:13.5px}.rail .entry{font-size:13.5px;padding:8px 0}
+.rail .mstone{padding:6px 0;font-size:13.5px}
+details.links{margin-top:8px;font-size:14px}details.links summary{cursor:pointer;font-weight:600;font-size:13.5px}
+/* medium: the left rail joins the page; the right rail stays a drawer */
+@media (min-width:760px){
+ .wrap{max-width:1400px}
+ body.three .shell{display:grid;grid-template-columns:262px minmax(0,1fr);max-width:1400px;margin:0 auto;align-items:start}
+ body.three .hbar [data-drawer="l"]{display:none}
+ body.three .rail-l{position:sticky;top:0;height:100vh;transform:none;width:auto;z-index:1;box-shadow:none;padding:16px 14px 24px}
+ body.three header{position:static}
+ body.three .status{position:static;margin:14px 0 0;border:1px solid var(--rule);border-radius:3px;padding:6px 12px}
+ body.three{padding-bottom:78px}
+}
+/* wide: all three panels, the nav moves into the left rail, no bottom bar */
+@media (min-width:1100px){
+ body.three .shell{grid-template-columns:262px minmax(0,1fr) 300px}
+ body.three .centre{max-width:780px}
+ body.three .rail-r{position:sticky;top:0;height:100vh;transform:none;width:auto;z-index:1;box-shadow:none;padding:16px 14px 24px}
+ body.three .hbar .edge{display:none}
+ body.three nav.bottom{display:none}
+ body.three nav.side{display:flex;flex-direction:column;gap:2px;margin:0 0 12px}
+ nav.side button{flex:none;flex-direction:row;justify-content:flex-start;gap:10px;font-size:14px;padding:8px 10px;border-top:none;border-left:2.5px solid transparent;margin:0;border-radius:0 3px 3px 0}
+ nav.side button[aria-selected="true"]{border-left-color:var(--ink);background:#fff}
+ body.three{padding-bottom:24px}
+ body.three .status{position:sticky;bottom:0;background:var(--paper)}
+ body.three .scrim.show{display:none}
+}

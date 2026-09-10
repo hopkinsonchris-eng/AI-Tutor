@@ -29,5 +29,9 @@ r=mut(s=>{s.level='Degree';});ok('V9 an unknown level is refused',!r.ok&&/level 
 ok('V10 problems are actionable (name the topic)',mut(s=>{s.topics[2].ideas[0].q='';}).problems[0].includes(`topic "${good.topics[2].id}"`));
 ok('V11 family prior: sciences, languages, maths, essay',familyFor('Chemistry')==='science'&&familyFor('French')==='language'&&familyFor('Further Mathematics')==='quantitative'&&familyFor('Politics')==='essay'&&familyFor('English Language')==='essay');
 
+/* three-panel GUI, criterion 11: resources are optional, and checked when present */
+r=mut(s=>{s.resources={hubs:[{name:'Physics & Maths Tutor',url:'https://www.physicsandmathstutor.com/',kind:'notes'}]};s.topics[0].links=[{t:'Video',url:'https://www.youtube.com/watch?v=x',kind:'video'}];});ok('V12 a well-formed resources block and topic links are accepted',r.ok,r.problems.join('|'));
+r=mut(s=>{s.resources={hubs:[{name:'Bad',url:'http://example.com/',kind:'notes'}]};});ok('V13 a hub page without an https link is refused and named',!r.ok&&/resources.*https/.test(r.problems.join()),r.problems.join('|'));
+r=mut(s=>{s.topics[0].links=[{t:'',url:'https://x.example/',kind:'video'}];});ok('V13 a topic link without a title is refused and names the topic',!r.ok&&r.problems.join().includes(`topic "${good.topics[0].id}"`)&&/link/.test(r.problems.join()),r.problems.join('|'));
 console.log(`PASSED: ${pass}`); fails.forEach(f=>console.log('FAILED: '+f));
 console.log('-'.repeat(50)); console.log(fails.length?`RESULT: ${fails.length} FAILURE(S)`:'RESULT: ALL GREEN'); process.exit(fails.length?1:0);

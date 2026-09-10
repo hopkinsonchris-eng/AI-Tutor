@@ -125,7 +125,7 @@ async function courseState(env, id) {
     : build && build.status === 'building' ? (stale ? 'none' : 'building') : build && build.status ? build.status : 'none';
   return { status, meta, build, stale };
 }
-const publicMeta = m => m ? { id: m.id, level: m.level, subject: m.subject, board: m.board, code: m.code, family: m.family, status: m.status, version: m.version, source: m.source ? { url: m.source.url, checkedAt: m.source.checkedAt, lastModified: m.source.lastModified } : null, built: m.built ? { at: m.built.at, promptVersion: m.built.promptVersion, ideas: m.built.ideas } : null, judge: m.judge ? { score: m.judge.score } : null, pending: !!m.pending } : null;
+const publicMeta = m => m ? { id: m.id, level: m.level, subject: m.subject, board: m.board, code: m.code, family: m.family, status: m.status, version: m.version, source: m.source ? { url: m.source.url, checkedAt: m.source.checkedAt, lastModified: m.source.lastModified } : null, built: m.built ? { at: m.built.at, promptVersion: m.built.promptVersion, ideas: m.built.ideas } : null, judge: m.judge ? { score: m.judge.score } : null, pending: !!m.pending, resources: m.resources ? { at: m.resources.at || null, hubs: m.resources.hubs || [] } : null } : null;
 const publicBuild = b => b ? { id: b.id, status: b.status, stage: b.stage, done: b.done, total: b.total, message: b.message, startedAt: b.startedAt, updatedAt: b.updatedAt, error: b.error } : null;
 
 async function courses(request, env, url, cors) {
@@ -229,7 +229,32 @@ async function manageCourses(request, env, url, cors) {
     return json({ ok: true, id, entry: q }, 200, cors);
   }
 
-  let m = /^\/manage\/courses\/([^/]+)\/(retract|restore|check|rebuild)$/.exec(p);
+  /* the course's hub links, edited by the admin: written into the published spec and stamped so devices refresh */
+  let m = /^\/manage\/courses\/([^/]+)\/links$/.exec(p);
+  if (m && request.method === 'POST') {
+    const id = decodeURIComponent(m[1]);
+    const meta = await env.USAGE.get(`spec-meta:${id}`, 'json');
+    const spec = await env.USAGE.get(`spec:${id}`, 'json');
+    if (!meta || !spec) return json({ error: 'no published course with that id' }, 404, cors);
+    const body = await readJson(request);
+    if (!Array.isArray(body.hubs)) return json({ error: 'hubs must be a list' }, 400, cors);
+    const hubs = [];
+    for (const h of body.hubs.slice(0, 12)) {
+      const name = String((h && h.name) || '').trim().slice(0, 80), url = String((h && h.url) || '').trim();
+      const kind = ['video', 'notes', 'practice', 'official'].includes(h && h.kind) ? h.kind : 'notes';
+      if (!name) return json({ error: 'every link needs a name' }, 400, cors);
+      if (!/^https:\/\/\S+$/.test(url)) return json({ error: `the link for "${name}" must start with https://` }, 400, cors);
+      hubs.push({ name, url, kind });
+    }
+    const resources = { ...(spec.resources || {}), hubs, at: new Date().toISOString(), editedBy: s.user.username };
+    delete resources.error;
+    spec.resources = resources;
+    await env.USAGE.put(`spec:${id}`, JSON.stringify(spec));
+    await env.USAGE.put(`spec-meta:${id}`, JSON.stringify({ ...meta, resources }));
+    return json({ ok: true, hubs }, 200, cors);
+  }
+
+  m = /^\/manage\/courses\/([^/]+)\/(retract|restore|check|rebuild)$/.exec(p);
   if (m && request.method === 'POST') {
     const id = decodeURIComponent(m[1]), action = m[2];
     const meta = await env.USAGE.get(`spec-meta:${id}`, 'json');
@@ -274,7 +299,7 @@ async function manageCourses(request, env, url, cors) {
       await env.USAGE.put(`spec:${id}`, JSON.stringify(draft));
       await env.USAGE.delete(`spec-draft:${id}`);
       const next = { ...meta, status: 'published', pending: false, approvedAt: new Date().toISOString(), approvedBy: s.user.username };
-      if (meta.draft) { next.source = meta.draft.source; next.built = meta.draft.built; next.judge = meta.draft.judge; delete next.draft; }
+      if (meta.draft) { next.source = meta.draft.source; next.built = meta.draft.built; next.judge = meta.draft.judge; if (meta.draft.resources) next.resources = meta.draft.resources; delete next.draft; }
       await env.USAGE.put(`spec-meta:${id}`, JSON.stringify(next));
       if (proposal) { await env.USAGE.delete(`proposal:${id}`); await env.USAGE.put(`decision:${id}:${Date.now()}`, JSON.stringify({ action: 'approved', by: s.user.username, at: next.approvedAt, breaking: proposal.breaking, changes: proposal.changes.length })); }
       return json({ ok: true, meta: publicMeta(next) }, 200, cors);

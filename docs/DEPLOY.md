@@ -170,13 +170,19 @@ The Worker's `wrangler.toml` now declares two Workflows and a Cron Trigger; a Gi
 three. Nothing else to configure — the same `ANTHROPIC_API_KEY` secret pays for builds.
 
 - **Workflows** (free plan): 1,024 steps per instance, unlimited wall-clock per step, 100 concurrent
-  instances, 10 ms of CPU per step. A course build is 4 + topics steps; model calls are I/O and do
+  instances, 10 ms of CPU per step. A course build is 5 + topics steps (the last finds revision hub
+  pages with a web search and checks each one; it never fails a build); model calls are I/O and do
   not count against CPU. If a step ever trips the CPU limit, the Workers Paid plan ($5/month) raises
   it to 30 seconds — that is the fix, not code.
 - **Cron Triggers** (free plan): five per account; this uses one, `0 6 1 * *`.
 - **Cost**: roughly £2–4 per course at API rates, mostly the per-topic calls reading a cached copy of
   the document. Your credit balance is still the ceiling. Builds are coalesced, capped at 40 topics,
   and the monthly pass costs nothing for an unchanged document.
+- **Revision links**: each built course carries the hub pages the builder found. Edit them under the
+  course in the Admin tab (one per line, `name | kind | https://…`); students see them in every room.
+  The four built-in courses get search links only, plus the maths course's hand-checked videos.
+- **The next-step nudge**: one small Sonnet call per student per day, counted against their daily
+  cap, cached in their progress. If it fails the app shows the first undone session step instead.
 - **Watching a build**: `GET https://tutor.your-domain/courses/<id>/status` with a session, or the
   Admin tab. Cloudflare's dashboard also lists Workflow instances under the Worker.
 

@@ -42,7 +42,9 @@ subject matter.
    same brief the Worker gives Opus (without `--kit` it reads the shipped kit). Give it to a new subagent
    with no memory of writing the kit; it re-solves every question. Anything in `wrong` or a score under 0.8 goes back to a writer once, with the
    objections; a second failure means the room ships without a kit and is listed in the file's header
-   comment for a later pass. Record `built.judge` from the verdict.
+   comment for a later pass. `npm run course -- ship-kit <id> <topic> --kit <file> --verdict <file>`
+   stores a kit that passed in `src/kits/<id>.js` with its `built` record (models, prompt version, the
+   judge's score and notes) and refuses one judged under 0.8 or with a wrong answer key.
 5. **Ship.** `npm run course -- validate <id>`, `npm test` (tests/kits.test.js checks every kit and
    that it was judged), commit, push, merge to main. The site serves the kits; students see them on
    the next load.

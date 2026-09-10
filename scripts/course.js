@@ -9,6 +9,8 @@
                                                       family rules); --problems lists the objections for a rewrite, one per line
    node scripts/course.js check-kit <id> <topic> --kit <file>   the kit contract on a kit not yet shipped (a JSON file)
    node scripts/course.js judge-prompt <id> <topic> [--kit <file>]   the judge's brief for that room's kit, for a fresh subagent
+   node scripts/course.js ship-kit <id> <topic> --kit <file> --verdict <file>   store a judged kit in src/kits/<id>.js with its built record;
+                                                      refused below 0.8 or with a wrong answer key
    node scripts/course.js current                     HEAD-check every hand-built spec's document against its provenance
    node scripts/course.js install <id>                register the spec in build.js if it is not there yet */
 const fs = require('fs'), path = require('path'), { execFileSync } = require('child_process');
@@ -120,6 +122,22 @@ function cmdCheckKit() {
   if (!r.ok) process.exitCode = 1;
 }
 
+function cmdShipKit() {
+  const id = arg(1), topic = arg(2); if (!id || !topic || !flag('kit') || !flag('verdict')) throw new Error('usage: ship-kit <id> <topic> --kit <file> --verdict <file>');
+  const { spec, topic: t, family } = room(id, topic); const kit = kitFor(id, topic);
+  const v = JSON.parse(fs.readFileSync(path.resolve(flag('verdict')), 'utf8'));
+  const r = validateKit(kit, t, family); if (!r.ok) throw new Error('the kit does not pass the contract:\n  - ' + r.problems.join('\n  - '));
+  const score = Number(v.score) || 0, wrong = Array.isArray(v.wrong) ? v.wrong : [];
+  if (score < 0.8 || wrong.length) throw new Error(`refused: judged ${score}${wrong.length ? ` with ${wrong.length} wrong answer key(s)` : ''} — rewrite with the objections first`);
+  const file = path.join(ROOT, 'src', 'kits', id + '.js'); const kf = kitsFile(id); const KITS = kf ? kf.kits : {};
+  KITS[topic] = { id, topic, family, lesson: kit.lesson, room: kit.room, cards: kit.cards, extras: kit.extras || [],
+    built: { at: new Date().toISOString(), by: 'claude-code', models: ['claude-sonnet-5', 'claude-opus-5'], promptVersion: briefs().version, judge: { score, notes: String(v.notes || '') } } };
+  const ordered = {}; for (const tp of spec.topics) if (KITS[tp.id]) ordered[tp.id] = KITS[tp.id];
+  const header = `/* ${spec.board} ${spec.level} ${spec.subject} (${spec.code}) — room kits built by hand in a Claude Code session: written by\n   Sonnet 5 subagents to the contract in src/kit-validator.js, every question re-solved and the lesson read against\n   the specification map by a fresh Opus 5 subagent before shipping. See .claude/skills/course-builder/references/depth.md. */\n`;
+  fs.writeFileSync(file, header + `module.exports = { ID: '${id}', KITS: ${JSON.stringify(ordered)} };\n`);
+  console.log(`${id} ${topic}: shipped (judged ${score}) — ${Object.keys(ordered).length} of ${spec.topics.length} rooms in ${path.relative(ROOT, file)}`);
+}
+
 function cmdJudgePrompt() {
   const id = arg(1), topic = arg(2); if (!id || !topic) throw new Error('usage: judge-prompt <id> <topic> [--kit <file>]');
   const { spec, topic: t, family } = room(id, topic); const kit = kitFor(id, topic);
@@ -152,7 +170,7 @@ function cmdInstall() {
 (async () => {
   const cmd = arg(0);
   try {
-    if (cmd === 'fetch') await cmdFetch(); else if (cmd === 'validate') cmdValidate(); else if (cmd === 'write-prompt') cmdWritePrompt(); else if (cmd === 'check-kit') cmdCheckKit(); else if (cmd === 'judge-prompt') cmdJudgePrompt(); else if (cmd === 'current') await cmdCurrent(); else if (cmd === 'install') cmdInstall();
-    else { console.log(fs.readFileSync(__filename, 'utf8').split('\n').slice(1, 13).join('\n')); }
+    if (cmd === 'fetch') await cmdFetch(); else if (cmd === 'validate') cmdValidate(); else if (cmd === 'write-prompt') cmdWritePrompt(); else if (cmd === 'check-kit') cmdCheckKit(); else if (cmd === 'judge-prompt') cmdJudgePrompt(); else if (cmd === 'ship-kit') cmdShipKit(); else if (cmd === 'current') await cmdCurrent(); else if (cmd === 'install') cmdInstall();
+    else { console.log(fs.readFileSync(__filename, 'utf8').split('\n').slice(1, 15).join('\n')); }
   } catch (e) { console.error('course.js:', e.message); process.exit(1); }
 })();

@@ -15,9 +15,11 @@ src/
   specs/               one file per qualification — components, weights, AOs, command words, topics, key ideas
   authored/            hand-authored content (maths: 19 lessons, 262 questions, exit tickets, dojo, verified links)
 worker/
-  index.js             Cloudflare Worker: per-user keys, daily caps, forwards to Anthropic with your API key
+  index.js             Cloudflare Worker: per-student keys, daily caps, an admin panel for issuing keys,
+                       progress sync, and the forward to Anthropic with your API key
   wrangler.toml
-tests/                 spec validator, engine, generator, and app-level smoke tests (a DOM stub drives the real handlers)
+tests/                 spec validator, engine, generator, worker (keys, caps, sync, Access-guarded admin),
+                       and app-level smoke tests (a DOM stub drives the real handlers)
 build.js               assembles dist/index.html
 ```
 
@@ -52,10 +54,14 @@ Optional but recommended: *Settings → Bindings → KV namespace*, variable `US
 Health check: open the Worker URL in a browser → `{"ok":true,"service":"tutor-proxy"}`.
 
 ### 4. Users
-Give each user (a) the site address, (b) the Worker address, (c) their key. They enter (b) and (c) once under *Progress → Tutor connection → Tutor route*, then *Test the connection*. Progress is stored in the browser on their device; *Back up and restore* is under Progress. To revoke a key, remove it from `USER_KEYS`. To see a user's usage today: `GET <worker>/usage?key=<their key>`.
+Issue keys from the panel at `<worker>/admin` — put a Cloudflare Access policy in front of it first, or it stays off (see *docs/DEPLOY.md*). The panel gives each student a setup link that fills in the tutor route in one tap; failing that they enter the Worker address and their key under *Progress → Tutor connection → Tutor route*, then *Test the connection*.
+
+Progress is stored in the browser and, once a route is set, copied to the Worker so a student can carry on from another device: pushed automatically, pulled on request from *Progress → Tutor backup*. `Back up and restore` under Progress still gives a copy-paste backup.
+
+Turn a key off or delete it from the panel — it takes effect on the student's next request. Usage today: `GET <worker>/usage?key=<their key>`.
 
 ### Costs
-Sonnet 4.6 at API rates: coach turn ≈ 1p, lesson ≈ 3–5p, essay marked from photos ≈ 10–15p. One active student ≈ £5–15/month. Your console spend limit is the ceiling.
+Sonnet 5 at API rates ($2/$10 per million tokens in/out): coach turn well under 1p, lesson ≈ 2–3p, essay marked from photos ≈ 7–10p. One active student ≈ £3–10/month. Your console spend limit — or your prepaid credit balance with auto-reload off — is the ceiling.
 
 ## Extending
 

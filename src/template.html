@@ -33,6 +33,7 @@
 const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const KEY='platform:state:v1', MATHS_KEY='companion:state:v2';
 let S=null, TODAY=new Date().toISOString().slice(0,10), view='today', saveErr='', storeMode='memory';
+let syncState={at:0,serverAt:'',busy:false,err:'',pending:false,timer:null},PENDING_ROUTE=null;const SYNC_GAP=60000;
 let UI={subject:null,room:null,station:'lesson',revealed:{},practice:null,essay:null,exit:null,busy:'',err:'',coachBusy:false,coachErr:'',teach:{},setup:{subjects:[]},cards:null,mathsHours:0};
 const specById=id=>SPECS[id];
 const authoredFor=(specId,topicId)=>{const A=AUTHORED[specId];if(!A)return null;const room=A.rooms[topicId];if(!room)return null;return{room,lesson:A.lessons[topicId],sources:A.sources[topicId],official:A.official};};
@@ -51,7 +52,29 @@ async function load(){storeMode=await detectStore();let got=null;try{got=JSON.pa
   try{MATHS=JSON.parse(await rawGet(MATHS_KEY)||'null');if(MATHS&&MATHS.dayHours)UI.mathsHours=MATHS.dayHours[TODAY]||0;UI.mathsPresent=!!MATHS;}catch(e){}
   await mirrorMaths();
   if(S){for(const k of ['errors','transitions','practice','essays','papers'])if(!S[k])S[k]=[];for(const k of ['cards','generated','coach','pins','doneToday','coldDone','checklist','boundaries','dayHours'])if(!S[k])S[k]={};}}
-async function save(){if(!S)return;if(storeMode==='memory'){saveErr='Saving isn\u2019t available where this is open — back up from Progress before you close.';return;}try{await rawSet(KEY,JSON.stringify(S));saveErr='';}catch(e){saveErr=`Could not save (${e.message}). Back up from Progress.`;}}
+async function save(){if(!S)return;if(storeMode==='memory'){saveErr='Saving isn\u2019t available where this is open — back up from Progress before you close.';return;}try{await rawSet(KEY,JSON.stringify(S));saveErr='';queueSync();}catch(e){saveErr=`Could not save (${e.message}). Back up from Progress.`;}}
+/* ---- tutor backup: the same JSON the backup button produces, kept on the tutor route ---- */
+function syncable(){return !!(S&&S.tutor&&S.tutor.url&&S.tutor.pass);}
+function deviceName(){try{const u=(typeof navigator!=='undefined'&&navigator.userAgent)||'';return /iPad/.test(u)?'an iPad':/iPhone/.test(u)?'an iPhone':/Android/.test(u)?'an Android device':/Macintosh/.test(u)?'a Mac':/Windows/.test(u)?'a PC':'a device';}catch(e){return 'a device';}}
+function queueSync(){if(!syncable())return;syncState.pending=true;if(syncState.timer)return;const wait=Math.max(2000,SYNC_GAP-(Date.now()-syncState.at));syncState.timer=setTimeout(()=>{syncState.timer=null;pushSync();},wait);}
+async function pushSync(){if(!syncable()||syncState.busy||!syncState.pending)return;syncState.busy=true;
+  try{const res=await fetch(S.tutor.url+'/progress',{method:'PUT',headers:{'Content-Type':'application/json','X-Passcode':S.tutor.pass},body:JSON.stringify({device:deviceName(),state:S})});
+   if(!res.ok)throw new Error('HTTP '+res.status);const b=JSON.parse(await res.text());syncState.at=Date.now();syncState.serverAt=b.updatedAt||'';syncState.err='';syncState.pending=false;}
+  catch(e){syncState.err=e.message||'failed';}
+  finally{syncState.busy=false;if(view==='prog')renderProg();}}
+async function pullSync(){if(!syncable())throw new Error('Set the tutor route first.');
+  const res=await fetch(S.tutor.url+'/progress',{headers:{'X-Passcode':S.tutor.pass}});
+  if(res.status===404)throw new Error('Nothing has been backed up to the tutor yet.');
+  if(!res.ok)throw new Error('HTTP '+res.status);
+  const b=JSON.parse(await res.text());
+  if(!b||!b.state||!b.state.nodes||!b.state.setup)throw new Error('The backup on the tutor is not readable.');
+  return b;}
+/* A setup link (#route=...&key=...) sets the tutor route in one tap. */
+function applySetupLink(){try{const h=(typeof location!=='undefined'&&location.hash)||'';if(h.indexOf('route=')<0)return;
+  const q={};h.replace(/^#/,'').split('&').forEach(pair=>{const i=pair.indexOf('=');if(i>0)q[decodeURIComponent(pair.slice(0,i))]=decodeURIComponent(pair.slice(i+1));});
+  const u=(q.route||'').trim(),k=(q.key||'').trim();if(!/^https:\/\//.test(u)||!k)return;
+  const route={url:u.replace(/\/$/,''),pass:k};if(S){S.tutor=route;save();}else{PENDING_ROUTE=route;}
+  if(typeof history!=='undefined'&&history.replaceState)history.replaceState(null,'',location.pathname+location.search);}catch(e){}}
 function withT(id,fn){const b=S.nodes[id].state;fn();const a=S.nodes[id].state;if(b!==a)S.transitions.push({date:TODAY,node:id,from:b,to:a});}
 function addHours(h){S.hours=(S.hours||0)+h;S.dayHours[TODAY]=(S.dayHours[TODAY]||0)+h;}
 
@@ -59,7 +82,7 @@ function addHours(h){S.hours=(S.hours||0)+h;S.dayHours[TODAY]=(S.dayHours[TODAY]
 const RETRY=new Set([408,409,425,429,500,502,503,504,529]);let LAST_API_ERROR=null;
 async function callClaude(parts,max=1500,retries=6){let lastErr='';for(let a=0;a<=retries;a++){if(a)await new Promise(r=>setTimeout(r,Math.min(8000,600*Math.pow(2,a-1))+Math.random()*400));let res;
   const route=(S&&S.tutor&&S.tutor.url)?{url:S.tutor.url,headers:{'Content-Type':'application/json','X-Passcode':S.tutor.pass||''}}:{url:'https://api.anthropic.com/v1/messages',headers:{'Content-Type':'application/json'}};
-  try{res=await fetch(route.url,{method:'POST',headers:route.headers,body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:max,messages:[{role:'user',content:parts}]})});}catch(e){lastErr='network';continue;}
+  try{res=await fetch(route.url,{method:'POST',headers:route.headers,body:JSON.stringify({model:'claude-sonnet-5',max_tokens:max,messages:[{role:'user',content:parts}]})});}catch(e){lastErr='network';continue;}
   let raw='';try{raw=await res.text();}catch(e){lastErr='unreadable body';continue;}
   let data=null;try{data=JSON.parse(raw);}catch(e){lastErr='HTTP '+res.status+', non-JSON reply: '+(raw||'(empty)').slice(0,120)+(!raw?' — the tutor route isn\u2019t reaching Claude from here':'');LAST_API_ERROR={status:res.status,body:raw.slice(0,400),when:new Date().toISOString()};if(a<retries)continue;break;}
   if(!res.ok||(data&&data.type==='error')){const m=(data&&data.error&&data.error.message)||('HTTP '+res.status);lastErr=res.status===429?'rate limited':res.status===529||res.status===503?'service busy':('HTTP '+res.status+': '+m);LAST_API_ERROR={status:res.status,body:raw.slice(0,400),when:new Date().toISOString()};if(RETRY.has(res.status))continue;break;}
@@ -214,6 +237,8 @@ function renderProg(){const el=document.getElementById('v-prog');if(!S)return;co
    <div class="panel"><h2>Tutor connection</h2><h3 style="margin-top:14px">Tutor route</h3><p class="sub">Leave blank inside Claude. On the website, enter the proxy address and passcode Chris set up — the app then talks to the tutor directly.</p>
     <input id="tuUrl" value="${esc((S.tutor&&S.tutor.url)||'')}" placeholder="https://your-worker.workers.dev"><input id="tuPass" type="password" autocomplete="off" value="${esc((S.tutor&&S.tutor.pass)||'')}" placeholder="Passcode" style="margin-top:6px"><div class="row"><button class="act ghost small" id="tuSave">Save route</button>${(S.tutor&&S.tutor.url)?'<button class="act danger small" id="tuClear">Use built-in route</button>':''}</div>
     <button class="act ghost" id="apiTest">Test the connection</button><div id="apiOut">${LAST_API_ERROR?`<div class="remedy"><b>Last failure</b> HTTP ${LAST_API_ERROR.status}: <span class="mono">${esc(LAST_API_ERROR.body.slice(0,200))}</span></div>`:''}</div></div>
+   <div class="panel"><h2>Tutor backup</h2>${(S.tutor&&S.tutor.url)?`<p class="sub">Your progress is copied to the tutor whenever it changes, so you can carry on from another device. ${syncState.err?`<span class="err">Last attempt failed: ${esc(syncState.err)}</span>`:syncState.at?`Last backed up ${esc(new Date(syncState.at).toLocaleTimeString())}.`:syncState.pending?'Waiting to back up\u2026':'Nothing to back up yet.'}</p>
+    <div class="row"><button class="act ghost small" id="syncNow">Back up now</button><button class="act ghost small" id="syncPull">Load from tutor</button></div><div id="syncOut"></div>`:'<p class="sub">Set the tutor route above and your progress will be backed up to it automatically.</p>'}</div>
    <div class="panel"><h2>Back up and restore</h2><p class="sub">${storeMode==='cloud'?'Saved to your Claude account.':storeMode==='local'?'Saved on this device only.':'Not being saved where this is open.'}</p><button class="act ghost" id="bkCopy">Copy backup</button><label>Restore</label><textarea id="bkIn" style="min-height:60px"></textarea><button class="act danger" id="bkRestore">Restore (replaces current progress)</button><div id="bkMsg"></div><button class="act ghost" id="suEdit" style="margin-top:18px">Add or change subjects</button><button class="act danger" id="reset">Start again from scratch</button></div>`;}
 
 function renderAll(){renderHeader();if(!S){document.querySelectorAll('main>section').forEach(s=>s.classList.toggle('hide',s.id!=='v-setup'));renderSetup();return;}renderToday();renderRooms();renderExam();renderProg();document.querySelectorAll('main>section').forEach(s=>s.classList.toggle('hide',s.id!=='v-'+view));}
@@ -230,7 +255,7 @@ document.addEventListener('change',async e=>{const t=e.target;
   if(t.id==='mkPhoto'){const files=[...(t.files||[])];const M=UI.mark;for(const f of files){try{M.photos.push(await fileToImg(f));}catch(e){}}renderRooms();return;}});
 document.addEventListener('click',async e=>{const t=e.target;
   if(t.id==='suGo'){UI.setup.student=document.getElementById('suName').value.trim();UI.setup.examYear=+document.getElementById('suYear').value;const bad=setupValid();if(bad){document.getElementById('suErr').innerHTML=`<p class="err">${esc(bad)}</p>`;return;}
-    if(S)mergeSetup(JSON.parse(JSON.stringify(UI.setup)));else{S=newState(UI.setup,SPECS);S.created=TODAY;}presetBoundaries();UI.subject=S.setup.subjects[0].specId;UI.room=null;await mirrorMaths();await save();go('today');renderAll();return;}
+    if(S)mergeSetup(JSON.parse(JSON.stringify(UI.setup)));else{S=newState(UI.setup,SPECS);S.created=TODAY;if(PENDING_ROUTE){S.tutor=PENDING_ROUTE;PENDING_ROUTE=null;}}presetBoundaries();UI.subject=S.setup.subjects[0].specId;UI.room=null;await mirrorMaths();await save();go('today');renderAll();return;}
   if(t.id==='suCancel'){go('today');renderAll();return;}
   if(t.id==='suEdit'){UI.setup=JSON.parse(JSON.stringify(S.setup));document.querySelectorAll('main>section').forEach(x=>x.classList.toggle('hide',x.id!=='v-setup'));renderSetup();return;}
   if(!S)return;
@@ -282,11 +307,18 @@ document.addEventListener('click',async e=>{const t=e.target;
   if(t.id==='tuSave'){const u=document.getElementById('tuUrl').value.trim(),pw=document.getElementById('tuPass').value;if(u&&!/^https:\/\//.test(u)){document.getElementById('apiOut').innerHTML='<p class="err">The proxy address must start with https://</p>';return;}S.tutor=u?{url:u.replace(/\/$/,''),pass:pw}:null;await save();renderAll();return;}
   if(t.id==='tuClear'){S.tutor=null;await save();renderAll();return;}
   if(t.id==='apiTest'){const out=document.getElementById('apiOut');out.innerHTML='<p class="sub">Testing…</p>';const t0=Date.now();try{const txt=await callClaude([{type:'text',text:'Reply with exactly the single word OK.'}],10,1);out.innerHTML=`<div class="good">Connected in ${Date.now()-t0} ms: ${esc(txt)}</div>`;}catch(e){out.innerHTML=`<div class="remedy"><b>Failed:</b> ${esc(e.message)}<br>Where this is open: ${esc((typeof location!=='undefined'&&location.hostname)||'file')} · ${storeMode==='cloud'?'artifact storage available':'artifact storage not available'} · route: ${(S&&S.tutor&&S.tutor.url)?'your proxy':'built-in'}</div>`;}return;}
+  if(t.id==='syncNow'){const out=document.getElementById('syncOut');out.innerHTML='<p class="sub">Backing up\u2026</p>';syncState.pending=true;await pushSync();out.innerHTML=syncState.err?`<p class="err">${esc(syncState.err)}</p>`:'<div class="good">Backed up.</div>';return;}
+  if(t.id==='syncPull'){const out=document.getElementById('syncOut');out.innerHTML='<p class="sub">Fetching\u2026</p>';
+   try{const b=await pullSync();const when=b.updatedAt?new Date(b.updatedAt).toLocaleString():'an unknown time';
+    if(!confirm(`Replace the progress on this device with the copy saved from ${b.device||'a device'} at ${when}?`)){out.innerHTML='';return;}
+    const route=S.tutor;S=b.state;S.tutor=route;await save();renderAll();document.getElementById('syncOut').innerHTML='<div class="good">Loaded.</div>';}
+   catch(e){out.innerHTML=`<p class="err">${esc(e.message)}</p>`;}return;}
   if(t.id==='bkCopy'){try{await navigator.clipboard.writeText(JSON.stringify(S));t.textContent='Copied';}catch(e){document.getElementById('bkMsg').innerHTML=`<textarea class="mono" style="min-height:90px">${esc(JSON.stringify(S))}</textarea>`;}return;}
   if(t.id==='bkRestore'){try{const o=JSON.parse(document.getElementById('bkIn').value);if(!o.nodes||!o.setup)throw 0;S=o;await save();renderAll();document.getElementById('bkMsg').innerHTML='<div class="good">Restored.</div>';}catch(e){document.getElementById('bkMsg').innerHTML='<p class="err">Not a valid backup.</p>';}return;}
   if(t.id==='reset'){if(!confirm('This clears all progress in this platform. Copy a backup first?'))return;UI.setup={subjects:[]};S=null;try{await rawSet(KEY,'');}catch(e){}renderAll();return;}
 });
-(async function(){await load();if(S){UI.subject=S.setup.subjects[0].specId;}renderAll();})();
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'&&syncState.pending){if(syncState.timer){clearTimeout(syncState.timer);syncState.timer=null;}pushSync();}});
+(async function(){await load();applySetupLink();if(S){UI.subject=S.setup.subjects[0].specId;}renderAll();})();
 </script>
 </body>
 </html>

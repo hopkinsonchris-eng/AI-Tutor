@@ -2,13 +2,21 @@ name = "ai-proxy"
 main = "index.js"
 compatibility_date = "2026-01-01"
 
+[vars]
 # The site's origin, exactly — no trailing slash, no path.
 # Only this origin may call the Worker; "*" would let any site spend your API credit.
-[vars]
 ALLOWED_ORIGIN = "https://studyplatform.co.uk"
 
-# Per-user daily caps and usage counts. Without this the Worker still checks keys,
-# but `daily` is not enforced and /usage reports null.
+# Where the app lives, used for the one-tap setup links the admin panel builds.
+SITE_ORIGIN = "https://studyplatform.co.uk"
+
+# Admin panel (/admin). It stays off until BOTH of these are set AND a Cloudflare
+# Access policy sits in front of /admin* — the Worker verifies the Access token's
+# signature, issuer, audience and expiry on every request, and refuses without one.
+# ACCESS_TEAM_DOMAIN = "<your-team>.cloudflareaccess.com"
+# ACCESS_AUD = "<the Access application's Application Audience tag>"
+
+# Per-student daily caps, issued keys, and synced progress all live here.
 [[kv_namespaces]]
 binding = "USAGE"
 id = "236116d082d047559b1e5c94337412de"

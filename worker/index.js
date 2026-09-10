@@ -337,14 +337,16 @@ body{background:var(--bg)}.card{background:#232020}input,button{background:#2320
 </table></div><div id="legacy"></div></div>
 </main>
 <script>
-var SITE='',WORKER='';
+var SITE='',WORKER='',ISSUED=[];
 function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
 function api(path,opts){return fetch('/admin/keys'+path,Object.assign({headers:{'Content-Type':'application/json'}},opts||{})).then(function(r){
   return r.json().catch(function(){return {}}).then(function(b){if(!r.ok)throw new Error(b.error||('HTTP '+r.status));return b})})}
 function link(k){return SITE?SITE+'/#route='+encodeURIComponent(WORKER)+'&key='+encodeURIComponent(k):''}
 function load(){api('').then(function(d){
   SITE=d.site||'';WORKER=d.worker||'';
-  var rows=document.getElementById('rows');
+  var rows=document.getElementById('rows'),fresh=d.keys.slice();
+  ISSUED.forEach(function(k){if(!fresh.some(function(x){return x.passcode===k.passcode}))fresh.push(k)});
+  d.keys=fresh;
   if(!d.keys.length){rows.innerHTML='<tr><td colspan="6" class="empty">No keys issued yet.</td></tr>'}
   else{rows.innerHTML=d.keys.map(function(k){
     var pct=Math.min(100,Math.round(100*(k.today||0)/(k.daily||200)));
@@ -371,6 +373,7 @@ document.getElementById('make').addEventListener('click',function(){
     document.getElementById('made').innerHTML='<div class="new"><b>'+esc(k.name)+'</b> — key <code>'+esc(k.passcode)+'</code>'
       +'<p style="margin:.6rem 0 0;font-size:.88rem">Shown once here, but you can always copy the setup link from the table below.</p>'
       +(l?'<p style="margin:.5rem 0 0"><button class="mini" data-copy="'+esc(k.passcode)+'">Copy setup link</button></p>':'')+'</div>';
+    ISSUED.push({passcode:k.passcode,name:k.name,daily:k.daily,created:k.created,disabled:false,today:0,hasProgress:false});
     document.getElementById('n').value='';load()
   }).catch(function(e){document.getElementById('err').textContent=e.message})})
 document.addEventListener('click',function(e){

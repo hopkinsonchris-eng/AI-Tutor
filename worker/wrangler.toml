@@ -13,8 +13,8 @@ SITE_ORIGIN = "https://studyplatform.co.uk"
 # Admin panel (/admin). It stays off until BOTH of these are set AND a Cloudflare
 # Access policy sits in front of /admin* — the Worker verifies the Access token's
 # signature, issuer, audience and expiry on every request, and refuses without one.
-# ACCESS_TEAM_DOMAIN = "<your-team>.cloudflareaccess.com"
-# ACCESS_AUD = "<the Access application's Application Audience tag>"
+ACCESS_TEAM_DOMAIN = "hoppyc.cloudflareaccess.com"
+ACCESS_AUD = "952d8ea1-a06f-4625-8e59-cd82504e4d45"
 
 # Per-student daily caps, issued keys, and synced progress all live here.
 [[kv_namespaces]]

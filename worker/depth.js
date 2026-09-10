@@ -11,7 +11,7 @@
 import { validateKit, KINDS } from '../src/kit-validator.js';
 import { FAMILIES, familyFor, kitText } from '../src/families.js';
 
-export const KIT_PROMPT_VERSION = '2026-09-10.1';
+export const KIT_PROMPT_VERSION = '2026-09-10.2';
 export const KIT_MODELS = { write: 'claude-sonnet-5', judge: 'claude-opus-5' };
 export const KIT_SCORE = 0.8;
 export const KIT_BATCH = 4;
@@ -30,7 +30,7 @@ export const kitSchemas = {
 };
 
 const KIT_SHAPE = `A room kit has: lesson (why: at least 200 characters on why this room exists for the exam; idea: one section per key idea in the order given, each citing the idea's code, at least 150 characters, teaching the idea and how it is examined; examples: 4 to 6 faded worked examples, each with a title and at least 3 one-line steps a student can predict before revealing; check: at least 3 short check-yourself questions with answers), room (facts: at least 3 key facts or formulae the student must write from memory; questions: 12 to 16, with at least 3 at each difficulty — 1 is one idea, 2 is exam standard, 3 is stretch or synoptic — each with q, a (a short checkable answer), sol (the full solution or model answer), m (marks), d (difficulty), exactly three hints from a nudge to the method to the first line of working, and codes (the key-idea codes it tests); exit: exactly 4 short cold questions with answers), cards (12 to 15 recall cards: front, back of at most 40 words, code), and extras (sections of kind, title and items, as the family rules say).`;
-const KIT_RULES = `Every fact, question, answer and solution must be correct and consistent with the specification map given. Use the board's own terms and only the key-idea codes given. Write for the student in plain British English. Reply with JSON matching the schema and nothing else.`;
+const KIT_RULES = `Every fact, question, answer and solution must be correct and consistent with the specification map given. Use the board's own terms and only the key-idea codes given. Hints never state a marking point, never name any part of the required answer, never open with the first line of the mark scheme ("Start with …" is not a hint): the first hint points at the idea, the second at the method, the third at the shape of the answer. Every worked example shows the working with real numbers or the real statements, not instructions to the student. Skills codes on a practical method sheet are the ones the specification lists for that practical, not the topic's. Write for the student in plain British English. Reply with JSON matching the schema and nothing else.`;
 
 export const kitPrompts = {
   system: () => `You write the room kits for a study platform used by UK students: the lesson, worked examples, question bank, exit ticket and recall cards for one topic of one exam course. ${KIT_SHAPE} ${KIT_RULES}`,

@@ -121,7 +121,7 @@ async function ensure(kind,id,builder,validator,max){S.generated[id]=S.generated
 function renderSetup(){const el=document.getElementById('v-setup');const st=UI.setup;const editing=!!S;st.level=st.level||'A level';
   const levels=['GCSE','A level'];const avail=new Set(Object.values(SPECS).map(sp=>sp.level));
   const bySubject={};for(const sp of Object.values(SPECS)){if(sp.level!==st.level)continue;(bySubject[sp.subject]=bySubject[sp.subject]||[]).push(sp);}
-  el.innerHTML=`<div class="panel">${editing?'<button class="open" id="suCancel">← Back without changing</button>':''}<h2>${editing?'Add or change subjects':'Set up your study environment'}</h2><p class="sub">Choose your level, then each subject and its exam board. The platform builds a room for every topic you actually study, from the board’s own specification.</p>
+  el.innerHTML=`<div class="panel">${editing?'<button class="open" id="suCancel">← Back without changing</button>':''}<h2>${editing?'Add or change subjects':'Set up your study environment'}</h2>${!editing&&isAdmin()?'<div class="note">Running the platform rather than studying on it? You don’t need rooms — adding students, invites and caps are all under the <b>Admin</b> tab below. Fill this in only if you want rooms of your own.</div>':''}<p class="sub">Choose your level, then each subject and its exam board. The platform builds a room for every topic you actually study, from the board’s own specification.</p>
    <label for="suName">First name</label><input id="suName" value="${esc(st.student||(AUTH.user&&AUTH.user.name)||'')}" placeholder="e.g. Matthew"><label for="suYear">Exam summer</label><select id="suYear">${[2027,2028,2029].map(y=>`<option ${st.examYear===y||(!st.examYear&&y===2028)?'selected':''}>${y}</option>`).join('')}</select>
    <h3>Level</h3><div class="row">${levels.map(l=>`<button class="act ghost small" data-level="${l}" aria-pressed="${st.level===l}" ${avail.has(l)?'':'disabled'} style="${st.level===l?'background:var(--ink);color:var(--paper)':''}">${l}${avail.has(l)?'':' — coming'}</button>`).join('')}</div>
    ${!avail.has('GCSE')&&st.level==='A level'?'<p class="sub" style="margin-top:6px">GCSE subjects are on the way — each one is a specification map, added as it is written.</p>':''}
@@ -292,16 +292,19 @@ function renderAdminList(d){document.getElementById('adList').innerHTML=`<h2>Acc
     <div class="row" style="flex-wrap:wrap">${u.username===AUTH.user.username?'':`<button class="act ghost small" data-ad-toggle="${esc(u.username)}" data-to="${u.disabled?'0':'1'}">${u.disabled?'Turn on':'Turn off'}</button>`}<button class="act ghost small" data-ad-reset="${esc(u.username)}">${u.hasPassword?'New invite (reset password)':'New invite'}</button><button class="act ghost small" data-ad-cap="${esc(u.username)}" data-daily="${u.daily}">Change cap</button>${u.username===AUTH.user.username?'':`<button class="act danger small" data-ad-del="${esc(u.username)}">Delete</button>`}</div></div>`).join('')||'<p class="empty">No accounts yet.</p>'}`;}
 function inviteCard(inv,u){const link=inv.link;const body=`Hi ${u.name},\n\nHere is your login for the study platform. Open this link and choose a password:\n\n${link}\n\nYour username is ${u.username}. The link works until ${inv.expires}.\n\nChris`;const mail='mailto:?subject='+encodeURIComponent('Your study platform login')+'&body='+encodeURIComponent(body);
   return `<div class="good"><b>${esc(u.name)}</b> — username <b>${esc(u.username)}</b><br><span class="mono" style="word-break:break-all;font-size:13px">${esc(link)}</span><div class="row" style="margin-top:8px"><button class="act ghost small" data-copy-link="${esc(link)}">Copy link</button><a class="act ghost small" style="text-align:center;text-decoration:none;display:block" href="${mail}">Email invite</a></div><p class="sub" style="margin-top:6px">Works until ${esc(inv.expires)}, once.</p></div>`;}
+function isAdmin(){return !!(AUTH.user&&AUTH.user.role==='admin');}
+function landing(){return isAdmin()&&!S?'admin':'today';}
 function showSection(id){document.querySelectorAll('main>section').forEach(x=>x.classList.toggle('hide',x.id!==id));}
 function renderAll(){renderHeader();const na=document.getElementById('navAdmin');if(na)na.classList.toggle('hide',!(AUTH.user&&AUTH.user.role==='admin'));
   if(AUTH_MODE&&!AUTH.user){showSection('v-login');renderLogin();return;}
+  if(!S&&isAdmin()&&view==='admin'){showSection('v-admin');renderAdmin();return;}
   if(!S){document.querySelectorAll('main>section').forEach(s=>s.classList.toggle('hide',s.id!=='v-setup'));renderSetup();return;}renderToday();renderRooms();renderExam();renderProg();if(view==='admin')renderAdmin();document.querySelectorAll('main>section').forEach(s=>s.classList.toggle('hide',s.id!=='v-'+view));}
 function go(v){view=v;document.querySelectorAll('nav button').forEach(x=>x.setAttribute('aria-selected',String(x.dataset.v===v)));document.querySelectorAll('main>section').forEach(s=>s.classList.toggle('hide',s.id!=='v-'+v));window.scrollTo(0,0);}
 function openRoom(id,st){UI.room=id;UI.subject=S.nodes[id].spec;UI.station=st||'lesson';UI.revealed={};UI.practice=null;UI.apr=null;UI.useGenerated=false;UI.exit=null;UI.err='';go('rooms');renderRooms();}
 async function fileToImg(file){const data=await new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result.split(',')[1]);r.onerror=()=>rej(new Error('read failed'));r.readAsDataURL(file);});return{data,media:file.type||'image/jpeg'};}
 
 /* ============ EVENTS ============ */
-document.querySelector('nav').addEventListener('click',e=>{const b=e.target.closest('button[data-v]');if(!b||!S)return;if(b.dataset.v==='admin'&&!(AUTH.user&&AUTH.user.role==='admin'))return;go(b.dataset.v);if(b.dataset.v==='admin')renderAdmin();});
+document.querySelector('nav').addEventListener('click',e=>{const b=e.target.closest('button[data-v]');if(!b)return;if(b.dataset.v==='admin'){if(!isAdmin())return;go('admin');renderAdmin();return;}if(!S)return;go(b.dataset.v);});
 document.addEventListener('change',async e=>{const t=e.target;
   if(t.dataset&&t.dataset.su){const id=t.dataset.su;if(t.checked)UI.setup.subjects.push({specId:id,options:{}});else UI.setup.subjects=UI.setup.subjects.filter(x=>x.specId!==id);UI.setup.student=document.getElementById('suName').value;renderSetup();return;}
   if(t.dataset&&t.dataset.board){const sub=UI.setup.subjects.find(x=>specById(x.specId).subject===t.dataset.board);if(sub){sub.specId=t.value;sub.options={};}UI.setup.student=document.getElementById('suName').value;renderSetup();return;}
@@ -315,11 +318,11 @@ document.addEventListener('click',async e=>{const t=e.target;
   if(t.id==='suCancel'){go('today');renderAll();return;}
   /* ---- sign in, invites, account ---- */
   if(t.id==='loginGo'){const u=document.getElementById('lgUser').value.trim(),pw=document.getElementById('lgPass').value;const out=document.getElementById('lgErr');if(!u||!pw){out.innerHTML='<p class="err">Enter your username and password.</p>';return;}out.innerHTML='<p class="sub">Signing in…</p>';
-    try{const r=await api('/auth/login',{method:'POST',body:{username:u,password:pw}});AUTH={user:r.user,token:r.token};try{await rawSet(SESSION_KEY,r.token);}catch(e){}await loadForUser();if(S)UI.subject=S.setup.subjects[0].specId;go('today');renderAll();}
+    try{const r=await api('/auth/login',{method:'POST',body:{username:u,password:pw}});AUTH={user:r.user,token:r.token};try{await rawSet(SESSION_KEY,r.token);}catch(e){}await loadForUser();if(S)UI.subject=S.setup.subjects[0].specId;go(landing());renderAll();}
     catch(e){out.innerHTML=`<p class="err">${esc(e.message)}</p>`;}return;}
   if(t.id==='toLogin'){clearHash();renderAll();return;}
   if(t.id==='invGo'){const p1=document.getElementById('invPass').value,p2=document.getElementById('invPass2').value,out=document.getElementById('invErr');if(p1.length<8){out.innerHTML='<p class="err">Use at least 8 characters.</p>';return;}if(p1!==p2){out.innerHTML='<p class="err">The two passwords don’t match.</p>';return;}out.innerHTML='<p class="sub">Setting up…</p>';
-    try{const r=await api('/auth/invite',{method:'POST',body:{token:t.dataset.token,password:p1}});AUTH={user:r.user,token:r.token};try{await rawSet(SESSION_KEY,r.token);}catch(e){}clearHash();await loadForUser();if(S)UI.subject=S.setup.subjects[0].specId;go('today');renderAll();}
+    try{const r=await api('/auth/invite',{method:'POST',body:{token:t.dataset.token,password:p1}});AUTH={user:r.user,token:r.token};try{await rawSet(SESSION_KEY,r.token);}catch(e){}clearHash();await loadForUser();if(S)UI.subject=S.setup.subjects[0].specId;go(landing());renderAll();}
     catch(e){out.innerHTML=`<p class="err">${esc(e.message)}</p>`;}return;}
   if(t.id==='signOut'){if(syncState.pending){syncState.timer&&clearTimeout(syncState.timer);syncState.timer=null;await pushSync();}try{await api('/auth/logout',{method:'POST'});}catch(e){}await signedOut();return;}
   if(t.id==='pwGo'){const out=document.getElementById('pwOut');try{await api('/auth/password',{method:'POST',body:{current:document.getElementById('pwCur').value,next:document.getElementById('pwNew').value}});out.innerHTML='<div class="good">Password changed.</div>';document.getElementById('pwCur').value='';document.getElementById('pwNew').value='';}catch(e){out.innerHTML=`<p class="err">${esc(e.message)}</p>`;}return;}
@@ -396,7 +399,7 @@ document.addEventListener('visibilitychange',()=>{if(document.visibilityState===
 (async function(){storeMode=await detectStore();
   if(AUTH_MODE){const inv=hashParam('invite');if(inv){await renderInvite(inv);return;}
     const tok=await rawGet(SESSION_KEY);if(tok){AUTH.token=tok;try{AUTH.user=(await api('/auth/me')).user;}catch(e){AUTH={user:null,token:null};}}
-    if(AUTH.user)await loadForUser();}
+    if(AUTH.user)await loadForUser();if(AUTH.user)go(landing());}
   else{await load();applySetupLink();}
   if(S){UI.subject=S.setup.subjects[0].specId;}renderAll();})();
 </script>

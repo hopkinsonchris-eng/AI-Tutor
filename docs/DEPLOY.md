@@ -231,3 +231,47 @@ the Worker itself avoids that entirely, which is the simpler choice.
 A rough ordering by value: Step 1 and Cloudflare Access get you safe key
 management in an evening. The panel is a weekend. Progress sync is the one that
 changes what the product is.
+
+---
+
+# Notes from the first deployment
+
+Things that cost time doing this for real, worth knowing before the next one.
+
+**The two build surfaces look alike.** "Import a repository" under Workers gives
+a build with a **Deploy command** field. The "Continue to Pages" link on the same
+screen gives a Pages build, which has only a build command and an output
+directory. A Pages build that runs `npx wrangler deploy` fails asking for
+`CLOUDFLARE_API_TOKEN`, because in a Pages build wrangler runs as an
+unauthenticated user command. If you see that error, you are on the Pages path --
+recreate the project under Workers rather than supplying a token.
+
+**Production and branch builds use different deploy commands.** Production runs
+the Deploy command (`npx wrangler deploy`); every other branch runs the
+non-production one (`npx wrangler versions upload`). A push to a feature branch
+therefore fails differently from a push to `main`, and retrying a branch build
+never tests a production setting. Check which command a log ran before reading
+anything into it.
+
+**Deploying a subdirectory: prefer `--config` over Root directory.** Root
+directory is a case-sensitive path (`worker`, never `Worker`), and phone
+keyboards capitalise the first letter of a text field. Setting the deploy command
+to
+
+```
+npx wrangler deploy --config worker/wrangler.toml
+```
+
+leaves Root directory empty and reads the config directly. `main` resolves
+relative to the config file, so `index.js` there means `worker/index.js`.
+
+**The Worker name in the config decides what gets overwritten.** `wrangler
+deploy` deploys to the `name` in `wrangler.toml`, not to the build project's
+name. Keep them the same, and keep the site's Worker on a different name -- a
+mismatch either fails or replaces the wrong Worker.
+
+**Plain variables come from the repo; secrets do not.** A Git deploy applies the
+`[vars]` block and the bindings in `wrangler.toml` and drops anything added by
+hand in the dashboard, so set `ALLOWED_ORIGIN` and the KV binding in the file.
+Secrets live outside the repo and survive deploys, so set those in the dashboard
+once.

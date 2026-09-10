@@ -1,0 +1,11 @@
+# The site: a Worker that serves the built app as static assets.
+# `npm run build` writes dist/index.html; this deploys that directory.
+#
+# The proxy is a separate Worker with its own config in worker/wrangler.toml.
+# Deploy that one with:  npx wrangler deploy --config worker/wrangler.toml
+# Never deploy worker/ to this name — it would replace the site with the proxy.
+name = "ai-tutor"
+compatibility_date = "2026-01-01"
+
+[assets]
+directory = "dist"

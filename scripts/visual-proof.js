@@ -185,6 +185,20 @@ const server = http.createServer((req, res) => {
   must(/Hint 1/.test(await page.locator('#v-rooms').textContent()) && /Peptide bond|amino acids/.test(await page.locator('#v-rooms').textContent()), 'room: practise draws from the checked bank with the hint ladder');
   await page.context().close();
 
+  /* 12. the maths course after its rebuild: a room with a checked kit keeps the course’s verified links and official booklet */
+  page = await open('tok-matthew', { width: 1280, height: 900 }, '#rail-l .ccard');
+  await page.click('#rail-l [data-course="EDX-9MA0"]'); await page.waitForSelector('#rail-l [data-open="EDX-9MA0|P2"]');
+  must((await page.locator('#rail-l .pen').count()) === 0, 'tree: every maths room has its kit, no being-written marks');
+  await page.click('#rail-l [data-open="EDX-9MA0|P2"]');
+  await page.waitForFunction(() => /Written and checked/.test(document.querySelector('#v-rooms').textContent), null, { timeout: 10000 });
+  must(/Formulae & links/.test(await page.locator('.stations').textContent()) && /class="cite"[^>]*>2\.1</.test(await page.locator('#v-rooms').innerHTML()) && (await page.locator('#v-rooms [data-lxrev]').count()) >= 4 && /Formulae sheet/.test(await page.locator('#v-rooms').textContent()), 'maths room: the checked kit lesson cites the document’s codes, has faded worked examples and a Formulae sheet, and the tab reads Formulae & links');
+  await snap(page, '12-maths-room-with-kit', 'Edexcel A level Maths after the rebuild: the checked kit lesson for Algebra and functions, one section per content statement (2.1–2.11), faded worked examples with cues, and the provenance line');
+  await page.click('[data-station="formulae"]');
+  await page.waitForFunction(() => /tlmaths\.com/.test(document.querySelector('#v-rooms').innerHTML), null, { timeout: 5000 });
+  must(/Key formulae/.test(await page.locator('#v-rooms').textContent()) && /Formulae booklet \(official\)/.test(await page.locator('#v-rooms').textContent()), 'maths formulae station: the kit’s formulae, the hand-checked TLMaths links and the official booklet link together');
+  await snap(page, '13-maths-formulae-station', 'The same room’s Formulae & links station: the kit’s key formulae, its faded examples, the course’s hand-checked TLMaths pages and the official formulae booklet');
+  await page.context().close();
+
   await browser.close(); server.close();
   fs.writeFileSync(path.join(OUT, 'README.md'), '# Visual proof\n\nScreenshots from `npm run proof`: the built app in Chromium against a stub of the tutor Worker.\n\n' + shots.map(s => `## ${s.name}\n\n${s.note}\n\n![${s.name}](${s.name}.png)\n`).join('\n'));
   console.log('wrote', shots.length, 'screenshots to docs/proof/');

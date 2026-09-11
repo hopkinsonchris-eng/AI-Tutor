@@ -59,10 +59,11 @@ if (cmd === 'prompt') {
     const kf = path.join(K, t.id + '.json'), vf = path.join(K, t.id + '.verdict.json'); if (!fs.existsSync(kf) || !fs.existsSync(vf)) continue;
     const kit = readJ(kf), v = readJ(vf);
     if (!kitValidator.validateKit(kit, t, family).ok || verdictProblems(v).length) continue;
-    out[t.id] = { id: courseId, topic: t.id, family, lesson: kit.lesson, room: kit.room, cards: kit.cards, extras: kit.extras || [], built: { at: v.at || new Date().toISOString(), by: 'claude-code', models: ['claude-sonnet-5', 'claude-opus-5'], promptVersion: depth.KIT_PROMPT_VERSION, judge: { score: v.score, notes: v.notes || '' } } }; n++;
+    out[t.id] = { id: courseId, topic: t.id, family, lesson: kit.lesson, room: kit.room, cards: kit.cards, extras: kit.extras || [], built: { at: v.at || new Date().toISOString(), by: 'claude-code', models: [process.env.KIT_WRITER === 'opus' ? 'claude-opus-5' : 'claude-sonnet-5', 'claude-opus-5'], promptVersion: depth.KIT_PROMPT_VERSION, judge: { score: v.score, notes: v.notes || '' } } }; n++;
   }
   fs.mkdirSync(path.join(ROOT, 'src', 'kits'), { recursive: true });
   const title = `${spec.board} ${spec.level} ${spec.subject} (${spec.code})`;
-  fs.writeFileSync(path.join(ROOT, 'src', 'kits', courseId + '.js'), `/* ${title} — room kits built by hand in a Claude Code session: written by\n   Sonnet 5 subagents to the contract in src/kit-validator.js, every question re-solved and the lesson read against\n   the specification map by a fresh Opus 5 subagent before shipping. See .claude/skills/course-builder/references/depth.md. */\nmodule.exports = { ID: '${courseId}', KITS: ${JSON.stringify(out)} };\n`);
+  const writer = process.env.KIT_WRITER === 'opus' ? 'Opus 5' : 'Sonnet 5'; /* KIT_WRITER=opus when the writers were Opus (maths) */
+  fs.writeFileSync(path.join(ROOT, 'src', 'kits', courseId + '.js'), `/* ${title} — room kits built by hand in a Claude Code session: written by\n   ${writer} subagents to the contract in src/kit-validator.js, every question re-solved and the lesson read against\n   the specification map by a fresh Opus 5 subagent before shipping. See .claude/skills/course-builder/references/depth.md. */\nmodule.exports = { ID: '${courseId}', KITS: ${JSON.stringify(out)} };\n`);
   console.log('assembled', n, 'of', spec.topics.length, 'rooms into src/kits/' + courseId + '.js');
 } else { console.log('unknown command', cmd); process.exit(1); }

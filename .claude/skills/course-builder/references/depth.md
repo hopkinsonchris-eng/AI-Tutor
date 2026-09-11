@@ -44,6 +44,20 @@ subject matter.
    that it was judged), commit, push, merge to main. The site serves the kits; students see them on
    the next load.
 
+## Maths courses: the formulae booklet
+
+A quantitative kit's Formulae sheet says which results the exam booklet provides. Writers and judges get that
+wrong from memory, so fetch the board's booklet itself (`scripts/course.js` fetches the specification; download
+the booklet PDF next to it and extract its text) and the specification's own appendix of formulae students must
+know, and give both to every writer and judge. For Edexcel 9MA0 the booklet is `pearson-edexcel-a-level-gce-in-
+mathematics-formulae-book.pdf` (its A level section: Mensuration gives only the sphere's surface area and the
+cone's curved surface area; Differentiation includes first principles; Mechanics gives the five constant-
+acceleration formulae and nothing else) and Appendix 1 of the specification is the must-know list. After the
+judges, run one audit agent per paper over every booklet claim in the kits against the booklet text. Maths
+kits were written by Opus 5 subagents (`KIT_WRITER=opus` when assembling records that); the judges refused
+seven of the nineteen first drafts, none for a wrong answer, and every refused room was rewritten once and
+re-judged, with a targeted third pass where a second verdict listed only cosmetic faults.
+
 ## Keeping courses current
 
 - `npm run course -- current` HEAD-checks every hand-built spec's document against its recorded

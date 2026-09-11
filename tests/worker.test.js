@@ -238,7 +238,7 @@ const baseEnv = () => ({ ANTHROPIC_API_KEY: 'sk-ant-test', ALLOWED_ORIGIN: 'http
     ok('C1 the catalogue needs a session', r.status === 401);
     r = await worker.fetch(req('/courses', { headers: STU2 }), e);
     let cat = await r.json();
-    ok('C1 the catalogue lists every qualification with an id, both levels, and which have a verified link', cat.catalogue.length === CATALOGUE.qualifications.length && cat.catalogue.some(q => q.id === 'AQA-7357' && q.level === 'A level') && cat.catalogue.some(q => q.level === 'GCSE') && cat.catalogue.filter(q => q.hasUrl).length === 14, String(cat.catalogue.length));
+    ok('C1 the catalogue lists every qualification with an id, both levels, and which have a verified link', cat.catalogue.length === CATALOGUE.qualifications.length && cat.catalogue.some(q => q.id === 'AQA-7357' && q.level === 'A level') && cat.catalogue.some(q => q.level === 'GCSE') && cat.catalogue.filter(q => q.hasUrl).length === 16, String(cat.catalogue.length));
 
     r = await worker.fetch(req('/courses/build', J('POST', { level: 'A level', subject: 'Astrology', board: 'AQA' }, STU2)), e);
     ok('C2 an unknown qualification is refused with a pointer to the admin', r.status === 404 && /catalogue/.test((await r.json()).error));

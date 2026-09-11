@@ -66,7 +66,11 @@ function validateSpec(spec) {
     const from = Array.isArray(o.from) ? o.from : [];
     const missing = from.filter(f => !topicIds.has(f));
     if (missing.length) bad(`option "${o.id}": choices ${JSON.stringify(missing)} are not topic ids`);
-    if (!(o.choose >= 1) || o.choose > from.length) bad(`option "${o.id}": choose must be between 1 and ${from.length}`);
+    if (o.routes) { /* a route option: each route names a group of topics from `from`, and the student picks whole routes */
+      const rs = Object.entries(o.routes); if (!rs.length) bad(`option "${o.id}": routes must name at least one route`);
+      for (const [rid, r] of rs) { const rt = Array.isArray(r && r.topics) ? r.topics : []; if (!rt.length || !r.name) bad(`option "${o.id}": route "${rid}" needs a name and its topics`); const out = rt.filter(x => !from.includes(x)); if (out.length) bad(`option "${o.id}": route "${rid}" lists ${JSON.stringify(out)}, which are not in from`); }
+      if (!(o.choose >= 1) || o.choose > rs.length) bad(`option "${o.id}": choose must be between 1 and ${rs.length} routes`);
+    } else if (!(o.choose >= 1) || o.choose > from.length) bad(`option "${o.id}": choose must be between 1 and ${from.length}`);
   }
   for (const tp of topics) if (tp.option !== undefined && tp.option !== null && !optIds.has(tp.option)) bad(`topic "${tp.id}": option "${tp.option}" does not exist`);
 

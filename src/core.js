@@ -38,9 +38,15 @@ const iso = d => new Date(d).toISOString().slice(0, 10);
 
 /* ---------- Setup → nodes ---------- */
 function resolveTopics(spec, options) {
+  const opts = Array.isArray(spec.options) ? spec.options : [];
   return spec.topics.filter(t => {
     if (!t.option) return true;
     const chosen = (options || {})[t.option];
+    const o = opts.find(x => x.id === t.option);
+    if (o && o.routes) { /* the choice is a route (a group of topics), e.g. Politics 3A or 3B */
+      const picked = Array.isArray(chosen) ? chosen : (chosen ? [chosen] : []);
+      return picked.some(r => o.routes[r] && (o.routes[r].topics || []).includes(t.id));
+    }
     return Array.isArray(chosen) ? chosen.includes(t.id) : chosen === t.id;
   });
 }

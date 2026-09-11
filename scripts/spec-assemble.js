@@ -20,7 +20,7 @@ const topics = []; const missing = [];
 for (const p of plan) {
   const f = path.join(D, 'topics', p.id + '.json'); if (!fs.existsSync(f)) { missing.push(p.id); continue; }
   const t = JSON.parse(fs.readFileSync(f, 'utf8'));
-  const topic = { id: p.id, component: p.component, option: p.option || null, name: t.name || p.name, caseStudies: t.caseStudies || [], ideas: t.ideas || [] };
+  const topic = { id: p.id, component: p.component, option: p.option || null, name: p.name || t.name, caseStudies: t.caseStudies || [], ideas: t.ideas || [] };
   if (t.skills && t.skills.length) topic.skills = t.skills;
   topics.push(topic);
 }

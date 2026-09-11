@@ -1,800 +1,832 @@
 {
- "note": "Official qualification codes per board. specUrl is set only where the PDF was verified live on the date shown; otherwise the builder locates it on the board’s own domain and records what it found. Add or correct entries from the Admin tab.",
- "boardDomains": {
-  "AQA": [
-   "aqa.org.uk",
-   "filestore.aqa.org.uk"
-  ],
-  "Pearson Edexcel": [
-   "qualifications.pearson.com"
-  ],
-  "OCR": [
-   "ocr.org.uk"
-  ],
-  "Eduqas": [
-   "eduqas.co.uk",
-   "wjec.co.uk"
-  ],
-  "WJEC": [
-   "wjec.co.uk"
+  "note": "Official qualification codes per board. specUrl is set only where the PDF was verified live on the date shown; otherwise the builder locates it on the board’s own domain and records what it found. Add or correct entries from the Admin tab.",
+  "boardDomains": {
+    "AQA": [
+      "aqa.org.uk",
+      "filestore.aqa.org.uk"
+    ],
+    "Pearson Edexcel": [
+      "qualifications.pearson.com"
+    ],
+    "OCR": [
+      "ocr.org.uk"
+    ],
+    "Eduqas": [
+      "eduqas.co.uk",
+      "wjec.co.uk"
+    ],
+    "WJEC": [
+      "wjec.co.uk"
+    ]
+  },
+  "qualifications": [
+    {
+      "level": "A level",
+      "board": "AQA",
+      "subject": "Biology",
+      "code": "7402",
+      "specUrl": null,
+      "verified": null
+    },
+    {
+      "level": "A level",
+      "board": "AQA",
+      "subject": "Chemistry",
+      "code": "7405",
+      "specUrl": null,
+      "verified": null
+    },
+    {
+      "level": "A level",
+      "board": "AQA",
+      "subject": "Physics",
+      "code": "7408",
+      "specUrl": null,
+      "verified": null
+    },
+    {
+      "level": "A level",
+      "board": "AQA",
+      "subject": "Mathematics",
+      "code": "7357",
+      "specUrl": "https://filestore.aqa.org.uk/resources/mathematics/specifications/AQA-7357-SP-2017.PDF",
+      "verified": "2026-09-10"
+    },
+    {
+      "level": "A level",
+      "board": "AQA",
+      "subject": "Further Mathematics",
+      "code": "7367",
+      "specUrl": null,
+      "verified": null
+    },
+    {
+      "level": "A level",
+      "board": "AQA",
+      "subject": "Psychology",
+      "code": "7182",
+      "specUrl": null,
+      "verified": null
+    },
+    {
+      "level": "A level",
+      "board": "AQA",
+      "subject": "Sociology",
+      "code": "7192",
+      "specUrl": null,
+      "verified": null
+    },
+    {
+      "level": "A level",
+      "board": "AQA",
+      "subject": "Economics",
+      "code": "7136",
+      "specUrl": null,
+      "verified": null
+    },
+    {
+      "level": "A level",
+      "board": "AQA",
+      "subject": "Business",
+      "code": "7132",
+      "specUrl": null,
+      "verified": null
+    },
+    {
+      "level": "A level",
+      "board": "AQA",
+      "subject": "History",
+      "code": "7042",
+      "specUrl": null,
+      "verified": null
+    },
+    {
+      "level": "A level",
+      "board": "AQA",
+      "subject": "Geography",
+      "code": "7037",
+      "specUrl": "https://filestore.aqa.org.uk/resources/geography/specifications/AQA-7037-SP-2016.PDF",
+      "verified": "2026-09-10"
+    },
+    {
+      "level": "A level",
+      "board": "AQA",
+      "subject": "English Literature",
+      "code": "7712",
+      "specUrl": null,
+      "verified": null
+    },
+    {
+      "level": "A level",
+      "board": "AQA",
+      "subject": "English Language",
+      "code": "7702",
+      "specUrl": null,
+      "verified": null
+    },
+    {
+      "level": "A level",
+      "board": "AQA",
+      "subject": "French",
+      "code": "7652",
+      "specUrl": null,
+      "verified": null
+    },
+    {
+      "level": "A level",
+      "board": "AQA",
+      "subject": "Spanish",
+      "code": "7692",
+      "specUrl": null,
+      "verified": null
+    },
+    {
+      "level": "A level",
+      "board": "AQA",
+      "subject": "German",
+      "code": "7662",
+      "specUrl": null,
+      "verified": null
+    },
+    {
+      "level": "A level",
+      "board": "AQA",
+      "subject": "Religious Studies",
+      "code": "7062",
+      "specUrl": null,
+      "verified": null
+    },
+    {
+      "level": "A level",
+      "board": "AQA",
+      "subject": "Politics",
+      "code": "7152",
+      "specUrl": null,
+      "verified": null
+    },
+    {
+      "level": "A level",
+      "board": "AQA",
+      "subject": "Computer Science",
+      "code": "7517",
+      "specUrl": null,
+      "verified": null
+    },
+    {
+      "level": "GCSE",
+      "board": "AQA",
+      "subject": "Mathematics",
+      "code": "8300",
+      "specUrl": "https://filestore.aqa.org.uk/resources/mathematics/specifications/AQA-8300-SP-2015.PDF",
+      "verified": "2026-09-10"
+    },
+    {
+      "level": "GCSE",
+      "board": "AQA",
+      "subject": "Biology",
+      "code": "8461",
+      "specUrl": null,
+      "verified": null
+    },
+    {
+      "level": "GCSE",
+      "board": "AQA",
+      "subject": "Chemistry",
+      "code": "8462",
+      "specUrl": null,
+      "verified": null
+    },
+    {
+      "level": "GCSE",
+      "board": "AQA",
+      "subject": "Physics",
+      "code": "8463",
+      "specUrl": null,
+      "verified": null
+    },
+    {
+      "level": "GCSE",
+      "board": "AQA",
+      "subject": "Combined Science",
+      "code": "8464",
+      "specUrl": "https://filestore.aqa.org.uk/resources/science/specifications/AQA-8464-SP-2016.PDF",
+      "verified": "2026-09-10"
+    },
+    {
+      "level": "GCSE",
+      "board": "AQA",
+      "subject": "English Language",
+      "code": "8700",
+      "specUrl": "https://filestore.aqa.org.uk/resources/english/specifications/AQA-8700-SP-2015.PDF",
+      "verified": "2026-09-10"
+    },
+    {
+      "level": "GCSE",
+      "board": "AQA",
+      "subject": "English Literature",
+      "code": "8702",
+      "specUrl": "https://filestore.aqa.org.uk/resources/english/specifications/AQA-8702-SP-2015.PDF",
+      "verified": "2026-09-10"
+    },
+    {
+      "level": "GCSE",
+      "board": "AQA",
+      "subject": "History",
+      "code": "8145",
+      "specUrl": "https://filestore.aqa.org.uk/resources/history/specifications/AQA-8145-SP-2016.PDF",
+      "verified": "2026-09-10"
+    },
+    {
+      "level": "GCSE",
+      "board": "AQA",
+      "subject": "Geography",
+      "code": "8035",
+      "specUrl": "https://filestore.aqa.org.uk/resources/geography/specifications/AQA-8035-SP-2016.PDF",
+      "verified": "2026-09-10"
+    },
+    {
+      "level": "GCSE",
+      "board": "AQA",
+      "subject": "French",
+      "code": "8652",
+      "specUrl": null,
+      "verified": null
+    },
+    {
+      "level": "GCSE",
+      "board": "AQA",
+      "subject": "Spanish",
+      "code": "8692",
+      "specUrl": null,
+      "verified": null
+    },
+    {
+      "level": "GCSE",
+      "board": "AQA",
+      "subject": "German",
+      "code": "8662",
+      "specUrl": null,
+      "verified": null
+    },
+    {
+      "level": "GCSE",
+      "board": "AQA",
+      "subject": "Religious Studies",
+      "code": "8062",
+      "specUrl": null,
+      "verified": null
+    },
+    {
+      "level": "GCSE",
+      "board": "AQA",
+      "subject": "Business",
+      "code": "8132",
+      "specUrl": null,
+      "verified": null
+    },
+    {
+      "level": "GCSE",
+      "board": "AQA",
+      "subject": "Computer Science",
+      "code": "8525",
+      "specUrl": null,
+      "verified": null
+    },
+    {
+      "level": "GCSE",
+      "board": "AQA",
+      "subject": "Psychology",
+      "code": "8182",
+      "specUrl": null,
+      "verified": null
+    },
+    {
+      "level": "GCSE",
+      "board": "AQA",
+      "subject": "Sociology",
+      "code": "8192",
+      "specUrl": null,
+      "verified": null
+    },
+    {
+      "level": "A level",
+      "board": "Pearson Edexcel",
+      "subject": "Mathematics",
+      "code": "9MA0",
+      "specUrl": "https://qualifications.pearson.com/content/dam/pdf/A%20Level/Mathematics/2017/specification-and-sample-assesment/a-level-l3-mathematics-specification-issue4.pdf",
+      "verified": "2026-09-10"
+    },
+    {
+      "level": "A level",
+      "board": "Pearson Edexcel",
+      "subject": "Further Mathematics",
+      "code": "9FM0",
+      "specUrl": null,
+      "verified": null
+    },
+    {
+      "level": "A level",
+      "board": "Pearson Edexcel",
+      "subject": "Biology",
+      "code": "9BN0",
+      "specUrl": null,
+      "verified": null
+    },
+    {
+      "level": "A level",
+      "board": "Pearson Edexcel",
+      "subject": "Chemistry",
+      "code": "9CH0",
+      "specUrl": null,
+      "verified": null
+    },
+    {
+      "level": "A level",
+      "board": "Pearson Edexcel",
+      "subject": "Physics",
+      "code": "9PH0",
+      "specUrl": null,
+      "verified": null
+    },
+    {
+      "level": "A level",
+      "board": "Pearson Edexcel",
+      "subject": "Business",
+      "code": "9BS0",
+      "specUrl": "https://qualifications.pearson.com/content/dam/pdf/A%20Level/Business%20Studies/2015/specification-and-sample-assessment-materials/9781446914694-gce2015-a-bus-web.pdf",
+      "verified": "2026-09-11"
+    },
+    {
+      "level": "A level",
+      "board": "Pearson Edexcel",
+      "subject": "Economics",
+      "code": "9EC0",
+      "specUrl": null,
+      "verified": null
+    },
+    {
+      "level": "A level",
+      "board": "Pearson Edexcel",
+      "subject": "Politics",
+      "code": "9PL0",
+      "specUrl": "https://qualifications.pearson.com/content/dam/pdf/A%20Level/Politics/2017/Specification%20and%20sample%20assessments/9781446933602-gce2017-al-politics-issue4.pdf",
+      "verified": "2026-09-11"
+    },
+    {
+      "level": "A level",
+      "board": "Pearson Edexcel",
+      "subject": "History",
+      "code": "9HI0",
+      "specUrl": null,
+      "verified": null
+    },
+    {
+      "level": "A level",
+      "board": "Pearson Edexcel",
+      "subject": "Geography",
+      "code": "9GE0",
+      "specUrl": null,
+      "verified": null
+    },
+    {
+      "level": "A level",
+      "board": "Pearson Edexcel",
+      "subject": "Psychology",
+      "code": "9PS0",
+      "specUrl": null,
+      "verified": null
+    },
+    {
+      "level": "A level",
+      "board": "Pearson Edexcel",
+      "subject": "English Literature",
+      "code": "9ET0",
+      "specUrl": null,
+      "verified": null
+    },
+    {
+      "level": "A level",
+      "board": "Pearson Edexcel",
+      "subject": "English Language",
+      "code": "9EN0",
+      "specUrl": null,
+      "verified": null
+    },
+    {
+      "level": "A level",
+      "board": "Pearson Edexcel",
+      "subject": "French",
+      "code": "9FR0",
+      "specUrl": null,
+      "verified": null
+    },
+    {
+      "level": "A level",
+      "board": "Pearson Edexcel",
+      "subject": "Spanish",
+      "code": "9SP0",
+      "specUrl": null,
+      "verified": null
+    },
+    {
+      "level": "A level",
+      "board": "Pearson Edexcel",
+      "subject": "German",
+      "code": "9GN0",
+      "specUrl": null,
+      "verified": null
+    },
+    {
+      "level": "GCSE",
+      "board": "Pearson Edexcel",
+      "subject": "Mathematics",
+      "code": "1MA1",
+      "specUrl": "https://qualifications.pearson.com/content/dam/pdf/GCSE/mathematics/2015/specification-and-sample-assesment/gcse-maths-2015-specification.pdf",
+      "verified": "2026-09-10"
+    },
+    {
+      "level": "GCSE",
+      "board": "Pearson Edexcel",
+      "subject": "Biology",
+      "code": "1BI0",
+      "specUrl": null,
+      "verified": null
+    },
+    {
+      "level": "GCSE",
+      "board": "Pearson Edexcel",
+      "subject": "Chemistry",
+      "code": "1CH0",
+      "specUrl": null,
+      "verified": null
+    },
+    {
+      "level": "GCSE",
+      "board": "Pearson Edexcel",
+      "subject": "Physics",
+      "code": "1PH0",
+      "specUrl": null,
+      "verified": null
+    },
+    {
+      "level": "GCSE",
+      "board": "Pearson Edexcel",
+      "subject": "Combined Science",
+      "code": "1SC0",
+      "specUrl": null,
+      "verified": null
+    },
+    {
+      "level": "GCSE",
+      "board": "Pearson Edexcel",
+      "subject": "English Language",
+      "code": "1EN0",
+      "specUrl": null,
+      "verified": null
+    },
+    {
+      "level": "GCSE",
+      "board": "Pearson Edexcel",
+      "subject": "English Literature",
+      "code": "1ET0",
+      "specUrl": null,
+      "verified": null
+    },
+    {
+      "level": "GCSE",
+      "board": "Pearson Edexcel",
+      "subject": "History",
+      "code": "1HI0",
+      "specUrl": null,
+      "verified": null
+    },
+    {
+      "level": "GCSE",
+      "board": "Pearson Edexcel",
+      "subject": "Geography",
+      "code": "1GA0",
+      "specUrl": null,
+      "verified": null
+    },
+    {
+      "level": "GCSE",
+      "board": "Pearson Edexcel",
+      "subject": "French",
+      "code": "1FR1",
+      "specUrl": null,
+      "verified": null
+    },
+    {
+      "level": "GCSE",
+      "board": "Pearson Edexcel",
+      "subject": "Spanish",
+      "code": "1SP1",
+      "specUrl": null,
+      "verified": null
+    },
+    {
+      "level": "GCSE",
+      "board": "Pearson Edexcel",
+      "subject": "German",
+      "code": "1GN1",
+      "specUrl": null,
+      "verified": null
+    },
+    {
+      "level": "GCSE",
+      "board": "Pearson Edexcel",
+      "subject": "Business",
+      "code": "1BS0",
+      "specUrl": null,
+      "verified": null
+    },
+    {
+      "level": "GCSE",
+      "board": "Pearson Edexcel",
+      "subject": "Computer Science",
+      "code": "1CP2",
+      "specUrl": null,
+      "verified": null
+    },
+    {
+      "level": "A level",
+      "board": "OCR",
+      "subject": "Biology",
+      "code": "H420",
+      "specUrl": null,
+      "verified": null
+    },
+    {
+      "level": "A level",
+      "board": "OCR",
+      "subject": "Chemistry",
+      "code": "H432",
+      "specUrl": "https://www.ocr.org.uk/Images/171720-specification-accredited-a-level-gce-chemistry-a-h432.pdf",
+      "verified": "2026-09-10"
+    },
+    {
+      "level": "A level",
+      "board": "OCR",
+      "subject": "Physics",
+      "code": "H556",
+      "specUrl": "https://www.ocr.org.uk/Images/171726-specification-accredited-a-level-gce-physics-a-h556.pdf",
+      "verified": "2026-09-10"
+    },
+    {
+      "level": "A level",
+      "board": "OCR",
+      "subject": "Mathematics",
+      "code": "H240",
+      "specUrl": null,
+      "verified": null
+    },
+    {
+      "level": "A level",
+      "board": "OCR",
+      "subject": "Further Mathematics",
+      "code": "H245",
+      "specUrl": null,
+      "verified": null
+    },
+    {
+      "level": "A level",
+      "board": "OCR",
+      "subject": "Geography",
+      "code": "H481",
+      "specUrl": "https://www.ocr.org.uk/Images/223012-specification-accredited-a-level-gce-geography-h481.pdf",
+      "verified": "2026-09-10"
+    },
+    {
+      "level": "A level",
+      "board": "OCR",
+      "subject": "History",
+      "code": "H505",
+      "specUrl": null,
+      "verified": null
+    },
+    {
+      "level": "A level",
+      "board": "OCR",
+      "subject": "Economics",
+      "code": "H460",
+      "specUrl": null,
+      "verified": null
+    },
+    {
+      "level": "A level",
+      "board": "OCR",
+      "subject": "Business",
+      "code": "H431",
+      "specUrl": null,
+      "verified": null
+    },
+    {
+      "level": "A level",
+      "board": "OCR",
+      "subject": "Psychology",
+      "code": "H567",
+      "specUrl": null,
+      "verified": null
+    },
+    {
+      "level": "A level",
+      "board": "OCR",
+      "subject": "Sociology",
+      "code": "H580",
+      "specUrl": null,
+      "verified": null
+    },
+    {
+      "level": "A level",
+      "board": "OCR",
+      "subject": "Computer Science",
+      "code": "H446",
+      "specUrl": null,
+      "verified": null
+    },
+    {
+      "level": "A level",
+      "board": "OCR",
+      "subject": "English Literature",
+      "code": "H472",
+      "specUrl": null,
+      "verified": null
+    },
+    {
+      "level": "A level",
+      "board": "OCR",
+      "subject": "Religious Studies",
+      "code": "H573",
+      "specUrl": null,
+      "verified": null
+    },
+    {
+      "level": "GCSE",
+      "board": "OCR",
+      "subject": "Mathematics",
+      "code": "J560",
+      "specUrl": "https://www.ocr.org.uk/Images/168982-specification-gcse-mathematics.pdf",
+      "verified": "2026-09-10"
+    },
+    {
+      "level": "GCSE",
+      "board": "OCR",
+      "subject": "Biology",
+      "code": "J247",
+      "specUrl": null,
+      "verified": null
+    },
+    {
+      "level": "GCSE",
+      "board": "OCR",
+      "subject": "Chemistry",
+      "code": "J248",
+      "specUrl": null,
+      "verified": null
+    },
+    {
+      "level": "GCSE",
+      "board": "OCR",
+      "subject": "Physics",
+      "code": "J249",
+      "specUrl": null,
+      "verified": null
+    },
+    {
+      "level": "GCSE",
+      "board": "OCR",
+      "subject": "Combined Science",
+      "code": "J250",
+      "specUrl": null,
+      "verified": null
+    },
+    {
+      "level": "GCSE",
+      "board": "OCR",
+      "subject": "English Language",
+      "code": "J351",
+      "specUrl": null,
+      "verified": null
+    },
+    {
+      "level": "GCSE",
+      "board": "OCR",
+      "subject": "English Literature",
+      "code": "J352",
+      "specUrl": null,
+      "verified": null
+    },
+    {
+      "level": "GCSE",
+      "board": "OCR",
+      "subject": "History",
+      "code": "J410",
+      "specUrl": null,
+      "verified": null
+    },
+    {
+      "level": "GCSE",
+      "board": "OCR",
+      "subject": "Geography",
+      "code": "J383",
+      "specUrl": null,
+      "verified": null
+    },
+    {
+      "level": "GCSE",
+      "board": "OCR",
+      "subject": "Computer Science",
+      "code": "J277",
+      "specUrl": null,
+      "verified": null
+    },
+    {
+      "level": "GCSE",
+      "board": "OCR",
+      "subject": "Business",
+      "code": "J204",
+      "specUrl": null,
+      "verified": null
+    },
+    {
+      "level": "GCSE",
+      "board": "OCR",
+      "subject": "Religious Studies",
+      "code": "J625",
+      "specUrl": null,
+      "verified": null
+    },
+    {
+      "level": "GCSE",
+      "board": "OCR",
+      "subject": "Psychology",
+      "code": "J203",
+      "specUrl": null,
+      "verified": null
+    },
+    {
+      "level": "GCSE",
+      "board": "Eduqas",
+      "subject": "English Language",
+      "code": "C700",
+      "specUrl": null,
+      "verified": null
+    },
+    {
+      "level": "GCSE",
+      "board": "Eduqas",
+      "subject": "English Literature",
+      "code": "C720",
+      "specUrl": null,
+      "verified": null
+    },
+    {
+      "level": "A level",
+      "board": "Eduqas",
+      "subject": "English Literature",
+      "code": "A720",
+      "specUrl": null,
+      "verified": null
+    },
+    {
+      "level": "A level",
+      "board": "Eduqas",
+      "subject": "Geography",
+      "code": "A110",
+      "specUrl": null,
+      "verified": null
+    },
+    {
+      "level": "GCSE",
+      "board": "Pearson Edexcel",
+      "subject": "English Language (International GCSE, Specification A)",
+      "code": "4EA1",
+      "specUrl": "https://qualifications.pearson.com/content/dam/pdf/International%20GCSE/English%20Language%20A/2016/Specification%20and%20sample%20assessments/9781446954379-int-gcse-englang-a-iss6-02-02-2023.pdf",
+      "verified": "2026-09-11"
+    },
+    {
+      "level": "GCSE",
+      "board": "Pearson Edexcel",
+      "subject": "English Literature (International GCSE)",
+      "code": "4ET1",
+      "specUrl": "https://qualifications.pearson.com/content/dam/pdf/International%20GCSE/English%20Literature/2016/Specification%20and%20sample%20assessments/international-gcse-english-literature-specification.pdf",
+      "verified": "2026-09-11"
+    },
+    {
+      "level": "GCSE",
+      "board": "Pearson Edexcel",
+      "subject": "German (International GCSE)",
+      "code": "4GN1",
+      "specUrl": "https://qualifications.pearson.com/content/dam/pdf/International%20GCSE/German/2017/specification-and-sample-assessments/International-GCSE-German-Specification.pdf",
+      "verified": "2026-09-11"
+    },
+    {
+      "level": "GCSE",
+      "board": "Pearson Edexcel",
+      "subject": "Mathematics (International GCSE, Specification A, Foundation tier)",
+      "code": "4MA1",
+      "specUrl": "https://qualifications.pearson.com/content/dam/pdf/International%20GCSE/Mathematics%20A/2016/Specification%20and%20sample%20assessments/international-gcse-in-mathematics-spec-a.pdf",
+      "verified": "2026-09-11"
+    }
   ]
- },
- "qualifications": [
-  {
-   "level": "A level",
-   "board": "AQA",
-   "subject": "Biology",
-   "code": "7402",
-   "specUrl": null,
-   "verified": null
-  },
-  {
-   "level": "A level",
-   "board": "AQA",
-   "subject": "Chemistry",
-   "code": "7405",
-   "specUrl": null,
-   "verified": null
-  },
-  {
-   "level": "A level",
-   "board": "AQA",
-   "subject": "Physics",
-   "code": "7408",
-   "specUrl": null,
-   "verified": null
-  },
-  {
-   "level": "A level",
-   "board": "AQA",
-   "subject": "Mathematics",
-   "code": "7357",
-   "specUrl": "https://filestore.aqa.org.uk/resources/mathematics/specifications/AQA-7357-SP-2017.PDF",
-   "verified": "2026-09-10"
-  },
-  {
-   "level": "A level",
-   "board": "AQA",
-   "subject": "Further Mathematics",
-   "code": "7367",
-   "specUrl": null,
-   "verified": null
-  },
-  {
-   "level": "A level",
-   "board": "AQA",
-   "subject": "Psychology",
-   "code": "7182",
-   "specUrl": null,
-   "verified": null
-  },
-  {
-   "level": "A level",
-   "board": "AQA",
-   "subject": "Sociology",
-   "code": "7192",
-   "specUrl": null,
-   "verified": null
-  },
-  {
-   "level": "A level",
-   "board": "AQA",
-   "subject": "Economics",
-   "code": "7136",
-   "specUrl": null,
-   "verified": null
-  },
-  {
-   "level": "A level",
-   "board": "AQA",
-   "subject": "Business",
-   "code": "7132",
-   "specUrl": null,
-   "verified": null
-  },
-  {
-   "level": "A level",
-   "board": "AQA",
-   "subject": "History",
-   "code": "7042",
-   "specUrl": null,
-   "verified": null
-  },
-  {
-   "level": "A level",
-   "board": "AQA",
-   "subject": "Geography",
-   "code": "7037",
-   "specUrl": "https://filestore.aqa.org.uk/resources/geography/specifications/AQA-7037-SP-2016.PDF",
-   "verified": "2026-09-10"
-  },
-  {
-   "level": "A level",
-   "board": "AQA",
-   "subject": "English Literature",
-   "code": "7712",
-   "specUrl": null,
-   "verified": null
-  },
-  {
-   "level": "A level",
-   "board": "AQA",
-   "subject": "English Language",
-   "code": "7702",
-   "specUrl": null,
-   "verified": null
-  },
-  {
-   "level": "A level",
-   "board": "AQA",
-   "subject": "French",
-   "code": "7652",
-   "specUrl": null,
-   "verified": null
-  },
-  {
-   "level": "A level",
-   "board": "AQA",
-   "subject": "Spanish",
-   "code": "7692",
-   "specUrl": null,
-   "verified": null
-  },
-  {
-   "level": "A level",
-   "board": "AQA",
-   "subject": "German",
-   "code": "7662",
-   "specUrl": null,
-   "verified": null
-  },
-  {
-   "level": "A level",
-   "board": "AQA",
-   "subject": "Religious Studies",
-   "code": "7062",
-   "specUrl": null,
-   "verified": null
-  },
-  {
-   "level": "A level",
-   "board": "AQA",
-   "subject": "Politics",
-   "code": "7152",
-   "specUrl": null,
-   "verified": null
-  },
-  {
-   "level": "A level",
-   "board": "AQA",
-   "subject": "Computer Science",
-   "code": "7517",
-   "specUrl": null,
-   "verified": null
-  },
-  {
-   "level": "GCSE",
-   "board": "AQA",
-   "subject": "Mathematics",
-   "code": "8300",
-   "specUrl": "https://filestore.aqa.org.uk/resources/mathematics/specifications/AQA-8300-SP-2015.PDF",
-   "verified": "2026-09-10"
-  },
-  {
-   "level": "GCSE",
-   "board": "AQA",
-   "subject": "Biology",
-   "code": "8461",
-   "specUrl": null,
-   "verified": null
-  },
-  {
-   "level": "GCSE",
-   "board": "AQA",
-   "subject": "Chemistry",
-   "code": "8462",
-   "specUrl": null,
-   "verified": null
-  },
-  {
-   "level": "GCSE",
-   "board": "AQA",
-   "subject": "Physics",
-   "code": "8463",
-   "specUrl": null,
-   "verified": null
-  },
-  {
-   "level": "GCSE",
-   "board": "AQA",
-   "subject": "Combined Science",
-   "code": "8464",
-   "specUrl": "https://filestore.aqa.org.uk/resources/science/specifications/AQA-8464-SP-2016.PDF",
-   "verified": "2026-09-10"
-  },
-  {
-   "level": "GCSE",
-   "board": "AQA",
-   "subject": "English Language",
-   "code": "8700",
-   "specUrl": "https://filestore.aqa.org.uk/resources/english/specifications/AQA-8700-SP-2015.PDF",
-   "verified": "2026-09-10"
-  },
-  {
-   "level": "GCSE",
-   "board": "AQA",
-   "subject": "English Literature",
-   "code": "8702",
-   "specUrl": "https://filestore.aqa.org.uk/resources/english/specifications/AQA-8702-SP-2015.PDF",
-   "verified": "2026-09-10"
-  },
-  {
-   "level": "GCSE",
-   "board": "AQA",
-   "subject": "History",
-   "code": "8145",
-   "specUrl": "https://filestore.aqa.org.uk/resources/history/specifications/AQA-8145-SP-2016.PDF",
-   "verified": "2026-09-10"
-  },
-  {
-   "level": "GCSE",
-   "board": "AQA",
-   "subject": "Geography",
-   "code": "8035",
-   "specUrl": "https://filestore.aqa.org.uk/resources/geography/specifications/AQA-8035-SP-2016.PDF",
-   "verified": "2026-09-10"
-  },
-  {
-   "level": "GCSE",
-   "board": "AQA",
-   "subject": "French",
-   "code": "8652",
-   "specUrl": null,
-   "verified": null
-  },
-  {
-   "level": "GCSE",
-   "board": "AQA",
-   "subject": "Spanish",
-   "code": "8692",
-   "specUrl": null,
-   "verified": null
-  },
-  {
-   "level": "GCSE",
-   "board": "AQA",
-   "subject": "German",
-   "code": "8662",
-   "specUrl": null,
-   "verified": null
-  },
-  {
-   "level": "GCSE",
-   "board": "AQA",
-   "subject": "Religious Studies",
-   "code": "8062",
-   "specUrl": null,
-   "verified": null
-  },
-  {
-   "level": "GCSE",
-   "board": "AQA",
-   "subject": "Business",
-   "code": "8132",
-   "specUrl": null,
-   "verified": null
-  },
-  {
-   "level": "GCSE",
-   "board": "AQA",
-   "subject": "Computer Science",
-   "code": "8525",
-   "specUrl": null,
-   "verified": null
-  },
-  {
-   "level": "GCSE",
-   "board": "AQA",
-   "subject": "Psychology",
-   "code": "8182",
-   "specUrl": null,
-   "verified": null
-  },
-  {
-   "level": "GCSE",
-   "board": "AQA",
-   "subject": "Sociology",
-   "code": "8192",
-   "specUrl": null,
-   "verified": null
-  },
-  {
-   "level": "A level",
-   "board": "Pearson Edexcel",
-   "subject": "Mathematics",
-   "code": "9MA0",
-   "specUrl": "https://qualifications.pearson.com/content/dam/pdf/A%20Level/Mathematics/2017/specification-and-sample-assesment/a-level-l3-mathematics-specification-issue4.pdf",
-   "verified": "2026-09-10"
-  },
-  {
-   "level": "A level",
-   "board": "Pearson Edexcel",
-   "subject": "Further Mathematics",
-   "code": "9FM0",
-   "specUrl": null,
-   "verified": null
-  },
-  {
-   "level": "A level",
-   "board": "Pearson Edexcel",
-   "subject": "Biology",
-   "code": "9BN0",
-   "specUrl": null,
-   "verified": null
-  },
-  {
-   "level": "A level",
-   "board": "Pearson Edexcel",
-   "subject": "Chemistry",
-   "code": "9CH0",
-   "specUrl": null,
-   "verified": null
-  },
-  {
-   "level": "A level",
-   "board": "Pearson Edexcel",
-   "subject": "Physics",
-   "code": "9PH0",
-   "specUrl": null,
-   "verified": null
-  },
-  {
-   "level": "A level",
-   "board": "Pearson Edexcel",
-   "subject": "Business",
-   "code": "9BS0",
-   "specUrl": "https://qualifications.pearson.com/content/dam/pdf/A%20Level/Business%20Studies/2015/specification-and-sample-assessment-materials/9781446914694-gce2015-a-bus-web.pdf",
-   "verified": "2026-09-11"
-  },
-  {
-   "level": "A level",
-   "board": "Pearson Edexcel",
-   "subject": "Economics",
-   "code": "9EC0",
-   "specUrl": null,
-   "verified": null
-  },
-  {
-   "level": "A level",
-   "board": "Pearson Edexcel",
-   "subject": "Politics",
-   "code": "9PL0",
-   "specUrl": "https://qualifications.pearson.com/content/dam/pdf/A%20Level/Politics/2017/Specification%20and%20sample%20assessments/9781446933602-gce2017-al-politics-issue4.pdf",
-   "verified": "2026-09-11"
-  },
-  {
-   "level": "A level",
-   "board": "Pearson Edexcel",
-   "subject": "History",
-   "code": "9HI0",
-   "specUrl": null,
-   "verified": null
-  },
-  {
-   "level": "A level",
-   "board": "Pearson Edexcel",
-   "subject": "Geography",
-   "code": "9GE0",
-   "specUrl": null,
-   "verified": null
-  },
-  {
-   "level": "A level",
-   "board": "Pearson Edexcel",
-   "subject": "Psychology",
-   "code": "9PS0",
-   "specUrl": null,
-   "verified": null
-  },
-  {
-   "level": "A level",
-   "board": "Pearson Edexcel",
-   "subject": "English Literature",
-   "code": "9ET0",
-   "specUrl": null,
-   "verified": null
-  },
-  {
-   "level": "A level",
-   "board": "Pearson Edexcel",
-   "subject": "English Language",
-   "code": "9EN0",
-   "specUrl": null,
-   "verified": null
-  },
-  {
-   "level": "A level",
-   "board": "Pearson Edexcel",
-   "subject": "French",
-   "code": "9FR0",
-   "specUrl": null,
-   "verified": null
-  },
-  {
-   "level": "A level",
-   "board": "Pearson Edexcel",
-   "subject": "Spanish",
-   "code": "9SP0",
-   "specUrl": null,
-   "verified": null
-  },
-  {
-   "level": "A level",
-   "board": "Pearson Edexcel",
-   "subject": "German",
-   "code": "9GN0",
-   "specUrl": null,
-   "verified": null
-  },
-  {
-   "level": "GCSE",
-   "board": "Pearson Edexcel",
-   "subject": "Mathematics",
-   "code": "1MA1",
-   "specUrl": "https://qualifications.pearson.com/content/dam/pdf/GCSE/mathematics/2015/specification-and-sample-assesment/gcse-maths-2015-specification.pdf",
-   "verified": "2026-09-10"
-  },
-  {
-   "level": "GCSE",
-   "board": "Pearson Edexcel",
-   "subject": "Biology",
-   "code": "1BI0",
-   "specUrl": null,
-   "verified": null
-  },
-  {
-   "level": "GCSE",
-   "board": "Pearson Edexcel",
-   "subject": "Chemistry",
-   "code": "1CH0",
-   "specUrl": null,
-   "verified": null
-  },
-  {
-   "level": "GCSE",
-   "board": "Pearson Edexcel",
-   "subject": "Physics",
-   "code": "1PH0",
-   "specUrl": null,
-   "verified": null
-  },
-  {
-   "level": "GCSE",
-   "board": "Pearson Edexcel",
-   "subject": "Combined Science",
-   "code": "1SC0",
-   "specUrl": null,
-   "verified": null
-  },
-  {
-   "level": "GCSE",
-   "board": "Pearson Edexcel",
-   "subject": "English Language",
-   "code": "1EN0",
-   "specUrl": null,
-   "verified": null
-  },
-  {
-   "level": "GCSE",
-   "board": "Pearson Edexcel",
-   "subject": "English Literature",
-   "code": "1ET0",
-   "specUrl": null,
-   "verified": null
-  },
-  {
-   "level": "GCSE",
-   "board": "Pearson Edexcel",
-   "subject": "History",
-   "code": "1HI0",
-   "specUrl": null,
-   "verified": null
-  },
-  {
-   "level": "GCSE",
-   "board": "Pearson Edexcel",
-   "subject": "Geography",
-   "code": "1GA0",
-   "specUrl": null,
-   "verified": null
-  },
-  {
-   "level": "GCSE",
-   "board": "Pearson Edexcel",
-   "subject": "French",
-   "code": "1FR1",
-   "specUrl": null,
-   "verified": null
-  },
-  {
-   "level": "GCSE",
-   "board": "Pearson Edexcel",
-   "subject": "Spanish",
-   "code": "1SP1",
-   "specUrl": null,
-   "verified": null
-  },
-  {
-   "level": "GCSE",
-   "board": "Pearson Edexcel",
-   "subject": "German",
-   "code": "1GN1",
-   "specUrl": null,
-   "verified": null
-  },
-  {
-   "level": "GCSE",
-   "board": "Pearson Edexcel",
-   "subject": "Business",
-   "code": "1BS0",
-   "specUrl": null,
-   "verified": null
-  },
-  {
-   "level": "GCSE",
-   "board": "Pearson Edexcel",
-   "subject": "Computer Science",
-   "code": "1CP2",
-   "specUrl": null,
-   "verified": null
-  },
-  {
-   "level": "A level",
-   "board": "OCR",
-   "subject": "Biology",
-   "code": "H420",
-   "specUrl": null,
-   "verified": null
-  },
-  {
-   "level": "A level",
-   "board": "OCR",
-   "subject": "Chemistry",
-   "code": "H432",
-   "specUrl": "https://www.ocr.org.uk/Images/171720-specification-accredited-a-level-gce-chemistry-a-h432.pdf",
-   "verified": "2026-09-10"
-  },
-  {
-   "level": "A level",
-   "board": "OCR",
-   "subject": "Physics",
-   "code": "H556",
-   "specUrl": "https://www.ocr.org.uk/Images/171726-specification-accredited-a-level-gce-physics-a-h556.pdf",
-   "verified": "2026-09-10"
-  },
-  {
-   "level": "A level",
-   "board": "OCR",
-   "subject": "Mathematics",
-   "code": "H240",
-   "specUrl": null,
-   "verified": null
-  },
-  {
-   "level": "A level",
-   "board": "OCR",
-   "subject": "Further Mathematics",
-   "code": "H245",
-   "specUrl": null,
-   "verified": null
-  },
-  {
-   "level": "A level",
-   "board": "OCR",
-   "subject": "Geography",
-   "code": "H481",
-   "specUrl": "https://www.ocr.org.uk/Images/223012-specification-accredited-a-level-gce-geography-h481.pdf",
-   "verified": "2026-09-10"
-  },
-  {
-   "level": "A level",
-   "board": "OCR",
-   "subject": "History",
-   "code": "H505",
-   "specUrl": null,
-   "verified": null
-  },
-  {
-   "level": "A level",
-   "board": "OCR",
-   "subject": "Economics",
-   "code": "H460",
-   "specUrl": null,
-   "verified": null
-  },
-  {
-   "level": "A level",
-   "board": "OCR",
-   "subject": "Business",
-   "code": "H431",
-   "specUrl": null,
-   "verified": null
-  },
-  {
-   "level": "A level",
-   "board": "OCR",
-   "subject": "Psychology",
-   "code": "H567",
-   "specUrl": null,
-   "verified": null
-  },
-  {
-   "level": "A level",
-   "board": "OCR",
-   "subject": "Sociology",
-   "code": "H580",
-   "specUrl": null,
-   "verified": null
-  },
-  {
-   "level": "A level",
-   "board": "OCR",
-   "subject": "Computer Science",
-   "code": "H446",
-   "specUrl": null,
-   "verified": null
-  },
-  {
-   "level": "A level",
-   "board": "OCR",
-   "subject": "English Literature",
-   "code": "H472",
-   "specUrl": null,
-   "verified": null
-  },
-  {
-   "level": "A level",
-   "board": "OCR",
-   "subject": "Religious Studies",
-   "code": "H573",
-   "specUrl": null,
-   "verified": null
-  },
-  {
-   "level": "GCSE",
-   "board": "OCR",
-   "subject": "Mathematics",
-   "code": "J560",
-   "specUrl": "https://www.ocr.org.uk/Images/168982-specification-gcse-mathematics.pdf",
-   "verified": "2026-09-10"
-  },
-  {
-   "level": "GCSE",
-   "board": "OCR",
-   "subject": "Biology",
-   "code": "J247",
-   "specUrl": null,
-   "verified": null
-  },
-  {
-   "level": "GCSE",
-   "board": "OCR",
-   "subject": "Chemistry",
-   "code": "J248",
-   "specUrl": null,
-   "verified": null
-  },
-  {
-   "level": "GCSE",
-   "board": "OCR",
-   "subject": "Physics",
-   "code": "J249",
-   "specUrl": null,
-   "verified": null
-  },
-  {
-   "level": "GCSE",
-   "board": "OCR",
-   "subject": "Combined Science",
-   "code": "J250",
-   "specUrl": null,
-   "verified": null
-  },
-  {
-   "level": "GCSE",
-   "board": "OCR",
-   "subject": "English Language",
-   "code": "J351",
-   "specUrl": null,
-   "verified": null
-  },
-  {
-   "level": "GCSE",
-   "board": "OCR",
-   "subject": "English Literature",
-   "code": "J352",
-   "specUrl": null,
-   "verified": null
-  },
-  {
-   "level": "GCSE",
-   "board": "OCR",
-   "subject": "History",
-   "code": "J410",
-   "specUrl": null,
-   "verified": null
-  },
-  {
-   "level": "GCSE",
-   "board": "OCR",
-   "subject": "Geography",
-   "code": "J383",
-   "specUrl": null,
-   "verified": null
-  },
-  {
-   "level": "GCSE",
-   "board": "OCR",
-   "subject": "Computer Science",
-   "code": "J277",
-   "specUrl": null,
-   "verified": null
-  },
-  {
-   "level": "GCSE",
-   "board": "OCR",
-   "subject": "Business",
-   "code": "J204",
-   "specUrl": null,
-   "verified": null
-  },
-  {
-   "level": "GCSE",
-   "board": "OCR",
-   "subject": "Religious Studies",
-   "code": "J625",
-   "specUrl": null,
-   "verified": null
-  },
-  {
-   "level": "GCSE",
-   "board": "OCR",
-   "subject": "Psychology",
-   "code": "J203",
-   "specUrl": null,
-   "verified": null
-  },
-  {
-   "level": "GCSE",
-   "board": "Eduqas",
-   "subject": "English Language",
-   "code": "C700",
-   "specUrl": null,
-   "verified": null
-  },
-  {
-   "level": "GCSE",
-   "board": "Eduqas",
-   "subject": "English Literature",
-   "code": "C720",
-   "specUrl": null,
-   "verified": null
-  },
-  {
-   "level": "A level",
-   "board": "Eduqas",
-   "subject": "English Literature",
-   "code": "A720",
-   "specUrl": null,
-   "verified": null
-  },
-  {
-   "level": "A level",
-   "board": "Eduqas",
-   "subject": "Geography",
-   "code": "A110",
-   "specUrl": null,
-   "verified": null
-  }
- ]
 }

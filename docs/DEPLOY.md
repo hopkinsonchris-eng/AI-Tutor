@@ -291,3 +291,11 @@ specification does not mention. Prompt version 2026-09-10.4 forbids each of thes
 validator accepts the document's own percentages within rounding, and the science family rule now
 says a practical appears once, under its content statement, with only what the document lists.
 Reject a 0.4 build from the review queue and press Rebuild once the new Worker is deployed.
+
+## The desktop's storage (R2)
+
+The per-room desktop stores students' photos and PDFs in an R2 bucket. In the Cloudflare dashboard open
+R2 → Create bucket → name it `studyplatform-desk` (the name `worker/wrangler.toml` binds as `DESK`), then
+redeploy the Worker. Until the bucket exists the desktop tab says "not set up yet" and everything else
+works as before. R2 is billed per GB stored (pennies at this scale); the 250 MB per-student quota keeps it
+bounded. Each student's index and quota live in the same KV namespace as their progress.

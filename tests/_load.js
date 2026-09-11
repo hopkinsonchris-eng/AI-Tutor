@@ -44,4 +44,15 @@ function kv() {
    logic is what these tests cover. Records step names so a test can assert the stages. */
 function inlineStep() { const names = []; return { names, async do(name, optsOrFn, maybeFn) { names.push(name); const fn = typeof optsOrFn === 'function' ? optsOrFn : maybeFn; return fn(); }, async sleep() {} }; }
 
-module.exports = { loadModule, kv, inlineStep };
+/* A stand-in for an R2 bucket: put/get/delete with the http metadata the Worker sets. */
+function r2() {
+  const m = new Map();
+  return {
+    async put(key, body, opts) { const buf = body instanceof ArrayBuffer ? new Uint8Array(body) : body instanceof Uint8Array ? body : new TextEncoder().encode(String(body)); m.set(key, { buf, meta: (opts && opts.httpMetadata) || {} }); },
+    async get(key) { const v = m.get(key); if (!v) return null; return { body: v.buf, arrayBuffer: async () => v.buf.buffer.slice(v.buf.byteOffset, v.buf.byteOffset + v.buf.byteLength), httpMetadata: v.meta, size: v.buf.byteLength }; },
+    async delete(key) { m.delete(key); },
+    _map: m,
+  };
+}
+
+module.exports = { loadModule, kv, r2, inlineStep };

@@ -156,6 +156,17 @@ function buildSession(state, specs, today) {
   return { phase, steps, decayed, priority: prio };
 }
 
+/* The desktop's resurfacing rule: an item saved exactly 7, 21 or 60 days ago comes back once in the daily plan.
+   `all` is the /desk/all shape: {rooms:{<roomId>:{count, latest:[{id, kind, at, title, thumb…}]}}}. */
+function deskResurface(all, today) {
+  const out = []; if (!all || !all.rooms) return out;
+  for (const [room, r] of Object.entries(all.rooms)) for (const item of (r.latest || [])) {
+    if (!item || !item.at) continue; const age = days(String(item.at).slice(0, 10), today);
+    if (age === 7 || age === 21 || age === 60) out.push({ room, item, age });
+  }
+  return out.slice(0, 2);
+}
+
 /* ---------- Prediction ---------- */
 const MASTERY_FACTOR = { Unassessed: 0.05, Learning: 0.35, Fluent: 0.62, Secure: 0.85 };
 const DEFAULT_BOUNDS = { 'A*': 80, A: 70, B: 60, C: 50, D: 40, E: 30 }; /* percentage estimates until real boundaries are entered */
@@ -250,5 +261,5 @@ function topicLinks(spec, topic) {
   return out;
 }
 
-if (typeof module !== 'undefined') module.exports = { DAY, STATES, FAILURE_MODES, REMEDY, BLOCKS, phaseFor, days, iso, resolveTopics, nodeId, newState, topicWeights,
+if (typeof module !== 'undefined') module.exports = { DAY, STATES, FAILURE_MODES, REMEDY, BLOCKS, phaseFor, days, iso, resolveTopics, nodeId, newState, topicWeights, deskResurface,
   recordResult, recordWrong, applyDecay, dueForReview, scheduleCard, dueCards, subjectPriority, buildSession, MASTERY_FACTOR, DEFAULT_BOUNDS, gradeFor, predictSubject, weeklyReport, streakDays, nudgeFallback, nudgePrompt, topicLinks };

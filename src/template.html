@@ -66,7 +66,8 @@ function offer(level){const subj={};const put=(subject,board,code,id,builtIn)=>{
 function pushSubject(id){if(!UI.setup.subjects.some(x=>x.specId===id))UI.setup.subjects.push({specId:id,options:{}});}
 let S=null, TODAY=new Date().toISOString().slice(0,10), view='today', saveErr='', storeMode='memory';
 let syncState={at:0,serverAt:'',busy:false,err:'',pending:false,timer:null};const SYNC_GAP=AUTH_MODE?15000:60000;
-let UI={subject:null,room:null,station:'lesson',revealed:{},practice:null,essay:null,exit:null,busy:'',err:'',coachBusy:false,coachErr:'',teach:{},setup:{subjects:[]},cards:null,mathsHours:0,drawer:null,jumpQ:'',nudgeBusy:false};
+let UI={subject:null,room:null,station:'lesson',revealed:{},practice:null,essay:null,exit:null,busy:'',err:'',coachBusy:false,coachErr:'',teach:{},setup:{subjects:[]},cards:null,mathsHours:0,drawer:null,jumpQ:'',nudgeBusy:false,desk:{room:null,items:null,loading:false,err:'',unavailable:false,filter:'all',q:'',stage:null,playing:{},busy:'',used:0,quota:0},deskAll:null};
+const NUDGE_STATIONS=['lesson','cards','practise','essay','exit','desktop'];
 const specById=id=>SPECS[id];
 const authoredFor=(specId,topicId)=>{const A=AUTHORED[specId];if(A){const room=A.rooms[topicId];if(!room)return null;return{room,lesson:A.lessons[topicId],sources:A.sources[topicId],official:A.official};}
   const k=KITS[specId+'|'+topicId];if(!k)return null;const sp=SPECS[specId];const t=sp&&sp.topics.find(x=>x.id===topicId);return{kit:k,room:{name:t?t.name:topicId,formulae:k.room.facts||[],examples:k.lesson.examples||[],questions:k.room.questions||[],exit:k.room.exit||[]},lesson:k.lesson,sources:null,official:null,extras:k.extras||[],cards:k.cards||[]};};
@@ -93,7 +94,7 @@ async function loadForUser(){S=null;UI.room=null;let server=null;try{server=awai
   if(S)delete S.tutor;
   await loadCourses();await ensureSpecsFor(S);if(S){S.setup.subjects=S.setup.subjects.filter(sub=>SPECS[sub.specId]);if(!S.setup.subjects.length)S=null;}
   try{MATHS=JSON.parse(await rawGet(MATHS_KEY)||'null');if(MATHS&&MATHS.dayHours)UI.mathsHours=MATHS.dayHours[TODAY]||0;UI.mathsPresent=!!MATHS;}catch(e){}
-  await mirrorMaths();normaliseState();if(S&&syncState.pending){await save();pushSync();}}
+  await mirrorMaths();normaliseState();if(S&&syncState.pending){await save();pushSync();}if(S)loadDeskAll();}
 async function load(){let got=null;try{got=JSON.parse(await rawGet(KEY)||'null');}catch(e){}if(got&&got.nodes&&got.setup)S=got;
   try{MATHS=JSON.parse(await rawGet(MATHS_KEY)||'null');if(MATHS&&MATHS.dayHours)UI.mathsHours=MATHS.dayHours[TODAY]||0;UI.mathsPresent=!!MATHS;}catch(e){}
   await mirrorMaths();
@@ -130,9 +131,9 @@ function addHours(h){S.hours=(S.hours||0)+h;S.dayHours[TODAY]=(S.dayHours[TODAY]
 
 /* ============ API (retrying, diagnosable) ============ */
 const RETRY=new Set([408,409,425,429,500,502,503,504,529]);let LAST_API_ERROR=null;
-async function callClaude(parts,max=1500,retries=6){let lastErr='';for(let a=0;a<=retries;a++){if(a)await new Promise(r=>setTimeout(r,Math.min(8000,600*Math.pow(2,a-1))+Math.random()*400));let res;
+async function callClaude(parts,max=1500,retries=6,model='claude-sonnet-5'){let lastErr='';for(let a=0;a<=retries;a++){if(a)await new Promise(r=>setTimeout(r,Math.min(8000,600*Math.pow(2,a-1))+Math.random()*400));let res;
   const route=AUTH_MODE?{url:CONFIG.tutorUrl,headers:{'Content-Type':'application/json','Authorization':'Bearer '+(AUTH.token||'')}}:(S&&S.tutor&&S.tutor.url)?{url:S.tutor.url,headers:{'Content-Type':'application/json','X-Passcode':S.tutor.pass||''}}:{url:'https://api.anthropic.com/v1/messages',headers:{'Content-Type':'application/json'}};
-  try{res=await fetch(route.url,{method:'POST',headers:route.headers,body:JSON.stringify({model:'claude-sonnet-5',max_tokens:max,messages:[{role:'user',content:parts}]})});}catch(e){lastErr='network';continue;}
+  try{res=await fetch(route.url,{method:'POST',headers:route.headers,body:JSON.stringify({model,max_tokens:max,messages:[{role:'user',content:parts}]})});}catch(e){lastErr='network';continue;}
   let raw='';try{raw=await res.text();}catch(e){lastErr='unreadable body';continue;}
   let data=null;try{data=JSON.parse(raw);}catch(e){lastErr='HTTP '+res.status+', non-JSON reply: '+(raw||'(empty)').slice(0,120)+(!raw?' — the tutor route isn\u2019t reaching Claude from here':'');LAST_API_ERROR={status:res.status,body:raw.slice(0,400),when:new Date().toISOString()};if(a<retries)continue;break;}
   if(AUTH_MODE&&res.status===401){await signedOut();throw new Error('You were signed out — sign in again to carry on.');}
@@ -196,7 +197,7 @@ function renderToday(){const el=document.getElementById('v-today');if(!S)return;
    ${s.decayed&&s.decayed.length?`<div class="remedy">Dropped back after eight weeks untouched: ${s.decayed.map(id=>nodeTopic(id).topic.name).join(', ')}. First job today.</div>`:''}
    <ol class="steps">${s.steps.map((x,i)=>`<li class="${done.includes(i)?'done':''}"><button class="tick" data-step="${i}" aria-label="Mark step ${i+1} done"></button><div class="sbody"><div class="stitle"><span>${esc(x.title)}</span><span class="smins">${x.minutes} min</span></div><div class="sdetail">${esc(x.detail)}</div>
      ${x.kind==='cards'&&due.length?`<button class="open" data-cards="1">Review ${due.length} cards →</button>`:''}${x.nodes.length?`<button class="open" data-open="${esc(x.nodes[0])}" data-st="${x.kind==='new'?'lesson':x.kind==='essay'?'essay':'practise'}">Open room →</button>`:''}</div></li>`).join('')}</ol>
-   ${done.length===s.steps.length?'<div class="good">Session complete.</div>':''}</div>
+   ${done.length===s.steps.length?'<div class="good">Session complete.</div>':''}</div>${deskTodayHtml()}
    ${UI.cards?renderCards(due):''}${saveErr?`<p class="err">${esc(saveErr)}</p>`:''}`;renderRails();}
 function renderCards(due){if(!due.length){UI.cards=null;return '<div class="good">Cards cleared for today.</div>';}const c=due[0];const id=Object.keys(S.cards).find(k=>S.cards[k]===c);
   return `<div class="panel"><h2>Recall · ${due.length} due</h2><p class="sub">${esc(nodeTopic(c.node).spec.subject)} — ${esc(nodeTopic(c.node).topic.name)}<span class="cite">${esc(c.code||'')}</span></p>
@@ -210,10 +211,10 @@ function renderRooms(){const el=document.getElementById('v-rooms');if(!S)return;
   el.innerHTML=`<div class="panel"><div class="chips">${subs.map(x=>`<button class="chip" data-subject="${x.specId}" aria-selected="${UI.subject===x.specId}">${esc(specById(x.specId).subject)}</button>`).join('')}</div>
    <h2>${esc(sp.subject)} <span class="sub" style="display:inline">· ${esc(sp.board)} ${esc(sp.code)}</span></h2><p class="sub">${nodes.length} rooms. ${sp.components.map(c=>`${c.name} ${c.weight}%`).join(' · ')}</p>
    <div class="tgrid">${nodes.map(([id,n])=>{const t=sp.topics.find(x=>x.id===n.topic);const c=sp.components.find(x=>x.id===t.component);return `<button class="tcell" data-s="${n.state}" data-open="${esc(id)}" data-st="lesson"><b>${esc(c.name)}</b><span>${esc(t.name)}</span><i>${n.state} · ${t.ideas.length} key ideas</i></button>`;}).join('')}</div></div>`;renderRails();}
-function renderRoom(el){const {spec,topic,n}=nodeTopic(UI.room);const st=UI.station;const AU=authoredFor(spec.id,topic.id);const factsLabel=AU&&AU.kit&&(SPEC_META[spec.id]||{}).family!=='quantitative'?'Key facts & links':'Formulae & links';const tabs=[['lesson','Lesson'],...(AU?[['formulae',factsLabel]]:[]),['cards','Cards'],['practise','Practise'],['essay',spec.essaySubject?'Essay':'Exam question'],['mark','Mark'],['exit','Exit ticket'],['coach','Coach']];let body='';
+function renderRoom(el){const {spec,topic,n}=nodeTopic(UI.room);const st=UI.station;const AU=authoredFor(spec.id,topic.id);const factsLabel=AU&&AU.kit&&(SPEC_META[spec.id]||{}).family!=='quantitative'?'Key facts & links':'Formulae & links';const tabs=[['lesson','Lesson'],...(AU?[['formulae',factsLabel]]:[]),['cards','Cards'],['practise','Practise'],['essay',spec.essaySubject?'Essay':'Exam question'],['mark','Mark'],['exit','Exit ticket'],['desktop','Desktop'],['coach','Coach']];let body='';
   if(st==='formulae'&&AU)body=stFormulae(AU,spec,topic);
   const ki=!AU&&!AUTHORED[spec.id]?kitInfo(spec.id,topic.id):null;const kitNote=AU&&AU.kit?`<div class="prov">Written and checked ${esc(new Date(AU.kit.built.at).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}))} · judged ${Math.round((AU.kit.built.judge&&AU.kit.built.judge.score||0)*100)}% by a second model</div>`:ki?(ki.failed?'<div class="note">This room’s written lesson, question bank and cards could not be checked well enough to publish, and Chris has been told. Everything below still works — it is written for you as you go.</div>':!ki.at?'<div class="note">This room’s lesson, question bank and cards are being written and checked — a few minutes. Everything below works meanwhile.</div>':''):'';
-  if(st==='mark')body=stMark(spec,topic);
+  if(st==='mark')body=stMark(spec,topic);if(st==='desktop')body=stDesktop(spec,topic);
   if(st==='lesson')body=stLesson(spec,topic);if(st==='cards')body=stCards(spec,topic);if(st==='practise')body=stPractise(spec,topic,n);if(st==='essay')body=stEssay(spec,topic);if(st==='exit')body=stExit(spec,topic,n);if(st==='coach')body=stCoach(spec,topic);
   el.innerHTML=`<div class="panel"><button class="open" id="backRooms">← ${esc(spec.subject)} rooms</button><h2 style="margin-top:8px">${esc(topic.name)}</h2><p class="sub">${esc(spec.board)} ${esc(spec.code)} · ${esc(topic.id)} · ${n.state}${n.lastPractised?` · last worked ${n.lastPractised}`:''}</p>${kitNote}
    <div class="stations">${tabs.map(([k,l])=>`<button data-station="${k}" aria-selected="${st===k}">${esc(l)}</button>`).join('')}</div>${UI.busy?`<div class="note">${esc(UI.busy)} This is generated from the specification and checked before it\u2019s shown — about 20 seconds.</div>`:''}${UI.err?`<div class="remedy">${esc(UI.err)} <button class="act small ghost" id="retryGen">Try again</button></div>`:''}${body}</div>`;renderRails();}
@@ -371,7 +372,7 @@ function renderAll(){renderHeader();document.querySelectorAll('.navAdmin').forEa
   if(!S&&isAdmin()&&view==='admin'){showSection('v-admin');renderAdmin();renderRails();return;}
   if(!S){document.querySelectorAll('main>section').forEach(s=>s.classList.toggle('hide',s.id!=='v-setup'));renderSetup();renderRails();return;}renderToday();renderRooms();renderExam();renderProg();if(view==='admin')renderAdmin();document.querySelectorAll('main>section').forEach(s=>s.classList.toggle('hide',s.id!=='v-'+view));renderRails();}
 function go(v){view=v;document.querySelectorAll('nav button').forEach(x=>x.setAttribute('aria-selected',String(x.dataset.v===v)));document.querySelectorAll('main>section').forEach(s=>s.classList.toggle('hide',s.id!=='v-'+v));window.scrollTo(0,0);renderRails();}
-function openRoom(id,st){UI.room=id;UI.subject=S.nodes[id].spec;UI.station=st||'lesson';UI.revealed={};UI.practice=null;UI.apr=null;UI.useGenerated=false;UI.exit=null;UI.err='';if(UI.drawer)setDrawer(null);go('rooms');renderRooms();const nd=S.nodes[id];ensureKit(nd.spec,nd.topic).then(ch=>{if(ch&&UI.room===id)renderRooms();});}
+function openRoom(id,st){deskStopPlayers();UI.desk.room=null;UI.room=id;UI.subject=S.nodes[id].spec;UI.station=st||'lesson';UI.revealed={};UI.practice=null;UI.apr=null;UI.useGenerated=false;UI.exit=null;UI.err='';if(UI.drawer)setDrawer(null);go('rooms');renderRooms();const nd=S.nodes[id];ensureKit(nd.spec,nd.topic).then(ch=>{if(ch&&UI.room===id)renderRooms();});}
 async function fileToImg(file){const data=await new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result.split(',')[1]);r.onerror=()=>rej(new Error('read failed'));r.readAsDataURL(file);});return{data,media:file.type||'image/jpeg'};}
 
 /* ============ THE RAILS: left = where you are, right = what now, strip = how it's going ============ */
@@ -413,10 +414,11 @@ function renderRailR(R){const due=dueCards(S,TODAY);let html='';
   else if(view==='rooms'&&UI.room&&S.nodes[UI.room]){const {spec,topic,n}=nodeTopic(UI.room);const mine=Object.values(S.cards).filter(c=>c.node===UI.room);const dueHere=mine.filter(c=>!c.due||c.due<=TODAY);const errs=S.errors.filter(e=>e.node===UI.room).slice(0,5);const comp=spec.components.find(c=>c.id===topic.component);
     html+=`<div class="rblock"><h4>This room</h4><p><i class="dot" data-s="${n.state}" style="display:inline-block;vertical-align:middle;margin:0 6px 2px 0"></i><b>${n.state}</b>${n.lastPractised?` · last worked ${esc(n.lastPractised)}`:' · not started yet'}</p><p class="fine">${topic.ideas.length} key ideas · ${esc(comp?comp.name:'')}${comp?` · ${comp.weight}% of the qualification`:''}</p><div class="ideas">${topic.ideas.map(i=>`<span class="cite" title="${esc(i.idea)}">${esc(i.code)}</span>`).join('')}</div></div>`;
     html+=`<div class="rblock"><h4>Cards</h4><div class="bigrow"><b class="big">${dueHere.length}</b><span class="fine">of ${mine.length} due</span>${dueHere.length?`<button class="act small" data-cards="1">Review now →</button>`:`<button class="act ghost small" data-station="cards">${mine.length?'Cards':'Make cards'} →</button>`}</div></div>`;
+    html+=deskRoomRailHtml();
     html+=`<div class="rblock"><h4>Your mistakes here</h4>${errs.length?errs.map(e=>`<div class="entry"><div class="emeta"><span class="tag">${esc(e.mode)}</span><span>${esc(e.date)}</span></div><div>${esc(e.ref||'')}</div></div>`).join(''):'<p class="fine">None logged in this room.</p>'}</div>`;
     html+=`<div class="rblock"><h4>Watch and read</h4>${resourcesFor(spec,topic).map(linkHtml).join('')}</div>`;}
   else if(view==='rooms'){const sp=activeSpec();const ns=Object.entries(S.nodes).filter(([,n])=>n.spec===sp.id);const by={};for(const [,n] of ns)by[n.state]=(by[n.state]||0)+1;const next=ns.find(([,n])=>n.state==='Unassessed');const nt=next&&sp.topics.find(t=>t.id===next[1].topic);
-    html+=`<div class="rblock"><h4>${esc(sp.subject)} · ${esc(sp.board)} ${esc(sp.code)}</h4>${sp.components.map(c=>`<div class="mstone"><span>${esc(c.name)}</span><b>${c.weight}%</b></div>`).join('')}</div><div class="rblock"><h4>Rooms</h4>${['Secure','Fluent','Learning','Unassessed'].map(st=>`<div class="mstone"><span><i class="dot" data-s="${st}" style="display:inline-block;vertical-align:middle;margin:0 6px 2px 0"></i>${st==='Unassessed'?'Not started':st}</span><b>${by[st]||0}</b></div>`).join('')}${nt?`<button class="act small" data-open="${esc(next[0])}" data-st="lesson">Start ${esc(nt.name)} →</button>`:'<p class="fine">Every room started.</p>'}</div>`;}
+    html+=`<div class="rblock"><h4>${esc(sp.subject)} · ${esc(sp.board)} ${esc(sp.code)}</h4>${sp.components.map(c=>`<div class="mstone"><span>${esc(c.name)}</span><b>${c.weight}%</b></div>`).join('')}</div><div class="rblock"><h4>Rooms</h4>${['Secure','Fluent','Learning','Unassessed'].map(st=>`<div class="mstone"><span><i class="dot" data-s="${st}" style="display:inline-block;vertical-align:middle;margin:0 6px 2px 0"></i>${st==='Unassessed'?'Not started':st}</span><b>${by[st]||0}</b></div>`).join('')}${nt?`<button class="act small" data-open="${esc(next[0])}" data-st="lesson">Start ${esc(nt.name)} →</button>`:'<p class="fine">Every room started.</p>'}</div>`;html+=deskCourseRailHtml(sp);}
   else if(view==='exam'){const sp=activeSpec();const mc=sp.markConventions||{};
     html+=`<div class="rblock"><h4>Command words · ${esc(sp.board)}</h4>${(mc.commandWords||[]).map(c=>`<div class="cw"><b>${esc(c.word)}</b>${esc(c.means)}</div>`).join('')}</div>`;
     if(mc.essayShapes&&mc.essayShapes.length)html+=`<div class="rblock"><h4>Essay shapes</h4>${mc.essayShapes.map(x=>`<div class="cw"><b>${x.marks} marks · ${x.minutes} min</b>${esc(x.structure)}</div>`).join('')}</div>`;
@@ -432,19 +434,127 @@ function nudgeStale(){return !(S&&S.nudge&&S.nudge.date===TODAY);}
 async function requestNudge(force){if(!S||UI.nudgeBusy)return;if(!force&&!nudgeStale())return;UI.nudgeBusy=true;renderRails();
   try{const txt=await callClaude([{type:'text',text:nudgePrompt(S,SPECS,TODAY)}],300,0);let o=null;try{o=JSON.parse(txt);}catch(e){}
     if(!S)return;if(!o||typeof o.text!=='string'||!o.text.trim())throw new Error('no usable suggestion');
-    S.nudge={date:TODAY,text:o.text.trim().slice(0,240),node:o.node&&S.nodes[o.node]?o.node:null,station:['lesson','cards','practise','essay','exit'].includes(o.station)?o.station:'lesson',ai:true};}
+    S.nudge={date:TODAY,text:o.text.trim().slice(0,240),node:o.node&&S.nodes[o.node]?o.node:null,station:NUDGE_STATIONS.includes(o.station)?o.station:'lesson',ai:true};}
   catch(e){if(!S){UI.nudgeBusy=false;return;}const f=nudgeFallback(S,SPECS,TODAY);S.nudge={date:TODAY,text:f.text,node:f.node,station:f.station,ai:false};}
   finally{UI.nudgeBusy=false;}
   if(!S)return;await save();renderRails();}
 
+/* ============ THE DESKTOP: the student's own material inside a room ============ */
+/* A wall of blocks per room — photos of notes, cards, videos, links, files — kept on the tutor (KV index, R2 files), never in the progress blob. */
+const DESK_KINDS=[['all','All'],['photo','Photos'],['card','Cards'],['video','Videos'],['link','Links'],['note','Notes'],['file','Files']];
+function deskRoomKey(){return encodeURIComponent(UI.room);}
+async function loadDesk(room){const D=UI.desk;if(D.loading)return;D.loading=true;D.err='';try{const r=await api('/desk/'+encodeURIComponent(room));D.room=room;D.items=r.items||[];D.used=r.used||0;D.quota=r.quota||0;D.unavailable=false;}
+  catch(e){D.room=room;D.items=[];if(e.status===503)D.unavailable=true;else if(e.status!==401)D.err=e.message;}
+  finally{D.loading=false;}if(UI.room===room&&UI.station==='desktop')renderRooms();}
+async function loadDeskAll(){if(!AUTH_MODE||!AUTH.user)return;try{UI.deskAll=await api('/desk/all');}catch(e){if(e.status===503)UI.deskAll={rooms:{},unavailable:true};}if(view==='today')renderToday();else renderRails();}
+function deskThumbHtml(it,cls){const cls2=cls||'dthumb';if(it.thumb)return `<img class="${cls2}" src="${esc(it.thumb)}" alt="">`;if(it.kind==='video'&&it.provider==='youtube')return `<img class="${cls2}" src="https://i.ytimg.com/vi/${esc(it.video)}/hqdefault.jpg" alt="" loading="lazy">`;if(it.image)return `<img class="${cls2}" src="${esc(it.image)}" alt="" loading="lazy" referrerpolicy="no-referrer">`;const ic={photo:'🖼',card:'🃏',video:'▶',link:'🔗',note:'✎',file:'📄'}[it.kind]||'•';return `<div class="${cls2} dph">${ic}</div>`;}
+function deskItemHtml(it){const when=esc(new Date(it.at).toLocaleDateString('en-GB',{day:'numeric',month:'short'}));const del=`<button class="act ghost small" data-dkdel="${esc(it.id)}" aria-label="Remove">✕</button>`;
+  if(it.kind==='video'){if(UI.desk.playing[it.id]){const src=it.provider==='vimeo'?`https://player.vimeo.com/video/${esc(it.video)}#t=${Math.floor(it.pos||0)}s`:`https://www.youtube-nocookie.com/embed/${esc(it.video)}?start=${Math.floor(it.pos||0)}&enablejsapi=1&rel=0`;
+      return `<div class="dblock wide" data-kind="video"><iframe class="dframe" id="dkf-${esc(it.id)}" src="${src}" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen title="${esc(it.title||'Video')}"></iframe><div class="dtitle">${esc(it.title||'Video')}</div><div class="drow"><span class="fine">${it.provider==='youtube'?'Where you stop is remembered.':'Resumes from where you last noted.'}</span>${del}</div></div>`;}
+    return `<div class="dblock" data-kind="video">${deskThumbHtml(it)}<div class="dkind">Video · ${when}${it.pos?` · at ${Math.floor(it.pos/60)}:${String(Math.floor(it.pos%60)).padStart(2,'0')}`:''}</div><div class="dtitle">${esc(it.title||it.url)}</div><div class="drow"><button class="act small" data-dkplay="${esc(it.id)}">${it.pos?'Resume':'Play'} ▶</button>${del}</div></div>`;}
+  if(it.kind==='link')return `<div class="dblock" data-kind="link">${deskThumbHtml(it)}<div class="dkind">Link · ${esc(it.site||'')} · ${when}</div><div class="dtitle"><a href="${esc(it.url)}" target="_blank" rel="noopener">${esc(it.title||it.url)}</a></div><div class="drow"><a class="act small" href="${esc(it.url)}" target="_blank" rel="noopener">Open →</a>${del}</div></div>`;
+  if(it.kind==='card')return `<div class="dblock" data-kind="card"><div class="dkind">Card · ${when}${it.code?` · <span class="cite">${esc(it.code)}</span>`:''}</div><div class="dtitle">${esc(it.front)}</div><div class="dback">${esc(it.back)}</div><div class="drow"><span class="fine">In this room’s deck</span>${del}</div></div>`;
+  if(it.kind==='note')return `<div class="dblock" data-kind="note"><div class="dkind">Note · ${when}</div>${it.title&&!String(it.text||'').startsWith(it.title)?`<div class="dtitle">${esc(it.title)}</div>`:''}<div class="dtext">${esc(it.text||'')}</div><div class="drow">${del}</div></div>`;
+  if(it.kind==='file')return `<div class="dblock" data-kind="file">${deskThumbHtml(it)}<div class="dkind">File · ${Math.round((it.size||0)/1024)} KB · ${when}</div><div class="dtitle">${esc(it.title||it.name||'File')}</div><div class="drow"><button class="act small" data-dkopen="${esc(it.id)}">Open →</button>${del}</div></div>`;
+  const busy=UI.desk.busy===it.id;const shown=UI.revealed['dk'+it.id];
+  return `<div class="dblock" data-kind="photo">${deskThumbHtml(it)}<div class="dkind">Photo · ${when}${it.cards?` · ${it.cards} cards made`:''}</div><div class="dtitle">${esc(it.title||it.name||'Photo')}</div>${it.text?(shown?`<div class="dtext">${esc(it.text)}</div>`:''):busy?'<div class="fine">Reading your notes…</div>':'<div class="fine">No text read yet.</div>'}
+   <div class="drow"><button class="act ghost small" data-dkopen="${esc(it.id)}">Open</button>${it.text?`<button class="act ghost small" data-dktext="${esc(it.id)}">${shown?'Hide text':'Text'}</button><button class="act small" data-dkcards="${esc(it.id)}" ${busy?'disabled':''}>Make cards</button>`:''}${del}</div></div>`;}
+function deskGridHtml(){const D=UI.desk;const q=String(D.q||'').trim().toLowerCase();const items=(D.items||[]).filter(it=>(D.filter==='all'||it.kind===D.filter)&&(!q||[it.title,it.text,it.front,it.back,it.url,it.site,it.name].filter(Boolean).join(' ').toLowerCase().includes(q)));
+  if(!items.length)return D.items&&D.items.length?'<div class="empty">Nothing matches.</div>':'<div class="empty">Nothing here yet. Photograph your notes or classwork, pin a video, save a link, or write a card — it stays in this room, and the tutor can read your notes back into cards.</div>';
+  return items.map(deskItemHtml).join('');}
+function deskStageHtml(){const st=UI.desk.stage;if(!st)return '';const pts=st.corners.map(c=>c.join(',')).join(' ');
+  return `<div class="qcard"><div class="qtext" style="font-weight:600">Straighten the page</div><p class="sub">Drag the four corners onto the page’s corners, then straighten — or keep the photo as it is.</p>
+   <div class="dstage" id="dkStage"><img src="${st.dataUrl}" alt=""><svg viewBox="0 0 ${st.w} ${st.h}" preserveAspectRatio="none"><polygon id="dkPoly" points="${pts}" fill="rgba(43,76,126,.15)" stroke="#2B4C7E" stroke-width="${Math.max(2,st.w/300)}"/></svg>${st.corners.map((c,i)=>`<div class="dh" data-dkhandle="${i}" style="left:${c[0]/st.w*100}%;top:${c[1]/st.h*100}%"></div>`).join('')}</div>
+   <div class="drow" style="margin-top:10px"><button class="act small" id="dkStraighten">Straighten &amp; clean</button><button class="act ghost small" id="dkUseAsIs">Use as it is</button><button class="act ghost small" id="dkStageCancel">Cancel</button></div></div>`;}
+function deskStageUpdate(){const st=UI.desk.stage;if(!st)return;const poly=document.getElementById('dkPoly');if(poly&&poly.setAttribute)poly.setAttribute('points',st.corners.map(c=>c.join(',')).join(' '));st.corners.forEach((c,i)=>{const h=document.querySelector&&document.querySelector(`[data-dkhandle="${i}"]`);if(h&&h.style){h.style.left=c[0]/st.w*100+'%';h.style.top=c[1]/st.h*100+'%';}});}
+function stDesktop(spec,topic){const D=UI.desk;if(!AUTH_MODE||!AUTH.user)return '<div class="note">Sign in to use your desktop — it lives on the tutor so it follows you between devices.</div>';
+  if(D.room!==UI.room||(D.items===null&&!D.loading&&!D.err&&!D.unavailable)){if(D.room!==UI.room){D.items=null;D.err='';D.unavailable=false;D.stage=null;D.playing={};D.filter='all';D.q='';}loadDesk(UI.room);}
+  if(D.unavailable)return '<div class="note">Your desktop is not set up yet — the storage it needs has not been created. Everything else in the room works as before.</div>';
+  if(D.err)return `<div class="remedy">${esc(D.err)} <button class="act small ghost" id="dkRetry">Try again</button></div>`;
+  if(D.items===null)return '<p class="sub">Opening your desktop…</p>';
+  const n=D.items.length;
+  return `<p class="sub">Your own material for this room — ${n?`${n} item${n===1?'':'s'}`:'nothing yet'}. Private to you; the tutor reads your photographed notes and can turn them into cards for this room’s deck.</p>
+   ${D.busy==='upload'?'<div class="note">Saving your photo…</div>':''}${D.stage?deskStageHtml():`<div class="dbar"><label class="act small"><input class="dfile" type="file" id="dkPhoto" accept="image/*" capture="environment">📷 Photo of notes</label><label class="act ghost small"><input class="dfile" type="file" id="dkFile" accept="application/pdf,image/*">📄 File</label></div>
+   <div class="dbar"><input type="text" id="dkUrl" placeholder="Paste a video or web link" value="${esc(D.draftUrl||'')}"><button class="act small" id="dkAddLink">Pin it</button></div>
+   <div class="dbar"><input type="text" id="dkFront" placeholder="Card front — the question"><input type="text" id="dkBack" placeholder="Card back — the answer"><button class="act small" id="dkAddCard">Add card</button></div>
+   <div class="dbar"><textarea id="dkNote" placeholder="A note to yourself about this room"></textarea><button class="act small" id="dkAddNote">Add note</button></div>`}
+   <div class="dchips">${DESK_KINDS.map(([k,l])=>`<button data-dkfilter="${k}" aria-selected="${D.filter===k}">${l}</button>`).join('')}<input type="search" id="dkSearch" placeholder="Search your desktop" value="${esc(D.q||'')}"></div>
+   <div class="dgrid" id="dkGrid">${deskGridHtml()}</div>${D.quota?`<div class="dquota">${Math.round(D.used/1048576)} MB of ${Math.round(D.quota/1048576)} MB used for photos and files.</div>`:''}`;}
+function deskTodayHtml(){if(!UI.deskAll)return '';const rs=deskResurface(UI.deskAll,TODAY).filter(x=>S.nodes[x.room]);if(!rs.length)return '';
+  return `<div class="panel"><h2>From your desktop</h2><p class="sub">Things you saved a while ago — worth a second look today.</p><div class="dtoday">${rs.map(x=>{const {spec,topic}=nodeTopic(x.room);return `<div class="dblock">${deskThumbHtml(x.item)}<div class="dkind">${x.age} days ago · ${esc(spec.subject)} · ${esc(topic.name)}</div><div class="dtitle">${esc(x.item.title||x.item.kind)}</div><div class="drow"><button class="act small" data-open="${esc(x.room)}" data-st="desktop">Open room →</button></div></div>`;}).join('')}</div></div>`;}
+function deskRoomRailHtml(){const A=UI.deskAll;const cnt=UI.desk.room===UI.room&&UI.desk.items?UI.desk.items.length:(A&&A.rooms[UI.room]?A.rooms[UI.room].count:0);
+  return `<div class="rblock"><h4>Desktop</h4><div class="bigrow"><b class="big">${cnt}</b><span class="fine">${cnt===1?'item':'items'} of yours here</span><button class="act ${cnt?'':'ghost '}small" data-station="desktop">${cnt?'Open':'Add'} →</button></div></div>`;}
+function deskCourseRailHtml(sp){const A=UI.deskAll;if(!A)return '';const rooms=Object.entries(A.rooms||{}).filter(([id])=>S.nodes[id]&&S.nodes[id].spec===sp.id).sort((a,b)=>b[1].count-a[1].count);const total=rooms.reduce((n,[,r])=>n+r.count,0);
+  return `<div class="rblock"><h4>Desktop</h4>${total?`<p class="fine">${total} item${total===1?'':'s'} across ${rooms.length} room${rooms.length===1?'':'s'}.</p>`+rooms.slice(0,3).map(([id,r])=>{const t=nodeTopic(id).topic;return `<button class="tnode" data-open="${esc(id)}" data-st="desktop"><span>${esc(t.name)}<br><small>${r.count} item${r.count===1?'':'s'}</small></span></button>`;}).join(''):'<p class="fine">Nothing saved in this course yet. Open a room and add a photo of your notes.</p>'}</div>`;}
+/* ---- adding things ---- */
+async function deskPost(body){const r=await api('/desk/'+deskRoomKey(),{method:'POST',body});UI.desk.items.unshift(r.item);loadDeskAll();return r.item;}
+async function deskPatch(id,body){const r=await api('/desk/'+deskRoomKey()+'/'+encodeURIComponent(id),{method:'PATCH',body});const i=(UI.desk.items||[]).findIndex(x=>x.id===id);if(i>=0)UI.desk.items[i]=r.item;return r.item;}
+async function deskAddLink(raw){const url=String(raw||'').trim();if(!/^https?:\/\//i.test(url)){UI.desk.err='Paste a full web address starting https://';renderRooms();return;}UI.desk.draftUrl='';UI.desk.busy='link';renderRooms();
+  try{let meta={};try{meta=await api('/desk/unfurl?url='+encodeURIComponent(url));}catch(e){}await deskPost({kind:meta.video?'video':'link',url,title:meta.title||url.replace(/^https?:\/\/(www\.)?/,'').slice(0,80),image:meta.image||'',site:meta.site||''});}
+  catch(e){UI.desk.err=e.message;}UI.desk.busy='';renderRooms();}
+async function deskAddCard(front,back){front=String(front||'').trim();back=String(back||'').trim();if(!front||!back){UI.desk.err='A card needs a front and a back.';renderRooms();return;}
+  const {topic}=nodeTopic(UI.room);const code=(topic.ideas[0]||{}).code||'';const cid='c'+Math.random().toString(36).slice(2,9);S.cards[cid]={node:UI.room,front,back,code,due:TODAY,ease:1,reps:0,mine:true};await save();
+  try{await deskPost({kind:'card',front,back,code,cardId:cid,title:front.slice(0,80)});}catch(e){UI.desk.err=e.message;}renderRooms();}
+async function deskAddNote(text){text=String(text||'').trim();if(!text){UI.desk.err='Write something first.';renderRooms();return;}try{await deskPost({kind:'note',text,title:text.split('\n')[0].slice(0,60)});}catch(e){UI.desk.err=e.message;}renderRooms();}
+async function deskDelete(id){try{await api('/desk/'+deskRoomKey()+'/'+encodeURIComponent(id),{method:'DELETE'});UI.desk.items=(UI.desk.items||[]).filter(x=>x.id!==id);loadDeskAll();}catch(e){UI.desk.err=e.message;}renderRooms();}
+/* ---- photos: resize on the device, straighten if asked, upload raw bytes, then let the tutor read the page ---- */
+const canDraw=()=>typeof createImageBitmap==='function'&&typeof document.createElement==='function'&&(()=>{try{return !!document.createElement('canvas').getContext('2d');}catch(e){return false;}})();
+async function deskChoose(file,kind){const D=UI.desk;D.err='';if(!file)return;if(file.size>8*1024*1024&&!(kind==='photo'&&canDraw())){D.err='Files are limited to 8 MB.';renderRooms();return;}
+  if(kind==='photo'&&/^image\//.test(file.type||'')&&canDraw()){try{const bmp=await createImageBitmap(file);const k=Math.min(1,2000/Math.max(bmp.width,bmp.height));const w=Math.round(bmp.width*k),h=Math.round(bmp.height*k);const c=document.createElement('canvas');c.width=w;c.height=h;c.getContext('2d').drawImage(bmp,0,0,w,h);
+      D.stage={name:file.name||'photo.jpg',w,h,canvas:c,dataUrl:c.toDataURL('image/jpeg',0.8),corners:deskGuessCorners(c)};renderRooms();return;}catch(e){}}
+  await deskUpload(file,kind,file.name||(kind==='photo'?'photo.jpg':'file'),file.type||'application/octet-stream',null);}
+function deskGuessCorners(c){const w=c.width,h=c.height;const full=[[0,0],[w,0],[w,h],[0,h]];try{const sw=96,sh=Math.max(1,Math.round(h/w*96));const t=document.createElement('canvas');t.width=sw;t.height=sh;const g=t.getContext('2d');g.drawImage(c,0,0,sw,sh);const d=g.getImageData(0,0,sw,sh).data;const lum=[];for(let i=0;i<d.length;i+=4)lum.push(0.299*d[i]+0.587*d[i+1]+0.114*d[i+2]);const sorted=[...lum].sort((a,b)=>a-b);const thr=(sorted[Math.floor(sorted.length*0.5)]+sorted[sorted.length-1])/2;let x0=sw,y0=sh,x1=0,y1=0,n=0;for(let y=0;y<sh;y++)for(let x=0;x<sw;x++)if(lum[y*sw+x]>=thr){n++;if(x<x0)x0=x;if(x>x1)x1=x;if(y<y0)y0=y;if(y>y1)y1=y;}
+    if(n<sw*sh*0.3||(x1-x0)*(y1-y0)<sw*sh*0.3)return full;const fx=w/sw,fy=h/sh;return [[x0*fx,y0*fy],[(x1+1)*fx,y0*fy],[(x1+1)*fx,(y1+1)*fy],[x0*fx,(y1+1)*fy]];}catch(e){return full;}}
+/* The 3×3 homography that maps the four destination corners onto the four source corners, by Gaussian elimination. */
+function deskHomography(src,dst){const A=[],b=[];for(let i=0;i<4;i++){const [x,y]=dst[i],[u,v]=src[i];A.push([x,y,1,0,0,0,-u*x,-u*y]);b.push(u);A.push([0,0,0,x,y,1,-v*x,-v*y]);b.push(v);}
+  const n=8;for(let c=0;c<n;c++){let p=c;for(let r=c+1;r<n;r++)if(Math.abs(A[r][c])>Math.abs(A[p][c]))p=r;[A[c],A[p]]=[A[p],A[c]];[b[c],b[p]]=[b[p],b[c]];const d=A[c][c]||1e-9;for(let r=0;r<n;r++){if(r===c)continue;const f=A[r][c]/d;for(let k=c;k<n;k++)A[r][k]-=f*A[c][k];b[r]-=f*b[c];}}
+  const hh=b.map((v,i)=>v/(A[i][i]||1e-9));return [hh[0],hh[1],hh[2],hh[3],hh[4],hh[5],hh[6],hh[7],1];}
+function deskWarp(c,corners){const dist=(a,b)=>Math.hypot(a[0]-b[0],a[1]-b[1]);let W=Math.round(Math.max(dist(corners[0],corners[1]),dist(corners[3],corners[2]))),H=Math.round(Math.max(dist(corners[0],corners[3]),dist(corners[1],corners[2])));const k=Math.min(1,2000/Math.max(W,H));W=Math.max(8,Math.round(W*k));H=Math.max(8,Math.round(H*k));
+  const Hm=deskHomography(corners,[[0,0],[W,0],[W,H],[0,H]]);const src=c.getContext('2d').getImageData(0,0,c.width,c.height),sd=src.data,sw=c.width,sh=c.height;const out=document.createElement('canvas');out.width=W;out.height=H;const og=out.getContext('2d');const o=og.createImageData(W,H),od=o.data;
+  for(let y=0;y<H;y++)for(let x=0;x<W;x++){const den=Hm[6]*x+Hm[7]*y+1;const u=(Hm[0]*x+Hm[1]*y+Hm[2])/den,v=(Hm[3]*x+Hm[4]*y+Hm[5])/den;const sx=Math.round(u),sy=Math.round(v);const oi=(y*W+x)*4;if(sx<0||sy<0||sx>=sw||sy>=sh){od[oi]=od[oi+1]=od[oi+2]=255;od[oi+3]=255;continue;}const si=(sy*sw+sx)*4;od[oi]=sd[si];od[oi+1]=sd[si+1];od[oi+2]=sd[si+2];od[oi+3]=255;}
+  og.putImageData(o,0,0);return out;}
+/* Levels: stretch the page so its paper reads white and its ink dark, without touching colour balance much. */
+function deskLevels(c){const g=c.getContext('2d');const im=g.getImageData(0,0,c.width,c.height),d=im.data;const hist=new Array(256).fill(0);for(let i=0;i<d.length;i+=4)hist[Math.round(0.299*d[i]+0.587*d[i+1]+0.114*d[i+2])]++;const total=d.length/4;let acc=0,lo=0,hi=255;for(let i=0;i<256;i++){acc+=hist[i];if(acc>=total*0.02){lo=i;break;}}acc=0;for(let i=255;i>=0;i--){acc+=hist[i];if(acc>=total*0.02){hi=i;break;}}if(hi-lo<40)return c;const scale=255/(hi-lo);
+  for(let i=0;i<d.length;i+=4){for(let k=0;k<3;k++){let v=(d[i+k]-lo)*scale;d[i+k]=v<0?0:v>255?255:v;}}g.putImageData(im,0,0);return c;}
+function deskThumb(c){let w=320;for(const q of [0.7,0.6,0.5]){const t=document.createElement('canvas');const k=Math.min(1,w/Math.max(c.width,c.height));t.width=Math.max(1,Math.round(c.width*k));t.height=Math.max(1,Math.round(c.height*k));t.getContext('2d').drawImage(c,0,0,t.width,t.height);const u=t.toDataURL('image/jpeg',q);if(u.length<=24000)return u;w=240;}return null;}
+const canvasBlob=(c,type,q)=>new Promise(res=>c.toBlob(b=>res(b),type,q));
+async function deskStageDone(straighten){const st=UI.desk.stage;if(!st)return;UI.desk.stage=null;UI.desk.busy='upload';renderRooms();
+  try{let c=st.canvas;if(straighten){c=deskWarp(c,st.corners);deskLevels(c);}const blob=await canvasBlob(c,'image/jpeg',0.85);const name=st.name.replace(/\.[a-z0-9]+$/i,'')+'.jpg';await deskUpload(blob,'photo',name,'image/jpeg',{thumb:deskThumb(c),w:c.width,h:c.height});}
+  catch(e){UI.desk.err=e.message;UI.desk.busy='';renderRooms();}}
+function bufToB64(buf){const u=new Uint8Array(buf);let s='';for(let i=0;i<u.length;i+=0x8000)s+=String.fromCharCode.apply(null,u.subarray(i,i+0x8000));return btoa(s);}
+async function deskUpload(blob,kind,name,type,meta){const D=UI.desk;D.busy='upload';D.err='';renderRooms();const room=UI.room;
+  try{const buf=await blob.arrayBuffer();const res=await fetch(CONFIG.tutorUrl+'/desk/'+encodeURIComponent(room)+'/upload',{method:'POST',headers:{'Authorization':'Bearer '+(AUTH.token||''),'Content-Type':type,'X-Desk-Name':name,'X-Desk-Kind':kind},body:buf});
+    let data={};try{data=JSON.parse(await res.text()||'{}');}catch(e){}if(res.status===401){await signedOut();return;}if(!res.ok)throw new Error(data.error||('HTTP '+res.status));
+    let item=data.item;if(D.room===room&&D.items)D.items.unshift(item);D.used=data.used||D.used;D.busy='';renderRooms();loadDeskAll();
+    if(meta&&meta.thumb){try{item=await deskPatch(item.id,{thumb:meta.thumb,w:meta.w,h:meta.h});}catch(e){}renderRooms();}
+    if(item.kind==='photo'&&/^image\/(jpeg|png|webp)$/.test(type))await deskTranscribe(item.id,type,bufToB64(buf));}
+  catch(e){D.err=e.message;D.busy='';renderRooms();}}
+async function deskTranscribe(id,type,b64){const D=UI.desk;D.busy=id;renderRooms();
+  try{const txt=await callClaude([{type:'image',source:{type:'base64',media_type:type,data:b64}},{type:'text',text:transcribePrompt()}],1500,2,'claude-haiku-4-5');const text=String(txt||'').trim().slice(0,3000);if(text)await deskPatch(id,{text});}
+  catch(e){D.err='Could not read the photo: '+e.message;}D.busy='';renderRooms();}
+async function deskMakeCards(id){const D=UI.desk;const it=(D.items||[]).find(x=>x.id===id);if(!it||!it.text)return;const {spec,topic}=nodeTopic(UI.room);D.busy=id;D.err='';renderRooms();
+  try{const o=await generate(cardsFromNotesPrompt(spec,topic,it.text,8),o=>validateCards(topic,o,3),2000);let n=0;for(const c of o.cards){const cid='c'+Math.random().toString(36).slice(2,9);S.cards[cid]={node:UI.room,front:c.front,back:c.back,code:c.code,due:TODAY,ease:1,reps:0,from:id};n++;}await save();try{await deskPatch(id,{cards:(it.cards||0)+n});}catch(e){}}
+  catch(e){D.err=e.message;}D.busy='';renderRooms();}
+async function deskOpenFile(id){const it=(UI.desk.items||[]).find(x=>x.id===id);if(!it||!it.key)return;try{const res=await fetch(CONFIG.tutorUrl+'/desk/file/'+it.key.replace(/^desk\//,'').split('/').map(encodeURIComponent).join('/'),{headers:{'Authorization':'Bearer '+(AUTH.token||'')}});if(!res.ok)throw new Error('HTTP '+res.status);const b=await res.blob();if(typeof URL!=='undefined'&&URL.createObjectURL){const u=URL.createObjectURL(b);window.open(u,'_blank');setTimeout(()=>URL.revokeObjectURL(u),60000);}}catch(e){UI.desk.err='Could not open the file: '+e.message;renderRooms();}}
+/* ---- videos: YouTube resumes where the student stopped; the position is saved every 15 s while it plays ---- */
+async function deskSavePos(id,pos){const it=(UI.desk.items||[]).find(x=>x.id===id);if(!it)return;pos=Math.floor(pos);if(Math.abs((it.pos||0)-pos)<5&&it.pos!==undefined&&pos!==0)return;it.pos=pos;try{await deskPatch(id,{pos});}catch(e){}}
+function deskPlay(id){const it=(UI.desk.items||[]).find(x=>x.id===id);if(!it)return;UI.desk.playing={[id]:true};renderRooms();if(it.provider==='youtube')deskAttachPlayer(it);}
+function deskAttachPlayer(it){if(typeof window==='undefined'||!document.createElement||typeof document.createElement!=='function')return;const start=()=>{try{const P=new window.YT.Player('dkf-'+it.id);const timer=setInterval(()=>{try{if(!UI.desk.playing[it.id]||UI.station!=='desktop'){clearInterval(timer);return;}if(P.getPlayerState&&P.getPlayerState()===1)deskSavePos(it.id,P.getCurrentTime());}catch(e){}},15000);UI.desk.timers=(UI.desk.timers||[]).concat(timer);}catch(e){}};
+  if(window.YT&&window.YT.Player){start();return;}window.onYouTubeIframeAPIReady=start;if(!document.getElementById('ytapi')){const sc=document.createElement('script');sc.id='ytapi';sc.src='https://www.youtube.com/iframe_api';document.head.appendChild(sc);}}
+function deskStopPlayers(){for(const t of (UI.desk.timers||[]))clearInterval(t);UI.desk.timers=[];UI.desk.playing={};}
+
 /* ============ EVENTS ============ */
-document.addEventListener('input',e=>{const t=e.target;if(t&&t.id==='jump'&&S){UI.jumpQ=t.value;const o=document.getElementById('jumpOut');if(o)o.innerHTML=jumpHtml();}});
+document.addEventListener('input',e=>{const t=e.target;if(t&&t.id==='dkSearch'&&S){UI.desk.q=t.value;const g=document.getElementById('dkGrid');if(g)g.innerHTML=deskGridHtml();return;}if(t&&t.id==='jump'&&S){UI.jumpQ=t.value;const o=document.getElementById('jumpOut');if(o)o.innerHTML=jumpHtml();}});
+document.addEventListener('pointerdown',e=>{const h=e.target&&e.target.closest&&e.target.closest('[data-dkhandle]');if(!h||!UI.desk.stage)return;e.preventDefault&&e.preventDefault();UI.desk.drag=+h.dataset.dkhandle;try{h.setPointerCapture&&h.setPointerCapture(e.pointerId);}catch(x){}});
+document.addEventListener('pointermove',e=>{if(UI.desk.drag==null||!UI.desk.stage)return;const st=document.getElementById('dkStage');if(!st||!st.getBoundingClientRect)return;const r=st.getBoundingClientRect();const S0=UI.desk.stage;const x=Math.max(0,Math.min(S0.w,(e.clientX-r.left)/r.width*S0.w)),y=Math.max(0,Math.min(S0.h,(e.clientY-r.top)/r.height*S0.h));S0.corners[UI.desk.drag]=[x,y];deskStageUpdate();});
+document.addEventListener('pointerup',()=>{UI.desk.drag=null;});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&UI.drawer){setDrawer(null);return;}if(e.key==='Enter'&&e.target&&e.target.id==='jump'&&S){e.preventDefault&&e.preventDefault();const m=jumpMatches(UI.jumpQ);if(m.length){UI.jumpQ='';openRoom(m[0].id,'lesson');}}});
 document.addEventListener('change',async e=>{const t=e.target;
   if(t.dataset&&t.dataset.su){const id=t.dataset.su;if(t.checked)UI.setup.subjects.push({specId:id,options:{}});else UI.setup.subjects=UI.setup.subjects.filter(x=>x.specId!==id);UI.setup.student=document.getElementById('suName').value;renderSetup();return;}
   if(t.id==='crsSubject'){UI.setup.pickSubject=t.value;UI.setup.pickBoard=null;UI.setup.student=document.getElementById('suName').value;renderSetup();return;}
   if(t.id==='crsBoard'){UI.setup.pickBoard=t.value;return;}
   if(t.dataset&&t.dataset.opt){const [sid,oid,f]=t.dataset.opt.split('|');const sub=UI.setup.subjects.find(x=>x.specId===sid);const o=specById(sid).options.find(x=>x.id===oid);if(o.choose>1){const arr=sub.options[oid]||[];sub.options[oid]=t.checked?[...new Set([...arr,f])]:arr.filter(x=>x!==f);}else sub.options[oid]=f;return;}
+  if(t.id==='dkPhoto'||t.id==='dkFile'){const files=[...(t.files||[])];try{t.value='';}catch(e){}if(files[0])deskChoose(files[0],t.id==='dkFile'?'file':'photo');return;}
   if(t.id==='esPhoto'){const files=[...(t.files||[])];const E=UI.essay;E.photos=E.photos||[];for(const f of files){try{E.photos.push(await fileToImg(f));}catch(e){}}renderRooms();return;}
   if(t.id==='mkPhoto'){const files=[...(t.files||[])];const M=UI.mark;for(const f of files){try{M.photos.push(await fileToImg(f));}catch(e){}}renderRooms();return;}});
 document.addEventListener('click',async e=>{let t=e.target;
@@ -498,7 +608,7 @@ document.addEventListener('click',async e=>{let t=e.target;
   const op=t.closest('[data-open]');if(op){openRoom(op.dataset.open,op.dataset.st);return;}
   const sj=t.closest('[data-subject]');if(sj){UI.subject=sj.dataset.subject;UI.room=null;renderRooms();renderExam();return;}
   if(t.id==='backRooms'){UI.room=null;renderRooms();return;}
-  const stn=t.closest('[data-station]');if(stn){UI.station=stn.dataset.station;UI.revealed={};UI.err='';renderRooms();return;}
+  const stn=t.closest('[data-station]');if(stn){deskStopPlayers();UI.station=stn.dataset.station;UI.revealed={};UI.err='';renderRooms();return;}
   const rv=t.closest('[data-reveal]');if(rv){UI.revealed[rv.dataset.reveal]=true;renderAll();return;}
   const lx=t.closest('[data-lxrev]');if(lx){const k='lx'+lx.dataset.lxrev;UI.revealed[k]=(UI.revealed[k]||0)+1;renderRooms();return;}
   const ax=t.closest('[data-axrev]');if(ax){const k='ax'+ax.dataset.axrev;UI.revealed[k]=(UI.revealed[k]||0)+1;renderRooms();return;}
@@ -510,6 +620,20 @@ document.addEventListener('click',async e=>{let t=e.target;
   if(t.closest('[data-ahint]')){UI.apr.hints[UI.apr.i]=(UI.apr.hints[UI.apr.i]||0)+1;renderRooms();return;}
   if(t.closest('[data-anewset]')){const {spec,topic,n}=nodeTopic(UI.room);const AU=authoredFor(spec.id,topic.id);UI.apr={room:UI.room,qs:pickAuthored(AU.room,n.state,4),i:0,results:[],hints:{}};UI.revealed={};renderRooms();return;}
   if(t.closest('[data-usegen]')){UI.useGenerated=true;UI.practice=null;renderRooms();return;}
+  /* ---- the desktop ---- */
+  if(t.id==='dkAddLink'){await deskAddLink(document.getElementById('dkUrl').value);return;}
+  if(t.id==='dkAddCard'){await deskAddCard(document.getElementById('dkFront').value,document.getElementById('dkBack').value);return;}
+  if(t.id==='dkAddNote'){await deskAddNote(document.getElementById('dkNote').value);return;}
+  if(t.id==='dkRetry'){UI.desk.items=null;UI.desk.err='';UI.desk.unavailable=false;renderRooms();return;}
+  if(t.id==='dkStageCancel'){UI.desk.stage=null;renderRooms();return;}
+  if(t.id==='dkUseAsIs'){await deskStageDone(false);return;}
+  if(t.id==='dkStraighten'){await deskStageDone(true);return;}
+  const dkf=t.closest('[data-dkfilter]');if(dkf){UI.desk.filter=dkf.dataset.dkfilter;renderRooms();return;}
+  const dkp=t.closest('[data-dkplay]');if(dkp){deskPlay(dkp.dataset.dkplay);return;}
+  const dkt=t.closest('[data-dktext]');if(dkt){const k='dk'+dkt.dataset.dktext;UI.revealed[k]=!UI.revealed[k];renderRooms();return;}
+  const dko=t.closest('[data-dkopen]');if(dko){await deskOpenFile(dko.dataset.dkopen);return;}
+  const dkc=t.closest('[data-dkcards]');if(dkc){await deskMakeCards(dkc.dataset.dkcards);return;}
+  const dkd=t.closest('[data-dkdel]');if(dkd){if(confirm('Remove this from your desktop?'))await deskDelete(dkd.dataset.dkdel);return;}
   const apr=t.closest('[data-apres]');if(apr){const P=UI.apr,q=P.qs[P.i],h=P.hints[P.i]||0;if(apr.dataset.apres==='miss'){document.getElementById('missMode').classList.remove('hide');return;}const okk=apr.dataset.apres==='ok';const mode=okk?null:document.getElementById('pMode').value;P.results.push({ok:okk,hints:h});S.practice.push({date:TODAY,node:UI.room,ok:okk,hints:h,marks:q.m});
     if(okk)withT(UI.room,()=>recordResult(S,UI.room,{examStandard:q.d>=2,allCorrect:h===0,interleaved:false},TODAY));else{S.errors.unshift({date:TODAY,node:UI.room,ref:q.q.slice(0,80),mode,fix:q.sol,hints:h});withT(UI.room,()=>recordWrong(S,UI.room,mode,TODAY));}addHours(q.m*2/60);P.i++;await save();renderAll();return;}
   const pr=t.closest('[data-pres]');if(pr){const {n}=nodeTopic(UI.room);const Q=S.generated[UI.room]['questions-'+n.state];const P=UI.practice;const q=Q.questions[P.i];if(pr.dataset.pres==='miss'){document.getElementById('missMode').classList.remove('hide');return;}const okk=pr.dataset.pres==='ok';const mode=okk?null:document.getElementById('pMode').value;P.results.push({ok:okk});S.practice.push({date:TODAY,node:UI.room,ok:okk,marks:q.marks});

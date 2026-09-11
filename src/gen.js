@@ -20,6 +20,19 @@ Write a lesson with: "why" (80\u2013120 words on why this topic matters and how 
 ${JSON_RULE}
 {"why":"...","sections":[{"code":"...","heading":"...","text":"..."}],"examTips":["..."],"checks":[{"q":"...","a":"...","code":"..."}]}`;
 }
+/* The desktop: a photograph of the student's own notes, transcribed as written, then cards made only from what the notes say. */
+function transcribePrompt() {
+  return 'Transcribe this photograph of handwritten or printed study notes into plain text. Keep the headings, lists, equations and diagrams\' labels as written; do not add, summarise, reorder or correct anything. Where a word is illegible write [illegible]. Reply with the transcription only, no preamble.';
+}
+function cardsFromNotesPrompt(spec, topic, notes, count) {
+  return `Create up to ${count} recall cards FROM THE STUDENT'S OWN NOTES below, for the topic given. Use only facts that appear in the notes and belong to this topic; never add facts the notes do not contain, and skip anything off-topic. Each card must be reconstructable knowledge, not recognition: the front asks, the back answers in under 25 words. Cite the key-idea code each card belongs to.
+${specBlock(spec, topic)}
+STUDENT'S OWN NOTES (transcribed from a photograph):
+"""
+${String(notes || '').slice(0, 6000)}
+"""
+Return JSON only: {"cards":[{"front":"...","back":"...","code":"..."}]}`;
+}
 function cardsPrompt(spec, topic, count) {
   return `Create ${count} recall cards for the topic below: definitions, key figures with dates, named case-study facts, processes as one-line chains. Each card must be reconstructable knowledge, not recognition — the front asks, the back answers in under 25 words. Cite the key-idea code each card belongs to. Where a case study is required but not specified, use a well-documented 21st-century example and name it.
 ${specBlock(spec, topic)}
@@ -74,8 +87,8 @@ function validateLesson(topic, o) {
   if (!Array.isArray(o.checks) || o.checks.length < 3 || !o.checks.every(c => c.q && c.a && validCodes(topic, [c.code]))) return 'checks invalid';
   return null;
 }
-function validateCards(topic, o) {
-  if (!o || !Array.isArray(o.cards) || o.cards.length < 5) return 'too few cards';
+function validateCards(topic, o, min = 5) {
+  if (!o || !Array.isArray(o.cards) || o.cards.length < min) return 'too few cards';
   for (const c of o.cards) { if (!c.front || !c.back) return 'card missing side'; if (c.back.split(/\s+/).length > 40) return 'card back too long'; if (!validCodes(topic, [c.code])) return `card cites unknown code ${c.code}`; }
   return null;
 }
@@ -97,5 +110,5 @@ function validateMarking(topic, o, marks) {
   return null;
 }
 
-if (typeof module !== 'undefined') module.exports = { topicOf, ideaCodes, specBlock, lessonPrompt, cardsPrompt, questionsPrompt, essayQuestionPrompt, markEssayPrompt, coachPrompt,
+if (typeof module !== 'undefined') module.exports = { topicOf, ideaCodes, specBlock, lessonPrompt, cardsPrompt, transcribePrompt, cardsFromNotesPrompt, questionsPrompt, essayQuestionPrompt, markEssayPrompt, coachPrompt,
   validCodes, validateLesson, validateCards, validateQuestions, validateEssayQ, validateMarking };

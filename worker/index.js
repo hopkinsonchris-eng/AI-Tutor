@@ -13,6 +13,13 @@
  *   POST /auth/password       bearer {current, next}
  *   GET  /progress            bearer                     -> {updatedAt, device, state}
  *   PUT  /progress            bearer {device, state}
+ *   GET  /desk/all            bearer                     -> {rooms:{<room>:{count, latest:[…]}}, used, quota}
+ *   GET  /desk/unfurl?url=    bearer                     -> {title, image, site}   (http(s) only, no private addresses)
+ *   GET  /desk/file/<user>/<room>/<id>  bearer, owner only -> the file
+ *   GET  /desk/<room>         bearer                     -> {items, used, quota}
+ *   POST /desk/<room>         bearer {kind, …}           -> {item}         (link, video, card, note)
+ *   POST /desk/<room>/upload  bearer, raw body, X-Desk-Name, X-Desk-Kind -> {item}   (photo or file, into R2)
+ *   PATCH/DELETE /desk/<room>/<id>  bearer
  *   POST /                    bearer, an Anthropic messages request -> forwarded
  *
  *   Admin (bearer, role admin):
@@ -31,6 +38,9 @@
  *   session:<token>      {username, created}                       expires after SESSION_DAYS
  *   invite:<token>       {username, name, role, daily}             expires after INVITE_DAYS
  *   progress:<username>  {updatedAt, device, state}
+ *   desk:<username>:<room> {items:[{id, kind, at, title, text, url, site, image, video, pos, key, name, size, type, w, h, thumb, cards}]}
+ *   deskq:<username>     bytes of files stored in R2 (quota)
+ *   unfurl:<sha>         a link's title and preview image, cached a week
  *   usage:<username>:<day>, fail:<ip>:<day>, fail:user:<username>:<day>
  *
  * Variables and secrets:
@@ -40,7 +50,7 @@
  *   ADMIN_USERNAME       text     the account the recovery console can mint an invite for (default chris)
  *   ACCESS_TEAM_DOMAIN   text     <team>.cloudflareaccess.com — recovery console off without it
  *   ACCESS_AUD           text     the Access application's audience tag
- * KV binding USAGE — required.
+ * KV binding USAGE — required. R2 binding DESK — the per-room desktop's files; without it the desktop answers 503.
  */
 
 import { WorkflowEntrypoint } from 'cloudflare:workers';
@@ -52,6 +62,8 @@ const MODELS = ['claude-sonnet-5', 'claude-haiku-4-5'];
 const BUILD_STALE_MS = 30 * 60 * 1000;   // a build record older than this with no progress is treated as dead
 const DEFAULT_DAILY = 200;
 const MAX_PROGRESS_BYTES = 1_000_000;
+const DESK_QUOTA = 250 * 1024 * 1024, DESK_MAX_FILE = 8 * 1024 * 1024, DESK_MAX_ITEMS = 200, DESK_TEXT_MAX = 3000, DESK_THUMB_MAX = 24_000;
+const DESK_TYPES = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp', 'application/pdf': 'pdf' };
 const SESSION_DAYS = 30, INVITE_DAYS = 7;
 const PBKDF2_ITER = 100_000;                       // the Workers runtime ceiling
 const IP_FAILS_PER_DAY = 30, USER_FAILS_PER_DAY = 10;
@@ -70,6 +82,7 @@ export default {
       if (p === '/admin' || p.startsWith('/admin/')) return recovery(request, env, url);
       if (p.startsWith('/auth/')) return auth(request, env, url, cors);
       if (p === '/progress') return progress(request, env, cors);
+      if (p === '/desk' || p.startsWith('/desk/')) return desk(request, env, url, cors);
       if (p === '/courses' || p.startsWith('/courses/')) return courses(request, env, url, cors);
       if (p.startsWith('/manage/courses') || p.startsWith('/manage/reviews') || p === '/manage/catalogue') return manageCourses(request, env, url, cors);
       if (p.startsWith('/manage/')) return manage(request, env, url, cors);
@@ -515,6 +528,148 @@ async function progress(request, env, cors) {
   }
   return json({ error: 'GET or PUT' }, 405, cors);
 }
+
+/* ---------- the per-room desktop ---------- */
+/* A student's own material inside a room: links, videos, cards and notes in a KV index, photos and PDFs in R2.
+   Private to the owner; the index is separate from the progress blob so it never counts against that cap. */
+const DESK_ROOM_RE = /^[A-Za-z0-9|._ -]{3,60}$/;
+async function desk(request, env, url, cors) {
+  const s = await sessionUser(request, env);
+  if (!s) return json({ error: 'not signed in' }, 401, cors);
+  if (!env.DESK) return json({ error: 'Desktop is not set up yet — the DESK storage bucket is not bound' }, 503, cors);
+  const user = s.user.username;
+  const parts = url.pathname.split('/').slice(2).map(x => decodeURIComponent(x));
+  if (parts[0] === 'all' && request.method === 'GET') return deskAll(env, user, cors);
+  if (parts[0] === 'unfurl' && request.method === 'GET') return unfurl(env, url.searchParams.get('url') || '', cors);
+  if (parts[0] === 'file' && request.method === 'GET') {
+    const key = 'desk/' + parts.slice(1).join('/');
+    if (!key.startsWith(`desk/${user}/`)) return json({ error: 'not found' }, 404, cors);
+    const obj = await env.DESK.get(key);
+    if (!obj) return json({ error: 'not found' }, 404, cors);
+    return new Response(obj.body, { status: 200, headers: { ...cors, 'Content-Type': (obj.httpMetadata && obj.httpMetadata.contentType) || 'application/octet-stream', 'Cache-Control': 'private, max-age=3600' } });
+  }
+  const room = parts[0] || '';
+  if (!DESK_ROOM_RE.test(room)) return json({ error: 'bad room' }, 400, cors);
+  const ik = `desk:${user}:${room}`, qk = `deskq:${user}`;
+  const idx = (await env.USAGE.get(ik, 'json')) || { items: [] };
+  const used = parseInt((await env.USAGE.get(qk)) || '0', 10);
+  const sub = parts[1];
+
+  if (request.method === 'GET' && !sub) return json({ items: idx.items, used, quota: DESK_QUOTA }, 200, cors);
+  if (request.method === 'POST' && sub === 'upload') {
+    const type = (request.headers.get('Content-Type') || '').split(';')[0].trim().toLowerCase();
+    if (!DESK_TYPES[type]) return json({ error: 'Only JPEG, PNG, WebP images and PDFs can be stored' }, 415, cors);
+    const len = parseInt(request.headers.get('Content-Length') || '0', 10);
+    if (len > DESK_MAX_FILE) return json({ error: 'Files are limited to 8 MB' }, 413, cors);
+    const body = await request.arrayBuffer();
+    if (body.byteLength > DESK_MAX_FILE) return json({ error: 'Files are limited to 8 MB' }, 413, cors);
+    if (used + body.byteLength > DESK_QUOTA) return json({ error: `Your desktop is full — the 250 MB allowance is used up. Delete something you no longer need.` }, 413, cors);
+    if (idx.items.length >= DESK_MAX_ITEMS) return json({ error: `This room's desktop holds 200 items already — delete something first` }, 409, cors);
+    const id = randomToken(9), name = String(request.headers.get('X-Desk-Name') || 'file').slice(0, 120);
+    const key = `desk/${user}/${room}/${id}.${DESK_TYPES[type]}`;
+    await env.DESK.put(key, body, { httpMetadata: { contentType: type } });
+    const kind = type === 'application/pdf' ? 'file' : (request.headers.get('X-Desk-Kind') === 'file' ? 'file' : 'photo');
+    const item = { id, kind, at: now(), name, key, size: body.byteLength, type, title: name.replace(/\.[a-z0-9]+$/i, '') };
+    idx.items.unshift(item);
+    await env.USAGE.put(ik, JSON.stringify(idx)); await env.USAGE.put(qk, String(used + body.byteLength));
+    return json({ item, used: used + body.byteLength, quota: DESK_QUOTA }, 200, cors);
+  }
+  if (request.method === 'POST' && !sub) {
+    const b = await readJson(request);
+    if (!['link', 'video', 'card', 'note'].includes(b.kind)) return json({ error: 'kind must be link, video, card or note' }, 400, cors);
+    if (idx.items.length >= DESK_MAX_ITEMS) return json({ error: `This room's desktop holds 200 items already — delete something first` }, 409, cors);
+    const item = { id: randomToken(9), kind: b.kind, at: now(), title: String(b.title || '').slice(0, 200) };
+    if (b.kind === 'link' || b.kind === 'video') {
+      const u = safeHttpUrl(b.url); if (!u) return json({ error: 'a web address starting http(s):// is required' }, 400, cors);
+      item.url = u.href; item.site = String(b.site || u.hostname).slice(0, 80); if (b.image && safeHttpUrl(b.image)) item.image = String(b.image).slice(0, 500);
+      const v = videoId(u); if (v) { item.kind = 'video'; item.video = v.id; item.provider = v.provider; item.pos = 0; }
+      else if (b.kind === 'video') return json({ error: 'only YouTube and Vimeo videos can be pinned' }, 400, cors);
+    }
+    if (b.kind === 'card') { item.front = String(b.front || '').slice(0, 300); item.back = String(b.back || '').slice(0, 600); item.code = String(b.code || '').slice(0, 40); item.cardId = String(b.cardId || '').slice(0, 20); if (!item.front || !item.back) return json({ error: 'a card needs a front and a back' }, 400, cors); }
+    if (b.kind === 'note' || b.text) item.text = String(b.text || '').slice(0, DESK_TEXT_MAX);
+    if (b.kind === 'note' && !item.text) return json({ error: 'a note needs some text' }, 400, cors);
+    idx.items.unshift(item);
+    await env.USAGE.put(ik, JSON.stringify(idx));
+    return json({ item }, 200, cors);
+  }
+  const item = sub && idx.items.find(x => x.id === sub);
+  if (!item) return json({ error: 'not found' }, 404, cors);
+  if (request.method === 'PATCH') {
+    const b = await readJson(request);
+    if (typeof b.text === 'string') item.text = b.text.slice(0, DESK_TEXT_MAX);
+    if (typeof b.title === 'string') item.title = b.title.slice(0, 200);
+    if (typeof b.pos === 'number' && isFinite(b.pos)) item.pos = Math.max(0, Math.floor(b.pos));
+    if (typeof b.thumb === 'string' && /^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/.test(b.thumb) && b.thumb.length <= DESK_THUMB_MAX) item.thumb = b.thumb;
+    if (typeof b.w === 'number' && typeof b.h === 'number') { item.w = Math.floor(b.w); item.h = Math.floor(b.h); }
+    if (typeof b.cards === 'number') item.cards = Math.max(0, Math.floor(b.cards));
+    if (typeof b.seen === 'string') item.seen = b.seen.slice(0, 10);
+    await env.USAGE.put(ik, JSON.stringify(idx));
+    return json({ item }, 200, cors);
+  }
+  if (request.method === 'DELETE') {
+    idx.items = idx.items.filter(x => x.id !== sub);
+    let left = used;
+    if (item.key) { await env.DESK.delete(item.key); left = Math.max(0, used - (item.size || 0)); await env.USAGE.put(qk, String(left)); }
+    await env.USAGE.put(ik, JSON.stringify(idx));
+    return json({ ok: true, used: left, quota: DESK_QUOTA }, 200, cors);
+  }
+  return json({ error: 'GET, POST, PATCH or DELETE' }, 405, cors);
+}
+async function deskAll(env, user, cors) {
+  const list = await env.USAGE.list({ prefix: `desk:${user}:` });
+  const rooms = {};
+  for (const e of list.keys) {
+    const idx = await env.USAGE.get(e.name, 'json'); if (!idx || !idx.items.length) continue;
+    const room = e.name.slice(`desk:${user}:`.length);
+    rooms[room] = { count: idx.items.length, latest: idx.items.slice(0, 12).map(({ id, kind, at, title, thumb, image, video, provider, seen }) => ({ id, kind, at, title, thumb, image, video, provider, seen })) };
+  }
+  const used = parseInt((await env.USAGE.get(`deskq:${user}`)) || '0', 10);
+  return json({ rooms, used, quota: DESK_QUOTA }, 200, cors);
+}
+/* Only public http(s) addresses: no other schemes, no loopback, link-local or private ranges, no bare hostnames like localhost. */
+function safeHttpUrl(raw) {
+  let u; try { u = new URL(String(raw || '').trim()); } catch { return null; }
+  if (u.protocol !== 'http:' && u.protocol !== 'https:') return null;
+  const h = u.hostname.toLowerCase().replace(/^\[|\]$/g, '');
+  if (!h.includes('.') && !h.includes(':')) return null;
+  if (h === 'localhost' || h.endsWith('.localhost') || h.endsWith('.local') || h.endsWith('.internal')) return null;
+  const v4 = /^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/.exec(h);
+  if (v4) { const [a, b] = [+v4[1], +v4[2]]; if (a === 10 || a === 127 || a === 0 || (a === 169 && b === 254) || (a === 172 && b >= 16 && b <= 31) || (a === 192 && b === 168) || (a === 100 && b >= 64 && b <= 127) || a >= 224) return null; }
+  if (h.includes(':')) { if (h === '::1' || h === '::' || /^(fc|fd|fe8|fe9|fea|feb)/i.test(h) || /^::ffff:/i.test(h)) return null; }
+  return u;
+}
+function videoId(u) {
+  const h = u.hostname.replace(/^www\.|^m\./, '');
+  if (h === 'youtube.com' || h === 'youtube-nocookie.com') { const v = u.searchParams.get('v') || (/^\/(?:embed|shorts|live)\/([A-Za-z0-9_-]{6,})/.exec(u.pathname) || [])[1]; return v && /^[A-Za-z0-9_-]{6,20}$/.test(v) ? { provider: 'youtube', id: v } : null; }
+  if (h === 'youtu.be') { const v = u.pathname.slice(1).split('/')[0]; return /^[A-Za-z0-9_-]{6,20}$/.test(v) ? { provider: 'youtube', id: v } : null; }
+  if (h === 'vimeo.com' || h === 'player.vimeo.com') { const v = (/(\d{5,})/.exec(u.pathname) || [])[1]; return v ? { provider: 'vimeo', id: v } : null; }
+  return null;
+}
+async function unfurl(env, raw, cors) {
+  const u = safeHttpUrl(raw);
+  if (!u) return json({ error: 'a public web address starting http(s):// is required' }, 400, cors);
+  const ck = 'unfurl:' + b64url(new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(u.href)))).slice(0, 40);
+  const cached = await env.USAGE.get(ck, 'json'); if (cached) return json(cached, 200, cors);
+  const out = { title: '', image: '', site: u.hostname.replace(/^www\./, '') };
+  const v = videoId(u); if (v) { out.video = v.id; out.provider = v.provider; if (v.provider === 'youtube') out.image = `https://i.ytimg.com/vi/${v.id}/hqdefault.jpg`; }
+  try {
+    const ctrl = typeof AbortController !== 'undefined' ? new AbortController() : null; const timer = ctrl && setTimeout(() => ctrl.abort(), 6000);
+    const res = await fetch(u.href, { redirect: 'follow', signal: ctrl ? ctrl.signal : undefined, headers: { 'User-Agent': 'Mozilla/5.0 (compatible; StudyPlatform/1.0; +https://studyplatform.co.uk)', 'Accept': 'text/html,*/*;q=0.5' } });
+    if (timer) clearTimeout(timer);
+    const type = (res.headers.get('Content-Type') || '').toLowerCase();
+    if (res.ok && /text\/html|application\/xhtml/.test(type)) {
+      const html = (await res.text()).slice(0, 512 * 1024);
+      const meta = (names) => { for (const n of names) { const m = new RegExp(`<meta[^>]+(?:property|name)=["']${n}["'][^>]*content=["']([^"']+)["']`, 'i').exec(html) || new RegExp(`<meta[^>]+content=["']([^"']+)["'][^>]*(?:property|name)=["']${n}["']`, 'i').exec(html); if (m) return decodeEntities(m[1]).trim(); } return ''; };
+      out.title = meta(['og:title', 'twitter:title']) || decodeEntities((/<title[^>]*>([^<]{1,300})<\/title>/i.exec(html) || [])[1] || '').trim();
+      const img = meta(['og:image', 'twitter:image']); if (img) { try { const iu = new URL(img, u.href); if (safeHttpUrl(iu.href)) out.image = iu.href; } catch {} }
+      out.site = meta(['og:site_name']) || out.site;
+    }
+  } catch {}
+  out.title = out.title.slice(0, 200); out.site = out.site.slice(0, 80);
+  await env.USAGE.put(ck, JSON.stringify(out), { expirationTtl: 7 * 86400 });
+  return json(out, 200, cors);
+}
+const decodeEntities = s => String(s).replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;|&apos;/g, "'").replace(/&#(\d+);/g, (_, n) => String.fromCharCode(+n));
 
 /* ---------- admin API (in-app) ---------- */
 

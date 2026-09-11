@@ -183,3 +183,32 @@ details.links{margin-top:8px;font-size:14px}details.links summary{cursor:pointer
  body.three .scrim.show{display:none}
 }
 .pen{font-style:normal;color:var(--pencil);font-size:11px;margin-left:5px}
+
+/* ---- the per-room desktop: a wall of the student's own blocks ---- */
+.dbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:10px 0}
+.dbar input[type=text],.dbar textarea{flex:1 1 180px;min-width:0;font:inherit;font-size:14px;padding:8px;border:1px solid var(--rule);border-radius:3px;background:#fff}
+.dbar textarea{min-height:56px;resize:vertical}
+.dbar label.act{display:inline-flex;align-items:center;gap:6px;cursor:pointer}
+.dfile{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+.dchips{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0;align-items:center}
+.dchips button{font:inherit;font-size:12.5px;padding:4px 10px;border:1px solid var(--rule);border-radius:999px;background:#fff;cursor:pointer;color:var(--ink)}
+.dchips button[aria-selected="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
+.dchips input{flex:1 1 140px;min-width:0;font:inherit;font-size:13px;padding:5px 8px;border:1px solid var(--rule);border-radius:3px;background:#fff}
+.dgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-top:10px}
+.dblock{border:1px solid var(--rule);border-radius:3px;background:#fff;padding:10px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.dblock.wide{grid-column:1/-1}
+.dthumb{display:block;width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:2px;background:var(--grid);max-width:100%}
+.dph{display:flex;align-items:center;justify-content:center;font-size:28px;color:var(--pencil)}
+.dkind{font-size:11px;letter-spacing:.04em;text-transform:uppercase;color:var(--pencil)}
+.dtitle{font-weight:600;font-size:14px;overflow-wrap:anywhere;line-height:1.35}
+.dtitle a{color:var(--ink);text-decoration:none}.dtitle a:hover{text-decoration:underline}
+.dtext{font-size:13px;color:var(--pencil);white-space:pre-wrap;max-height:180px;overflow:auto;overflow-wrap:anywhere}
+.dback{font-size:13px;color:var(--pencil)}
+.drow{display:flex;flex-wrap:wrap;gap:6px;margin-top:auto}
+.dframe{width:100%;aspect-ratio:16/9;border:0;border-radius:2px;background:#000}
+.dstage{position:relative;display:inline-block;max-width:100%;touch-action:none;user-select:none;-webkit-user-select:none}
+.dstage img{display:block;max-width:100%;height:auto}
+.dstage svg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.dstage .dh{position:absolute;width:26px;height:26px;margin:-13px 0 0 -13px;border-radius:50%;background:var(--blue);border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.4);cursor:grab;touch-action:none}
+.dtoday{display:flex;gap:10px;flex-wrap:wrap}.dtoday .dblock{flex:0 1 240px;max-width:100%}.dtoday .dthumb{aspect-ratio:4/3;max-height:170px}
+.dquota{font-size:12px;color:var(--pencil);margin-top:10px}

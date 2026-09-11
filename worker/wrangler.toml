@@ -50,6 +50,13 @@ crons = ["0 6 1 * *"]
 binding = "USAGE"
 id = "236116d082d047559b1e5c94337412de"
 
+# The per-room desktop's files: photos of notes and classwork, PDFs. Create the bucket first in the
+# dashboard (R2 → Create bucket → studyplatform-desk); until it exists the desktop answers "not set up yet".
+# The index of each student's items and the 250 MB quota live in KV (desk:<user>:<room>, deskq:<user>).
+[[r2_buckets]]
+binding = "DESK"
+bucket_name = "studyplatform-desk"
+
 # ANTHROPIC_API_KEY and USER_KEYS are secrets — never put them in this file.
 # Set them in the dashboard under Settings -> Variables and Secrets, or with
 # `npx wrangler secret put ANTHROPIC_API_KEY` and `npx wrangler secret put USER_KEYS`.

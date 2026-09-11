@@ -3,7 +3,7 @@
    queue, the cron). The Worker is ES modules deployed by wrangler; here they are loaded as text with
    their imports satisfied from stubs (tests/_load.js). The deployed files are never touched. */
 const fs = require('fs'), path = require('path');
-const { loadModule, kv, inlineStep } = require('./_load.js');
+const { loadModule, kv, r2, inlineStep } = require('./_load.js');
 const validator = require('../src/spec-validator.js'), families = require('../src/families.js'), kitValidator = require('../src/kit-validator.js');
 const { sampleKit } = require('./_kit.js');
 const CATALOGUE = require('../data/catalogue.json');
@@ -22,7 +22,7 @@ let upstreamSeen = null;
 const req = (path, init = {}) => new Request('https://tutor.example.com' + path, init);
 const J = (method, body, extra = {}) => ({ method, body: JSON.stringify(body), headers: { 'Content-Type': 'application/json', ...extra } });
 const bearer = t => ({ Authorization: 'Bearer ' + t });
-const baseEnv = () => ({ ANTHROPIC_API_KEY: 'sk-ant-test', ALLOWED_ORIGIN: 'https://studyplatform.example', SITE_ORIGIN: 'https://studyplatform.example', ADMIN_USERNAME: 'chris', USAGE: kv() });
+const baseEnv = () => ({ ANTHROPIC_API_KEY: 'sk-ant-test', ALLOWED_ORIGIN: 'https://studyplatform.example', SITE_ORIGIN: 'https://studyplatform.example', ADMIN_USERNAME: 'chris', USAGE: kv(), DESK: r2() });
 
 (async () => {
   const pair = await crypto.subtle.generateKey({ name: 'RSASSA-PKCS1-v1_5', modulusLength: 2048, publicExponent: new Uint8Array([1, 0, 1]), hash: 'SHA-256' }, true, ['sign', 'verify']);
@@ -137,6 +137,66 @@ const baseEnv = () => ({ ANTHROPIC_API_KEY: 'sk-ant-test', ALLOWED_ORIGIN: 'http
   ok('W21 another account does not see it', r.status === 404);
   r = await worker.fetch(req('/progress', { method: 'PUT', headers: STU, body: JSON.stringify({ state: { pad: 'x'.repeat(1_000_100) } }) }), env);
   ok('W21 an oversized save is rejected', r.status === 413);
+
+  /* ---------- the per-room desktop: index in KV, files in R2, private to the owner ---------- */
+  {
+    const jpeg = new Uint8Array(2000); jpeg[0] = 0xFF; jpeg[1] = 0xD8;
+    r = await worker.fetch(req('/desk/OCR-H481%7C1.2', { headers: STU }), { ...env, DESK: undefined });
+    ok('D1 without an R2 binding the desktop answers 503 with a readable message (criterion 12)', r.status === 503 && /not set up/.test((await r.json()).error));
+    r = await worker.fetch(req('/desk/OCR-H481%7C1.2'), env);
+    ok('D1 the desktop needs a session', r.status === 401);
+    r = await worker.fetch(req('/desk/OCR-H481%7C1.2', { headers: STU }), env);
+    let d = await r.json();
+    ok('D2 an empty room desktop lists no items and the quota', r.status === 200 && Array.isArray(d.items) && d.items.length === 0 && d.quota > 0 && d.used === 0);
+    r = await worker.fetch(req('/desk/OCR-H481%7C1.2', J('POST', { kind: 'link', url: 'https://example.org/a', title: 'A page', site: 'example.org' }, STU)), env);
+    const link = await r.json();
+    ok('D2 a link item is stored with an id and a time', r.status === 200 && link.item && link.item.id && link.item.at && link.item.kind === 'link' && link.item.title === 'A page');
+    r = await worker.fetch(req('/desk/OCR-H481%7C1.2', J('POST', { kind: 'video', url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', title: 'A video' }, STU)), env);
+    const vid = (await r.json()).item;
+    ok('D2 a video item keeps its id for the player', r.status === 200 && vid.video === 'dQw4w9WgXcQ' && vid.pos === 0);
+    r = await worker.fetch(req('/desk/OCR-H481%7C1.2/' + vid.id, J('PATCH', { pos: 312 }, STU)), env);
+    ok('D6 the player position is remembered (criterion 5)', r.status === 200 && (await r.json()).item.pos === 312);
+    r = await worker.fetch(req('/desk/OCR-H481%7C1.2', J('POST', { kind: 'note', text: 'x'.repeat(5000) }, STU)), env);
+    ok('D2 a note is clipped to the size the index allows', r.status === 200 && (await r.json()).item.text.length === 3000);
+    r = await worker.fetch(req('/desk/OCR-H481%7C1.2/upload', { method: 'POST', headers: { ...STU, 'Content-Type': 'image/jpeg', 'X-Desk-Name': 'notes.jpg', 'X-Desk-Kind': 'photo' }, body: jpeg }), env);
+    const photo = (await r.json()).item;
+    ok('D3 a photo upload lands in R2 under the owner and becomes a photo item', r.status === 200 && photo.kind === 'photo' && photo.size === 2000 && photo.key.startsWith('desk/matthew/') && env.DESK._map.has(photo.key), JSON.stringify(photo));
+    r = await worker.fetch(req('/desk/OCR-H481%7C1.2/' + photo.id, J('PATCH', { text: 'The water cycle has three stores', thumb: 'data:image/jpeg;base64,AAAA' }, STU)), env);
+    ok('D6 the transcription and thumbnail attach to the photo (criterion 3)', r.status === 200 && (await r.json()).item.text === 'The water cycle has three stores');
+    r = await worker.fetch(req('/desk/file/' + photo.key.replace(/^desk\//, ''), { headers: STU }), env);
+    ok('D9 the owner reads the file back with its type', r.status === 200 && r.headers.get('Content-Type') === 'image/jpeg' && (await r.arrayBuffer()).byteLength === 2000);
+    r = await worker.fetch(req('/desk/file/' + photo.key.replace(/^desk\//, ''), { headers: ADM }), env);
+    ok('D9 another account cannot read it (criterion 9)', r.status === 404);
+    r = await worker.fetch(req('/desk/OCR-H481%7C1.2', { headers: ADM }), env);
+    ok('D9 another account sees an empty desktop for the same room', (await r.json()).items.length === 0);
+    r = await worker.fetch(req('/desk/OCR-H481%7C1.2/upload', { method: 'POST', headers: { ...STU, 'Content-Type': 'text/html', 'X-Desk-Name': 'x.html' }, body: 'hello' }), env);
+    ok('D7 only images and PDFs are accepted', r.status === 415);
+    r = await worker.fetch(req('/desk/OCR-H481%7C1.2/upload', { method: 'POST', headers: { ...STU, 'Content-Type': 'image/png', 'X-Desk-Name': 'big.png' }, body: new Uint8Array(8 * 1024 * 1024 + 1) }), env);
+    ok('D8 a file over 8 MB is refused', r.status === 413);
+    await env.USAGE.put('deskq:matthew', String(250 * 1024 * 1024 - 100));
+    r = await worker.fetch(req('/desk/OCR-H481%7C1.2/upload', { method: 'POST', headers: { ...STU, 'Content-Type': 'image/jpeg', 'X-Desk-Name': 'n.jpg' }, body: jpeg }), env);
+    ok('D8 the 250 MB quota refuses the upload with a readable message (criterion 8)', r.status === 413 && /250 MB/.test((await r.json()).error));
+    await env.USAGE.put('deskq:matthew', '2000');
+    const idx = await env.USAGE.get('desk:matthew:OCR-H481|1.2', 'json');
+    idx.items = idx.items.concat(Array.from({ length: 200 }, (_, i) => ({ id: 'f' + i, kind: 'note', text: 'n', at: '2026-09-01T00:00:00Z' })));
+    await env.USAGE.put('desk:matthew:OCR-H481|1.2', JSON.stringify(idx));
+    r = await worker.fetch(req('/desk/OCR-H481%7C1.2', J('POST', { kind: 'note', text: 'one more' }, STU)), env);
+    ok('D8 the 201st item in a room is refused with a readable message', r.status === 409 && /200 items/.test((await r.json()).error));
+    idx.items = idx.items.filter(x => !String(x.id).startsWith('f')); await env.USAGE.put('desk:matthew:OCR-H481|1.2', JSON.stringify(idx));
+    r = await worker.fetch(req('/desk/OCR-H481%7C1.2/' + photo.id, { method: 'DELETE', headers: STU }), env);
+    ok('D2 deleting a photo removes the item, the file and its bytes from the quota', r.status === 200 && !env.DESK._map.has(photo.key) && (await env.USAGE.get('deskq:matthew')) === '0');
+    r = await worker.fetch(req('/desk/all', { headers: STU }), env);
+    d = await r.json();
+    ok('D10 the course view lists each room with a count and the latest items', d.rooms['OCR-H481|1.2'] && d.rooms['OCR-H481|1.2'].count === 3 && d.rooms['OCR-H481|1.2'].latest.length === 3 && d.rooms['OCR-H481|1.2'].latest[0].kind === 'note');
+    const saveFetch = sandbox.__fetch;
+    sandbox.__fetch = async (url) => new Response('<html><head><title>T</title><meta property="og:title" content="Coasts explained"><meta property="og:image" content="https://cdn.example.org/c.jpg"></head></html>', { status: 200, headers: { 'Content-Type': 'text/html' } });
+    r = await worker.fetch(req('/desk/unfurl?url=' + encodeURIComponent('https://example.org/coasts'), { headers: STU }), env);
+    d = await r.json();
+    ok('D11 a link is unfurled to its title and preview image (criterion 6)', r.status === 200 && d.title === 'Coasts explained' && d.image === 'https://cdn.example.org/c.jpg' && d.site === 'example.org', JSON.stringify(d));
+    let bad = 0; for (const u of ['ftp://example.org/x', 'http://127.0.0.1/x', 'http://10.1.2.3/x', 'http://localhost/x', 'http://192.168.1.1/x', 'http://[::1]/x', 'javascript:alert(1)']) { r = await worker.fetch(req('/desk/unfurl?url=' + encodeURIComponent(u), { headers: STU }), env); if (r.status === 400) bad++; }
+    ok('D11 unfurl refuses non-http schemes and private addresses (criterion 10)', bad === 7, String(bad));
+    sandbox.__fetch = saveFetch;
+  }
 
   /* ---------- role gating and admin operations ---------- */
   r = await worker.fetch(req('/manage/users', { headers: STU }), env);

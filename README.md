@@ -83,6 +83,26 @@ fresh-context judge, and `build.js` serves the kits from the site. `npm run cour
 checks every hand-built course's document for changes. The procedure is
 `.claude/skills/course-builder/references/depth.md`.
 
+## The desktop in every room
+
+Every room has a Desktop tab: a wall of the student's own material, private to them and kept on the tutor
+(the index in KV under `desk:<user>:<room>`, photos and PDFs in the R2 bucket `DESK`), never inside the
+progress blob. A student can:
+
+- photograph notes or classwork from the phone's camera — the photo is resized to 2,000 px on the device,
+  a Straighten step lets them drag four corners onto the page and warps it flat with a levels clean-up,
+  then the tutor transcribes it (Haiku, one call, counted against the daily cap) so the wall's search finds
+  any word in it, and "Make cards" turns the transcription into checked cards for the room's deck;
+- pin a YouTube or Vimeo video (YouTube resumes where they stopped), save a link (title and preview are
+  fetched by the Worker, public http(s) only), write a card straight into the room's deck, keep a note,
+  or attach a PDF;
+- see items again: anything saved 7, 21 or 60 days ago comes back once in Today's plan as
+  "From your desktop", and the next-step nudge can send them to a desktop.
+
+Limits: 250 MB of files per student, 200 items per room, 8 MB per file. Without the R2 binding the
+Worker answers the desktop routes with 503 and the tab says "not set up yet"; nothing else changes.
+`npm run proof:desk` drives the whole flow in a browser against a stub tutor and writes `docs/proof/desk-*.png`.
+
 ## How it works on your site
 
 The site opens on a sign-in screen. A student signs in with a username and password, and everything after that -- the tutor, their progress, the admin tab -- is keyed to that sign-in. Progress is saved to the Worker as they go and cached on the device, so signing in on another device picks up where they left off.

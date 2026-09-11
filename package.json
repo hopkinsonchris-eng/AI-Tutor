@@ -9,7 +9,8 @@
     "serve": "npm run build && npx --yes serve dist",
     "proof": "node scripts/visual-proof.js",
     "course": "node scripts/course.js",
-    "sync-skill": "node scripts/sync-skill.js"
+    "sync-skill": "node scripts/sync-skill.js",
+    "proof:desk": "node scripts/desk-proof.js"
   },
   "license": "UNLICENSED"
 }

@@ -16,12 +16,12 @@ const SPEC_9MA0 = {
    "name": "Papers 1 and 2: Pure Mathematics",
    "paperCode": "9MA0/01 and 9MA0/02",
    "marks": 200,
-   "weight": 66.67,
+   "weight": 66.66,
    "minutes": 240,
    "sections": [
     "Paper 1: Pure Mathematics 1 (paper code 9MA0/01) — 2-hour written examination, 33.33% of the qualification, 100 marks.",
     "Paper 2: Pure Mathematics 2 (paper code 9MA0/02) — 2-hour written examination, 33.33% of the qualification, 100 marks.",
-    "Paper 1 and Paper 2 may contain questions on any topics from the Pure Mathematics content (Topics 1–10). Students must answer all questions. Calculators can be used in the assessment. The booklet Mathematical Formulae and Statistical Tables is provided. These papers assess synopticity."
+    "Paper 1 and Paper 2 may contain questions on any topics from the Pure Mathematics content (Topics 1–10). Students must answer all questions. Calculators can be used in the assessment. The booklet Mathematical Formulae and Statistical Tables is provided. These papers assess synopticity. Together the two Pure papers are 66.66% of the qualification (33.33% each, as printed)."
    ]
   },
   {
@@ -46,8 +46,8 @@ const SPEC_9MA0 = {
    "text": "Students should be able to: select and correctly carry out routine procedures; and accurately recall facts, terminology and definitions. 48–52% of the A level (16.00–17.33% on each paper).",
    "weight": 50,
    "byComponent": {
-    "P12": 34,
-    "P3": 16
+    "P12": 33,
+    "P3": 17
    }
   },
   {
@@ -153,6 +153,15 @@ const SPEC_9MA0 = {
     "structure": "A routine technique question (AO1) with the method shown in full: a correct answer with no method scores only the marks the scheme allows for the answer alone. Minutes are pro rata: 100 marks in 120 minutes."
    }
   ]
+ },
+ "judged": {
+  "score": 0.9,
+  "coverage": 1,
+  "fidelity": 0.95,
+  "options": 1,
+  "familyFit": 0.9,
+  "at": "2026-09-11",
+  "by": "a fresh Opus subagent reading the PDF page by page; see scratch/courses/EDX-9MA0/spec.verdict.json"
  },
  "source": {
   "url": "https://qualifications.pearson.com/content/dam/pdf/A%20Level/Mathematics/2017/specification-and-sample-assesment/a-level-l3-mathematics-specification-issue4.pdf",

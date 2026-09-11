@@ -234,6 +234,16 @@ const SPEC_4ET1 = {
   ],
   "timingNote": "The specification gives only whole-component times — Component 1 \"Written examination: 2 hours\" for 90 marks and Component 2 \"Written examination: 1 hour 30 minutes\" for 60 marks. essayShapes[].minutes are pro-rata splits of those papers; the document itself sets no per-question time. Component 3 is non-examined and has no time limit, only an advisory word count of 650–800 words per assignment."
  },
+ "judged": {
+  "score": 0.95,
+  "coverage": 0.95,
+  "fidelity": 0.95,
+  "options": 0.95,
+  "familyFit": 0.95,
+  "at": "2026-09-11",
+  "by": "a fresh Opus subagent reading the PDF page by page; see scratch/courses/EDX-4ET1/spec.verdict.json"
+ },
+ "firstTeaching": 2016,
  "source": {
   "url": "https://qualifications.pearson.com/content/dam/pdf/International%20GCSE/English%20Literature/2016/Specification%20and%20sample%20assessments/international-gcse-english-literature-specification.pdf",
   "etag": "W/\"a07e2-65aac9fda7b45\"",

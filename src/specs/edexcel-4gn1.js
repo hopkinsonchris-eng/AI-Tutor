@@ -180,6 +180,16 @@ const SPEC_4GN1 = {
    }
   ]
  },
+ "judged": {
+  "score": 0.95,
+  "coverage": 1,
+  "fidelity": 0.95,
+  "options": 1,
+  "familyFit": 0.95,
+  "at": "2026-09-11",
+  "by": "self-judged against references/judge.md by the session that built it, reading Issue 1 page by page (topics table p13, component overview pp9-10, grammar list pp31-32 and the AO tables p35 re-read from rendered pages)",
+  "notes": "Every examined section of the document is a topic: the five topic areas with their numbered sub-topics, the Grammar list, the non-topic-specific half of Appendix 1, and one topic per skill for the task types the document assesses separately. No option rules exist in this specification — the only choices are inside tasks (one picture for Task A, one of three questions in Question 7), so options is empty. The single derived number is the 10 marks for the third, grammar-based writing task, which the document does not print; it is what remains of the 40-mark writing section after the printed 5+5 and 10+10, and it is flagged both in notes and in the essayShape itself."
+ },
  "source": {
   "url": "https://qualifications.pearson.com/content/dam/pdf/International%20GCSE/German/2017/specification-and-sample-assessments/International-GCSE-German-Specification.pdf",
   "etag": "W/\"17e0e6-65ab0d88fa7d4\"",

@@ -1,6 +1,6 @@
 # Study Platform
 
-A single-file web app for A level study, anchored to exam-board specifications. One room per topic the student actually studies; hand-authored depth where it exists (Edexcel Mathematics today), specification-anchored generated content everywhere else; spaced recall cards; essay and photo marking to each board's own conventions; a Socratic coach that never gives the answer; one scheduler across all subjects.
+A single-file web app for A level study, anchored to exam-board specifications. One room per topic the student actually studies; every built-in course carries a written and examiner-checked kit in every room (lesson, faded worked examples, question bank, exit ticket, flash cards), with specification-anchored generated content everywhere else; spaced recall cards; essay and photo marking to each board's own conventions; a Socratic coach that never gives the answer; one scheduler across all subjects.
 
 Four subjects are hand-written and built in: **OCR Geography H481**, **Edexcel Business 9BS0**, **Edexcel Politics 9PL0**, **Edexcel Mathematics 9MA0**. Every other GCSE and A level in the catalogue (97 qualifications across AQA, Pearson Edexcel, OCR and Eduqas) is built on request: a student picks level, subject and board, presses **Add**, and the Worker builds the specification map from the board's own PDF while a progress bar shows the stages — then it's theirs. Built courses are held to the same validator as the hand-written ones, judged against the document before they go live, and checked against the document again every month (see *Courses*).
 
@@ -16,7 +16,7 @@ src/
   core.js              engine: state, mastery rules, scheduling, prediction, reports (pure logic)
   gen.js               generator: spec-anchored prompts + validators for lessons, cards, questions, essays, marking, coach
   specs/               one file per qualification — components, weights, AOs, command words, topics, key ideas
-  authored/            hand-authored content (maths: 19 lessons, 262 questions, exit tickets, dojo, verified links)
+  authored/            the maths course’s verified links, official documents, grade boundaries and lost-mark dojo (its older hand-authored rooms are the fallback for any room without a kit)
 worker/
   index.js             Cloudflare Worker: accounts, sessions, invites, daily caps, progress, the admin API,
                        courses, the Workflow classes, the monthly cron, and the forward to Anthropic
@@ -70,9 +70,8 @@ the shape, and Opus re-solves every question and reads the lesson against the ke
 stored. A kit that fails is rewritten once with the objections; a second failure leaves that room
 spec-only and lists it on the Admin course card with a Retry.
 
-Students see a room's kit the moment it lands: the same Lesson, Key facts & links, Practise, Exit
-ticket and Cards stations the hand-authored maths rooms use, with a "being written" mark on rooms
-still to come. Kits are fetched per room and cached on the device by build stamp. Approving a monthly
+Students see a room's kit the moment it lands: the Lesson, Key facts (or Formulae) & links, Practise,
+Exit ticket and Flash cards stations, with a "being written" mark on rooms still to come. Kits are fetched per room and cached on the device by build stamp. Approving a monthly
 proposal that changes a topic's key ideas rebuilds only that room's kit. About £12 to £20 per
 34-topic course; the Admin card shows the model-call count.
 
@@ -203,7 +202,7 @@ Sonnet 5 at API rates ($2/$10 per million tokens in/out): coach turn well under 
 
 **A new subject or board:** usually nothing — a student adds it and the Worker builds it. To hand-write one instead (or to give a built course the depth of the built-in four), follow the course-builder skill: `src/specs/<board>-<code>.js` exporting a spec object, required in `build.js`, passing `npm test`. Hand-written and Worker-built courses are the same shape.
 
-**Hand-authored depth for a subject:** add `src/authored/<subject>.js` and register it in `src/authored/index.js` under the spec id, keyed by topic id. Rooms with authored content get the authored lesson, a Formulae & links station, a checked question set with a hint ladder, and an authored exit ticket; everything else stays generated. Maths is the reference.
+**Hand-authored extras for a subject:** `src/authored/index.js` can register, under a spec id, verified links per topic (`sources`), official documents (`official`), grade boundaries and a lost-mark dojo; the app adds them to that course’s rooms. It can also hold whole authored rooms, but a checked kit in `src/kits/` always takes precedence over them, so the kit pipeline is the way to give a course depth.
 
 **Mark conventions:** each spec carries `markConventions` (levels or points, command words, essay shapes). The marking prompt reads them, so a new board's conventions are data, not code.
 

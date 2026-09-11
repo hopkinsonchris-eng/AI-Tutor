@@ -121,7 +121,7 @@ const SPEC_4EA1 = {
    },
    {
     "word": "Compare",
-    "means": "AO3 in practice: the specification's aims require students to \"make comparisons between texts and analyse the ways in which writers achieve their effects\". Comparison must be two-sided and about the writers' ideas, perspectives and methods, not a list of two separate summaries."
+    "means": "AO3 in practice: the specification's Key qualification features (Broad and deep development of students' skills) require students to \"make comparisons between texts and analyse the ways in which writers achieve their effects\". Comparison must be two-sided and about the writers' ideas, perspectives and methods, not a list of two separate summaries."
    },
    {
     "word": "Discuss",
@@ -180,6 +180,15 @@ const SPEC_4EA1 = {
     "structure": "Component 3 (non-examined alternative to Component 2), Assignment B: Imaginative Writing — 30 marks (AO4 18, AO5 12), approximately 700 words, a teacher-devised task. \"The purpose should be to narrate, describe or entertain\"; the topic could be suggested by a piece in the anthology or relate to a set of images, and students may write about real or imagined experiences."
    }
   ]
+ },
+ "judged": {
+  "score": 0.9,
+  "coverage": 0.95,
+  "fidelity": 0.9,
+  "options": 0.9,
+  "familyFit": 0.9,
+  "at": "2026-09-11",
+  "by": "a fresh Opus subagent reading the PDF page by page, second pass; see scratch/courses/EDX-4EA1/spec.verdict.json"
  },
  "source": {
   "url": "https://qualifications.pearson.com/content/dam/pdf/International%20GCSE/English%20Language%20A/2016/Specification%20and%20sample%20assessments/9781446954379-int-gcse-englang-a-iss6-02-02-2023.pdf",

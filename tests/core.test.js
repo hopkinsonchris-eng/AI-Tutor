@@ -1,20 +1,20 @@
-const C=require('../src/core.js');const {SPEC_H481}=require('../src/specs/ocr-h481.js');const {SPEC_9BS0,SPEC_9PL0}=require('../src/specs/edexcel-9bs0-9pl0.js');
+const C=require('../src/core.js');const {SPEC_H481}=require('../src/specs/ocr-h481.js');const {SPEC_9BS0}=require('../src/specs/edexcel-9bs0.js');const {SPEC_9PL0}=require('../src/specs/edexcel-9pl0.js');
 const SPECS={[SPEC_H481.id]:SPEC_H481,[SPEC_9BS0.id]:SPEC_9BS0,[SPEC_9PL0.id]:SPEC_9PL0};
 let pass=0;const fails=[];const ok=(l,c,d='')=>c?pass++:fails.push(l+' '+d);
 const setup={student:'Matthew',examYear:2028,subjects:[
  {specId:'OCR-H481',options:{landscape:'1.1.1',globalSystems:'2.2.1',globalGovernance:'2.2.4',debates:['3.1','3.5']}},
  {specId:'EDX-9BS0',options:{}},
- {specId:'EDX-9PL0',options:{nonCore:'2.5c',comparative:'3A'}}]};
+ {specId:'EDX-9PL0',options:{nonCore:'C2.Feminism',comparative:'3A'}}]};
 /* setup → nodes */
 const s=C.newState(setup,SPECS);
 const geo=Object.values(s.nodes).filter(n=>n.spec==='OCR-H481'),bus=Object.values(s.nodes).filter(n=>n.spec==='EDX-9BS0'),pol=Object.values(s.nodes).filter(n=>n.spec==='EDX-9PL0');
 ok('N1 geography resolves options: 1.1.1,1.2,2.1,2.2.1,2.2.4,3.1,3.5,4,2e = 9 topics',geo.length===9&&geo.some(n=>n.topic==='2e')&&geo.some(n=>n.topic==='1.1.1')&&!geo.some(n=>n.topic==='1.1.2')&&geo.filter(n=>n.topic.startsWith('3.')).length===2,String(geo.length));
-ok('N2 business has 4 themes',bus.length===4);
-ok('N3 politics resolves feminism + USA',pol.some(n=>n.topic==='2.5c')&&!pol.some(n=>n.topic==='2.5a')&&pol.some(n=>n.topic==='3A')&&!pol.some(n=>n.topic==='3B'));
+ok('N2 business has 20 topics (every sub-section of the four themes)',bus.length===20);
+ok('N3 politics resolves feminism + the USA route (six topics, none of Global)',pol.some(n=>n.topic==='C2.Feminism')&&!pol.some(n=>n.topic==='C2.Anarchism')&&pol.filter(n=>n.topic.startsWith('3A.')).length===6&&!pol.some(n=>n.topic.startsWith('3B.')),String(pol.length));
 /* weights */
 const wG=C.topicWeights(SPEC_H481,setup.subjects[0].options);ok('W1 geography weights sum to 100',Math.abs(Object.values(wG).reduce((a,b)=>a+b,0)-100)<0.01);
 ok('W1 debates carry 18 each',Math.abs(wG['3.1']-18)<0.01&&Math.abs(wG['3.5']-18)<0.01);
-const wB=C.topicWeights(SPEC_9BS0,{});ok('W2 business synoptic P3 spread over themes; sums to 100',Math.abs(Object.values(wB).reduce((a,b)=>a+b,0)-100)<0.01&&Math.abs(wB.T1-(17.5+7.5))<0.01,JSON.stringify(wB));
+const wB=C.topicWeights(SPEC_9BS0,{});ok('W2 business synoptic P3 spread over every topic; sums to 100',Math.abs(Object.values(wB).reduce((a,b)=>a+b,0)-100)<0.01&&Math.abs(wB['1.1']-(35/9+30/20))<0.01,JSON.stringify(wB));
 const wP=C.topicWeights(SPEC_9PL0,setup.subjects[2].options);ok('W3 politics sums to 100',Math.abs(Object.values(wP).reduce((a,b)=>a+b,0)-100)<0.01);
 /* mastery rules */
 const id=C.nodeId('OCR-H481','1.2');
@@ -34,7 +34,7 @@ const s2=C.newState(setup,SPECS);
 const term=C.buildSession(s2,SPECS,'2026-09-15');ok('S1 term session has cards, new, log',term.steps[0].kind==='cards'&&term.steps.some(x=>x.kind==='new')&&term.steps[term.steps.length-1].kind==='log');
 ok('S1 no essay in term midweek with nothing fluent',!term.steps.some(x=>x.kind==='essay'));
 const hol=C.buildSession(s2,SPECS,'2026-10-26');ok('S2 holiday new step is 60 min',hol.steps.find(x=>x.kind==='new').minutes===60);
-const busId=C.nodeId('EDX-9BS0','T1');s2.nodes[busId].state='Fluent';s2.nodes[busId].lastPractised='2026-10-01';
+const busId=C.nodeId('EDX-9BS0','1.1');s2.nodes[busId].state='Fluent';s2.nodes[busId].lastPractised='2026-10-01';
 const hol2=C.buildSession(s2,SPECS,'2026-10-27');ok('S3 holiday adds a timed essay from a fluent essay-subject topic',hol2.steps.some(x=>x.kind==='essay'&&x.nodes[0]===busId));
 ok('S4 review step appears for a stale fluent node',hol2.steps.some(x=>x.kind==='review'&&x.nodes[0]===busId));
 const prio=C.subjectPriority(s2,SPECS,'2026-10-27');ok('S5 priority ranks all three subjects',prio.length===3&&prio[0].score>=prio[2].score);

@@ -74,15 +74,15 @@ const click=async s=>L.click({target:T(s)});const change=async s=>L.change({targ
  $('suName').value='Matthew';$('suYear').value='2028';
  await change({dataset:{su:'OCR-H481'},checked:true});await change({dataset:{su:'EDX-9BS0'},checked:true});await change({dataset:{su:'EDX-9PL0'},checked:true});
  await click({id:'suGo'});ok('A1 setup refuses until options chosen',G.S===null&&/choose exactly/.test($('suErr').innerHTML),$('suErr').innerHTML);
- for(const o of ['OCR-H481|landscape|1.1.1','OCR-H481|globalSystems|2.2.1','OCR-H481|globalGovernance|2.2.4','EDX-9PL0|nonCore|2.5c','EDX-9PL0|comparative|3A'])await change({dataset:{opt:o},checked:true});
+ for(const o of ['OCR-H481|landscape|1.1.1','OCR-H481|globalSystems|2.2.1','OCR-H481|globalGovernance|2.2.4','EDX-9PL0|nonCore|C2.Feminism','EDX-9PL0|comparative|3A'])await change({dataset:{opt:o},checked:true});
  await change({dataset:{opt:'OCR-H481|debates|3.1'},checked:true});await change({dataset:{opt:'OCR-H481|debates|3.5'},checked:true});
- await click({id:'suGo'});ok('A1 setup builds state',G.S&&G.S.setup.student==='Matthew'&&Object.keys(G.S.nodes).length===8+4+11,String(G.S&&Object.keys(G.S.nodes).length));
+ await click({id:'suGo'});ok('A1 setup builds state',G.S&&G.S.setup.student==='Matthew'&&Object.keys(G.S.nodes).length===9+20+18,String(G.S&&Object.keys(G.S.nodes).length));
  ok('A1 state persisted',!!store['platform:state:v1:matthew']);
  /* today */
  ok('A2 today lists steps across subjects with open buttons',/Today/.test(reg['v-today'].innerHTML)&&/data-open=/.test(reg['v-today'].innerHTML));
  /* rooms: subject chips and topic grid */
- G.renderRooms();ok('A3 rooms grid shows 8 geography rooms',(reg['v-rooms'].innerHTML.match(/class="tcell"/g)||[]).length===8);
- await click({dataset:{subject:'EDX-9PL0'}});ok('A3 switching subject shows 11 politics rooms',(reg['v-rooms'].innerHTML.match(/class="tcell"/g)||[]).length===11);
+ G.renderRooms();ok('A3 rooms grid shows 9 geography rooms',(reg['v-rooms'].innerHTML.match(/class="tcell"/g)||[]).length===9);
+ await click({dataset:{subject:'EDX-9PL0'}});ok('A3 switching subject shows 18 politics rooms',(reg['v-rooms'].innerHTML.match(/class="tcell"/g)||[]).length===18);
  /* lesson generation with validation + retry */
  const geoRoom='OCR-H481|1.2';G.openRoom(geoRoom,'lesson');
  const topic=G.SPECS['OCR-H481'].topics.find(t=>t.id==='1.2');let calls=0;
@@ -123,7 +123,7 @@ const click=async s=>L.click({target:T(s)});const change=async s=>L.change({targ
  /* exam hall + boundaries */
  G.go('exam');await click({dataset:{subject:'OCR-H481'}});$('rpComp').value='C1';$('rpScore').value='50';$('rpTotal').value='66';$('rpSeries').value='June 2024';await click({id:'rpSave'});
  ok('A10 paper saved and prediction uses it',G.S.papers.length===1&&G.predictSubject(G.S,G.SPECS['OCR-H481'],G.S.setup.subjects[0].options).papersUsed===1);
- ok('A10 command words shown for the board',/To what extent/.test(reg['v-exam'].innerHTML)&&/With reference to/.test(reg['v-exam'].innerHTML));
+ ok('A10 command words shown for the board',/Evaluate/.test(reg['v-exam'].innerHTML)&&/Construct arguments and draw conclusions/.test(reg['v-exam'].innerHTML));
  /* progress + report */
  G.renderProg();ok('A11 progress per subject, report, error log',(reg['v-prog'].innerHTML.match(/<h2>(Geography|Business|Politics)/g)||[]).length===3&&/Week to/.test(reg['v-prog'].innerHTML)&&/EVALUATION/.test(reg['v-prog'].innerHTML));
  ok('A12 persistence round trip',JSON.parse(store['platform:state:v1:matthew']).essays.length===1&&Object.keys(JSON.parse(store['platform:state:v1:matthew']).cards).length===10);
@@ -131,8 +131,8 @@ const click=async s=>L.click({target:T(s)});const change=async s=>L.change({targ
  /* ============ three-panel GUI (tooler criteria 3–10) ============ */
  G.go('today');G.renderAll();
  ok('G1 the left rail lists every course with a predicted grade, a mastery bar and a pin, and has the quick-jump box',(reg['rail-l'].innerHTML.match(/data-course="/g)||[]).length===3&&/class="cg">/.test(reg['rail-l'].innerHTML)&&/class="bar mini"/.test(reg['rail-l'].innerHTML)&&/data-pin="OCR-H481"/.test(reg['rail-l'].innerHTML)&&/id="jump"/.test(reg['rail-l'].innerHTML),reg['rail-l'].innerHTML.slice(0,300));
- ok('G1 the topic tree groups the active course by component with a status dot per topic',/class="comp"/.test(reg['rail-l'].innerHTML)&&/Physical systems/.test(reg['rail-l'].innerHTML)&&(reg['rail-l'].innerHTML.match(/class="tnode/g)||[]).length===8&&/class="dot" data-s="Fluent"/.test(reg['rail-l'].innerHTML)&&/data-open="OCR-H481\|1\.2"/.test(reg['rail-l'].innerHTML),String((reg['rail-l'].innerHTML.match(/class="tnode/g)||[]).length));
- await click({dataset:{course:'EDX-9PL0'}});ok('G2 tapping a course makes it active in Rooms and re-draws the tree for it',G.UI.subject==='EDX-9PL0'&&G.view==='rooms'&&(reg['rail-l'].innerHTML.match(/class="tnode/g)||[]).length===11&&/Democracy and participation/.test(reg['rail-l'].innerHTML),G.view+' '+String((reg['rail-l'].innerHTML.match(/class="tnode/g)||[]).length));
+ ok('G1 the topic tree groups the active course by component with a status dot per topic',/class="comp"/.test(reg['rail-l'].innerHTML)&&/Physical systems/.test(reg['rail-l'].innerHTML)&&(reg['rail-l'].innerHTML.match(/class="tnode/g)||[]).length===9&&/class="dot" data-s="Fluent"/.test(reg['rail-l'].innerHTML)&&/data-open="OCR-H481\|1\.2"/.test(reg['rail-l'].innerHTML),String((reg['rail-l'].innerHTML.match(/class="tnode/g)||[]).length));
+ await click({dataset:{course:'EDX-9PL0'}});ok('G2 tapping a course makes it active in Rooms and re-draws the tree for it',G.UI.subject==='EDX-9PL0'&&G.view==='rooms'&&(reg['rail-l'].innerHTML.match(/class="tnode/g)||[]).length===18&&/Democracy and participation/.test(reg['rail-l'].innerHTML),G.view+' '+String((reg['rail-l'].innerHTML.match(/class="tnode/g)||[]).length));
  await click({dataset:{pin:'EDX-9PL0'}});ok('G3 pinning a course sorts it first and is saved in state',G.S.pinned['EDX-9PL0']===true&&reg['rail-l'].innerHTML.indexOf('data-course="EDX-9PL0"')<reg['rail-l'].innerHTML.indexOf('data-course="OCR-H481"')&&JSON.parse(store['platform:state:v1:matthew']).pinned['EDX-9PL0']===true);
  await click({dataset:{pin:'EDX-9PL0'}});ok('G3 unpinning restores the setup order',!G.S.pinned['EDX-9PL0']&&reg['rail-l'].innerHTML.indexOf('data-course="OCR-H481"')<reg['rail-l'].innerHTML.indexOf('data-course="EDX-9PL0"'));
  G.openRoom(geoRoom,'lesson');ok('G4 the open room is marked current in the tree, and the right rail shows this room: state, cards, mistakes and links',/class="tnode cur" data-open="OCR-H481\|1\.2"/.test(reg['rail-l'].innerHTML)&&/This room/.test(reg['rail-r'].innerHTML)&&/Fluent/.test(reg['rail-r'].innerHTML)&&/data-cards="1"/.test(reg['rail-r'].innerHTML)&&/EVALUATION/.test(reg['rail-r'].innerHTML)&&/youtube\.com\/results/.test(reg['rail-r'].innerHTML)&&/bbc\.co\.uk\/bitesize\/search/.test(reg['rail-r'].innerHTML),reg['rail-r'].innerHTML.slice(0,400));
@@ -143,7 +143,7 @@ const click=async s=>L.click({target:T(s)});const change=async s=>L.change({targ
  await L.input({target:{id:'jump',value:'x'}});ok('G5 one character is not enough to search',reg['jumpOut'].innerHTML==='');
  G.UI.room=null;await L.input({target:{id:'jump',value:'life supp'}});await L.keydown({target:{id:'jump',value:'life supp'},key:'Enter',preventDefault(){}});ok('G5 Enter opens the first match and clears the box',G.UI.room==='OCR-H481|1.2'&&G.view==='rooms'&&G.UI.jumpQ==='',G.UI.room+' '+G.view);
  G.go('today');ok('G6 the right rail on Today shows the next step, cards due with Review now, a progress ring per course and the streak',/Next step/.test(reg['rail-r'].innerHTML)&&/data-cards="1"/.test(reg['rail-r'].innerHTML)&&(reg['rail-r'].innerHTML.match(/class="ring"/g)||[]).length===3&&/streak/.test(reg['rail-r'].innerHTML),reg['rail-r'].innerHTML.slice(0,300));
- G.go('exam');ok('G8 the right rail on Exam shows the board’s command words and essay shapes',/To what extent/.test(reg['rail-r'].innerHTML)&&/Essay shapes/.test(reg['rail-r'].innerHTML)&&/33 marks/.test(reg['rail-r'].innerHTML),reg['rail-r'].innerHTML.slice(0,300));
+ G.go('exam');ok('G8 the right rail on Exam shows the board’s command words and essay shapes',/Evaluate/.test(reg['rail-r'].innerHTML)&&/Essay shapes/.test(reg['rail-r'].innerHTML)&&/33 marks/.test(reg['rail-r'].innerHTML),reg['rail-r'].innerHTML.slice(0,300));
  G.go('prog');ok('G8 the right rail on Progress shows the error pattern and the streak',/Your pattern/.test(reg['rail-r'].innerHTML)&&/streak/.test(reg['rail-r'].innerHTML));
  /* the AI nudge: one call a day, cached, refresh on demand, fallback when the call fails */
  let nudgeCalls=0;reply=f=>{const p=f.body.messages[0].content[0].text;if(/best thing to do now/.test(p)){nudgeCalls++;return{content:[{type:'text',text:JSON.stringify({text:'Your carbon-cycle essays keep losing the judgement: mark one more 33-marker in Earth’s life support systems today.',node:geoRoom,station:'essay'})}]};}return{content:[{type:'text',text:'OK'}]};};
@@ -196,7 +196,7 @@ const click=async s=>L.click({target:T(s)});const change=async s=>L.change({targ
  await click({id:'suEdit'});ok('B1 setup reopens in edit mode with existing subjects ticked',/Add or change subjects/.test(reg['v-setup'].innerHTML)&&/data-su="OCR-H481" checked/.test(reg['v-setup'].innerHTML));
  await change({dataset:{su:'EDX-9MA0'},checked:true});$('suName').value='Matthew';$('suYear').value='2028';
  const before=G.S.nodes['OCR-H481|1.2'].state;await click({id:'suGo'});
- ok('B1 mathematics rooms added, existing progress kept',Object.keys(G.S.nodes).length===23+19&&G.S.nodes['OCR-H481|1.2'].state===before&&G.S.essays.length===1,String(Object.keys(G.S.nodes).length));
+ ok('B1 mathematics rooms added, existing progress kept',Object.keys(G.S.nodes).length===47+19&&G.S.nodes['OCR-H481|1.2'].state===before&&G.S.essays.length===1,String(Object.keys(G.S.nodes).length));
  // mirror happened at merge (load() ran before the maths state existed, so reload the mirror by calling load again)
  await G.__load();await G.__mirror();
  ok('B2 old companion progress imported once',G.S.nodes['EDX-9MA0|P2'].state==='Fluent'&&G.S.nodes['EDX-9MA0|P5'].state==='Learning'&&G.S.nodes['EDX-9MA0|P2'].imported);

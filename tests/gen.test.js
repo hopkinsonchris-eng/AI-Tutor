@@ -1,6 +1,6 @@
-const G=require('../src/gen.js');const {SPEC_H481}=require('../src/specs/ocr-h481.js');const {SPEC_9PL0}=require('../src/specs/edexcel-9bs0-9pl0.js');
+const G=require('../src/gen.js');const {SPEC_H481}=require('../src/specs/ocr-h481.js');const {SPEC_9PL0}=require('../src/specs/edexcel-9pl0.js');
 let pass=0;const fails=[];const ok=(l,c,d='')=>c?pass++:fails.push(l+' '+d);
-const t=G.topicOf(SPEC_H481,'1.2');const pt=G.topicOf(SPEC_9PL0,'2.3');
+const t=G.topicOf(SPEC_H481,'1.2');const pt=G.topicOf(SPEC_9PL0,'C2.3');
 /* prompts carry the anchoring */
 const lp=G.lessonPrompt(SPEC_H481,t,'Matthew');
 ok('G1 lesson prompt names board, code, topic',/OCR A level Geography \(H481\)/.test(lp)&&/1\.2 Earth/.test(lp));
@@ -11,7 +11,7 @@ ok('G2 marking prompt is levels-based and AO-aware',/levels against the assessme
 ok('G2 marking prompt carries the board summary',mp.includes(SPEC_9PL0.markConventions.summary.slice(0,60)));
 const cp=G.coachPrompt(SPEC_9PL0,pt,'Matthew','none','Matthew: help',true);
 ok('G3 coach prompt: no model essay, teaching mode stages',/never write a model essay/.test(cp)&&/TEACHING MODE/.test(cp)&&/Refer to the student as Matthew/.test(cp));
-const eq=G.essayQuestionPrompt(SPEC_H481,t,33);ok('G4 essay prompt uses the 33-mark shape',/Component 3 Section C/.test(eq)&&/"marks":33/.test(eq));
+const eq=G.essayQuestionPrompt(SPEC_H481,t,33);ok('G4 essay prompt uses the 33-mark shape',/Section C/.test(eq)&&/"marks":33/.test(eq));
 /* validators accept good output and reject bad */
 const goodLesson={why:'w'.repeat(220),sections:t.ideas.map(i=>({code:i.code,heading:'h',text:'x'.repeat(450)})),examTips:['a','b','c'],checks:[{q:'q',a:'a',code:'1.a'},{q:'q',a:'a',code:'1.b'},{q:'q',a:'a',code:'2.a'},{q:'q',a:'a',code:'4.b'}]};
 ok('V1 good lesson passes',G.validateLesson(t,goodLesson)===null,G.validateLesson(t,goodLesson));

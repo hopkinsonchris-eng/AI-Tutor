@@ -8,7 +8,7 @@ const setup={student:'Matthew',examYear:2028,subjects:[
 /* setup → nodes */
 const s=C.newState(setup,SPECS);
 const geo=Object.values(s.nodes).filter(n=>n.spec==='OCR-H481'),bus=Object.values(s.nodes).filter(n=>n.spec==='EDX-9BS0'),pol=Object.values(s.nodes).filter(n=>n.spec==='EDX-9PL0');
-ok('N1 geography resolves options: 1.1.1,1.2,2.1,2.2.1,2.2.4,3.1,3.5,4 = 8 topics',geo.length===8&&geo.some(n=>n.topic==='1.1.1')&&!geo.some(n=>n.topic==='1.1.2')&&geo.filter(n=>n.topic.startsWith('3.')).length===2,String(geo.length));
+ok('N1 geography resolves options: 1.1.1,1.2,2.1,2.2.1,2.2.4,3.1,3.5,4,2e = 9 topics',geo.length===9&&geo.some(n=>n.topic==='2e')&&geo.some(n=>n.topic==='1.1.1')&&!geo.some(n=>n.topic==='1.1.2')&&geo.filter(n=>n.topic.startsWith('3.')).length===2,String(geo.length));
 ok('N2 business has 4 themes',bus.length===4);
 ok('N3 politics resolves feminism + USA',pol.some(n=>n.topic==='2.5c')&&!pol.some(n=>n.topic==='2.5a')&&pol.some(n=>n.topic==='3A')&&!pol.some(n=>n.topic==='3B'));
 /* weights */

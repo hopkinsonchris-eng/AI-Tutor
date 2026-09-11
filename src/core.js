@@ -53,7 +53,7 @@ function resolveTopics(spec, options) {
 function nodeId(specId, topicId) { return `${specId}|${topicId}`; }
 function newState(setup, specs) {
   const s = { version: 3, created: null, setup, nodes: {}, errors: [], hours: 0, dayHours: {}, transitions: [], practice: [],
-    essays: [], papers: [], cards: {}, generated: {}, coach: {}, pins: {}, doneToday: {}, coldDone: {}, checklist: {}, boundaries: {} };
+    essays: [], papers: [], cards: {}, generated: {}, coach: {}, coachNotes: {}, pins: {}, doneToday: {}, coldDone: {}, checklist: {}, boundaries: {} };
   for (const sub of setup.subjects) {
     const spec = specs[sub.specId]; if (!spec) continue;
     for (const t of resolveTopics(spec, sub.options)) {

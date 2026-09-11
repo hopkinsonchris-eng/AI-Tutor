@@ -108,11 +108,12 @@ Worker answers the desktop routes with 503 and the tab says "not set up yet"; no
 Above the station strip every room draws the student's desk: a flat hand-drawn scene whose objects are the
 stations, and whose shapes are the room's state. Nothing on it needs reading as a number first:
 
-- three post-its on the wall: the tutor's next-step nudge (or where to start), the latest note kept in
-  this room, and today's numbers (cards due, days to the exams, the session's steps and minutes);
-- a pinned photo of the latest notes, or a dashed frame inviting the first one; a plant that grows through
-  Unassessed, Learning, Fluent and Secure; a lamp for Coach; an open textbook for the lesson with a
-  bookmark for the key facts;
+- four post-its on a cork board: the tutor's next-step nudge (or where to start), the coach's weekly note,
+  the student's own latest note, and today's numbers (cards due, days to the exams, the session's steps
+  and minutes);
+- a photo of the latest notes taped to the wall, or a dashed frame inviting the first one; a plant that
+  grows through Unassessed, Learning, Fluent and Secure; a mortar board for the coach; an open textbook
+  for the lesson with a bookmark for the key facts;
 - three piles of paper (standard, exam-standard, hard) whose height is the questions still waiting in the
   room's bank at that difficulty, minus the ones the student has already got right there, with a red pen
   across them; a tablet showing the last pinned video and where it will resume; a card box for the room's
@@ -126,6 +127,15 @@ captions hide and every object keeps a hit area of at least 44 px. The desk is d
 already holds (no extra network calls), motion is transform-only and off under `prefers-reduced-motion`,
 and `DESK_ON=false` in `src/template.html` puts the plain strip back. The new Planner station shows the
 countdown, today's session with ticks, and the year's terms and holidays.
+
+**The coach's weekly note.** When a room with work in it is opened, and its log has changed since the
+last note and the last note is a week old, the coach writes one post-it of at most 14 words from that
+room's log (practice by difficulty with hints, marked answers, essays and their levels, mistakes, cards
+due, the room's state). One Haiku call per room per week at most, none for an untouched room, kept in the
+student's state under `coachNotes`, shown on the pink post-it and at the top of the Coach station.
+
+**The coach's name.** Each student names their coach at setup or from the Coach station ("Your coach's
+name"); it is kept in their own state and used on the tab, the desk, the chat and in every coach prompt.
 
 ## How it works on your site
 

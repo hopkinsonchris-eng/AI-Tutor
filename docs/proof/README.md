@@ -70,7 +70,7 @@ A built course’s room after depth: the checked lesson with one section per key
 
 ## desk-5-desk
 
-The drawn desk at the top of a room: post-its with the nudge, a note and today's numbers, the pinned photo, the plant at Fluent, the textbook, the tablet resuming at 0:47, three piles sized by the bank, the card box flagged "5 due", the planner, notepad, in-tray, exit ticket and drawer
+The drawn desk at the top of a room: a cork board with the nudge, the coach's weekly note, the student's own note and today's numbers; the taped photo; the plant at Fluent; the textbook; the coach's mortar board; the tablet resuming at 0:47; three piles sized by the bank; the card box flagged "5 due"; the planner, notepad, in-tray, exit ticket and drawer
 
 ![desk-5-desk](desk-5-desk.png)
 
@@ -82,7 +82,7 @@ The same desk at 400 px: captions hidden, the text strip names every station, ev
 
 ## desk-7-empty
 
-An untouched room: "Start here" on the yellow post-it, a dashed photo frame, a seedling, an empty tablet, "Cards · add 14"
+An untouched room: the coach's fixed line on the pink post-it, a dashed note and photo frame, a seedling, an empty tablet, "Cards · add 14"
 
 ![desk-7-empty](desk-7-empty.png)
 

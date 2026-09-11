@@ -66,15 +66,24 @@ Mark using levels against the assessment objectives as this board does. Decide t
 ${JSON_RULE}
 {"transcription":"...","level":<int>,"maxLevel":<int>,"mark":<int>,"max":${marks},"byAO":[{"ao":"AO1","comment":"..."}],"strengths":["..."],"weaknesses":["..."],"feedback":"...","failureMode":"...","fix":"...","followUp":"...","codes":["..."]}`;
 }
-function coachPrompt(spec, topic, student, errors, history, teaching) {
-  return `You are Coach, a Socratic tutor for ${student}, a UK A level student, inside the room for ${spec.subject} (${spec.board}) ${topic.id} ${topic.name}.
+function coachPrompt(spec, topic, student, errors, history, teaching, coach = 'Coach') {
+  return `You are ${coach}, a Socratic tutor for ${student}, a UK A level student, inside the room for ${spec.subject} (${spec.board}) ${topic.id} ${topic.name}.
 ${specBlock(spec, topic)}
 ${student}\u2019s recent mistakes here: ${errors || 'none logged yet'}
 ${teaching ? `TEACHING MODE: deliver the topic in stages, one key idea at a time in the order listed, under 120 words each, ending every stage with ONE prediction or application question ${student} must answer before you continue. After the last idea, set one exam-style question and stop.` : ''}
 Rules you never break: never write a model essay or a full answer. Ask what the next point, example or judgement should be, or give one nudge and stop. Under 90 words. Warm, specific, direct. Refer to the student as ${student}. If asked for the answer, decline and offer the smallest next step. Use the board\u2019s command-word meanings when discussing questions.
 Conversation so far:
 ${history}
-Reply as Coach in plain text.`;
+Reply as ${coach} in plain text.`;
+}
+/* The weekly post-it the coach leaves on the student's desk in one room, written from that room's log. */
+function weeklyNotePrompt(spec, topic, student, coach, log) {
+  return `You are ${coach}, ${student}\u2019s study coach, writing the weekly post-it that sits on ${student}\u2019s desk in the room for ${spec.subject} (${spec.board}) ${topic.id} ${topic.name}.
+${student}\u2019s log in this room, most recent first:
+${log}
+Write ONE post-it note of at most 14 words: the single most useful thing to do in this room this week, drawn from the log (a pattern in the mistakes, a difficulty that keeps failing, an essay level to lift, cards due). Warm, specific, direct, second person; no greeting, no sign-off, no exclamation marks.
+${JSON_RULE}
+{"text":"..."}`;
 }
 
 /* ---------- Validators ---------- */
@@ -111,4 +120,4 @@ function validateMarking(topic, o, marks) {
 }
 
 if (typeof module !== 'undefined') module.exports = { topicOf, ideaCodes, specBlock, lessonPrompt, cardsPrompt, transcribePrompt, cardsFromNotesPrompt, questionsPrompt, essayQuestionPrompt, markEssayPrompt, coachPrompt,
-  validCodes, validateLesson, validateCards, validateQuestions, validateEssayQ, validateMarking };
+  validCodes, validateLesson, validateCards, validateQuestions, validateEssayQ, validateMarking, weeklyNotePrompt };

@@ -10,6 +10,8 @@ const mp=G.markEssayPrompt(SPEC_9PL0,pt,'Evaluate the view that the Prime Minist
 ok('G2 marking prompt is levels-based and AO-aware',/levels against the assessment objectives/.test(mp)&&/AO1 Knowledge/.test(mp)&&/transcribe it faithfully/.test(mp));
 ok('G2 marking prompt carries the board summary',mp.includes(SPEC_9PL0.markConventions.summary.slice(0,60)));
 const cp=G.coachPrompt(SPEC_9PL0,pt,'Matthew','none','Matthew: help',true);
+const np=G.weeklyNotePrompt(SPEC_H481,t,'Matthew','Ms Rowe','State: Fluent.\nHard questions (30 days): 1 right of 4, 6 hints.');ok('G10 the weekly note prompt names the coach and student, carries the log and asks for one short post-it as JSON',/You are Ms Rowe, Matthew/.test(np)&&/1 right of 4, 6 hints/.test(np)&&/at most 14 words/.test(np)&&/\{"text":"\.\.\."\}/.test(np));
+ok('G10 the coach prompt takes the coach’s name',/You are Ms Rowe, a Socratic tutor/.test(G.coachPrompt(SPEC_9PL0,pt,'Matthew','none','',false,'Ms Rowe'))&&/You are Coach, a Socratic/.test(cp));
 ok('G3 coach prompt: no model essay, teaching mode stages',/never write a model essay/.test(cp)&&/TEACHING MODE/.test(cp)&&/Refer to the student as Matthew/.test(cp));
 const eq=G.essayQuestionPrompt(SPEC_H481,t,33);ok('G4 essay prompt uses the 33-mark shape',/Section C/.test(eq)&&/"marks":33/.test(eq));
 /* validators accept good output and reject bad */

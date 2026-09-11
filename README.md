@@ -114,12 +114,11 @@ stations, and whose shapes are the room's state. Nothing on it needs reading as 
 - a photo of the latest notes taped to the wall, or a dashed frame inviting the first one; a plant that
   grows through Unassessed, Learning, Fluent and Secure; a mortar board for the coach; an open textbook
   for the lesson with a bookmark for the key facts;
-- three piles of paper (standard, exam-standard, hard) whose height is the questions still waiting in the
-  room's bank at that difficulty, minus the ones the student has already got right there, with a red pen
-  across them; a tablet showing the last pinned video and where it will resume; a card box for the room's
+- three piles of practice questions (standard, exam-standard, hard) whose height is the questions still
+  waiting in the room's bank at that difficulty, minus the ones the student has already got right there; a tablet showing the last pinned video and where it will resume; a box of flash cards for the room's
   deck with a red flag carrying the due count; a planner with today's date, the term, the countdown and
   today's steps; a notepad for essays with the last mark; an in-tray for marking; the exit ticket, ticked
-  once passed; and a drawer for the whole desktop.
+  once passed; and a drawer for the desktop's saved photos, videos, links, notes and files.
 
 Every object is a button with an accessible name; click, Enter or Space opens the station beneath. The
 text strip under the desk still names every station for screen readers and narrow phones, where the

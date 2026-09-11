@@ -214,11 +214,12 @@ details.links{margin-top:8px;font-size:14px}details.links summary{cursor:pointer
 .dquota{font-size:12px;color:var(--pencil);margin-top:10px}
 
 /* ===== the drawn desk at the top of every room ===== */
-.desk{display:block;width:100%;height:auto;border:1px solid var(--rule);border-radius:3px;margin:0 0 12px;box-sizing:border-box;font-family:inherit}
+.desk{display:block;width:100%;height:auto;border:1px solid var(--rule);border-radius:3px;margin:0 0 12px;box-sizing:border-box;font-family:inherit;touch-action:manipulation;-webkit-tap-highlight-color:rgba(43,76,126,.18)}
 .desk .dobj{cursor:pointer;outline:none;transform-box:fill-box}
 .desk .dobj:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
 .desk .dplant{cursor:default}
 .desk image{pointer-events:none}
-@media (prefers-reduced-motion:no-preference){.desk .dobj{transition:transform .12s ease}.desk .dobj:hover{transform:translateY(-2px)}.desk .dobj:active{transform:translateY(1px)}}
+@media (prefers-reduced-motion:no-preference){.desk .dobj{transition:transform .12s ease}.desk .dobj:active{transform:translateY(1px)}}
+@media (hover:hover) and (prefers-reduced-motion:no-preference){.desk .dobj:hover{transform:translateY(-2px)}}
 @media (max-width:480px){.desk .dcap{display:none}}
 .cal{width:100%;border-collapse:collapse;font-size:14px}.cal td{padding:6px 0;border-top:1px solid var(--rule)}.cal td+td{text-align:right;color:var(--pencil);white-space:nowrap}.cal tr.exam td{color:var(--red);font-weight:600}.cal tr.holiday td:first-child{color:var(--pencil)}

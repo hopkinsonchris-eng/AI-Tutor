@@ -153,16 +153,8 @@ const SPEC_H481 = {
  ],
  "markConventions": {
   "style": "levels",
-  "summary": "Marking is by levels of response. The examined papers set a mix of tariffs the specification names in Section 3a: within Physical systems (01) and Human interactions (02) there is \"a combination of short answer questions which carry a low tariff, medium length questions of 6 to 10 marks and higher tariff extended response questions of 16 marks\"; within Geographical debates (03) there is \"a combination of short answer questions of 3 marks, medium length questions of 6 marks, synoptic questions of 12 marks and extended response questions of 33 marks\", set out in Section A (short answer and medium length questions on all topics), Section B (synoptic questions on all topics) and Section C (extended response questions on all topics). Section 3h states that the assessment materials \"provide learners with the opportunity to demonstrate their ability to construct and develop a sustained and coherent line of reasoning and marks for extended responses are integrated into the marking criteria\", and that there is assessment of extended responses within Physical systems (01), Human interactions (02) and Geographical debates (03). The three assessment objectives carry 34% (AO1), 38% (AO2) and 28% (AO3) of the qualification, so the higher tariffs are dominated by AO2 — applying knowledge and understanding in different contexts to interpret, analyse and evaluate. Investigative geography (04/05) is internally assessed and externally moderated: 60 marks are \"broken down into six sections\" — planning, purpose and introduction (8); data, information collection methods and sampling framework (7); data presentation techniques (9); data analysis and explanation (14); conclusions and investigation evaluation (12); and overall quality and communication of written work (10). The NEA is marked on a \"best fit\" principle: \"if a learner’s work meets all criteria in a particular level this should be awarded the top mark in the level. An answer does not have to meet all the requirements of a level descriptor before being placed in that level. The extent to which it meets all of the requirements of a level descriptor will determine its placement within that level.\" A separate Resource Booklet is provided with each of the three question papers, and marks associated with geographical skills are assessed within all three.",
+  "summary": "Marking is by levels of response. The examined papers set a mix of tariffs the specification names in Section 3a: within Physical systems (01) and Human interactions (02) there is \"a combination of short answer questions which carry a low tariff, medium length questions of 6 to 10 marks and higher tariff extended response questions of 16 marks\"; within Geographical debates (03) there is \"a combination of short answer questions of 3 marks, medium length questions of 6 marks, synoptic questions of 12 marks and extended response questions of 33 marks\", set out in Section A (short answer and medium length questions on all topics), Section B (synoptic questions on all topics) and Section C (extended response questions on all topics). Section 3h states that the assessment materials \"provide learners with the opportunity to demonstrate their ability to construct and develop a sustained and coherent line of reasoning and marks for extended responses are integrated into the marking criteria\", and that there is assessment of extended responses within Physical systems (01), Human interactions (02) and Geographical debates (03). The three assessment objectives carry 34% (AO1), 38% (AO2) and 28% (AO3) of the qualification (Section 3b). Investigative geography (04/05) is internally assessed and externally moderated: 60 marks are \"broken down into six sections\" — planning, purpose and introduction (8); data, information collection methods and sampling framework (7); data presentation techniques (9); data analysis and explanation (14); conclusions and investigation evaluation (12); and overall quality and communication of written work (10). The NEA is marked on a \"best fit\" principle: \"if a learner’s work meets all criteria in a particular level this should be awarded the top mark in the level. An answer does not have to meet all the requirements of a level descriptor before being placed in that level. The extent to which it meets all of the requirements of a level descriptor will determine its placement within that level.\" A separate Resource Booklet is provided with each of the three question papers (Section 3a), and marks associated with geographical skills are assessed within all three.",
   "commandWords": [
-   {
-    "word": "Demonstrate",
-    "means": "AO1: \"Demonstrate knowledge and understanding of places, environments, concepts, processes, interactions and change, at a variety of scales.\" Show the specification content itself — named places, processes and change — at the scale the question sets."
-   },
-   {
-    "word": "Apply",
-    "means": "AO2: \"Apply knowledge and understanding in different contexts to interpret, analyse and evaluate geographical information and issues.\" Take the learned content into the unfamiliar context or resource given and use it there, not simply recall it."
-   },
    {
     "word": "Interpret",
     "means": "AO3: \"interpret, analyse and evaluate data and evidence\". Say what the data, map, image or source shows, including \"informed and critical questioning of data sources, analytical methodologies, data reporting and presentation\" (Section 2e, 4.1e)."
@@ -189,7 +181,7 @@ const SPEC_H481 = {
    },
    {
     "word": "Identify",
-    "means": "Pick out and name the feature, pattern or source asked for, as in \"Identify how formal and statistical representations of a place, such as census and geo-spatial mapping data, contribute to place profiles\" and \"Identify a disease outbreak at a global scale\"; it includes \"the ability to identify sources of error in data and to identify the misuse of data\" (Section 2e, 4.1e)."
+    "means": "Pick out and name the feature, pattern or source asked for, as in \"Identify how formal and statistical representations of a place, such as census and geospatial data, contrasts with informal representations\" (2.1, idea 2.b) and \"Identify a disease outbreak at a global scale\"; it includes \"the ability to identify sources of error in data and to identify the misuse of data\" (Section 2e, 4.1e)."
    },
    {
     "word": "Define",
@@ -202,6 +194,18 @@ const SPEC_H481 = {
    {
     "word": "Construct arguments and draw conclusions",
     "means": "AO3’s third strand, repeated in Section 2e, 4.1f (\"construct extended written argument about geographical matters\") and 5k (\"write a coherent analysis of fieldwork findings in order to answer a specific geographical question and to do this drawing effectively on evidence and theory to make a well-argued case\"). Section 3h adds that extended responses must show \"a sustained and coherent line of reasoning\"."
+   },
+   {
+    "word": "To what extent",
+    "means": "The stem of the specification's most open enquiry questions, e.g. \"To what extent are the water and carbon cycles linked?\" (1.2, section 4) and \"To what extent has intervention in human rights contributed to development?\" (2.2.3, section 4). A weighed-judgement answer at the top level needs \"a sustained and coherent line of reasoning\" (Section 3h), the evidence on both sides weighed rather than listed one-sidedly, and a qualified conclusion that states how far the claim holds."
+   },
+   {
+    "word": "How far",
+    "means": "The stem of the enquiry question \"How far can diseases be predicted and mitigated against?\" (3.2, section 4). As with \"To what extent\", the top level needs \"a sustained and coherent line of reasoning\" (Section 3h), the evidence weighed rather than merely listed, and a qualified conclusion rather than a one-sided assertion."
+   },
+   {
+    "word": "How effective is / How effectively",
+    "means": "The stem of the enquiry questions \"How effective is global governance of sovereignty and territorial integrity?\" (2.2.4, section 4) and \"How effectively are communicable and noncommunicable diseases dealt with?\" (3.2, section 3). The top level needs \"a sustained and coherent line of reasoning\" (Section 3h), evidence weighed for and against effectiveness, and a qualified conclusion on how effective the response or intervention has been."
    }
   ],
   "essayShapes": [
@@ -228,7 +232,7 @@ const SPEC_H481 = {
    {
     "marks": 3,
     "minutes": 4,
-    "structure": "\"Short answer questions of 3 marks\" in Geographical debates (03), and the \"short answer questions which carry a low tariff\" in Physical systems (01) and Human interactions (02); many are set on the separate Resource Booklet, and marks associated with geographical skills are assessed here. The top level rewards precise use of the data, map or image supplied — quoted figures, units and directions — and the correct specification term, with no unrequested explanation."
+    "structure": "\"Short answer questions of 3 marks\" in Geographical debates (03), and the \"short answer questions which carry a low tariff\" in Physical systems (01) and Human interactions (02). A separate Resource Booklet is provided with each paper (Section 3a), and marks associated with geographical skills are assessed within each component. The top level rewards precise use of the data, map or image supplied — quoted figures, units and directions — and the correct specification term, with no unrequested explanation."
    }
   ]
  },
@@ -246,6 +250,7 @@ const SPEC_H481 = {
    "option": "landscape",
    "name": "Landscape systems — Option A: Coastal landscapes",
    "caseStudies": [
+    "For all options within this topic, study must include at least two case studies from landscapes beyond the UK and at least one landscape from the UK.",
     "One high-energy coastline",
     "One low-energy coastline",
     "One coastal landscape that is being managed",
@@ -321,6 +326,7 @@ const SPEC_H481 = {
    "option": "landscape",
    "name": "Landscape systems — Option B: Glaciated landscapes",
    "caseStudies": [
+    "For all options within this topic, study must include at least two case studies from landscapes beyond the UK and at least one landscape from the UK.",
     "One landscape associated with the action of valley glaciers",
     "One landscape associated with the action of ice sheets",
     "One periglacial landscape that is being used by people",
@@ -396,6 +402,7 @@ const SPEC_H481 = {
    "option": "landscape",
    "name": "Landscape systems — Option C: Dryland landscapes",
    "caseStudies": [
+    "For all options within this topic, study must include at least two case studies from landscapes beyond the UK and at least one landscape from the UK.",
     "One mid-latitude desert",
     "One low-latitude desert",
     "One dryland landscape that is being used by people (water supply issue)",
@@ -471,8 +478,8 @@ const SPEC_H481 = {
    "option": null,
    "name": "Earth’s life support systems",
    "caseStudies": [
-    "One tropical rainforest",
-    "One Arctic tundra"
+    "Case study of a tropical rainforest, including water and carbon cycles specific to tropical rainforests, the physical factors affecting flows and stores in both cycles, and, for one drainage basin in the tropical rainforest, the changes to the water and carbon cycles caused by human activity.",
+    "Case study of the Arctic tundra, including water and carbon cycles specific to Arctic tundra, the physical factors affecting flows and stores in both cycles, seasonal changes in the water and carbon cycles, and the impact of the developing oil and gas industry."
    ],
    "ideas": [
     {
@@ -529,6 +536,13 @@ const SPEC_H481 = {
      "idea": "The global implications of water and carbon management",
      "content": "Global management strategies to protect the carbon cycle as regulator of the Earth’s climate, including afforestation, wetland restoration, improving agricultural practices and reducing emissions (carbon trading, international agreements); global management strategies to protect the water cycle, including improving forestry techniques, water allocations for domestic, industrial and agricultural use, and drainage basin planning (run-off, surface stores and groundwater)."
     }
+   ],
+   "skills": [
+    "Climate graphs",
+    "Simple mass balance",
+    "Rates of flow",
+    "Unit conversions",
+    "Analysis and presentation of field data"
    ]
   },
   {
@@ -537,10 +551,10 @@ const SPEC_H481 = {
    "option": null,
    "name": "Changing spaces; making places",
    "caseStudies": [
-    "Two contrasting place profiles",
-    "Two contrasting places",
-    "One country or region",
-    "One place that has undergone rebranding"
+    "Case studies of two contrasting place profiles at a local scale, including their demographic, socio-economic, cultural, political, built and natural characteristics that shape their place identity.",
+    "Case studies of two contrasting places to illustrate the types of evidence of social inequality that can be found there such as housing, environmental quality, crime rates, digital divide.",
+    "Case study of one country or region that has been impacted by structural economic change, including its socio-economic, demographic, cultural and environmental characteristics.",
+    "Case study of one place that has undergone rebranding, including why the place needed to rebrand and the strategy/strategies involved in the rebranding of the place."
    ],
    "ideas": [
     {
@@ -603,6 +617,12 @@ const SPEC_H481 = {
      "idea": "Making a successful place requires planning and design",
      "content": "Case study of one place that has undergone rebranding, including: why the place needed to rebrand; the strategy/strategies involved; the role and influence of the range of players involved in the placemaking; how the rebranding has altered people’s perception of the place; the relative success of the rebranding."
     }
+   ],
+   "skills": [
+    "Appreciate how qualitative approaches actively create particular place representations",
+    "Analysing the impacts of different media on place meanings and perceptions",
+    "The use of geospatial data to present place characteristics",
+    "How quantitative data is used to present place characteristics"
    ]
   },
   {
@@ -950,7 +970,7 @@ const SPEC_H481 = {
      "code": "2.a",
      "q": "What are the opportunities and threats arising from the use of ocean resources?",
      "idea": "Biological resources within oceans can be used in sustainable or unsustainable ways",
-     "content": "Case study of the management of one renewable biological resource within oceans, such as krill or whale, including: the use and management of this resource; how the values, attitudes, socio-economic status and political context of the stakeholders influence the use and management of the resource; the resilience of the resource and key thresholds to initiate management."
+     "content": "Case study of the management of one renewable biological resource within oceans, such as krill or whale, including: the use and management of this resource; how the values, attitudes, socio-economic status and political context of the stake holders influence the use and management of the resource; the resilience of the resource and key thresholds to initiate management."
     },
     {
      "code": "2.b",
@@ -1106,7 +1126,7 @@ const SPEC_H481 = {
      "code": "1.a",
      "q": "What is the evidence for continental drift and plate tectonics?",
      "idea": "Evidence for continental drift and plate tectonics",
-     "content": "Theories of continental drift and plate tectonics including the basic structure of the Earth (lithosphere, asthenosphere and the role of convection currents); evidence for sea-floor spreading, palaeomagnetism and the age of sea floor rocks; evidence from ancient glaciations; fossil records."
+     "content": "Theories of continental drift and plate tectonics including the basic structure of the Earth (lithosphere, asthenosphere and the role of convection currents); evidence for sea-floor spreading, paleomagnetism and the age of sea floor rocks; evidence from ancient glaciations; fossil records."
     },
     {
      "code": "1.b",
@@ -1118,7 +1138,7 @@ const SPEC_H481 = {
      "code": "2.a",
      "q": "What are the main hazards generated by volcanic activity?",
      "idea": "A variety of volcanic activity produces distinctive landforms and landscapes",
-     "content": "Different types of volcanoes, their causes and features, including explosive eruptions (higher viscosity magma) at convergent (destructive) plate boundaries; effusive eruptions (lower viscosity magma) and landforms at divergent (constructive) plate boundaries; eruptions not at plate boundaries (hot spots) such as the Hawaiian chain and the East African Rift Valley; the size and shape of different volcano types including super-volcanoes; the volcanic explosivity index (VEI) for assessing volcanic activity."
+     "content": "Different types of volcanoes, their causes and features, including explosive eruptions (higher viscosity magma) at convergent (destructive) plate boundaries; effusive eruptions (lower viscosity magma) and landforms at divergent (constructive) plate boundaries; eruptions not at plate boundaries (hot spots) such as the Hawaiian chain and the East African Rift Valley; the size and shape of different volcano types including super-volcanoes; the volcanic explosive index (VEI) for assessing volcanic activity."
     },
     {
      "code": "2.b",
@@ -1219,7 +1239,7 @@ const SPEC_H481 = {
    "id": "2e",
    "component": "C1",
    "option": null,
-   "name": "Geographical and fieldwork skills",
+   "name": "Geographical skills (all papers) and fieldwork skills (NEA)",
    "caseStudies": [],
    "ideas": [
     {
@@ -1250,7 +1270,7 @@ const SPEC_H481 = {
      "code": "5",
      "q": "What fieldwork skills does A Level Geography require, and what is the minimum fieldwork requirement?",
      "idea": "Fieldwork skills",
-     "content": "With respect to fieldwork skills, A Level Geography requires learners to: a) define the research questions which underpin field investigations; b) research relevant literature sources and understand and write up the theoretical or comparative context for a research question; c) observe and record phenomena in the field and devise and justify practical approaches taken in the field including frequency/timing of observation, sampling, and data collection approaches; d) demonstrate practical knowledge and understanding of appropriate field methodologies; e) implement chosen methodologies to collect data/information of good quality and relevant to the topic under investigation; f) demonstrate knowledge and understanding of the techniques appropriate for analysing field data and information and for representing results, and show ability to select suitable quantitative or qualitative approaches and to apply them; g) demonstrate the ability to interrogate and critically examine field data in order to comment on its accuracy and/or the extent to which it is representative, and use the experience to extend geographical understanding; h) apply existing knowledge, theory and concepts to order and understand field observations; i) show the ability to write up field results clearly and logically, using a range of presentation methods; j) evaluate and reflect on fieldwork investigations, explain how the results relate to the wider context and show an understanding of the ethical dimensions of field research; k) demonstrate the ability to write a coherent analysis of fieldwork findings in order to answer a specific geographical question and to do this drawing effectively on evidence and theory to make a well-argued case. Fieldwork is required to be undertaken for at least four days throughout the A Level course, including in relation to processes in both physical and human geography."
+     "content": "The assessment of fieldwork skills will be within Investigative geography (04/05) and there will be no assessment of fieldwork skills within the examinations for components Physical systems (01), Human interactions (02) and Geographical debates (03); marks associated with geographical skills (4.1–4.4) will be assessed within each of these three components. With respect to fieldwork skills, A Level Geography requires learners to: a) define the research questions which underpin field investigations; b) research relevant literature sources and understand and write up the theoretical or comparative context for a research question; c) observe and record phenomena in the field and devise and justify practical approaches taken in the field including frequency/timing of observation, sampling, and data collection approaches; d) demonstrate practical knowledge and understanding of appropriate field methodologies; e) implement chosen methodologies to collect data/information of good quality and relevant to the topic under investigation; f) demonstrate knowledge and understanding of the techniques appropriate for analysing field data and information and for representing results, and show ability to select suitable quantitative or qualitative approaches and to apply them; g) demonstrate the ability to interrogate and critically examine field data in order to comment on its accuracy and/or the extent to which it is representative, and use the experience to extend geographical understanding; h) apply existing knowledge, theory and concepts to order and understand field observations; i) show the ability to write up field results clearly and logically, using a range of presentation methods; j) evaluate and reflect on fieldwork investigations, explain how the results relate to the wider context and show an understanding of the ethical dimensions of field research; k) demonstrate the ability to write a coherent analysis of fieldwork findings in order to answer a specific geographical question and to do this drawing effectively on evidence and theory to make a well-argued case. Fieldwork is required to be undertaken for at least four days throughout the A Level course, including in relation to processes in both physical and human geography."
     }
    ]
   }

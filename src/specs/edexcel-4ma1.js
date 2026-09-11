@@ -38,7 +38,7 @@ const SPEC_4MA1 = {
    "sections": [
     "Content summary: Number, Algebra, Geometry, Statistics.",
     "Assessed through a 2-hour examination set and marked by Pearson. The total number of marks for the paper is 100. The paper is weighted at 50% of the qualification, targeted at grades 5–1.",
-    "Each paper will assess the full range of targeted grades at Foundation Tier (5–1) and will have approximately equal marks available for each of the targeted grades. There will be approximately 40% of questions targeted at grades 5 and 4, across papers 2F and 2H, to aid standardisation and comparability of award between tiers.",
+    "Each paper will assess the full range of targeted grades at Foundation Tier (5–1) and will have approximately equal marks available for each of the targeted grades. There will be approximately 40% of questions targeted at grades 5 and 4, across papers 1F and 2F, to aid standardisation and comparability of award between tiers.",
     "Externally assessed; availability January and June; first assessment June 2018. The qualification is linear: both papers are taken in the same series at the end of the course of study.",
     "A Foundation Tier formulae sheet (Appendix 4) is included in the written examinations. Tracing paper may be used. A calculator may be used. Questions will be set in SI units."
    ]
@@ -49,7 +49,7 @@ const SPEC_4MA1 = {
   {
    "id": "AO1",
    "label": "Numbers and algebra",
-   "text": "Demonstrate knowledge, understanding and skills in number and algebra: numbers and the numbering system; calculations; solving numerical problems; equations, formulae and identities; sequences, functions and graphs. 57–63% of the International GCSE (28.5–31.5% on papers 1F and 2F together).",
+   "text": "Demonstrate knowledge, understanding and skills in number and algebra: numbers and the numbering system; calculations; solving numerical problems; equations, formulae and identities; sequences, functions and graphs. 57–63% of the International GCSE (28.5–31.5% on each of papers 1F and 2F, per the document's table).",
    "weight": 60,
    "byComponent": {
     "P1F": 30,
@@ -59,7 +59,7 @@ const SPEC_4MA1 = {
   {
    "id": "AO2",
    "label": "Shape, space and measures",
-   "text": "Demonstrate knowledge, understanding and skills in shape, space and measures: geometry and trigonometry; vectors and transformation geometry. 22–28% of the International GCSE (11–14% on papers 1F and 2F together).",
+   "text": "Demonstrate knowledge, understanding and skills in shape, space and measures: geometry and trigonometry; vectors and transformation geometry. 22–28% of the International GCSE (11–14% on each of papers 1F and 2F, per the document's table).",
    "weight": 25,
    "byComponent": {
     "P1F": 12.5,
@@ -69,7 +69,7 @@ const SPEC_4MA1 = {
   {
    "id": "AO3",
    "label": "Handling data",
-   "text": "Demonstrate knowledge, understanding and skills in handling data: statistics; probability. 12–18% of the International GCSE (6–9% on papers 1F and 2F together).",
+   "text": "Demonstrate knowledge, understanding and skills in handling data: statistics; probability. 12–18% of the International GCSE (6–9% on each of papers 1F and 2F, per the document's table).",
    "weight": 15,
    "byComponent": {
     "P1F": 7.5,
@@ -79,7 +79,7 @@ const SPEC_4MA1 = {
  ],
  "markConventions": {
   "style": "points",
-  "summary": "Every question is point-marked against Pearson's mark scheme, which awards M (method) marks for a correct method or one that would lead to the answer, A (accuracy) marks that are only available once the matching method mark has been earned, and B marks for an independent correct statement or answer that needs no method; dependent marks (dM, dA) are only available if the earlier named mark has been scored, follow-through (ft) credits correct work carried out on an earlier wrong value, cao and cso tighten what is accepted, awrt sets the rounding accepted and isw protects a correct answer from later spoiling. The specification says the mark schemes are deliberately straightforward, so that the assessment requirements are clear. Each paper carries 100 marks in 2 hours (1.2 minutes per mark) and assesses the full range of targeted Foundation Tier grades 5–1, with approximately equal marks available for each targeted grade; approximately 40% of questions are targeted at grades 5 and 4 across papers 1F and 1H (and 2F and 2H) to aid comparability between tiers. Across the qualification AO1 (number and algebra) carries 57–63%, AO2 (shape, space and measures) 22–28% and AO3 (handling data) 12–18%. Of the Foundation Tier marks, 25% assess problem solving and 15% assess mathematical reasoning: students must translate problems in mathematical or non-mathematical contexts into a process or a series of mathematical processes, and must make deductions and draw conclusions from mathematical information, construct chains of reasoning, present arguments and proofs, and interpret and communicate information accurately. A calculator may be used on both papers, so an answer with no working scores only what the scheme allows for the answer alone; a Foundation Tier formulae sheet (Appendix 4) is provided and every other formula must be recalled. Questions are set in SI units, diagrams are not necessarily drawn to scale and measurements must not be taken from them unless the question says so. For level fields, report level 1 for below half marks, 2 for half to two-thirds, 3 for the top third, with maxLevel 3.",
+  "summary": "Every question is point-marked. The specification itself defines no mark types (it says only that the mark schemes are straightforward); the M, A and B marks described here are Pearson's published mark-scheme practice for this paper, which awards M (method) marks for a correct method or one that would lead to the answer, A (accuracy) marks that are only available once the matching method mark has been earned, and B marks for an independent correct statement or answer that needs no method; dependent marks (dM, dA) are only available if the earlier named mark has been scored, follow-through (ft) credits correct work carried out on an earlier wrong value, cao and cso tighten what is accepted, awrt sets the rounding accepted and isw protects a correct answer from later spoiling. The specification says the mark schemes are deliberately straightforward, so that the assessment requirements are clear. Each paper carries 100 marks in 2 hours (1.2 minutes per mark) and assesses the full range of targeted Foundation Tier grades 5–1, with approximately equal marks available for each targeted grade; approximately 40% of questions are targeted at grades 5 and 4 across papers 1F and 1H (and 2F and 2H) to aid comparability between tiers. Across the qualification AO1 (number and algebra) carries 57–63%, AO2 (shape, space and measures) 22–28% and AO3 (handling data) 12–18%. Of the Foundation Tier marks, 25% assess problem solving and 15% assess mathematical reasoning: students must translate problems in mathematical or non-mathematical contexts into a process or a series of mathematical processes, and must make deductions and draw conclusions from mathematical information, construct chains of reasoning, present arguments and proofs, and interpret and communicate information accurately. A calculator may be used on both papers, so an answer with no working scores only what the scheme allows for the answer alone; a Foundation Tier formulae sheet (Appendix 4) is provided and every other formula must be recalled. Questions are set in SI units, diagrams are not necessarily drawn to scale and measurements must not be taken from them unless the question says so. For level fields, report level 1 for below half marks, 2 for half to two-thirds, 3 for the top third, with maxLevel 3.",
   "commandWords": [
    {
     "word": "Calculate",
@@ -167,7 +167,7 @@ const SPEC_4MA1 = {
   "options": 1,
   "familyFit": 0.9,
   "at": "2026-09-11",
-  "by": "self-judged in session against the PDF (Issue 2, November 2017), Foundation Tier content pages 11–25 read page by page and the tables re-read as rendered images"
+  "by": "a fresh Opus subagent reading the PDF page by page; see scratch/courses/EDX-4MA1/spec.verdict.json"
  },
  "source": {
   "url": "https://qualifications.pearson.com/content/dam/pdf/International%20GCSE/Mathematics%20A/2016/Specification%20and%20sample%20assessments/international-gcse-in-mathematics-spec-a.pdf",

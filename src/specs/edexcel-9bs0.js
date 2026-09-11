@@ -97,7 +97,7 @@ const SPEC_9BS0 = {
  ],
  "markConventions": {
   "style": "levels",
-  "summary": "Every mark in this qualification is awarded against the four Assessment Objectives, and the specification fixes their share of the total: AO1 20-22%, AO2 22-24%, AO3 28-30% and AO4 26-28% (spec.txt pp.16 and 47), with a per-paper breakdown on spec.txt p.48 (Paper 1 and Paper 2 each 6–8 / 7–9 / 9–11 / 8–10; Paper 3 5–7 / 5–7 / 9–11 / 9–11). Because AO3 and AO4 together carry roughly 54-58% of the qualification, extended answers are judged by levels: the specification builds each paper out of data response questions \"broken down into a number of parts, including one extended open-response question\" (spec.txt pp.14, 15, 45, 46), so credit runs from knowledge of the term, through application to the business in the stimulus, to analysis of its impact and finally an evaluated judgement on the evidence given. Each of the three papers carries 100 marks in 2 hours and comprises 2 questions, so a whole data response question is worth about half a paper. Quantitative work is examined inside those questions and is not a separate section: \"The assessment of quantitative skills will include at least Level 2 mathematical skills as a minimum of 10% of the overall marks for this qualification\" (Appendix 3: Quantitative skills, spec.txt p.63), the nine QS strands run from ratios, averages and fractions through break-even and investment appraisal to interpreting elasticity values, and Themes 2 and 3 additionally require the accounting ratios of Appendix 4 (spec.txt p.65). Paper 3 is the synoptic paper: the specification states that \"In this qualification, synoptic assessment can be found in Paper 3: Investigating business in a competitive environment\" (spec.txt p.52); it draws on all four themes, works from a pre-released broad context issued in the November of the previous year plus unseen stimulus in the exam, and its AO breakdown is deliberately tilted towards AO3 and AO4. NOTE: Issue 1 of this specification prints no command-word list and no per-question mark tariffs; the command words below are quoted from the Assessment Objectives and from the Appendix 3 quantitative skills, which are the only instruction verbs the document itself defines, and the tariffs live in the separate Sample Assessment Materials document the specification points to on spec.txt p.46.",
+  "summary": "Every mark in this qualification is awarded against the four Assessment Objectives, and the specification fixes their share of the total: AO1 20-22%, AO2 22-24%, AO3 28-30% and AO4 26-28% (spec.txt pp.16 and 47), with a per-paper breakdown on spec.txt p.48 (Paper 1 and Paper 2 each 6–8 / 7–9 / 9–11 / 8–10; Paper 3 5–7 / 5–7 / 9–11 / 9–11). Because AO3 and AO4 together carry roughly 54-58% of the qualification, extended answers are judged by levels: the specification builds each paper out of data response questions \"broken down into a number of parts, including one extended open-response question\" (spec.txt pp.14, 15, 45, 46), so credit runs from knowledge of the term, through application to the business in the stimulus, to analysis of its impact and finally an evaluated judgement on the evidence given. Each of the three papers carries 100 marks in 2 hours and comprises 2 questions, so a whole data response question is worth about half a paper. Quantitative work is examined inside those questions and is not a separate section: \"The assessment of quantitative skills will include at least Level 2 mathematical skills as a minimum of 10% of the overall marks for this qualification\" (Appendix 3: Quantitative skills, spec.txt p.63), the nine QS strands run from ratios, averages and fractions through break-even and investment appraisal to interpreting elasticity values, and Themes 2 and 3 additionally require the accounting ratios of Appendix 4 (spec.txt p.65). Paper 3 is the synoptic paper: the specification states that \"In this qualification, synoptic assessment can be found in Paper 3: Investigating business in a competitive environment\" (spec.txt p.52); it draws on all four themes, works from a pre-released broad context issued in the November of the previous year plus unseen stimulus in the exam, and its AO breakdown is deliberately tilted towards AO3 and AO4. NOTE: Issue 1 of this specification prints no command-word list and no per-question mark tariffs; the command words below are quoted from the Assessment Objectives and from the Appendix 3 quantitative skills, which are the only instruction verbs the document itself defines, and the tariffs live in the separate Sample Assessment Materials document the specification points to on spec.txt p.46. The idea `q` fields in this course's topics use the conventional Edexcel Business command words (Explain, Analyse, Assess, Evaluate, Discuss, Calculate) that Issue 1 itself does not define, since the document has no command-word glossary.",
   "commandWords": [
    {
     "word": "Demonstrate",
@@ -138,24 +138,24 @@ const SPEC_9BS0 = {
   ],
   "essayShapes": [
    {
-    "marks": 100,
-    "minutes": 120,
-    "structure": "A whole paper. The specification gives each of the three papers as \"Duration: 2 hours\", \"100 marks available\", \"The assessment comprises 2 questions\" and \"Students answer all questions from both sections\" (spec.txt pp.14, 15, 45, 46). Marks are spread across all four AOs in the proportions on spec.txt p.48, so a paper that is answered only descriptively forfeits the AO3 and AO4 majority (roughly 54-58% of the qualification); at the top the whole script applies knowledge to the businesses in the stimulus, analyses the impact of the influences at work and closes each extended answer with an evidence-based judgement."
+    "marks": 50,
+    "minutes": 60,
+    "structure": "The extended open-response question inside a Paper 1 or Paper 2 data-response question — Section A or Section B — each of which is \"broken down into a number of parts, including one extended open-response question\" (spec.txt pp.14, 45). Marks and minutes are derived, not printed: 100 marks and 2 hours divided by the document's \"2 questions\" per paper (spec.txt pp.14, 45); the document prints no further split between a question's shorter parts and its extended open-response part, so 50 marks/60 minutes describes the whole question, not the open-response part alone. What the levels-based mark scheme rewards at the top level in that part: an opening that defines the key term(s) in the question and signals the line of argument; paragraphs built as point → evidence drawn from the business in the stimulus → a developed chain of analysis of cause and effect → a mini-judgement, so AO3 credit (9–11 of the paper's marks, spec.txt p.48) accumulates as the answer goes; balance across more than one line of argument, since AO4 (8–10 of the paper) rewards a weighed judgement, not one point pushed hard; and a conclusion that directly answers the question with a qualified position rooted in the specific figures and context given. Drawn from topics across Themes 1 and 4 (Paper 1) or Themes 2 and 3 (Paper 2) in a local, national or global context (spec.txt p.45)."
    },
    {
     "marks": 50,
     "minutes": 60,
-    "structure": "One data response question on Paper 1 or Paper 2 — Section A or Section B — \"broken down into a number of parts, including one extended open-response question\" (spec.txt pp.14, 45). Marks and minutes are derived, not printed: 100 marks and 2 hours divided by the document's \"2 questions\". At the top level the short parts define and calculate accurately using the figures supplied (Appendix 3 quantitative skills; Appendix 4 accounting ratios for Themes 2 and 3), and the extended open-response part builds developed chains of analysis about the impact on the business in the stimulus and ends in a supported judgement, drawn from topics across Themes 1 and 4 (Paper 1) or Themes 2 and 3 (Paper 2) in a local, national or global context."
+    "structure": "The extended open-response question in Paper 3, Section A — the synoptic broad-context question. Section A \"will focus on the broad context provided in the pre-released document issued on our website in the November of the previous year\" and contains \"unseen stimulus materials comprising quantitative and qualitative evidence\" plus \"one extended open-response question\" (spec.txt pp.15, 46). Marks and minutes are derived, not printed: 100 marks and 2 hours divided by the paper's 2 questions (spec.txt pp.15, 46); the document gives no further split for the extended part alone. What the levels-based mark scheme rewards at the top level: an opening that defines the key term(s) and signals the line of argument across the pre-released context; paragraphs of point → evidence drawn from the unseen quantitative and qualitative stimulus about that broad context → a developed chain of analysis working \"from Themes 1, 2, 3 and 4\" → a mini-judgement; balance between the strands of evidence; and a conclusion that reaches a qualified, evidence-based judgement about the whole context — Paper 3 is where AO4 is heaviest (9–11 of 30%, spec.txt p.48)."
    },
    {
     "marks": 50,
     "minutes": 60,
-    "structure": "Paper 3, Section A — the synoptic broad-context question. It \"will focus on the broad context provided in the pre-released document issued on our website in the November of the previous year\", and contains \"unseen stimulus materials comprising quantitative and qualitative evidence\" plus \"one extended open-response question\" (spec.txt pp.15, 46). Marks and minutes are derived from 100 marks, 2 hours and 2 questions. The top level shows accumulated knowledge \"from Themes 1, 2, 3 and 4\" worked across the industry or market in the pre-release, reads the unseen quantitative and qualitative evidence together, and reaches an evaluated judgement about that whole context — Paper 3 is where AO4 is heaviest (9 – 11 of 30%)."
+    "structure": "The extended open-response question in Paper 3, Section B, which \"will focus on at least one strand within the context provided, such as a particular business\" (spec.txt pp.15, 46), again with unseen quantitative and qualitative stimulus and one extended open-response question. Marks and minutes derived as above: 100 marks and 2 hours over the paper's 2 questions, with no further printed split. What the top level rewards: an opening that defines terms and signals the argument as it applies to the named business; paragraphs of point → evidence from the figures and qualitative detail given for that business → a developed chain of analysis of the internal and external influences on it specifically → a mini-judgement; balance between competing influences; and a conclusion proposing an evidence-based solution rather than a general one — no pre-release research notes may be taken into the exam, so the judgement must rest on the evidence in front of the student."
    },
    {
     "marks": 50,
     "minutes": 60,
-    "structure": "Paper 3, Section B — \"will focus on at least one strand within the context provided, such as a particular business\" (spec.txt pp.15, 46), again with unseen quantitative and qualitative stimulus and one extended open-response question; marks and minutes derived as above. The top level narrows the same synoptic knowledge onto the named business, applies it to the figures and the qualitative detail given, analyses the internal and external influences on that business specifically, and proposes an evidence-based solution rather than a general one — no pre-release research notes may be taken into the exam, so the judgement must rest on the evidence in front of the student."
+    "structure": "A shorter calculate/analyse item: one of the non-extended parts within the same Section A/B data-response question as the shapes above, typically a calculation using the Appendix 3 quantitative skills (QS1 ratios/averages/fractions, QS2 percentages, QS5 cost/revenue/profit/break-even, QS6 investment appraisal) or, for Themes 2 and 3, the Appendix 4 accounting ratios, followed by a short paragraph of analysis. Marks and minutes are derived, not printed: the document gives 100 marks and 2 hours over the paper's 2 questions (spec.txt pp.14, 45) and prints no separate figure for this shorter part; the 50 marks/60 minutes above are for the whole question, of which this is one part. What a top-level answer does with it: the calculation is accurate, shows its method, and is correctly labelled; the short analysis that follows states the point, applies the labelled figure as evidence, and gives one developed line of reasoning about what the result means specifically for the business in the stimulus — securing the AO1/AO2 marks before the extended open-response part in the same question carries the AO3/AO4 weight."
    }
   ]
  },
@@ -223,13 +223,13 @@ const SPEC_9BS0 = {
      "code": "1.2.4",
      "q": "Calculate and interpret price elasticity of demand, and assess its significance for a business's pricing decisions and total revenue.",
      "idea": "Price elasticity of demand",
-     "content": "Calculation of price elasticity of demand: PED = % change in quantity demanded ÷ % change in price. Interpretation of numerical values of PED (elastic if greater than 1, inelastic if less than 1). The factors influencing PED. The significance of PED to businesses in terms of implications for pricing. Calculation and interpretation of the relationship between PED and total revenue."
+     "content": "Calculation of price elasticity of demand. Interpretation of numerical values of price elasticity of demand. The factors influencing price elasticity of demand. The significance of price elasticity of demand to businesses in terms of implications for pricing. Calculation and interpretation of the relationship between price elasticity of demand and total revenue. Standard form (not printed in the specification): PED = % change in quantity demanded ÷ % change in price; conventionally negative, so the test is on |PED| > 1 (elastic) versus |PED| < 1 (inelastic)."
     },
     {
      "code": "1.2.5",
      "q": "Calculate and interpret income elasticity of demand, and assess its significance for a business.",
      "idea": "Income elasticity of demand",
-     "content": "Calculation of income elasticity of demand: YED = % change in quantity demanded ÷ % change in income. Interpretation of numerical values of YED (positive for normal goods, negative for inferior goods). The factors influencing YED. The significance of YED to businesses."
+     "content": "Calculation of income elasticity of demand. Interpretation of numerical values of income elasticity of demand. The factors influencing income elasticity of demand. The significance of income elasticity of demand to businesses. Standard form (not printed in the specification): YED = % change in quantity demanded ÷ % change in income; conventionally positive for normal goods and negative for inferior goods."
     }
    ]
   },
@@ -256,7 +256,7 @@ const SPEC_9BS0 = {
      "code": "1.3.3",
      "q": "Assess which pricing strategy (cost plus, skimming, penetration, predatory, competitive, psychological) is most appropriate for a business given its differentiation, price elasticity of demand, competition, brand strength, product life-cycle stage and costs.",
      "idea": "Pricing strategies",
-     "content": "Types of pricing strategy: cost plus (calculating mark-up on unit cost: price = unit cost + mark-up), price skimming, penetration, predatory, competitive, psychological. Factors that determine the most appropriate pricing strategy: number of USPs/amount of differentiation, price elasticity of demand, level of competition, strength of brand, stage in the product life cycle, costs and the need to make a profit. Changes in pricing to reflect social trends: online sales, price comparison sites."
+     "content": "Types of pricing strategy: cost plus (calculating mark-up on unit cost), price skimming, penetration, predatory, competitive, psychological. Factors that determine the most appropriate pricing strategy: number of USPs/amount of differentiation, price elasticity of demand, level of competition, strength of brand, stage in the product life cycle, costs and the need to make a profit. Changes in pricing to reflect social trends: online sales, price comparison sites. Standard form (not printed in the specification): cost-plus price = unit cost + mark-up."
     },
     {
      "code": "1.3.4",
@@ -346,7 +346,7 @@ const SPEC_9BS0 = {
      "code": "1.5.5",
      "q": "Using the concept of opportunity cost, analyse the trade-offs a business faces when making choices.",
      "idea": "Business choices",
-     "content": "Opportunity cost: the benefit given up by choosing one option over the next best alternative. Choices and potential trade-offs a business faces when allocating scarce resources."
+     "content": "Opportunity cost. Choices and potential trade-offs a business faces. Standard gloss (not printed in the specification): opportunity cost is the benefit given up by choosing one option over the next best alternative, relevant when a business is allocating scarce resources."
     },
     {
      "code": "1.5.6",
@@ -520,7 +520,7 @@ const SPEC_9BS0 = {
      "code": "3.1.1",
      "q": "Explain how corporate objectives are developed from a mission statement, and evaluate how meaningful mission statements/corporate aims are in practice.",
      "idea": "Corporate objectives",
-     "content": "Development of corporate objectives from a mission statement/corporate aims; critical appraisal of mission statements/corporate aims — how meaningful, measurable and achievable they are."
+     "content": "Development of corporate objectives from a mission statement/corporate aims; critical appraisal of mission statements/corporate aims. Standard gloss (not printed in the specification): critical appraisal typically examines how meaningful, measurable and achievable a mission statement or corporate aim is in practice."
     },
     {
      "code": "3.1.2",
@@ -538,7 +538,7 @@ const SPEC_9BS0 = {
      "code": "3.1.4",
      "q": "Analyse the PESTLE factors and Porter's Five Forces shaping a business's competitive environment, and evaluate their significance for its strategy.",
      "idea": "Impact of external influences",
-     "content": "PESTLE analysis (political, economic, social, technological, legal and environmental); the changing competitive environment; Porter's Five Forces as a framework for analysing the forces shaping competition within an industry."
+     "content": "PESTLE analysis (political, economic, social, technological, legal and environmental); the changing competitive environment; Porter's Five Forces. Standard gloss (not printed in the specification): Porter's Five Forces is used as a framework for analysing the forces shaping competition within an industry."
     }
    ]
   },
@@ -586,25 +586,25 @@ const SPEC_9BS0 = {
      "code": "3.3.1",
      "q": "Calculate and interpret a moving-average time-series sales forecast, and evaluate the limitations of quantitative sales forecasting techniques.",
      "idea": "Quantitative sales forecasting",
-     "content": "Calculation of time-series analysis using moving averages (three-period/four-quarter: the average of a fixed number of consecutive periods, recalculated as each new period is added, to smooth out random and seasonal variation); interpretation of scatter graphs and line of best fit, extrapolating past data to forecast the future; limitations of quantitative sales forecasting techniques."
+     "content": "Calculation of time-series analysis: moving averages (three period/four quarter). Interpretation of scatter graphs and line of best fit — extrapolation of past data to future. Limitations of quantitative sales forecasting techniques. Standard gloss (not printed in the specification): a three-period/four-quarter moving average is the average of a fixed number of consecutive periods, recalculated as each new period is added, which smooths out random and seasonal variation."
     },
     {
      "code": "3.3.2",
      "q": "Calculate payback, Average Rate of Return and Net Present Value for an investment, and evaluate the limitations of these investment appraisal techniques.",
      "idea": "Investment appraisal",
-     "content": "Simple payback: time taken for cumulative net cash inflows to equal the initial investment. Average (Accounting) Rate of Return (ARR): average annual profit divided by initial investment cost, x 100%. Discounted Cash Flow (Net Present Value only): future cash flows discounted to present value and summed, less the initial outlay, to give NPV. Calculation and interpretation of the figures generated by these techniques; limitations of these techniques."
+     "content": "Simple payback. Average (Accounting) Rate of Return (ARR). Discounted Cash Flow (Net Present Value only). Calculation and interpretation of the figures generated by these techniques; limitations of these techniques. Standard forms (not printed in the specification): payback = time taken for cumulative net cash inflows to equal the initial investment; ARR = average annual profit ÷ initial investment cost x 100%; NPV = discounted future cash flows summed, less the initial outlay."
     },
     {
      "code": "3.3.3",
      "q": "Construct and interpret a decision tree, calculating expected values, to evaluate a strategic choice made under uncertainty.",
      "idea": "Decision trees",
-     "content": "Construction and interpretation of simple decision tree diagrams; calculation and interpretation of the figures generated by these techniques (expected value at each outcome node from probability and financial result, compared against the cost of each option); limitations of using decision trees."
+     "content": "Construction and interpretation of simple decision tree diagrams; calculation and interpretation of the figures generated by these techniques; limitations of using decision trees. Standard gloss (not printed in the specification): the figures generated are the expected value at each outcome node, found from probability multiplied by financial result, compared against the cost of each option."
     },
     {
      "code": "3.3.4",
      "q": "Construct a network diagram to identify the critical path, calculating Earliest Start Time, Latest Finish Time and total float, and evaluate the usefulness of Critical Path Analysis.",
      "idea": "Critical Path Analysis",
-     "content": "Nature and purpose of Critical Path Analysis (CPA); completing and interpreting simple networks to identify the critical path; calculation of Earliest Start Time (EST), Latest Finish Time (LFT) and total float (the spare time an activity has without delaying the project); limitations of using Critical Path Analysis."
+     "content": "Nature and purpose of Critical Path Analysis (CPA); completing and interpreting simple networks to identify the critical path; calculation of Earliest Start Time (EST), Latest Finish Time (LFT) and total float; limitations of using Critical Path Analysis. Standard gloss (not printed in the specification): total float is the spare time an activity has without delaying the project."
     }
    ]
   },
@@ -769,7 +769,7 @@ const SPEC_9BS0 = {
      "code": "4.2.5",
      "q": "Analyse the factors that determine a business's global competitiveness.",
      "idea": "Global competitiveness",
-     "content": "The impact of movements in exchange rates on a business's competitiveness (an appreciation of the home currency raises the price of exports and lowers the price of imports, reducing cost competitiveness; a depreciation has the reverse effect); competitive advantage through cost competitiveness and differentiation; skill shortages and their impact on international competitiveness."
+     "content": "The impact of movements in exchange rates on a business's competitiveness; competitive advantage through cost competitiveness and differentiation; skill shortages and their impact on international competitiveness. Standard gloss (not printed in the specification): an appreciation of the home currency raises the price of exports and lowers the price of imports, reducing cost competitiveness; a depreciation has the reverse effect."
     }
    ]
   },

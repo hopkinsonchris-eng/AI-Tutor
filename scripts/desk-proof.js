@@ -97,6 +97,20 @@ const server = http.createServer((req, res) => {
   await page.click('[data-dkplay]'); await page.waitForSelector('iframe.dframe', { timeout: 10000 }); await page.waitForTimeout(1500);
   await page.screenshot({ path: path.join(OUT, 'desk-2-wall.png'), fullPage: true });
   const cardsInDeck = await page.evaluate(() => Object.values(S.cards).filter(c => c.node === 'OCR-H481|1.2').length);
+  /* the drawn desk: the room's state as objects; each opens the station beneath */
+  await page.click('.stations button[data-station="lesson"]'); await page.waitForSelector('svg.desk [data-station="planner"]'); await page.evaluate(() => window.scrollTo(0, 0)); await page.waitForTimeout(600);
+  await page.screenshot({ path: path.join(OUT, 'desk-5-desk.png'), fullPage: false, clip: { x: 0, y: 0, width: 1180, height: 760 } });
+  const deskFacts = await page.evaluate(() => { const g = s => document.querySelector('svg.desk ' + s); return { objects: document.querySelectorAll('svg.desk .dobj').length, video: g('[aria-label^="Videos: resume"]') && g('[aria-label^="Videos: resume"]').getAttribute('aria-label'), note: g('[data-postit="note"]') && g('[data-postit="note"]').textContent.slice(0, 40), photo: g('[aria-label^="Photos of your notes"]') && !!g('[aria-label^="Photos of your notes"] image'), cards: g('[data-station="cards"][aria-label^="Cards:"]').getAttribute('aria-label'), flag: !!g('.dflag'), plant: g('[data-plant]').dataset.plant, piles: [...document.querySelectorAll('svg.desk [data-pile]')].map(p => p.dataset.sheets).join('/'), planner: g('[data-station="planner"]').textContent }; });
+  await page.focus('svg.desk [data-station="cards"]'); await page.keyboard.press('Enter'); await page.waitForSelector('.stations button[data-station="cards"][aria-selected="true"]');
+  const keyboardOpens = await page.evaluate(() => UI.station === 'cards' && /Review the due cards|cards for this room|due today/.test(document.getElementById('v-rooms').textContent));
+  let requests = 0; const count = () => requests++; page.on('request', count);
+  await page.evaluate(() => { renderRooms(); renderRooms(); }); await page.waitForTimeout(400); page.off('request', count);
+  await page.click('svg.desk [data-station="planner"]'); await page.waitForSelector('.stations button[data-station="planner"][aria-selected="true"]'); await page.waitForSelector('table.cal'); await page.evaluate(() => window.scrollTo(0, 0)); await page.waitForTimeout(300);
+  await page.screenshot({ path: path.join(OUT, 'desk-8-planner.png'), fullPage: false, clip: { x: 0, y: 0, width: 1180, height: 900 } });
+  /* an untouched room */
+  await page.click('#backRooms'); await page.click('button[data-open="OCR-H481|2.1"]'); await page.waitForSelector('svg.desk [data-station="planner"]'); await page.evaluate(() => window.scrollTo(0, 0)); await page.waitForTimeout(500);
+  await page.screenshot({ path: path.join(OUT, 'desk-7-empty.png'), fullPage: false, clip: { x: 0, y: 0, width: 1180, height: 760 } });
+  const emptyFacts = await page.evaluate(() => ({ prompt: !!document.querySelector('svg.desk [aria-label="Pin a video"]') && !!document.querySelector('svg.desk [aria-label="Photograph your notes"]'), note: !document.querySelector('svg.desk [data-postit="note"]'), plant: document.querySelector('svg.desk [data-plant]').dataset.plant }));
   /* Today: the three-week-old item resurfaces, the nudge points at the desktop */
   await page.reload(); await page.waitForSelector('#v-today .steps', { timeout: 15000 }); await page.waitForSelector('#v-today .dtoday', { timeout: 15000 }); await page.waitForTimeout(800);
   await page.screenshot({ path: path.join(OUT, 'desk-3-today.png'), fullPage: false });
@@ -104,11 +118,18 @@ const server = http.createServer((req, res) => {
   const phone = await browser.newContext({ viewport: { width: 400, height: 820 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
   await phone.addInitScript(() => { localStorage.setItem('platform:session', 'tok-matthew'); });
   const pp = await phone.newPage(); await pp.goto(ORIGIN); await pp.waitForSelector('#v-today .steps', { timeout: 15000 });
-  await pp.$eval('nav button[data-v="rooms"]', b => b.click()); await pp.waitForSelector('button[data-open="OCR-H481|1.2"]'); await pp.$eval('button[data-open="OCR-H481|1.2"]', b => b.click()); await pp.waitForSelector('.stations button[data-station="desktop"]'); await pp.$eval('.stations button[data-station="desktop"]', b => b.click()); await pp.waitForSelector('.dblock[data-kind="photo"]', { timeout: 10000 });
+  await pp.$eval('nav button[data-v="rooms"]', b => b.click()); await pp.waitForSelector('button[data-open="OCR-H481|1.2"]'); await pp.$eval('button[data-open="OCR-H481|1.2"]', b => b.click()); await pp.waitForSelector('svg.desk [aria-label^="Videos: resume"]', { timeout: 10000 }); await pp.waitForTimeout(600);
+  await pp.screenshot({ path: path.join(OUT, 'desk-6-desk-phone.png'), fullPage: false, clip: { x: 0, y: 0, width: 400, height: 640 } });
+  const hits = await pp.evaluate(() => [...document.querySelectorAll('svg.desk .dobj')].map(g => { const b = g.getBoundingClientRect(); return { n: g.getAttribute('aria-label').slice(0, 24), w: Math.round(b.width), h: Math.round(b.height) }; }));
+  const captionsHidden = await pp.evaluate(() => getComputedStyle(document.querySelector('svg.desk .dcap')).display === 'none');
+  await pp.$eval('.stations button[data-station="desktop"]', b => b.click()); await pp.waitForSelector('.dblock[data-kind="photo"]', { timeout: 10000 });
   await pp.screenshot({ path: path.join(OUT, 'desk-4-phone.png'), fullPage: true });
   await browser.close(); server.close();
   const dims = seen.patches.find(x => x.w);
   console.log('uploaded', seen.upload, '· straightened size', dims && `${dims.w}×${dims.h}`, '· tutor calls', JSON.stringify(seen.ai.filter(a => a.kind !== 'nudge')), '· cards in the room deck', cardsInDeck);
   const okDims = dims && dims.w <= 2000 && dims.h <= 2000 && Math.abs(dims.w / dims.h - 1050 / 860) < 0.15;
   console.log(seen.upload && seen.upload.bytes < 8 * 1048576 && okDims && seen.ai.some(a => a.kind === 'transcribe' && a.image && a.model === 'claude-haiku-4-5') && seen.ai.some(a => a.kind === 'cards') && cardsInDeck >= 4 ? 'PROOF: criteria 2, 3, 4, 5 and 6 seen in the browser' : 'PROOF: FAILED');
+  const smallHits = hits.filter(h => h.w < 44 || h.h < 44);
+  console.log('desk', JSON.stringify(deskFacts), '· keyboard opens', keyboardOpens, '· requests while redrawing', requests, '· empty room', JSON.stringify(emptyFacts), '· phone hit areas', hits.length, 'objects, smallest', Math.min(...hits.map(h => Math.min(h.w, h.h))) + 'px', smallHits.length ? JSON.stringify(smallHits) : '', '· captions hidden on the phone', captionsHidden);
+  console.log(deskFacts.objects >= 14 && /resume .* at 0:47/.test(deskFacts.video || '') && deskFacts.note && deskFacts.photo && deskFacts.flag && deskFacts.plant === 'Fluent' && keyboardOpens && requests === 0 && emptyFacts.prompt && emptyFacts.note && emptyFacts.plant === 'Unassessed' && !smallHits.length && captionsHidden ? 'DESK PROOF: criteria 1, 2, 4, 5, 6, 7, 9, 11 and 12 seen in the browser' : 'DESK PROOF: FAILED');
 })().catch(e => { console.error(e); process.exit(1); });

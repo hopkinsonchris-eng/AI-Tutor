@@ -261,5 +261,19 @@ function topicLinks(spec, topic) {
   return out;
 }
 
-if (typeof module !== 'undefined') module.exports = { DAY, STATES, FAILURE_MODES, REMEDY, BLOCKS, phaseFor, days, iso, resolveTopics, nodeId, newState, topicWeights, deskResurface,
+/* The drawn desk. Days to the exam: to the first day of the exam term in the chosen year, or mid-May if the
+   calendar does not reach that year. Piles: the bank at each difficulty minus the questions got right there
+   in this room, never below one sheet while the bank has any. */
+function daysToExam(setup, today) {
+  const y = setup && setup.examYear; if (!y) return null;
+  const b = BLOCKS.find(x => x.kind === 'EXAM' && x.from.startsWith(String(y)));
+  return Math.max(0, days(today, b ? b.from : `${y}-05-11`));
+}
+function pileCounts(questions, practice, room) {
+  const out = [1, 2, 3].map(d => ({ d, bank: (questions || []).filter(q => q.d === d).length, done: 0, left: 0 }));
+  for (const p of practice || []) if (p.node === room && p.ok && p.d >= 1 && p.d <= 3) out[p.d - 1].done++;
+  for (const o of out) o.left = o.bank ? Math.max(1, o.bank - o.done) : 0;
+  return out;
+}
+if (typeof module !== 'undefined') module.exports = { DAY, STATES, FAILURE_MODES, REMEDY, BLOCKS, phaseFor, days, iso, resolveTopics, nodeId, newState, topicWeights, deskResurface, daysToExam, pileCounts,
   recordResult, recordWrong, applyDecay, dueForReview, scheduleCard, dueCards, subjectPriority, buildSession, MASTERY_FACTOR, DEFAULT_BOUNDS, gradeFor, predictSubject, weeklyReport, streakDays, nudgeFallback, nudgePrompt, topicLinks };

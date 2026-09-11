@@ -103,6 +103,30 @@ Limits: 250 MB of files per student, 200 items per room, 8 MB per file. Without 
 Worker answers the desktop routes with 503 and the tab says "not set up yet"; nothing else changes.
 `npm run proof:desk` drives the whole flow in a browser against a stub tutor and writes `docs/proof/desk-*.png`.
 
+## The desk at the top of every room
+
+Above the station strip every room draws the student's desk: a flat hand-drawn scene whose objects are the
+stations, and whose shapes are the room's state. Nothing on it needs reading as a number first:
+
+- three post-its on the wall: the tutor's next-step nudge (or where to start), the latest note kept in
+  this room, and today's numbers (cards due, days to the exams, the session's steps and minutes);
+- a pinned photo of the latest notes, or a dashed frame inviting the first one; a plant that grows through
+  Unassessed, Learning, Fluent and Secure; a lamp for Coach; an open textbook for the lesson with a
+  bookmark for the key facts;
+- three piles of paper (standard, exam-standard, hard) whose height is the questions still waiting in the
+  room's bank at that difficulty, minus the ones the student has already got right there, with a red pen
+  across them; a tablet showing the last pinned video and where it will resume; a card box for the room's
+  deck with a red flag carrying the due count; a planner with today's date, the term, the countdown and
+  today's steps; a notepad for essays with the last mark; an in-tray for marking; the exit ticket, ticked
+  once passed; and a drawer for the whole desktop.
+
+Every object is a button with an accessible name; click, Enter or Space opens the station beneath. The
+text strip under the desk still names every station for screen readers and narrow phones, where the
+captions hide and every object keeps a hit area of at least 44 px. The desk is drawn from what the app
+already holds (no extra network calls), motion is transform-only and off under `prefers-reduced-motion`,
+and `DESK_ON=false` in `src/template.html` puts the plain strip back. The new Planner station shows the
+countdown, today's session with ticks, and the year's terms and holidays.
+
 ## How it works on your site
 
 The site opens on a sign-in screen. A student signs in with a username and password, and everything after that -- the tutor, their progress, the admin tab -- is keyed to that sign-in. Progress is saved to the Worker as they go and cached on the device, so signing in on another device picks up where they left off.

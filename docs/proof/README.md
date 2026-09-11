@@ -67,3 +67,27 @@ Phone: the course and topic drawer over the session, bottom nav and status strip
 A built course’s room after depth: the checked lesson with one section per key idea, faded worked examples, the required-practical method sheet, and the provenance line
 
 ![11-room-with-kit](11-room-with-kit.png)
+
+## desk-5-desk
+
+The drawn desk at the top of a room: post-its with the nudge, a note and today's numbers, the pinned photo, the plant at Fluent, the textbook, the tablet resuming at 0:47, three piles sized by the bank, the card box flagged "5 due", the planner, notepad, in-tray, exit ticket and drawer
+
+![desk-5-desk](desk-5-desk.png)
+
+## desk-6-desk-phone
+
+The same desk at 400 px: captions hidden, the text strip names every station, every object at least 44 px to tap
+
+![desk-6-desk-phone](desk-6-desk-phone.png)
+
+## desk-7-empty
+
+An untouched room: "Start here" on the yellow post-it, a dashed photo frame, a seedling, an empty tablet, "Cards · add 14"
+
+![desk-7-empty](desk-7-empty.png)
+
+## desk-8-planner
+
+The Planner station opened from the desk: the countdown, today's session with ticks, the year ahead
+
+![desk-8-planner](desk-8-planner.png)

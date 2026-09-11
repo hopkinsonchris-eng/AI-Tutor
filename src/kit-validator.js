@@ -8,6 +8,9 @@ const { FAMILIES } = require('./families.js');
 /* A front that asks for any example, or for one of several acceptable answers: the back must offer more than one. */
 const OPEN_FRONT = /\b(give|name|suggest|state|identify|describe|provide|outline|quote|pick|choose)\s+(an?|one|two|three)\s+(example|examples|named|possible|way|ways|reason|reasons|factor|factors|method|methods|cause|causes|effect|effects|limitation|limitations|advantage|advantages|disadvantage|disadvantages|benefit|benefits|risk|risks|use|uses|application|applications|source|sources|technique|techniques|strategy|strategies|consequence|consequences|impact|impacts|piece|pieces|situation|situations|case|cases|technology|technologies|policy|policies|difficulty|difficulties|problem|problems)\b|\b(an|one) example\b|\bfor example\b|\bsuch as\b.*\?/i;
 
+const nums = s => (String(s).match(/\d+(?:[.,]\d+)?/g) || []).map(x => x.replace(',', ''));
+const words = t => new Set(String(t).toLowerCase().match(/[a-z0-9£$%.]+/g) || []);
+
 const KINDS = ['formulae', 'practical', 'extended', 'paragraph', 'factfile', 'plan', 'vocab', 'grammar', 'notes'];
 
 function validateKit(kit, topic, family) {
@@ -31,6 +34,13 @@ function validateKit(kit, topic, family) {
     if (!e || !e.title || !Array.isArray(e.steps) || e.steps.length < 3 || e.steps.some(x => !x)) bad(`lesson.examples[${i}]: needs a title and at least 3 non-empty steps`);
     if (!e || typeof e.setup !== 'string' || e.setup.trim().length < 40) bad(`lesson.examples[${i}]: needs setup — the full problem the student sees before predicting: every value, statement or source given, and what is asked (at least 40 characters)`);
     if (!e || !Array.isArray(e.cues) || !Array.isArray(e.steps) || e.cues.length !== e.steps.length || e.cues.some(c => typeof c !== 'string' || c.trim().length < 8)) bad(`lesson.examples[${i}]: needs cues — one short question per step, asked before that step is revealed, that the setup and the steps so far make answerable`);
+    if (e && typeof e.setup === 'string' && Array.isArray(e.steps) && e.steps.length >= 2) {
+      const earlier = new Set(nums(e.steps.slice(0, -1).join(' '))), inSetup = new Set(nums(e.setup));
+      const leaked = [...new Set(nums(e.steps[e.steps.length - 1]))].filter(x => !earlier.has(x) && inSetup.has(x) && !/^(0|1|2|3|4|5|10|100)$/.test(x));
+      if (leaked.length) bad(`lesson.examples[${i}]: the setup gives away the result — ${leaked.join(', ')} first appears in the final step`);
+      const a = words(e.steps[0]), b = words(e.setup); const inter = [...a].filter(w => b.has(w)).length;
+      if (a.size >= 6 && inter / a.size > 0.8) bad(`lesson.examples[${i}]: the first step only restates the setup — it must make the first move`);
+    }
   });
   const ch = Array.isArray(L.check) ? L.check : [];
   if (ch.length < 3) bad(`lesson.check: at least 3 check-yourself questions, has ${ch.length}`);

@@ -68,5 +68,9 @@ before that step is revealed and answerable from the setup and the steps shown s
 setup at once and puts each cue above its Reveal button, so the student always knows what to predict.
 A card whose front asks for an example, or for one of several acceptable answers, is `open: true` and
 its back lists two or three acceptable answers separated by semicolons; the app tells the student any
-sound example scores. `scripts/kit-refine.js` retrofits both onto a shipped kit with a writer agent.
+sound example scores. The validator also refuses a setup that states a number the final step first reaches (the result given
+away) and a first step that only restates the setup, and the Worker's judge reads every example against
+the examiner's tests: setup complete and silent on the result, one real move per step, final step
+answering what was asked, cues answerable and non-revealing, open-card answers each scoring.
+`scripts/kit-refine.js` retrofits all of this onto a shipped kit with a writer agent.
 

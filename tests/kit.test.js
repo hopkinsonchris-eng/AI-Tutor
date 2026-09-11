@@ -44,4 +44,8 @@ const openKit=sampleKit(topic,'quantitative');openKit.cards[0]={front:'Give an e
 r=v(openKit);ok('K10 a front that asks for an example must be an open card',!r.ok&&/open: true/.test(r.problems.join()),r.problems.join('|'));
 openKit.cards[0].open=true;r=v(openKit);ok('K10 an open card needs at least two acceptable answers',!r.ok&&/at least two acceptable answers/.test(r.problems.join()));
 openKit.cards[0].back='It ignores friction; it assumes the string is light; it treats the pulley as smooth';r=v(openKit);ok('K10 two or three answers separated by semicolons pass',r.ok,r.problems.join('|'));
+r=v(sampleKit(topic,'quantitative',{lesson:{examples:sampleKit(topic,'quantitative').lesson.examples.map((e,i)=>i?e:Object.assign({},e,{setup:'A student is given the values 4, 6 and 11 and is asked for the mean, which is 7.',steps:['Add the three values: 4 + 6 + 11 = 21.','There are three values, so divide the total by 3.','Mean = 21 ÷ 3 = 7.']}))}}));
+ok('K11 a setup that states the result the final step reaches is refused',!r.ok&&/gives away the result/.test(r.problems.join()),r.problems.join('|'));
+r=v(sampleKit(topic,'quantitative',{lesson:{examples:sampleKit(topic,'quantitative').lesson.examples.map((e,i)=>i?e:Object.assign({},e,{steps:['A student is given the full situation for '+topic.name+': the values 4, 8 and 12 and is asked for the mean.',e.steps[1],e.steps[2]]}))}}));
+ok('K11 a first step that restates the setup is refused',!r.ok&&/first step only restates/.test(r.problems.join()),r.problems.join('|'));
 console.log(`PASSED: ${pass}`); fails.forEach(f => console.log('FAILED: ' + f)); console.log('-'.repeat(50)); console.log(fails.length ? `RESULT: ${fails.length} FAILURE(S)` : 'RESULT: ALL GREEN'); process.exit(fails.length ? 1 : 0);

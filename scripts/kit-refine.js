@@ -66,14 +66,7 @@ function apply(t) {
     const missing = [...new Set(nums(old.steps.join(' ')))].filter(x => !have.has(x));
     if (missing.length) problems.push(`examples[${i}]: values from the original steps are missing: ${missing.join(', ')}`);
     if (!Array.isArray(e.steps) || e.steps.length < 3 || e.steps.length > 6) problems.push(`examples[${i}]: 3 to 6 steps`);
-    if (Array.isArray(e.steps) && e.steps.length >= 2) {
-      const earlier = new Set(nums(e.steps.slice(0, -1).join(' '))), inSetup = new Set(nums(e.setup)), last = nums(e.steps[e.steps.length - 1]);
-      const leaked = [...new Set(last)].filter(x => !earlier.has(x) && inSetup.has(x) && !/^(0|1|2|3|4|5|10|100)$/.test(x));
-      if (leaked.length) problems.push(`examples[${i}]: the setup gives away the result — ${leaked.join(', ')} first appears in the final step`);
-      const words = t => new Set(String(t).toLowerCase().match(/[a-z0-9£$%.]+/g) || []);
-      const a = words(e.steps[0]), b = words(e.setup); const inter = [...a].filter(w => b.has(w)).length;
-      if (a.size >= 6 && inter / a.size > 0.8) problems.push(`examples[${i}]: the first step only restates the setup — make it the first move`);
-    }
+    /* the result-leak and restated-first-step checks now live in the shared validator, run below */
     return { title: old.title, setup: String(e.setup || '').trim(), steps: e.steps, cues: e.cues };
   });
   const newCards = kit.cards.map(c => ({ ...c }));

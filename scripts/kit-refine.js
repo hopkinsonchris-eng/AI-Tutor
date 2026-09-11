@@ -25,8 +25,11 @@ const refined = k => (k.lesson.examples || []).every(e => e.setup && e.cues) && 
 function extract(t) {
   const M = loadKits(); const kit = M.KITS[t]; if (!kit) throw new Error('no kit for ' + t);
   const topic = topicOf(t);
-  const cards = kit.cards.map((c, index) => ({ index, front: c.front, back: c.back, code: c.code })).filter(c => OPEN_FRONT.test(c.front) || /\b(one|two|three|an?)\b.*\b(example|examples)\b/i.test(c.front));
-  const input = { course: `${spec.board} ${spec.level} ${spec.subject} (${spec.code})`, family, topic: { id: t, name: topic.name, ideas: topic.ideas }, examples: kit.lesson.examples.map(e => ({ title: e.title, steps: e.steps })), cards };
+  const cards = kit.cards.map((c, index) => ({ index, front: c.front, back: c.back, flagged: OPEN_FRONT.test(c.front) || /\b(one|two|three|an?)\b.*\b(example|examples)\b/i.test(c.front) || !!c.open }));
+  const jf = path.join(D, 'judge.json'); let judged = [];
+  if (fs.existsSync(jf)) { try { const j = JSON.parse(fs.readFileSync(jf, 'utf8')); const r = (j.rooms || []).find(x => x.room === t); if (r && !r.ok) judged = r.problems || []; } catch (e) {} }
+  const pj = path.join(D, t + '.judge.json'); if (fs.existsSync(pj)) { try { const r = JSON.parse(fs.readFileSync(pj, 'utf8')); if (r && !r.ok) judged = judged.concat(r.problems || []); } catch (e) {} }
+  const input = { course: `${spec.board} ${spec.level} ${spec.subject} (${spec.code})`, family, topic: { id: t, name: topic.name, ideas: topic.ideas }, examples: kit.lesson.examples.map(e => ({ title: e.title, setup: e.setup, steps: e.steps, cues: e.cues })), cards, judged };
   fs.writeFileSync(path.join(D, t + '.in.json'), JSON.stringify(input, null, 1));
   const prompt = `You are refining the worked examples and some recall cards of one room of a study platform for UK students. Course: ${input.course}. Topic ${t} "${topic.name}". Family: ${family}.
 
@@ -34,16 +37,18 @@ The specification map's key ideas for this room (use only these; do not invent c
 ${JSON.stringify(topic.ideas)}
 
 WORKED EXAMPLES. Students see them faded and must predict each line before revealing it. Today the first hidden line often assumes data or a scenario they were never shown, so there is nothing to predict from. For EVERY example below, in the same order and with the SAME title:
-1. Write "setup": the complete problem as the student sees it before predicting anything — every value, reading, statement, source, scenario or quotation the steps use, and exactly what is asked. One to three sentences. No working, no answers.
-2. Rewrite "steps" so each line makes ONE move with the real values or the real statements (not instructions to the student). Keep every value and every result from the original steps — you may split or merge lines, but 3 to 6 steps, and the final step states the answer or conclusion.
+1. Write "setup": the complete problem as the student sees it before predicting anything — every value, reading, statement, source, scenario or quotation the steps use, and exactly what is asked. One to three sentences. No working, and NEVER the result: a new equilibrium, a total, a percentage, a judgement or a conclusion that a later step reaches must not appear in the setup (the merge refuses a setup that contains a number first reached in the final step).
+2. Rewrite "steps" so each line makes ONE move with the real values or the real statements (not instructions to the student). The first step must be a move, not a restatement of the setup (the merge refuses a first step that repeats the setup). Keep every value and every result from the original steps — you may split or merge lines, but 3 to 6 steps. The final step must state the answer to exactly what the setup asked: if it asks for a judgement, make the judgement; if it asks for a critical path, name the path; if it asks for a value, give it with its unit. Label every intermediate figure correctly (which node, which year, which activity) and check each figure against the previous line.
 3. Write "cues": exactly one per step, in order — a short question (8 to 90 characters) the student answers BEFORE that step is revealed, answerable from the setup and the steps already shown, never containing the step's answer. Examples: "Which reading does not fit the others, and why?", "What do you divide the total by?", "Which command word decides the structure here?".
 
-RECALL CARDS. The cards listed below ask for an example or for one of several acceptable answers, but their back presents one answer as if it were the only one. For each listed card (same index, front unchanged) rewrite "back" to give two or three acceptable answers, separated by semicolons, each specific and correct for this course (real named examples, places, policies, studies or values where the specification has them), at most 60 words in total, and set "open": true. If a listed card in fact has a single fixed answer the specification requires, keep its back, set "open": false, and change nothing else (the merge will tell you if the front still reads as open; then reword the front to make the single answer clear, e.g. "Name the three sources..." not "Give three sources...").
+RECALL CARDS. Every card of the room is listed below with its index. A card whose front asks for an example, or for one of several acceptable answers (the ones marked flagged, and any other you judge to be of that kind), must be open: for each such card (same index, front unchanged) rewrite "back" to give two or three acceptable answers, separated by semicolons, each specific and correct for this course (real named examples, places, policies, studies or values where the specification has them), at most 60 words in total, and set "open": true. A card with one right answer is left out of your reply. If a flagged card in fact has a single fixed answer the specification requires, set "open": false and reword the front so it reads as a fixed question ("Name the three sources..." not "Give three sources...").
+
+${judged.length ? `A PREVIOUS VERSION OF THIS ROOM WAS REFUSED BY AN EXAMINER FOR THESE REASONS — fix every one:\n- ${judged.join('\n- ')}\n` : ''}Common faults to avoid, found by examiners in earlier rewrites: the setup states the result (a new equilibrium, an anomaly value, a judgement) so the steps only restate it; the first step repeats the setup; a later step introduces a fact, an Act or a value the setup never gave, so its cue cannot be answered; a step is generic exam advice ("use AO2 here") rather than a move on this case; a cue states the step's own finding and asks only for the reason; a label is wrong (which node, which year, which activity); a question asked in the setup (a judgement, the critical path, a percentage) is never answered in the final step; a fact is wrong (check dates, who does what under an Act, which country signed or ratified what).
 
 Reply with ONLY this JSON, nothing else:
 {"examples":[{"title":"...","setup":"...","steps":["..."],"cues":["..."]}],"cards":[{"index":0,"front":"...","back":"...","open":true}]}
 
-Here is the room's current material:
+Here is the room's current material (examples may already carry a setup and cues from an earlier rewrite — improve them, do not assume they are right):
 ${JSON.stringify({ examples: input.examples, cards: input.cards }, null, 1)}`;
   fs.writeFileSync(path.join(D, t + '.prompt.md'), prompt);
   console.log('extracted', t, '·', input.examples.length, 'examples,', cards.length, 'open cards · prompt', path.relative(ROOT, path.join(D, t + '.prompt.md')));
@@ -61,6 +66,14 @@ function apply(t) {
     const missing = [...new Set(nums(old.steps.join(' ')))].filter(x => !have.has(x));
     if (missing.length) problems.push(`examples[${i}]: values from the original steps are missing: ${missing.join(', ')}`);
     if (!Array.isArray(e.steps) || e.steps.length < 3 || e.steps.length > 6) problems.push(`examples[${i}]: 3 to 6 steps`);
+    if (Array.isArray(e.steps) && e.steps.length >= 2) {
+      const earlier = new Set(nums(e.steps.slice(0, -1).join(' '))), inSetup = new Set(nums(e.setup)), last = nums(e.steps[e.steps.length - 1]);
+      const leaked = [...new Set(last)].filter(x => !earlier.has(x) && inSetup.has(x) && !/^(0|1|2|3|4|5|10|100)$/.test(x));
+      if (leaked.length) problems.push(`examples[${i}]: the setup gives away the result — ${leaked.join(', ')} first appears in the final step`);
+      const words = t => new Set(String(t).toLowerCase().match(/[a-z0-9£$%.]+/g) || []);
+      const a = words(e.steps[0]), b = words(e.setup); const inter = [...a].filter(w => b.has(w)).length;
+      if (a.size >= 6 && inter / a.size > 0.8) problems.push(`examples[${i}]: the first step only restates the setup — make it the first move`);
+    }
     return { title: old.title, setup: String(e.setup || '').trim(), steps: e.steps, cues: e.cues };
   });
   const newCards = kit.cards.map(c => ({ ...c }));

@@ -144,17 +144,17 @@ const SPEC_4EA1 = {
    {
     "marks": 11,
     "minutes": 22,
-    "structure": "Component 1, Section A, Question 1 — AO1 only, 11 marks (pro rata within the 1 hour 30 minutes advised for Section A's 45 marks). A short- to medium-answer reading question on the Part 1 anthology text: select and interpret information, ideas and perspectives, supporting each point with a quotation or a reference to a specific moment in the text. No analysis of method is rewarded here; the levels reward clear and relevant selection and, at the top, detailed and persuasive selection with discriminating use of supporting quotations and a convincing understanding."
+    "structure": "Component 1, Section A, Question 1 — AO1 only, 11 marks (the 22 minutes are pro rata within the 1 hour 30 minutes advised for Section A's 45 marks; the specification times Section A as a whole and never times individual questions). A short- to medium-answer reading question on the Part 1 anthology text: select and interpret information, ideas and perspectives, supporting each point with a quotation or a reference to a specific moment in the text. No analysis of method is rewarded here; the levels reward clear and relevant selection and, at the top, detailed and persuasive selection with discriminating use of supporting quotations and a convincing understanding."
    },
    {
     "marks": 12,
     "minutes": 24,
-    "structure": "Component 1, Section A, Question 2 — AO2 only, 12 marks. A question on how the writer uses linguistic and structural devices to achieve their effects: select the devices, cite the exact words or the structural pattern as an example, and explain the effect. Move beyond \"basic and simple comment\" to \"clear explanations of the effects of language and structure\", and at the top to a perceptive analysis with subtle and discriminating selection."
+    "structure": "Component 1, Section A, Question 2 — AO2 only, 12 marks (the 24 minutes are pro rata within the 1 hour 30 minutes advised for Section A's 45 marks; the specification times Section A as a whole and never times individual questions). A question on how the writer uses linguistic and structural devices to achieve their effects: select the devices, cite the exact words or the structural pattern as an example, and explain the effect. Move beyond \"basic and simple comment\" to \"clear explanations of the effects of language and structure\", and at the top to a perceptive analysis with subtle and discriminating selection."
    },
    {
     "marks": 22,
     "minutes": 44,
-    "structure": "Component 1, Section A, Question 3 — AO3 only, 22 marks, the paper's long reading answer across the Part 1 anthology text and the previously unseen extract. Explore links and connections between the writers' ideas and perspectives \"as well as how these are conveyed\": build paragraphs that put the two texts together on one idea, quote from both, and weigh how each writer's method conveys that perspective differently."
+    "structure": "Component 1, Section A, Question 3 — AO3 only, 22 marks (the 44 minutes are pro rata within the 1 hour 30 minutes advised for Section A's 45 marks; the specification times Section A as a whole and never times individual questions), the paper's long reading answer across the Part 1 anthology text and the previously unseen extract. Explore links and connections between the writers' ideas and perspectives \"as well as how these are conveyed\": build paragraphs that put the two texts together on one idea, quote from both, and weigh how each writer's method conveys that perspective differently."
    },
    {
     "marks": 45,
@@ -325,7 +325,7 @@ const SPEC_4EA1 = {
      "code": "AO3 (Component 1 only)",
      "q": "What does the paper ask students to do across two texts?",
      "idea": "Links and connections between the anthology text and the unseen extract",
-     "content": "\"AO3 explore links and connections between writers’ ideas and perspectives, as well as how these are conveyed.\" AO3 carries 15% of the International GCSE and all 22 of its raw marks sit in Component 1, Question 3; it is the only assessment objective not assessed in Component 2 or Component 3. One of the qualification's stated aims is that students \"make comparisons between texts and analyse the ways in which writers achieve their effects\"."
+     "content": "\"AO3 explore links and connections between writers’ ideas and perspectives, as well as how these are conveyed.\" AO3 carries 15% of the International GCSE and all 22 of its raw marks sit in Component 1, Question 3; it is the only assessment objective not assessed in Component 2 or Component 3. Under Key qualification features (\"Broad and deep development of students’ skills\") the specification says students develop the ability to \"make comparisons between texts and analyse the ways in which writers achieve their effects\"."
     }
    ]
   },
@@ -353,7 +353,7 @@ const SPEC_4EA1 = {
      "code": "Content — the transactional text types",
      "q": "Which forms can the paper ask a student to write in?",
      "idea": "The six transactional text types students will be asked to write",
-     "content": "Added in Issue 7: \"The transactional text types that students will be asked to write are: article for a magazine or newspaper; speech; letter; guide; review; text of a leaflet.\" Students should be able to write in any of the six to a given audience and purpose, because the task \"involves a given audience, form or purpose\"."
+     "content": "Added in Issue 7: \"The transactional text types that students will be asked to write are: article for a magazine or newspaper; speech; letter; guide; review; text of a leaflet.\" Students should be able to write in any of the six to a given audience and purpose, because the task is set \"based on a choice of two prompts involving a given audience, form or purpose\"."
     },
     {
      "code": "article for a magazine or newspaper",
@@ -557,6 +557,78 @@ const SPEC_4EA1 = {
    ]
   },
   {
+   "id": "spoken-language-endorsement",
+   "component": "C1",
+   "option": null,
+   "name": "Spoken Language Endorsement (optional) (separately reported, not part of the 9–1 grade)",
+   "caseStudies": [
+    "a speech or talk by a student, followed by questions from the audience",
+    "a formal debate or dialogue, such as an interview where the student is able to prepare extended responses to questions or prompts, which have been shared in advance, followed by questions from the audience"
+   ],
+   "ideas": [
+    {
+     "code": "Overview",
+     "q": "What is the endorsement and what does it ask a student to do?",
+     "idea": "An optional, separately graded oral examination of presentation skills",
+     "content": "\"The preparation and assessment of spoken language is an optional component of the course of study. If a student completes the endorsement, it will appear on their certificate as a separately reported grade, alongside the overall grade issued.\" \"Students must demonstrate their presentation skills in a formal setting, listen and respond to questions and feedback, and use spoken English effectively.\" Paper code 4EA1/E: internally assessed under controlled conditions; oral examination: maximum 10 minutes; availability June and November; graded Not Classified, Pass, Merit, Distinction; endorsed separately. In the assessment requirements table it is \"one presentation to an audience with questions, internally set and assessed, and externally monitored by Pearson\", with the number of raw marks \"Not applicable\"."
+    },
+    {
+     "code": "Presentation",
+     "q": "Which forms may the presentation take?",
+     "idea": "The two permitted presentation forms, prepared and no longer than 10 minutes",
+     "content": "\"The spoken language presentation may take a variety of forms, including: a) a speech or talk by a student, followed by questions from the audience; b) a formal debate or dialogue, such as an interview where the student is able to prepare extended responses to questions or prompts, which have been shared in advance, followed by questions from the audience. In all cases, the presentation should be prepared and last no longer than 10 minutes.\""
+    },
+    {
+     "code": "Audience",
+     "q": "Who must the presentation be given to?",
+     "idea": "The audience must always include the teacher",
+     "content": "\"Students must give their presentations to an audience, which must always include the teacher. The size and composition of the audience should be determined by the teacher, in discussion with the student. However, where the audience is the teacher only, the presentation and dialogue should be designed in such a way that it could have a potentially wider audience than just one person (for example, it replicates a television interview).\""
+    },
+    {
+     "code": "Assessment criteria",
+     "q": "How is the endorsement marked?",
+     "idea": "No marks: a grade awarded against criteria, live or from recordings",
+     "content": "\"Students should be assessed either live or from recordings. There are no marks for the spoken language endorsement. Should students choose to attempt the assessment, they should be awarded a grade (Not Classified, Pass, Merit or Distinction) using the assessment criteria below. Students’ grades will appear on their certificates.\" \"In order to achieve a particular grade, a student must meet all of the criteria for that grade.\" The record sheet repeats the rule: \"Candidates must fulfil ALL the criteria for a level in order to achieve that level overall. Candidates must also fulfil ALL the criteria for preceding levels, where applicable.\""
+    },
+    {
+     "code": "General criteria",
+     "q": "What must every graded student do, whatever the grade?",
+     "idea": "Be audible, use spoken Standard English, be intelligible and suit the formal setting",
+     "content": "\"To be awarded a Pass, Merit or Distinction, a student must: be audible; use spoken Standard English. For the purposes of the spoken language assessment a student must: be intelligible, and generally use language appropriate to the formal setting of the presentation.\" The Pass, Merit and Distinction criteria are each additional to these general criteria."
+    },
+    {
+     "code": "Pass",
+     "q": "What does a Pass performance do?",
+     "idea": "Pass criteria as printed",
+     "content": "\"In addition to the general criteria, to be awarded a Pass, a student’s performance in his or her spoken language assessment must meet all of the following criteria: expresses straightforward ideas/information/feelings; makes an attempt to organise and structure his or her presentation; makes an attempt to meet the needs of the audience; listens to questions/feedback and provides an appropriate response in a straightforward manner.\""
+    },
+    {
+     "code": "Merit",
+     "q": "What does a Merit performance do that a Pass does not?",
+     "idea": "Merit criteria as printed",
+     "content": "\"In addition to the general criteria, to be awarded a Merit, a student’s performance in his or her spoken language assessment must meet all of the following criteria: expresses challenging ideas/information/feelings using a range of vocabulary; organises and structures his or her presentation clearly and appropriately to meet the needs of the audience; achieves the purpose of his or her presentation; listens to questions/feedback, responding formally and in some detail.\""
+    },
+    {
+     "code": "Distinction",
+     "q": "What does a Distinction performance do?",
+     "idea": "Distinction criteria as printed",
+     "content": "\"In addition to the general criteria, to be awarded a Distinction, a student’s performance in his or her spoken language assessment must meet all of the following criteria: expresses sophisticated ideas/information/feelings using a sophisticated repertoire of vocabulary; organises and structures his or her presentation using an effective range of strategies to engage the audience; achieves the purpose of his or her presentation, and listens to questions/feedback; responds perceptively and, if appropriate, elaborates with further ideas and information.\""
+    },
+    {
+     "code": "External monitoring",
+     "q": "What must a centre record and send?",
+     "idea": "Audio-visual recordings of a sample, from across teaching groups",
+     "content": "\"For each June and/or November series, all centres are required to provide audio-visual recordings of the presentations of a sample of students from across teaching groups. There is no requirement to record the presentations of all students.\" \"All learner work must be submitted digitally.\" A record sheet \"should be completed for each student\": \"Upload the record sheets for the 30 students in your sample and retain the remaining record sheets.\""
+    },
+    {
+     "code": "Marking up the sample",
+     "q": "How big is the sample, and how is it made up?",
+     "idea": "The sampling rule: all students at 30 or fewer, otherwise 30, with minimum numbers at each grade",
+     "content": "The table (headed \"Marking up the sample\" on the page; the Issue 7 changes table calls the new section \"Making up the sample\") sets: 30 or fewer students at the centre — all students recorded; over 30 — 30 recorded. In both cases the minimum number of students at each grade (D, M, P) is 10, with \"all students at a grade if the centre has fewer than the stated minimum. Students assessed as Not Classified should not be included.\" \"The sample should be representative of the teaching groups within the centre.\""
+    }
+   ]
+  },
+  {
    "id": "reading-writing-skills",
    "component": "C1",
    "option": null,
@@ -579,13 +651,13 @@ const SPEC_4EA1 = {
      "code": "AO3",
      "q": "What does comparing two texts demand?",
      "idea": "AO3 — Explore links and connections between writers’ ideas and perspectives",
-     "content": "\"AO3 Explore links and connections between writers’ ideas and perspectives, as well as how these are conveyed.\" 15% of the International GCSE, all of it in Component 1 (22 raw marks at Question 3) and none in Component 2 or Component 3. One of the qualification's aims is that students \"make comparisons between texts and analyse the ways in which writers achieve their effects\"; the link must be made both on what the writers think and on how they convey it."
+     "content": "\"AO3 Explore links and connections between writers’ ideas and perspectives, as well as how these are conveyed.\" 15% of the International GCSE, all of it in Component 1 (22 raw marks at Question 3) and none in Component 2 or Component 3. Under Key qualification features (\"Broad and deep development of students’ skills\") the specification says students develop the ability to \"make comparisons between texts and analyse the ways in which writers achieve their effects\"; the link must be made both on what the writers think and on how they convey it."
     },
     {
      "code": "AO4",
      "q": "What does writing for a purpose and audience demand?",
      "idea": "AO4 — Communicate effectively and imaginatively, adapting form, tone and register",
-     "content": "\"AO4 Communicate effectively and imaginatively, adapting form, tone and register of writing for specific purposes and audiences.\" 30% of the International GCSE, the largest single objective (Component 1: 18%, Component 2/Component 3: 12%), 45 raw marks — 27 in the transactional task and 18 in the imaginative task. One of the qualification's aims is to \"construct and convey meaning in written language, matching style to audience and purpose\"."
+     "content": "\"AO4 Communicate effectively and imaginatively, adapting form, tone and register of writing for specific purposes and audiences.\" 30% of the International GCSE, the largest single objective (Component 1: 18%, Component 2/Component 3: 12%), 45 raw marks — 27 in the transactional task and 18 in the imaginative task. Under Key qualification features (\"Broad and deep development of students’ skills\") the specification says students develop the ability to \"construct and convey meaning in written language, matching style to audience and purpose\"."
     },
     {
      "code": "AO5",

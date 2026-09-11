@@ -59,6 +59,7 @@ const server = http.createServer((req, res) => {
   const send = (status, body, type = 'application/json') => { res.writeHead(status, { 'Content-Type': type, 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'Content-Type, Authorization', 'Access-Control-Allow-Methods': 'GET, POST, PUT, PATCH, DELETE, OPTIONS' }); res.end(typeof body === 'string' ? body : JSON.stringify(body)); };
   if (m === 'OPTIONS') return send(204, '');
   if (p === '/' && m === 'GET') return send(200, html, 'text/html; charset=utf-8');
+  if (/^\/kits\/[^/]+\/[^/]+\.json$/.test(p) && m === 'GET') { /* the site serves the hand-built kits next to the page */ const f = path.join(ROOT, 'dist', decodeURIComponent(p)); return fs.existsSync(f) ? send(200, fs.readFileSync(f, 'utf8')) : send(404, { error: 'no such kit' }); }
   const tok = (req.headers.authorization || '').replace('Bearer ', ''); const me = users[tok];
   let raw = ''; req.on('data', c => raw += c); req.on('end', () => {
     const body = raw ? JSON.parse(raw) : {};
@@ -122,8 +123,8 @@ const server = http.createServer((req, res) => {
   let l = await box(page, '#rail-l'), c = await box(page, 'main.centre'), r = await box(page, '#rail-r');
   must(l.x >= 0 && l.x + l.width <= c.x + 1 && c.x + c.width <= r.x + 1 && r.x + r.width <= 1281, `1280px: three columns side by side (rail ${Math.round(l.width)}, centre ${Math.round(c.width)}, rail ${Math.round(r.width)})`);
   must(!(await page.locator('nav.bottom').isVisible()) && (await page.locator('nav.side').isVisible()), '1280px: the nav lives in the left rail, no bottom bar');
-  must((await page.locator('#rail-l .ccard').count()) === 3 && (await page.locator('#rail-l .tnode').count()) === 8, 'left rail: three course cards and the eight geography rooms as a tree');
-  must(/Next step/.test(await page.locator('#rail-r').textContent()) && /Cards due/.test(await page.locator('#rail-r').textContent()) && (await page.locator('#rail-r .ring').count()) === 3, 'right rail on Today: next step, cards due, three progress rings');
+  must((await page.locator('#rail-l .ccard').count()) === 3 && (await page.locator('#rail-l .tnode').count()) === 9, `left rail: three course cards and the nine geography rooms (eight content topics and the skills strand) as a tree (cards ${await page.locator('#rail-l .ccard').count()}, rooms ${await page.locator('#rail-l .tnode').count()}: ${(await page.locator('#rail-l').textContent()).slice(0,300)})`);
+  must(/Next step/.test(await page.locator('#rail-r').textContent()) && /Flash cards due/.test(await page.locator('#rail-r').textContent()) && (await page.locator('#rail-r .ring').count()) === 3, 'right rail on Today: next step, cards due, three progress rings');
   must(/day streak/.test(await page.locator('#status').textContent()) && (await page.locator('#status').isVisible()), 'status strip visible with the streak');
   await snap(page, '6-wide-today', 'Wide screen: left rail (nav, quick-jump, course switcher, topic tree with status dots), centre (today’s session), right rail (tutor-written next step, cards due, progress rings, streak), status strip');
   await page.click('#rail-l [data-open="OCR-H481|1.2"]');

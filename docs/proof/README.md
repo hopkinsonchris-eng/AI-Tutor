@@ -68,26 +68,14 @@ A built course’s room after depth: the checked lesson with one section per key
 
 ![11-room-with-kit](11-room-with-kit.png)
 
-## desk-5-desk
+## 12-maths-room-with-kit
 
-The drawn desk at the top of a room: a cork board with the nudge, the coach's weekly note, the student's own note and today's numbers; the taped photo; the plant at Fluent; the textbook; the coach's mortar board; the tablet resuming at 0:47; three piles sized by the bank; the card box flagged "5 due"; the planner, notepad, in-tray, exit ticket and drawer
+Edexcel A level Maths after the rebuild: the checked kit lesson for Algebra and functions, one section per content statement (2.1–2.11), faded worked examples with cues, and the provenance line
 
-![desk-5-desk](desk-5-desk.png)
+![12-maths-room-with-kit](12-maths-room-with-kit.png)
 
-## desk-6-desk-phone
+## 13-maths-formulae-station
 
-The same desk at 400 px: captions hidden, the text strip names every station, every object at least 44 px to tap
+The same room’s Formulae & links station: the kit’s key formulae, its faded examples, the course’s hand-checked TLMaths pages and the official formulae booklet
 
-![desk-6-desk-phone](desk-6-desk-phone.png)
-
-## desk-7-empty
-
-An untouched room: the coach's fixed line on the pink post-it, a dashed note and photo frame, a seedling, an empty tablet, "Cards · add 14"
-
-![desk-7-empty](desk-7-empty.png)
-
-## desk-8-planner
-
-The Planner station opened from the desk: the countdown, today's session with ticks, the year ahead
-
-![desk-8-planner](desk-8-planner.png)
+![13-maths-formulae-station](13-maths-formulae-station.png)

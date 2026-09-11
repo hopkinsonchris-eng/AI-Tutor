@@ -22,10 +22,10 @@ Object.assign(biology, { id: 'AQA-7402', board: 'AQA', subject: 'Biology', code:
 biology.topics = ['3.1 Biological molecules', '3.2 Cells', '3.3 Organisms exchange substances with their environment', '3.4 Genetic information, variation and relationships', '3.5 Energy transfers in and between organisms', '3.6 Organisms respond to changes', '3.7 Genetics, populations, evolution and ecosystems', '3.8 The control of gene expression', 'Required practicals 1–12']
   .map((n, i) => ({ id: n.split(' ')[0].replace(/^Required/, 'RP'), component: maths.components[i % 2].id, option: null, name: n, caseStudies: i === 8 ? ['RP1 Microscopy', 'RP2 Root tip squash', 'RP3 Osmosis'] : [], ideas: [{ code: `${i + 1}.1`, q: 'What must I know?', idea: n.split(' ').slice(1).join(' '), content: 'The specification statement in the board’s own terms, with the calculation or mechanism it entails.' }, { code: `${i + 1}.2`, q: 'What must I be able to do?', idea: 'Application', content: 'Apply the idea to unfamiliar contexts, including data and practical scenarios.' }] }));
 const CATALOGUE = JSON.parse(fs.readFileSync(path.join(ROOT, 'data', 'catalogue.json'), 'utf8')).qualifications.map(q => ({ ...q, id: (q.board === 'Pearson Edexcel' ? 'EDX' : q.board === 'Eduqas' ? 'EDQ' : q.board) + '-' + q.code, hasUrl: !!q.specUrl }));
-/* a student a term in: three courses, mixed mastery, cards due, a marked essay, four days' streak */
+/* a student a term in: five courses, mixed mastery, cards due, a marked essay, four days' streak */
 const core = require(path.join(ROOT, 'src', 'core.js'));
-const SPECS = {}; for (const sp of Object.values({ ...require(path.join(ROOT, 'src', 'specs', 'ocr-h481.js')), ...require(path.join(ROOT, 'src', 'specs', 'edexcel-9ma0.js')) })) SPECS[sp.id] = sp; SPECS['AQA-7402'] = biology;
-const setup = { student: 'Matthew', examYear: 2028, subjects: [{ specId: 'OCR-H481', options: { landscape: '1.1.1', globalSystems: '2.2.1', globalGovernance: '2.2.4', debates: ['3.1', '3.5'] } }, { specId: 'EDX-9MA0', options: {} }, { specId: 'AQA-7402', options: {} }] };
+const SPECS = {}; for (const sp of Object.values({ ...require(path.join(ROOT, 'src', 'specs', 'ocr-h481.js')), ...require(path.join(ROOT, 'src', 'specs', 'edexcel-9ma0.js')), ...require(path.join(ROOT, 'src', 'specs', 'edexcel-4gn1.js')), ...require(path.join(ROOT, 'src', 'specs', 'edexcel-4ma1.js')) })) SPECS[sp.id] = sp; SPECS['AQA-7402'] = biology;
+const setup = { student: 'Matthew', examYear: 2028, subjects: [{ specId: 'OCR-H481', options: { landscape: '1.1.1', globalSystems: '2.2.1', globalGovernance: '2.2.4', debates: ['3.1', '3.5'] } }, { specId: 'EDX-9MA0', options: {} }, { specId: 'AQA-7402', options: {} }, { specId: 'EDX-4GN1', options: {} }, { specId: 'EDX-4MA1', options: {} }] };
 const progress = core.newState(setup, SPECS); progress.created = '2026-09-01';
 const set = (id, st, last) => { const n = progress.nodes[id]; if (n) { n.state = st; n.lastPractised = last; } };
 set('OCR-H481|1.2', 'Fluent', '2026-09-08'); set('OCR-H481|1.1.1', 'Secure', '2026-08-30'); set('OCR-H481|2.1', 'Learning', '2026-09-09'); set('OCR-H481|3.1', 'Learning', '2026-09-02');
@@ -123,8 +123,8 @@ const server = http.createServer((req, res) => {
   let l = await box(page, '#rail-l'), c = await box(page, 'main.centre'), r = await box(page, '#rail-r');
   must(l.x >= 0 && l.x + l.width <= c.x + 1 && c.x + c.width <= r.x + 1 && r.x + r.width <= 1281, `1280px: three columns side by side (rail ${Math.round(l.width)}, centre ${Math.round(c.width)}, rail ${Math.round(r.width)})`);
   must(!(await page.locator('nav.bottom').isVisible()) && (await page.locator('nav.side').isVisible()), '1280px: the nav lives in the left rail, no bottom bar');
-  must((await page.locator('#rail-l .ccard').count()) === 3 && (await page.locator('#rail-l .tnode').count()) === 9, `left rail: three course cards and the nine geography rooms (eight content topics and the skills strand) as a tree (cards ${await page.locator('#rail-l .ccard').count()}, rooms ${await page.locator('#rail-l .tnode').count()}: ${(await page.locator('#rail-l').textContent()).slice(0,300)})`);
-  must(/Next step/.test(await page.locator('#rail-r').textContent()) && /Flash cards due/.test(await page.locator('#rail-r').textContent()) && (await page.locator('#rail-r .ring').count()) === 3, 'right rail on Today: next step, cards due, three progress rings');
+  must((await page.locator('#rail-l .ccard').count()) === 5 && (await page.locator('#rail-l .tnode').count()) === 9, `left rail: five course cards and the nine geography rooms (eight content topics and the skills strand) as a tree (cards ${await page.locator('#rail-l .ccard').count()}, rooms ${await page.locator('#rail-l .tnode').count()}: ${(await page.locator('#rail-l').textContent()).slice(0,300)})`);
+  must(/Next step/.test(await page.locator('#rail-r').textContent()) && /Flash cards due/.test(await page.locator('#rail-r').textContent()) && (await page.locator('#rail-r .ring').count()) === 5, 'right rail on Today: next step, cards due, five progress rings');
   must(/day streak/.test(await page.locator('#status').textContent()) && (await page.locator('#status').isVisible()), 'status strip visible with the streak');
   await snap(page, '6-wide-today', 'Wide screen: left rail (nav, quick-jump, course switcher, topic tree with status dots), centre (today’s session), right rail (tutor-written next step, cards due, progress rings, streak), status strip');
   await page.click('#rail-l [data-open="OCR-H481|1.2"]');
@@ -198,6 +198,22 @@ const server = http.createServer((req, res) => {
   await page.waitForFunction(() => /tlmaths\.com/.test(document.querySelector('#v-rooms').innerHTML), null, { timeout: 5000 });
   must(/Key formulae/.test(await page.locator('#v-rooms').textContent()) && /Formulae booklet \(official\)/.test(await page.locator('#v-rooms').textContent()), 'maths formulae station: the kit’s formulae, the hand-checked TLMaths links and the official booklet link together');
   await snap(page, '13-maths-formulae-station', 'The same room’s Formulae & links station: the kit’s key formulae, its faded examples, the course’s hand-checked TLMaths pages and the official formulae booklet');
+  await page.context().close();
+
+  /* 14. the International GCSE courses: German and Foundation Maths rooms with their checked kits */
+  page = await open('tok-matthew', { width: 1280, height: 900 }, '#rail-l .ccard');
+  await page.click('#rail-l [data-course="EDX-4GN1"]'); await page.waitForSelector('#rail-l [data-open="EDX-4GN1|A"]');
+  must((await page.locator('#rail-l .pen').count()) === 0, 'tree: every German room has its kit');
+  await page.click('#rail-l [data-open="EDX-4GN1|A"]');
+  await page.waitForFunction(() => /Written and checked/.test(document.querySelector('#v-rooms').textContent), null, { timeout: 10000 });
+  must(/[äöüß]/.test(await page.locator('#v-rooms').textContent()) && (await page.locator('#v-rooms [data-lxrev]').count()) >= 4, 'German room: the checked kit lesson carries real umlauts and faded worked examples');
+  await snap(page, '14-igcse-german-room', 'Edexcel International GCSE German, topic area A: the checked kit lesson in English with every German example, vocabulary fields from the document’s own list and faded worked examples');
+  await page.click('#rail-l [data-course="EDX-4MA1"]'); await page.waitForSelector('#rail-l [data-open="EDX-4MA1|1.1"]');
+  must((await page.locator('#rail-l .pen').count()) === 0, 'tree: every Foundation Maths room has its kit');
+  await page.click('#rail-l [data-open="EDX-4MA1|1.1"]');
+  await page.waitForFunction(() => /Written and checked/.test(document.querySelector('#v-rooms').textContent), null, { timeout: 10000 });
+  must(/Formulae & links/.test(await page.locator('.stations').textContent()) && /Formulae sheet/.test(await page.locator('#v-rooms').textContent()), 'Foundation Maths room: the checked kit has a Formulae sheet and the Formulae & links tab');
+  await snap(page, '15-igcse-maths-room', 'Edexcel International GCSE Mathematics A (Foundation), Integers: the checked kit lesson, one section per content statement, and its Formulae sheet against the paper’s Appendix 4');
   await page.context().close();
 
   await browser.close(); server.close();

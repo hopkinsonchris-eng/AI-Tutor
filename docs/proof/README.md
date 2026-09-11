@@ -79,3 +79,15 @@ Edexcel A level Maths after the rebuild: the checked kit lesson for Algebra and 
 The same room’s Formulae & links station: the kit’s key formulae, its faded examples, the course’s hand-checked TLMaths pages and the official formulae booklet
 
 ![13-maths-formulae-station](13-maths-formulae-station.png)
+
+## 14-igcse-german-room
+
+Edexcel International GCSE German, topic area A: the checked kit lesson in English with every German example, vocabulary fields from the document’s own list and faded worked examples
+
+![14-igcse-german-room](14-igcse-german-room.png)
+
+## 15-igcse-maths-room
+
+Edexcel International GCSE Mathematics A (Foundation), Integers: the checked kit lesson, one section per content statement, and its Formulae sheet against the paper’s Appendix 4
+
+![15-igcse-maths-room](15-igcse-maths-room.png)

@@ -45,7 +45,7 @@ async function tutor(u,o){const path=u.replace('https://tutor.studyplatform.co.u
 const sb={document,console,setTimeout,clearTimeout,setInterval:()=>1,clearInterval(){},Date,Math,JSON,encodeURIComponent,parseInt,Number,String,isNaN,Object,Array,Set,Promise,Function,Error,FileReader:function(){},confirm:()=>true,
  navigator:{clipboard:{writeText:async()=>{}}},alert(){},prompt:()=>'150',fetch:async(u,o)=>{if(/^\.\/kits\//.test(u)){siteKitFetches++;const [,,id,file]=u.split('/');const topic=decodeURIComponent(decodeURIComponent(file.replace(/\.json$/,'')));const sp=G0.SPECS[id];const t=sp&&sp.topics.find(x=>x.id===topic);if(!t)return{ok:false,status:404,text:async()=>'{}'};return{ok:true,status:200,text:async()=>JSON.stringify(Object.assign(sampleKit(t,'essay'),{built:{at:'2026-09-11T10:00:00Z',by:'claude-code',judge:{score:0.9,notes:'ok'}}}))};}const t=await tutor(u,o||{});if(t)return t;lastFetch={url:u,headers:o.headers,body:JSON.parse(o.body)};return{ok:true,status:200,text:async()=>JSON.stringify(reply(lastFetch))}},
  window:{storage:{async get(k){if(!(k in store))throw new Error('nokey');return{value:store[k]}},async set(k,v){store[k]=v;return{}}},scrollTo(){}}};
-sb.globalThis=sb;vm.createContext(sb);vm.runInContext(script+'\n;Object.defineProperties(globalThis,{KIT_INDEX:{get:()=>KIT_INDEX,set:v=>{KIT_INDEX=v}},S:{get:()=>S,set:v=>{S=v}},AUTHORED:{get:()=>AUTHORED},__load:{get:()=>load},__mirror:{get:()=>mirrorMaths},UI:{get:()=>UI},SPECS:{get:()=>SPECS},TODAY:{get:()=>TODAY},view:{get:()=>view},AUTH:{get:()=>AUTH,set:v=>{AUTH=v}},syncState:{get:()=>syncState},CONFIG:{get:()=>CONFIG},COURSES:{get:()=>COURSES}});',sb);
+sb.globalThis=sb;vm.createContext(sb);vm.runInContext(script+'\n;Object.defineProperties(globalThis,{KIT_INDEX:{get:()=>KIT_INDEX,set:v=>{KIT_INDEX=v}},S:{get:()=>S,set:v=>{S=v}},AUTHORED:{get:()=>AUTHORED},KITS:{get:()=>KITS},__load:{get:()=>load},__mirror:{get:()=>mirrorMaths},UI:{get:()=>UI},SPECS:{get:()=>SPECS},TODAY:{get:()=>TODAY},view:{get:()=>view},AUTH:{get:()=>AUTH,set:v=>{AUTH=v}},syncState:{get:()=>syncState},CONFIG:{get:()=>CONFIG},COURSES:{get:()=>COURSES}});',sb);
 const T=s=>{const t={id:s.id||'',dataset:s.dataset||{},className:s.className||'',checked:s.checked,value:s.value,files:s.files};t.closest=sel=>{if(sel.startsWith('.'))return t.className===sel.slice(1)?t:null;const m=sel.match(/\[data-([\w-]+)\]/);if(m){const k=m[1].replace(/-([a-z])/g,(_,c)=>c.toUpperCase());return k in t.dataset?t:null}return null};return t};
 const click=async s=>L.click({target:T(s)});const change=async s=>L.change({target:T(s)});const $=i=>document.getElementById(i);const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 (async()=>{await sleep(40);const G=sb;G0=sb;
@@ -104,7 +104,7 @@ const click=async s=>L.click({target:T(s)});const change=async s=>L.change({targ
  await click({dataset:{reveal:'card'}});const c2=Object.keys(G.S.cards)[1];await click({dataset:{cardres:'1',card:c2}});ok('A6 right card doubles',G.S.cards[c2].ease===2);
  /* practise */
  reply=()=>({content:[{type:'text',text:JSON.stringify({questions:[1,2,3].map(i=>({q:'Explain Q'+i,command:'Explain',marks:8,indicative:['i1','i2'],codes:['1.c']}))})}]});
- G.openRoom(geoRoom,'practise');await click({dataset:{genkind:'questions'}});await sleep(30);
+ G.openRoom(geoRoom,'practise');await click({dataset:{usegen:'1'}});/* 1.2 ships a checked kit; A7 tests the generated set */await click({dataset:{genkind:'questions'}});await sleep(30);
  ok('A7 questions cached under state key',!!G.S.generated[geoRoom]['questions-Learning']);
  await click({dataset:{reveal:'pq0'}});$('pMode').value='ANALYSIS';await click({dataset:{pres:'missConfirm'}});ok('A7 miss logs ANALYSIS with indicative fix',G.S.errors[0].mode==='ANALYSIS'&&G.S.errors[0].fix==='i1');
  /* essay: set question, mark typed essay */
@@ -183,7 +183,7 @@ const click=async s=>L.click({target:T(s)});const change=async s=>L.change({targ
  G.UI.setup=JSON.parse(JSON.stringify(G.S.setup));G.UI.setup.subjects=G.UI.setup.subjects.filter(x=>x.specId!=='AQA-7402');$('suName').value='Matthew';await click({id:'suGo'});ok('K0 and leaves again cleanly',!G.S.nodes['AQA-7402|P2']&&!Object.values(G.S.cards).some(c=>c.node==='AQA-7402|P2'));
 
  /* hand-built kits ship with the site: the index says which rooms have one, the JSON is fetched from ./kits/ */
- G.KIT_INDEX={'OCR-H481':{'1.2':'2026-09-11T10:00:00Z'}};G.openRoom('OCR-H481|1.2','lesson');await sleep(30);
+ delete store['platform:kit:v1:OCR-H481|1.2'];delete G.KITS['OCR-H481|1.2'];siteKitFetches=0;/* the real index already ships 1.2; start this scenario clean */G.KIT_INDEX={'OCR-H481':{'1.2':'2026-09-11T10:00:00Z'}};G.openRoom('OCR-H481|1.2','lesson');await sleep(30);
  ok('H3 a hand-built kit is fetched from the site, not the tutor, and renders as a kit room',siteKitFetches===1&&/Written and checked/.test(reg['v-rooms'].innerHTML)&&/Model paragraph/.test(reg['v-rooms'].innerHTML)&&!!store['platform:kit:v1:OCR-H481|1.2']);
  G.openRoom('OCR-H481|2.1','lesson');await sleep(20);ok('H3 a room of that course without a hand-built kit works as before, with no note and no fetch',siteKitFetches===1&&!/being written/.test(reg['v-rooms'].innerHTML)&&/data-genkind="lesson"/.test(reg['v-rooms'].innerHTML));
  G.KIT_INDEX={};

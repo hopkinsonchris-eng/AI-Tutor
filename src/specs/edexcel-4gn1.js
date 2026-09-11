@@ -181,14 +181,13 @@ const SPEC_4GN1 = {
   ]
  },
  "judged": {
-  "score": 0.95,
+  "score": 0.92,
   "coverage": 1,
-  "fidelity": 0.95,
+  "fidelity": 0.92,
   "options": 1,
   "familyFit": 0.95,
   "at": "2026-09-11",
-  "by": "self-judged against references/judge.md by the session that built it, reading Issue 1 page by page (topics table p13, component overview pp9-10, grammar list pp31-32 and the AO tables p35 re-read from rendered pages)",
-  "notes": "Every examined section of the document is a topic: the five topic areas with their numbered sub-topics, the Grammar list, the non-topic-specific half of Appendix 1, and one topic per skill for the task types the document assesses separately. No option rules exist in this specification — the only choices are inside tasks (one picture for Task A, one of three questions in Question 7), so options is empty. The single derived number is the 10 marks for the third, grammar-based writing task, which the document does not print; it is what remains of the 40-mark writing section after the printed 5+5 and 10+10, and it is flagged both in notes and in the essayShape itself."
+  "by": "a fresh Opus subagent reading the PDF page by page; see scratch/courses/EDX-4GN1/spec.verdict.json"
  },
  "source": {
   "url": "https://qualifications.pearson.com/content/dam/pdf/International%20GCSE/German/2017/specification-and-sample-assessments/International-GCSE-German-Specification.pdf",
@@ -262,13 +261,13 @@ const SPEC_4GN1 = {
      "code": "B1",
      "q": "How do I describe my school, my subjects and my school day?",
      "idea": "School life and routine",
-     "content": "Schule (f) – school; Gymnasium (n) – grammar school; Grundschule (f) – primary school; Gesamtschule (f) – comprehensive school; Fach (n) – subject; Lieblingsfach (n) – favourite subject; Erdkunde (f) – geography; Naturwissenschaften (pl) – sciences; Stundenplan (m) – timetable; Stunde (f) – lesson; Unterricht (m) – lesson; Pause (f) – break, playtime; Hausaufgabe (f) – homework; Note (f) – mark, grade; Zeugnis (n) – report; Prüfung (f) – exam; Abitur (n) – equivalent to A Levels; Mittlere Reife (f) – equivalent to GCSEs; Klassenzimmer (n) – classroom; Schulhof (m) – playground; Lehrer/in (m/f) – teacher; Schüler/in (m/f) – pupil; lernen (v) – to learn; üben (v) – to practise."
+     "content": "Schule (f) – school; Gymnasium (n) – grammar school; Grundschule (f) – primary school; Fach (n) – subject; Lieblingsfach (n) – favourite subject; Erdkunde (f) – geography; Naturwissenschaften (pl) – sciences; Stundenplan (m) – timetable; Stunde (f) – lesson; Unterricht (m) – lesson; Pause (f) – break, playtime; Hausaufgabe (f) – homework; Note (f) – mark, grade; Zeugnis (n) – report; Prüfung (f) – exam; Abitur (n) – equivalent to A Levels; Mittlere Reife (f) – equivalent to GCSEs; Klassenzimmer (n) – classroom; Schulhof (m) – playground; Lehrer/in (m/f) – teacher; Schüler/in (m/f) – pupil; lernen (v) – to learn; üben (v) – to practise; Arbeitspraktikum (n) / Berufspraktikum (n) – work experience; Studium (n) – university studies."
     },
     {
      "code": "B2",
      "q": "What are the rules and the pressures of school, and how do I give my opinion on them?",
      "idea": "School rules and pressures",
-     "content": "Schulregel (f) – school rule; streng (ad) – strict; pünktlich (ad) – on time; nachsitzen – to be in detention; Pflichtfach (n) – compulsory, core subject; Wahlfach (n) – optional subject; freiwillig (ad) – optional; abwählen (v) – to drop/give up (a subject); eine Prüfung machen – to take an exam; eine Prüfung bestehen – to pass an exam; durchfallen – to fail an exam; eine Note bekommen – to get a grade/mark; Schularbeit (f) – test (in class); mündlich – oral (exam); schwer, schwierig (ad) – difficult; leicht, einfach (ad) – easy; Fehler (m) – mistake; etwas begabt, gut in sein – to be good at; Schuluniform items such as Krawatte (f) – tie; Schultasche (f) – rucksack/school bag."
+     "content": "Schulregel (f) – school rule; streng (ad) – strict; pünktlich (ad) – on time; nachsitzen – to be in detention; Pflichtfach (n) – compulsory, core subject; Wahlfach (n) – optional subject; freiwillig (ad) – optional; abwählen (v) – to drop/give up (a subject); eine Prüfung machen – to take an exam; eine Prüfung bestehen – to pass an exam; durchfallen – to fail an exam; eine Note bekommen – to get a grade/mark; Schularbeit (f) – test (in class); mündlich – oral (exam); schwer, schwierig (ad) – difficult; leicht, einfach (ad) – easy; Fehler (m) – mistake; etwas begabt, gut in sein – to be good at; Schuluniform items such as Krawatte (f) – tie; Schultasche (f) – rucksack/school bag; Gesamtschule (f) – comprehensive school."
     },
     {
      "code": "B3",
@@ -280,13 +279,13 @@ const SPEC_4GN1 = {
      "code": "B4",
      "q": "How do I talk about jobs, work experience and applying for work?",
      "idea": "Work, careers and volunteering",
-     "content": "Beruf (m) – occupation, profession; Stelle (f) – job, post, position; Arbeit (f) – work; arbeiten (v) – to work; arbeitslos (ad) – unemployed; Arbeitslosigkeit (f) – unemployment; Arbeitgeber/in (m/f) – employer; Angestellte(r) (f/m) – employee; Lehre (f) / Ausbildung (f) – apprenticeship; Lehrling (m) – apprentice; Ferienjob (m) – holiday job; Arbeitspraktikum (n) / Berufspraktikum (n) – work experience; sich bewerben um (v) – to apply for; Bewerbung (f) – application; Stellenanzeige (f) – job advertisement; verdienen (v) – to earn; Lohn (m) – wage(s), pay; Gehalt (n) – salary; gut/schlecht bezahlt – well/poorly paid; Wohltatsorganisation (f) – charity organisation; jobs such as Arzt/Ärztin, Kellner/in, Mechaniker/in, Verkäufer/in."
+     "content": "Beruf (m) – occupation, profession; Stelle (f) – job, post, position; Arbeit (f) – work; arbeiten (v) – to work; arbeitslos (ad) – unemployed; Arbeitslosigkeit (f) – unemployment; Arbeitgeber/in (m/f) – employer; Angestellte(r) (f/m) – employee; Lehre (f) / Ausbildung (f) – apprenticeship; Lehrling (m) – apprentice; Ferienjob (m) – holiday job; sich bewerben um (v) – to apply for; Bewerbung (f) – application; Stellenanzeige (f) – job advertisement; verdienen (v) – to earn; Lohn (m) – wage(s), pay; Gehalt (n) – salary; gut/schlecht bezahlt – well/poorly paid; Wohltatsorganisation (f) – charity organisation; jobs such as Arzt/Ärztin, Kellner/in, Mechaniker/in, Verkäufer/in."
     },
     {
      "code": "B5",
      "q": "How do I say what I plan to do after school, using future and conditional forms?",
      "idea": "Future plans",
-     "content": "Zukunft (f) – future; vorhaben (v) – to intend to; beschließen (v) – to decide; hoffen – to hope; wollen (v) – to want; brauchen (v) – to need; studieren (v) – to study for (an exam); Studium (n) – university studies; Universität (f) – university; Universitätsabschluss (m) – university degree; Fachhochschule (f) – technical college; Jura (pl) – law (as a subject); Diplom (n) – diploma; Lehrlingsstelle (f) – an apprenticeship; sich um einen Platz bewerben (v) – to apply for a place; Vorstellungsgespräch (n) / Interview (n) – interview; Karriere (f) – career; leisten (v) – to achieve; qualifiziert (ad) – qualified; verlassen (v) – to leave; suchen (v) – to look for."
+     "content": "Zukunft (f) – future; vorhaben (v) – to intend to; beschließen (v) – to decide; hoffen – to hope; wollen (v) – to want; brauchen (v) – to need; studieren (v) – to study for (an exam); Universität (f) – university; Universitätsabschluss (m) – university degree; Fachhochschule (f) – technical college; Jura (pl) – law (as a subject); Diplom (n) – diploma; Lehrlingsstelle (f) – an apprenticeship; sich um einen Platz bewerben (v) – to apply for a place; Vorstellungsgespräch (n) / Interview (n) – interview; Karriere (f) – career; leisten (v) – to achieve; qualifiziert (ad) – qualified; verlassen (v) – to leave; suchen (v) – to look for."
     }
    ]
   },
@@ -308,19 +307,19 @@ const SPEC_4GN1 = {
      "code": "C1",
      "q": "How do I describe where I live, room by room?",
      "idea": "House and home",
-     "content": "Haus (n) – house; Wohnung (f) – flat; Einfamilienhaus (n) – detached house; Zimmer (n) – room; Wohnzimmer (n) – sitting room, living room; Schlafzimmer (n) – bedroom; Esszimmer (n) – dining room; Küche (f) – kitchen; Badezimmer (n) – bathroom; Keller (m) – cellar; Erdgeschoss (n) – ground floor; im ersten Stock – on the first floor; Treppe (f) – stairs; Möbel (pl) – furniture; Sessel (m) – armchair; Schrank (m) – cupboard; Kühlschrank (m) – fridge; Herd (m) – cooker; Waschmaschine (f) – washing machine; Spülmaschine (f) – dishwasher; Garten (m) – garden; Terrasse (f) – patio, terrace; bequem (ad) – comfortable; wohnen (v) / leben (v) – to live."
+     "content": "Haus (n) – house; Wohnung (f) – flat; Einfamilienhaus (n) – detached house; Zimmer (n) – room; Wohnzimmer (n) – sitting room, living room; Schlafzimmer (n) – bedroom; Esszimmer (n) – dining room; Küche (f) – kitchen; Badezimmer (n) – bathroom; Keller (m) – cellar; Erdgeschoss (n) – ground floor; im ersten Stock – on the first floor; Treppe (f) – stairs; Möbel (pl) – furniture; Sessel (m) – armchair; Kühlschrank (m) – fridge; Herd (m) – cooker; Waschmaschine (f) – washing machine; Spülmaschine (f) – dishwasher; Garten (m) – garden; Terrasse (f) – patio, terrace; bequem (ad) – comfortable; wohnen (v) / leben (v) – to live."
     },
     {
      "code": "C2",
      "q": "How do I describe my daily routine and the jobs I do at home, using reflexive and separable verbs?",
      "idea": "Daily routines and helping at home",
-     "content": "aufstehen (v) – to get up; aufwachen (v) – to wake up; sich anziehen (v) – to get dressed; sich duschen – to shower; sich die Zähne putzen – to clean one's teeth; frühstücken (v) – to have breakfast; ins Bett gehen (v) – to go to bed; Wecker (m) – alarm clock; helfen (v) – to help; aufräumen (v) – to tidy up; abwaschen (v) / abspülen (v) – to wash up; den Tisch decken (v) – to set/lay the table; das Bett machen (v) – to make the bed; bügeln (v) – to iron; Staub saugen – to vacuum; Müll (m) – rubbish, refuse; Mülleimer (m) – dustbin; kochen (v) – to cook; einkaufen gehen (v) – to go shopping; oft (ad) – often; manchmal (ad) – sometimes; selten (ad) – rare(ly); früh (ad) – early; spät (ad) – late."
+     "content": "aufstehen (v) – to get up; aufwachen (v) – to wake up; sich anziehen (v) – to get dressed; sich duschen – to shower; sich die Zähne putzen – to clean one's teeth; frühstücken (v) – to have breakfast; ins Bett gehen (v) – to go to bed; Wecker (m) – alarm clock; helfen (v) – to help; aufräumen (v) – to tidy up; abwaschen (v) / abspülen (v) – to wash up; den Tisch decken (v) – to set/lay the table; das Bett machen (v) – to make the bed; bügeln (v) – to iron; Staub saugen – to vacuum; Müll (m) – rubbish, refuse; Mülleimer (m) – dustbin; kochen (v) – to cook; einkaufen gehen (v) – to go shopping; oft (ad) – often; manchmal (ad) – sometimes; selten (ad) – rare(ly); früh (ad) – early; spät (ad) – late; Schrank (m) – cupboard."
     },
     {
      "code": "C3",
      "q": "Who are my role models and how do they influence people?",
      "idea": "Role models — not assessed in Paper 3: Speaking",
-     "content": "(gutes/schlechtes) Vorbild – (good/bad) example, role model; Idol (n) – idol; berühmt (ad) – famous; Stars (pl) – celebrities; Popstar (m) – popstar; Schauspieler/in (m/f) – actor; Sportler/in (m/f) – sportsman/woman; Fußballspieler/in (m/f) – footballer; Unternehmer/in (m/f) – entrepreneur; Einfluss (m) – influence; beeinflussen (v) – to influence; nachmachen (v) – to copy, imitate; folgen – to follow; streben nach (v) – to aspire to; Verhalten (n) – behaviour; sich gut/schlecht verhalten (v) – to behave well/badly; verantwortlich (ad) – responsible; Presse (f) – press; soziale Netzwerke (pl) – social networks; Werbung (f) – adverts. Sub-topic C3 will not be assessed in Paper 3: Speaking."
+     "content": "(gutes/schlechtes) Vorbild – (good/bad) example, role model; Idol (n) – idol; berühmt (ad) – famous; Stars (pl) – celebrities; Popstar (m) – popstar; Schauspieler/in (m/f) – actor; Sportler/in (m/f) – sportsman/woman; Fußballspieler/in (m/f) – footballer; Unternehmer/in (m/f) – entrepreneur; Einfluss (m) – influence; beeinflussen (v) – to influence; nachmachen (v) – to copy, imitate; folgen – to follow; streben nach (v) – to aspire to; Verhalten (n) – behaviour; sich gut/schlecht verhalten (v) – to behave well/badly; verantwortlich (ad) – responsible; Presse (f) – press; soziale Netzwerke (pl) – social networks; Werbung (f) – adverts. Sub-topic C3 will not be assessed in Paper 3: Speaking; Fernsehen (n) – television."
     },
     {
      "code": "C4",
@@ -372,7 +371,7 @@ const SPEC_4GN1 = {
      "code": "D4",
      "q": "How do I talk about television, film, music and the press, and give my opinion of them?",
      "idea": "The media",
-     "content": "Fernsehen (n) – television; fernsehen (v) – to watch television; Sendung (f) – programme, broadcast; Programm (n) – programme, channel; Sender (m) – broadcaster, station; Nachrichten (pl) – news; Tagesschau (f) – television news; Seifenoper (f) – soap opera; Dokumentation (Doku) (f) – documentary; Reality-TV (n) – reality television; Gameshow (f) – game show; Trickfilm (m) – cartoon; Gruselfilm (m) – horror film; Komödie (f) – comedy; Spezialeffekte (pl) – special effects; mit Untertiteln – subtitled; synchronisiert (ad) – dubbed; herumzappen (v) – to channel hop; Zeitung (f) – newspaper; Werbespot (m) – advertisement; Vorstellung (f) – performance, showing; Eintritt (m) – admission; Schauspieler/in (m/f) – actor/actress; opinion adjectives: lustig – funny, komisch – funny, spannend, traurig – sad, rührend (ad) – moving."
+     "content": "fernsehen (v) – to watch television; Sendung (f) – programme, broadcast; Programm (n) – programme, channel; Sender (m) – broadcaster, station; Nachrichten (pl) – news; Tagesschau (f) – television news; Seifenoper (f) – soap opera; Dokumentation (Doku) (f) – documentary; Reality-TV (n) – reality television; Gameshow (f) – game show; Trickfilm (m) – cartoon; Gruselfilm (m) – horror film; Komödie (f) – comedy; Spezialeffekte (pl) – special effects; mit Untertiteln – subtitled; synchronisiert (ad) – dubbed; herumzappen (v) – to channel hop; Zeitung (f) – newspaper; Werbespot (m) – advertisement; Vorstellung (f) – performance, showing; Eintritt (m) – admission; Schauspieler/in (m/f) – actor/actress; opinion adjectives: lustig – funny, komisch – funny, spannend, traurig – sad, rührend (ad) – moving."
     },
     {
      "code": "D5",
@@ -511,7 +510,7 @@ const SPEC_4GN1 = {
      "code": "Time expressions",
      "q": "How do I place an event in time?",
      "idea": "Time expressions",
-     "content": "heute – today; gestern – yesterday; morgen – tomorrow; morgen früh – tomorrow morning; übermorgen – the day after tomorrow; am nächsten Tag – on the following day; jeden Tag – every day; täglich – daily, every day; jetzt – now; bald – soon, shortly; am Anfang – at the beginning; Anfang (m) – beginning; Morgen (m) – morning; Vormittag (m) – morning; Mittag (m) – midday; Nachmittag (m) – afternoon; Abend (m) – evening; Nacht (f) – night; Mitternacht (f) – midnight; halb – half; pünktlich – punctual(ly), on time; Woche (f) – week; zwei Wochen – fortnight; Monat (m) – month; Jahr (n) – year; Zeit (f) – time; im Frühling, im Sommer, im Herbst, im Winter – in the spring, summer, autumn, winter."
+     "content": "heute – today; gestern – yesterday; morgen – tomorrow; morgen früh – tomorrow morning; übermorgen – the day after tomorrow; am nächsten Tag – on the following day; jeden Tag – every day; täglich – daily, every day; jetzt – now; bald – soon, shortly; am Anfang – at the beginning; Anfang (m) – beginning; Morgen (m) – morning; Vormittag (m) – morning; Mittag (m) – midday; Nachmittag (m) – afternoon; Abend (m) – evening; Nacht (f) – night; Mitternacht (f) – midnight; halb – half; pünktlich – punctual(ly), on time; Woche (f) – week; zwei Wochen – fortnight; Monat (m) – month; Jahr (n) – year; im Frühling, im Sommer, im Herbst, im Winter – in the spring, summer, autumn, winter."
     },
     {
      "code": "Question words",

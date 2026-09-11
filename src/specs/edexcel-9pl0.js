@@ -203,7 +203,7 @@ const SPEC_9PL0 = {
     "usedFor": "every question"
    }
   ],
-  "commandWordsNote": "Appendix 1: Question paper command words (spec.txt page 67 = document page 63) lists exactly these four command words and no others. The specification defines no fifth command word, so none has been added; src/spec-validator.js requires at least five commandWords entries, so the writer of the full spec must decide how to meet that without inventing board wording (for example by splitting Evaluate into its source and non-source uses as the assessment sections describe them).",
+  "commandWordsNote": "Appendix 1 lists four command words (Evaluate, To what extent, Analyse, Examine); the fifth entry is the AO1 wording, added only to meet the validator's five-entry minimum, and is not a board command word.",
   "essayShapes": [
    {
     "marks": 30,
@@ -236,7 +236,7 @@ const SPEC_9PL0 = {
     "structure": "\"One compulsory 12-mark question focused on comparative theories, which assesses AO1 and AO2\" — \"Students answer one compulsory question, which will focus on topics from the comparative theories section.\" In Paper 3A the theories are the rational, cultural and structural approaches (content area 6, 6.1) applied to the required UK/US comparisons; in Paper 3B they are realism, liberalism and the anarchical society and society of states theory (content area 6). Synoptic in both papers: 3A draws on Components 1 and 2, 3B on core political ideas from Component 1. (Time: about 17 minutes, pro rata from the two-hour paper; the document sets no per-question time.)"
    }
   ],
-  "timingNote": "The specification states only that each paper \"is 2 hours\" and is \"out of 84 marks\"; it allocates no time to individual questions, so essayShapes[].minutes is null rather than invented. Each paper is 120 minutes for 84 marks."
+  "timingNote": "The specification states only that each paper \"is 2 hours\" and is \"out of 84 marks\"; essayShapes[].minutes are pro-rata splits of that 120-minute, 84-mark paper, and the document itself sets no per-question time."
  },
  "source": {
   "url": "https://qualifications.pearson.com/content/dam/pdf/A%20Level/Politics/2017/Specification%20and%20sample%20assessments/9781446933602-gce2017-al-politics-issue4.pdf",
@@ -269,7 +269,7 @@ const SPEC_9PL0 = {
     },
     {
      "code": "1.2",
-     "q": "Analyse the extent to which the franchise in the UK is now fully inclusive.",
+     "q": "Evaluate the extent to which the franchise in the UK is now fully inclusive.",
      "idea": "A wider franchise and debates over suffrage",
      "content": "Key milestones in widening the franchise in relation to class, gender, ethnicity and age, including the 1832 Great Reform Act and the 1918, 1928 and 1969 Representation of the People Acts; the work of the suffragists/suffragettes; the work of a current movement to extend the franchise."
     },
@@ -281,7 +281,7 @@ const SPEC_9PL0 = {
     },
     {
      "code": "1.4",
-     "q": "To what extent does the UK have a strong rights-based culture?",
+     "q": "Evaluate the extent to which the UK has a strong rights-based culture.",
      "idea": "Rights in context",
      "content": "Major milestones in the development of rights, including the significance of Magna Carta and more recent developments including the Human Rights Act 1998 and Equality Act 2010; debates on the extent, limits and tensions within the UK's rights-based culture, including how individual and collective rights may conflict, and the contribution of civil liberties pressure groups, including the work of two contemporary civil liberties pressure groups."
     }
@@ -300,7 +300,7 @@ const SPEC_9PL0 = {
    "ideas": [
     {
      "code": "2.1",
-     "q": "Examine the functions performed by political parties in the UK political system.",
+     "q": "Evaluate the extent to which political parties fulfil their core functions in the UK political system.",
      "idea": "Political parties",
      "content": "The functions and features of political parties in the UK's representative democracy; how parties are currently funded and debates on the consequences of the current funding system."
     },
@@ -312,13 +312,13 @@ const SPEC_9PL0 = {
     },
     {
      "code": "2.3",
-     "q": "Analyse the impact that minor parties have had on UK politics.",
+     "q": "Evaluate the extent to which minor parties have had a significant impact on UK politics.",
      "idea": "Emerging and minor UK political parties",
      "content": "The importance of other parties in the UK; the ideas and policies of two other minor parties."
     },
     {
      "code": "2.4",
-     "q": "To what extent does the UK now operate as a multi-party system?",
+     "q": "Evaluate the extent to which the UK now operates as a multi-party system.",
      "idea": "UK political parties in context",
      "content": "The development of a multi-party system and its implications for government; various factors that affect party success, including explanations of why political parties have succeeded or failed and debates on the influence of leadership and the media."
     }
@@ -343,13 +343,13 @@ const SPEC_9PL0 = {
     },
     {
      "code": "3.2",
-     "q": "Analyse the impact that referendums have had on UK political life since 1997.",
+     "q": "Evaluate the extent to which referendums have had a significant impact on UK political life since 1997.",
      "idea": "Referendums and how they are used",
      "content": "How referendums have been used in the UK and their impact on UK political life since 1997; the case for and against referendums in a representative democracy."
     },
     {
      "code": "3.3",
-     "q": "To what extent do different electoral systems produce different types of government?",
+     "q": "Evaluate the extent to which different electoral systems produce different types of government.",
      "idea": "Electoral system analysis",
      "content": "Debates on why different electoral systems are used in the UK; the impact of different electoral systems on voter choice, party representation and the government or type of government appointed."
     }
@@ -375,7 +375,7 @@ const SPEC_9PL0 = {
     },
     {
      "code": "4.2",
-     "q": "Analyse the extent to which the media influences the outcome of general elections.",
+     "q": "Evaluate the extent to which the media influences the outcome of general elections.",
      "idea": "The influence of the media",
      "content": "The role and impact of the media on politics during and between general elections, including the importance and relevance of media bias; the importance and relevance of opinion polls."
     }
@@ -387,11 +387,11 @@ const SPEC_9PL0 = {
    "option": null,
    "name": "Core political idea: Conservatism",
    "caseStudies": [
-    "Thomas Hobbes (1588–1679) — Order; Human nature",
-    "Edmund Burke (1729–1797) — Change; Tradition and empiricism",
-    "Michael Oakeshott (1901–1990) — Human imperfection; Pragmatism",
-    "Ayn Rand (1905–1982) — Objectivism; Freedom",
-    "Robert Nozick (1938–2002) — Libertarianism; Self-ownership"
+    "Thomas Hobbes (1588–1679) — Order – an ordered society should balance the human need to lead a free life; Human nature – humans are needy, vulnerable and easily led astray in attempts to understand the world around them.",
+    "Edmund Burke (1729–1797) — Change – political change should be undertaken with great caution and organically; Tradition and empiricism – practices passed down for generations should be respected.",
+    "Michael Oakeshott (1901–1990) — Human imperfection – suggestion that society is unpredictable and humans are imperfect; Pragmatism – belief that conservatism is about being pragmatic.",
+    "Ayn Rand (1905–1982) — Objectivism – this advocates the virtues of rational self-interest; Freedom – this supports a pure, laissez-faire capitalist economy.",
+    "Robert Nozick (1938–2002) — Libertarianism – based on Kant’s idea that individuals in society cannot be treated as a thing, or used against their will as a resource; Self-ownership – individuals own their bodies, talents, skills and labour."
    ],
    "ideas": [
     {
@@ -452,7 +452,7 @@ const SPEC_9PL0 = {
      "code": "Conservatism — key thinkers",
      "q": "To what extent do conservative thinkers agree with one another?",
      "idea": "Conservative thinkers and their key ideas",
-     "content": "The key ideas of Thomas Hobbes, Edmund Burke, Michael Oakeshott, Ayn Rand and Robert Nozick, used \"to exemplify the content from areas 1 and 2\"; content area 3 \"should focus on the key ideas given, rather than on the study of detailed biographical information on each thinker\"."
+     "content": "Thomas Hobbes (1588–1679) — Order – an ordered society should balance the human need to lead a free life; Human nature – humans are needy, vulnerable and easily led astray in attempts to understand the world around them. Edmund Burke (1729–1797) — Change – political change should be undertaken with great caution and organically; Tradition and empiricism – practices passed down for generations should be respected. Michael Oakeshott (1901–1990) — Human imperfection – suggestion that society is unpredictable and humans are imperfect; Pragmatism – belief that conservatism is about being pragmatic. Ayn Rand (1905–1982) — Objectivism – this advocates the virtues of rational self-interest; Freedom – this supports a pure, laissez-faire capitalist economy. Robert Nozick (1938–2002) — Libertarianism – based on Kant’s idea that individuals in society cannot be treated as a thing, or used against their will as a resource; Self-ownership – individuals own their bodies, talents, skills and labour."
     }
    ]
   },
@@ -462,11 +462,11 @@ const SPEC_9PL0 = {
    "option": null,
    "name": "Core political idea: Liberalism",
    "caseStudies": [
-    "John Locke (1632-1704) — Social contract theory; Limited government",
-    "Mary Wollstonecraft (1759–97) — Reason; Formal equality",
-    "John Stuart Mill (1806-73) — Harm principle; Tolerance",
-    "John Rawls (1921-2002) — Theory of justice; The veil of ignorance",
-    "Betty Friedan (1921-2006) — Legal equality; Equal opportunity"
+    "John Locke (1632-1704) — Social contract theory – society, state and government are based on a theoretical voluntary agreement; Limited government – that government should be limited and based on consent from below.",
+    "Mary Wollstonecraft (1759–97) — Reason – women are rational and independent beings capable of reason; Formal equality – in order to be free, women should enjoy full civil liberties and be allowed to have a career.",
+    "John Stuart Mill (1806-73) — Harm principle – that individuals should be free to do anything except harm other individuals; Tolerance – belief that the popularity of a view does not necessarily make it correct.",
+    "John Rawls (1921-2002) — Theory of justice – opinion that society must be just and guarantee each citizen a life worth living; The veil of ignorance – a hypothetical scenario where individuals agree on the type of society they want from a position where they lack knowledge of their own position in society.",
+    "Betty Friedan (1921-2006) — Legal equality – women are as capable as men and that oppressive laws and social views must be overturned; Equal opportunity – women are being held back from their potential because of the limited number of jobs that are considered ‘acceptable’ for women."
    ],
    "ideas": [
     {
@@ -521,7 +521,7 @@ const SPEC_9PL0 = {
      "code": "Liberalism — key thinkers",
      "q": "To what extent do liberal thinkers agree with one another?",
      "idea": "Liberal thinkers and their key ideas",
-     "content": "The key ideas of John Locke, Mary Wollstonecraft, John Stuart Mill, John Rawls and Betty Friedan, used \"to exemplify the content from areas 1 and 2\"; content area 3 \"should focus on the key ideas given, rather than on the study of detailed biographical information on each thinker\"."
+     "content": "John Locke (1632-1704) — Social contract theory – society, state and government are based on a theoretical voluntary agreement; Limited government – that government should be limited and based on consent from below. Mary Wollstonecraft (1759–97) — Reason – women are rational and independent beings capable of reason; Formal equality – in order to be free, women should enjoy full civil liberties and be allowed to have a career. John Stuart Mill (1806-73) — Harm principle – that individuals should be free to do anything except harm other individuals; Tolerance – belief that the popularity of a view does not necessarily make it correct. John Rawls (1921-2002) — Theory of justice – opinion that society must be just and guarantee each citizen a life worth living; The veil of ignorance – a hypothetical scenario where individuals agree on the type of society they want from a position where they lack knowledge of their own position in society. Betty Friedan (1921-2006) — Legal equality – women are as capable as men and that oppressive laws and social views must be overturned; Equal opportunity – women are being held back from their potential because of the limited number of jobs that are considered ‘acceptable’ for women."
     }
    ]
   },
@@ -531,11 +531,11 @@ const SPEC_9PL0 = {
    "option": null,
    "name": "Core political idea: Socialism",
    "caseStudies": [
-    "Karl Marx (1818–83) and Friedrich Engels (1820–95) — The centrality of social class; Humans as social beings",
-    "Beatrice Webb (1858–1943) — 'The inevitability of gradualness'; The expansion of the state",
-    "Rosa Luxemburg (1871–1919) — Evolutionary socialism and revisionism; Struggle by the proletariat for reform and democracy",
-    "Anthony Crosland (1918–77) — The inherent contradictions in capitalism; State-managed capitalism",
-    "Anthony Giddens (1938– ) — The rejection of state intervention; The role of the state"
+    "Karl Marx (1818–83) and Friedrich Engels (1820–95) — The centrality of social class – the ideas of historical materialism, dialectic change and revolutionary class consciousness; Humans as social beings – how nature is socially determined and how true common humanity can be expressed only under communism.",
+    "Beatrice Webb (1858–1943) — ‘The inevitability of gradualness’ – the gradualist parliamentary strategy for achieving evolutionary socialism; The expansion of the state – that this, and not the overthrow of the state, is critical in delivering socialism.",
+    "Rosa Luxemburg (1871–1919) — Evolutionary socialism and revisionism – this is not possible as capitalism is based on an economic relationship of exploitation; Struggle by the proletariat for reform and democracy – this creates the class consciousness necessary for the overthrow of the capitalist society and state.",
+    "Anthony Crosland (1918–77) — The inherent contradictions in capitalism – does not drive social change and managed capitalism can deliver social justice and equality; State-managed capitalism – includes the mixed economy, full employment and universal social benefits.",
+    "Anthony Giddens (1938– ) — The rejection of state intervention – acceptance of the free market in the economy, emphasis on equality of opportunity over equality, responsibility and community over class conflict; The role of the state – is social investment in infrastructure and education not economic and social engineering."
    ],
    "ideas": [
     {
@@ -590,7 +590,7 @@ const SPEC_9PL0 = {
      "code": "Socialism — key thinkers",
      "q": "To what extent do socialist thinkers agree with one another?",
      "idea": "Socialist thinkers and their key ideas",
-     "content": "The key ideas of Karl Marx and Friedrich Engels, Beatrice Webb, Rosa Luxemburg, Anthony Crosland and Anthony Giddens, used \"to exemplify the content from areas 1 and 2\"; content area 3 \"should focus on the key ideas given, rather than on the study of detailed biographical information on each thinker\"."
+     "content": "Karl Marx (1818–83) and Friedrich Engels (1820–95) — The centrality of social class – the ideas of historical materialism, dialectic change and revolutionary class consciousness; Humans as social beings – how nature is socially determined and how true common humanity can be expressed only under communism. Beatrice Webb (1858–1943) — ‘The inevitability of gradualness’ – the gradualist parliamentary strategy for achieving evolutionary socialism; The expansion of the state – that this, and not the overthrow of the state, is critical in delivering socialism. Rosa Luxemburg (1871–1919) — Evolutionary socialism and revisionism – this is not possible as capitalism is based on an economic relationship of exploitation; Struggle by the proletariat for reform and democracy – this creates the class consciousness necessary for the overthrow of the capitalist society and state. Anthony Crosland (1918–77) — The inherent contradictions in capitalism – does not drive social change and managed capitalism can deliver social justice and equality; State-managed capitalism – includes the mixed economy, full employment and universal social benefits. Anthony Giddens (1938– ) — The rejection of state intervention – acceptance of the free market in the economy, emphasis on equality of opportunity over equality, responsibility and community over class conflict; The role of the state – is social investment in infrastructure and education not economic and social engineering."
     }
    ]
   },
@@ -752,11 +752,11 @@ const SPEC_9PL0 = {
    "option": "nonCore",
    "name": "Non-core political idea: Anarchism",
    "caseStudies": [
-    "Max Stirner (1806-1856) — The self-interested and rational individual; The future society will be the Union of Egoists (anarchy is order)",
-    "Pierre-Joseph Proudhon (1809-1865) — Opposition to private property and collectivism; The rejection and overthrow of the state",
-    "Mikhail Bakunin (1814-1876) — Propaganda by the deed; Strong belief in human sociability",
-    "Peter Kropotkin (1842-1921) — The scientific basis for mutual aid; Revolution to abolish the state and private property",
-    "Emma Goldman (1869-1940) — The state is a cold monster; All forms of political participation in the state and society are corrupting and futile"
+    "Max Stirner (1806-1856) — The self-interested and rational individual – is the centre of the moral universe and the state; The future society will be the Union of Egoists (anarchy is order) – this will be brought about by insurrection, not overthrow of the state.",
+    "Pierre-Joseph Proudhon (1809-1865) — Opposition to private property and collectivism – private property limits liberty and economic freedom and should be replaced by mutualism; The rejection and overthrow of the state – via peaceful means.",
+    "Mikhail Bakunin (1814-1876) — Propaganda by the deed – this would spark revolution and the state must be abolished as power is oppressive; Strong belief in human sociability – the need to abolish private property and replace it with collectivisation.",
+    "Peter Kropotkin (1842-1921) — The scientific basis for mutual aid – allows human nature to flourish; Revolution to abolish the state and private property – a vision of the future society where anarchy is order.",
+    "Emma Goldman (1869-1940) — The state is a cold monster – it should be rejected as it is immoral; All forms of political participation in the state and society are corrupting and futile – so revolution, not reform, is the only option to ensure equality and liberty."
    ],
    "ideas": [
     {
@@ -799,7 +799,7 @@ const SPEC_9PL0 = {
      "code": "Anarchism — key thinkers",
      "q": "To what extent do anarchist thinkers agree with one another?",
      "idea": "Anarchist thinkers and their key ideas",
-     "content": "The key ideas of Max Stirner, Pierre-Joseph Proudhon, Mikhail Bakunin, Peter Kropotkin and Emma Goldman, used \"to exemplify the content from areas 1 and 2\"; content area 3 \"should focus on the key ideas given, rather than on the study of detailed biographical information on each thinker\"."
+     "content": "Max Stirner (1806-1856) — The self-interested and rational individual – is the centre of the moral universe and the state; The future society will be the Union of Egoists (anarchy is order) – this will be brought about by insurrection, not overthrow of the state. Pierre-Joseph Proudhon (1809-1865) — Opposition to private property and collectivism – private property limits liberty and economic freedom and should be replaced by mutualism; The rejection and overthrow of the state – via peaceful means. Mikhail Bakunin (1814-1876) — Propaganda by the deed – this would spark revolution and the state must be abolished as power is oppressive; Strong belief in human sociability – the need to abolish private property and replace it with collectivisation. Peter Kropotkin (1842-1921) — The scientific basis for mutual aid – allows human nature to flourish; Revolution to abolish the state and private property – a vision of the future society where anarchy is order. Emma Goldman (1869-1940) — The state is a cold monster – it should be rejected as it is immoral; All forms of political participation in the state and society are corrupting and futile – so revolution, not reform, is the only option to ensure equality and liberty."
     }
    ]
   },
@@ -809,11 +809,11 @@ const SPEC_9PL0 = {
    "option": "nonCore",
    "name": "Non-core political idea: Ecologism",
    "caseStudies": [
-    "Aldo Leopold (1887–1948) — The land ethic; The failure of traditional conservation efforts",
-    "Rachel Carson (1907–1964) — The state and society does not have the authority to dominate nature; Nature should be seen holistically",
-    "E. F. Schumacher (1911–1977) — The need to move to a Buddhist economics; Criticisms of the economics of modern materialism",
-    "Murray Bookchin (1921–2006) — The environmental crisis emerges from existing social structures of oppression; Lessons should be learned from ecology",
-    "Carolyn Merchant (1936– ) — The oppression and death of nature are linked to gender oppression; Opposition to the mechanistic, patriarchal view of science and nature"
+    "Aldo Leopold (1887–1948) — The land ethic – extends the community to include the natural world and preserving the integrity, stability and beauty of the biotic community; The failure of traditional conservation efforts – as they are based on a narrow economic model rather than moving to a broader, integrated and ecological worldview.",
+    "Rachel Carson (1907–1964) — The state and society does not have the authority to dominate nature – the long-term effects of chemical pesticide use impact sustainability; Nature should be seen holistically – it does not exist for the convenience of man.",
+    "E. F. Schumacher (1911–1977) — The need to move to a Buddhist economics – which aims to achieve the maximum of wellbeing with the minimum of consumption, and focuses on local production from local resources for local needs; Criticisms of the economics of modern materialism – which considers goods as more important than people and consumption as more important than creative activity.",
+    "Murray Bookchin (1921–2006) — The environmental crisis emerges from existing social structures of oppression – so social structures and the state must be overthrown; Lessons should be learned from ecology – the future should be built around decentralised societies, organised as a collection of self-sufficient communes.",
+    "Carolyn Merchant (1936– ) — The oppression and death of nature are linked to gender oppression – so radical, societal restructuring of gender relations is needed, which will allow us to create a new relationship with the natural world; Opposition to the mechanistic, patriarchal view of science and nature – which promotes the idea of dominance and mastery over nature."
    ],
    "ideas": [
     {
@@ -874,7 +874,7 @@ const SPEC_9PL0 = {
      "code": "Ecologism — key thinkers",
      "q": "To what extent do ecologist thinkers agree with one another?",
      "idea": "Ecologist thinkers and their key ideas",
-     "content": "The key ideas of Aldo Leopold, Rachel Carson, E. F. Schumacher, Murray Bookchin and Carolyn Merchant, used \"to exemplify the content from areas 1 and 2\"; content area 3 \"should focus on the key ideas given, rather than on the study of detailed biographical information on each thinker\"."
+     "content": "Aldo Leopold (1887–1948) — The land ethic – extends the community to include the natural world and preserving the integrity, stability and beauty of the biotic community; The failure of traditional conservation efforts – as they are based on a narrow economic model rather than moving to a broader, integrated and ecological worldview. Rachel Carson (1907–1964) — The state and society does not have the authority to dominate nature – the long-term effects of chemical pesticide use impact sustainability; Nature should be seen holistically – it does not exist for the convenience of man. E. F. Schumacher (1911–1977) — The need to move to a Buddhist economics – which aims to achieve the maximum of wellbeing with the minimum of consumption, and focuses on local production from local resources for local needs; Criticisms of the economics of modern materialism – which considers goods as more important than people and consumption as more important than creative activity. Murray Bookchin (1921–2006) — The environmental crisis emerges from existing social structures of oppression – so social structures and the state must be overthrown; Lessons should be learned from ecology – the future should be built around decentralised societies, organised as a collection of self-sufficient communes. Carolyn Merchant (1936– ) — The oppression and death of nature are linked to gender oppression – so radical, societal restructuring of gender relations is needed, which will allow us to create a new relationship with the natural world; Opposition to the mechanistic, patriarchal view of science and nature – which promotes the idea of dominance and mastery over nature."
     }
    ]
   },
@@ -884,11 +884,11 @@ const SPEC_9PL0 = {
    "option": "nonCore",
    "name": "Non-core political idea: Feminism",
    "caseStudies": [
-    "Charlotte Perkins Gilman (1860–1935) — Sex and domestic economics are hand in hand; Societal pressure",
-    "Simone de Beauvoir (1908–1986) — Sex versus gender, 'one is not born, but rather becomes, a woman'; 'Otherness'",
-    "Kate Millett (1934–2017) — Family; Portrayal of women in art and literature",
-    "Sheila Rowbotham (1943– ) — Capitalism; The family",
-    "bell hooks (1952–2021) — Women of colour; Intersectionality"
+    "Charlotte Perkins Gilman (1860–1935) — Sex and domestic economics are hand in hand – for women to survive, they have to depend on their sexuality, body and domestic labour in order to please their husbands; Societal pressure – young girls are compelled to conform in society and prepare for motherhood by playing with toys and wearing clothes that are specifically designed for and marketed to them.",
+    "Simone de Beauvoir (1908–1986) — Sex versus gender – ‘one is not born, but rather becomes, a woman’; ‘Otherness’ – men are perceived as the ‘norm’ and women deviants from this norm.",
+    "Kate Millett (1934–2017) — Family – patriarchy's chief institution is the family, and undoing the traditional family was the key to true sexual revolution; Portrayal of women in art and literature – she showed how patriarchal culture had produced writers and literary works that were degrading to women.",
+    "Sheila Rowbotham (1943– ) — Capitalism – women are forced to sell their labour to survive and use their labour to support their family under the capitalist system; The family – not just an instrument for disciplining and subjecting women to capitalism but a place where men took refuge from alienation under a capitalist economy.",
+    "bell hooks (1952–2021) — Women of colour – she brought the experiences and perspectives of women of colour into the mainstream feminist movement; Intersectionality – the interlocking systems of oppression that mean that Black female workers suffer a triple oppression: racism, capitalism and patriarchy."
    ],
    "ideas": [
     {
@@ -949,7 +949,7 @@ const SPEC_9PL0 = {
      "code": "Feminism — key thinkers",
      "q": "To what extent do feminist thinkers agree with one another?",
      "idea": "Feminist thinkers and their key ideas",
-     "content": "The key ideas of Charlotte Perkins Gilman, Simone de Beauvoir, Kate Millett, Sheila Rowbotham and bell hooks, used \"to exemplify the content from areas 1 and 2\"; content area 3 \"should focus on the key ideas given, rather than on the study of detailed biographical information on each thinker\"."
+     "content": "Charlotte Perkins Gilman (1860–1935) — Sex and domestic economics are hand in hand – for women to survive, they have to depend on their sexuality, body and domestic labour in order to please their husbands; Societal pressure – young girls are compelled to conform in society and prepare for motherhood by playing with toys and wearing clothes that are specifically designed for and marketed to them. Simone de Beauvoir (1908–1986) — Sex versus gender – ‘one is not born, but rather becomes, a woman’; ‘Otherness’ – men are perceived as the ‘norm’ and women deviants from this norm. Kate Millett (1934–2017) — Family – patriarchy's chief institution is the family, and undoing the traditional family was the key to true sexual revolution; Portrayal of women in art and literature – she showed how patriarchal culture had produced writers and literary works that were degrading to women. Sheila Rowbotham (1943– ) — Capitalism – women are forced to sell their labour to survive and use their labour to support their family under the capitalist system; The family – not just an instrument for disciplining and subjecting women to capitalism but a place where men took refuge from alienation under a capitalist economy. bell hooks (1952–2021) — Women of colour – she brought the experiences and perspectives of women of colour into the mainstream feminist movement; Intersectionality – the interlocking systems of oppression that mean that Black female workers suffer a triple oppression: racism, capitalism and patriarchy."
     }
    ]
   },
@@ -1016,7 +1016,7 @@ const SPEC_9PL0 = {
     },
     {
      "code": "Multiculturalism — key thinkers",
-     "q": "How do the key thinkers of multiculturalism exemplify its core ideas and principles?",
+     "q": "To what extent do the key thinkers of multiculturalism exemplify its core ideas and principles?",
      "idea": "Multiculturalist thinkers and their ideas",
      "content": "The key ideas of Isaiah Berlin, Charles Taylor, Bhikhu Parekh, Tariq Modood and Will Kymlicka, used to exemplify the content from areas 1 and 2."
     }
@@ -1097,7 +1097,7 @@ const SPEC_9PL0 = {
     },
     {
      "code": "Nationalism — key thinkers",
-     "q": "How do the key thinkers of nationalism exemplify its core ideas and principles?",
+     "q": "To what extent do the key thinkers of nationalism exemplify its core ideas and principles?",
      "idea": "Nationalist thinkers and their ideas",
      "content": "The key ideas of Jean-Jacques Rousseau, Johann Gottfried von Herder, Giuseppe Mazzini, Charles Maurras and Marcus Garvey, used to exemplify the content from areas 1 and 2."
     }
@@ -1108,7 +1108,12 @@ const SPEC_9PL0 = {
    "component": "C3",
    "option": "comparative",
    "name": "USA: US Constitution and federalism",
-   "caseStudies": [],
+   "caseStudies": [
+    "Federalism – the US system in which sovereignty is shared between a central government and the individual states, each with their own specific rights.",
+    "Separation of powers and checks and balances – the three key branches of government (legislature, executive, judiciary) each have their own powers, personnel and buildings, and each branch has a direct ability to prevent action from another.",
+    "Bipartisanship – attempts within the structure of Congress to ensure the two main parties work together to fulfil Congressional functions.",
+    "Limited government – the power of the US federal government over its states and citizens is subject to limitations as laid out in the Constitution."
+   ],
    "ideas": [
     {
      "code": "1.1",
@@ -1141,7 +1146,11 @@ const SPEC_9PL0 = {
    "component": "C3",
    "option": "comparative",
    "name": "USA: US Congress",
-   "caseStudies": [],
+   "caseStudies": [
+    "Bicameral Congress – a system of government where there are two legislative chambers, the House of Representatives and the Senate, with the membership and election cycle of each.",
+    "The distribution of powers within Congress – powers given to Congress in the Constitution, the exclusive powers of each House, and the concurrent powers of Congress.",
+    "The functions of Congress – representation, the legislative process, and oversight of the presidency and the Supreme Court."
+   ],
    "ideas": [
     {
      "code": "2.1",

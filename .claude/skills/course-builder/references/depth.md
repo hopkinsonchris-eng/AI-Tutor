@@ -59,3 +59,14 @@ subject matter.
 A 34-topic course is roughly 34 writer runs and 34 judge runs plus a few rewrites: expect several
 hours of session time and a large token budget, spread over more than one session if the
 subscription's limits bite. Commit after every few topics so nothing is lost; partial depth ships fine.
+
+## Worked examples and open cards (contract since 11 Sept 2026)
+
+Every worked example carries a `setup` (the complete problem the student sees before predicting: every
+value, statement, source or scenario, and what is asked) and `cues` (one short question per step, asked
+before that step is revealed and answerable from the setup and the steps shown so far). The app shows the
+setup at once and puts each cue above its Reveal button, so the student always knows what to predict.
+A card whose front asks for an example, or for one of several acceptable answers, is `open: true` and
+its back lists two or three acceptable answers separated by semicolons; the app tells the student any
+sound example scores. `scripts/kit-refine.js` retrofits both onto a shipped kit with a writer agent.
+

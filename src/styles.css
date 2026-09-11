@@ -225,3 +225,6 @@ details.links{margin-top:8px;font-size:14px}details.links summary{cursor:pointer
 @media (hover:hover) and (prefers-reduced-motion:no-preference){.desk .dobj:hover{transform:translateY(-2px)}}
 @media (max-width:480px){.desk .dcap{display:none}}
 .cal{width:100%;border-collapse:collapse;font-size:14px}.cal td{padding:6px 0;border-top:1px solid var(--rule)}.cal td+td{text-align:right;color:var(--pencil);white-space:nowrap}.cal tr.exam td{color:var(--red);font-weight:600}.cal tr.holiday td:first-child{color:var(--pencil)}
+/* worked examples: the setup the student predicts from, and the cue before each hidden step */
+.setup{background:#FDFCF9;border-left:3px solid var(--blue);padding:8px 12px;margin:8px 0 6px;font-size:14.5px;line-height:1.55}
+.cue{font-size:14px;line-height:1.5;margin:8px 0 2px;color:var(--ink)}

@@ -136,6 +136,19 @@ student's state under `coachNotes`, shown on the pink post-it and at the top of 
 **The coach's name.** Each student names their coach at setup or from the Coach station ("Your coach's
 name"); it is kept in their own state and used on the tab, the desk, the chat and in every coach prompt.
 
+## Worked examples you can actually predict, and cards with more than one right answer
+
+Every worked example now opens with its **setup**: the whole problem as the student would see it (every
+value, reading, statement or scenario, and what is asked). The steps stay faded, and before each one a
+**cue** says what to predict ("Which reading does not fit the others, and why?"), answerable from the setup
+and the steps already shown. A kit without setups (an older Worker build) shows its first line at once.
+
+A flash card whose front asks for an example, or for one of several acceptable answers, is **open**: its
+back lists two or three acceptable answers and the app says any sound example scores. The contract in
+`src/kit-validator.js` requires both, the Worker's depth pipeline writes them, and
+`node scripts/kit-refine.js <course> extract-all | apply <room> | assemble` retrofits a shipped kit with a
+writer agent, refusing any rewrite that loses a value from the original steps.
+
 ## How it works on your site
 
 The site opens on a sign-in screen. A student signs in with a username and password, and everything after that -- the tutor, their progress, the admin tab -- is keyed to that sign-in. Progress is saved to the Worker as they go and cached on the device, so signing in on another device picks up where they left off.

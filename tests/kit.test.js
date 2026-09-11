@@ -35,4 +35,13 @@ ok('K5 an essay kit needs two model paragraphs, a fact file and a plan', !r.ok &
 r = v(sampleKit(topic, 'quantitative', { extras: [] }));
 ok('K5 a quantitative kit needs a formulae sheet', !r.ok && /formulae/.test(r.problems.join()), r.problems.join('|'));
 ok('K6 problems are written for a model to act on: each names the field', v(sampleKit(topic, 'quantitative', { room: { facts: [] } })).problems[0].startsWith('room.facts'));
+/* worked examples carry a setup and cues; open cards carry several answers */
+r=v(sampleKit(topic,'quantitative',{lesson:{examples:sampleKit(topic,'quantitative').lesson.examples.map((e,i)=>i?e:{title:e.title,steps:e.steps})}}));
+ok('K9 an example without a setup and cues is refused',!r.ok&&/setup/.test(r.problems.join())&&/cues/.test(r.problems.join()),r.problems.join('|'));
+r=v(sampleKit(topic,'quantitative',{lesson:{examples:sampleKit(topic,'quantitative').lesson.examples.map((e,i)=>i?e:Object.assign({},e,{cues:e.cues.slice(0,2)}))}}));
+ok('K9 cues must match the steps one for one',!r.ok&&/cues/.test(r.problems.join()));
+const openKit=sampleKit(topic,'quantitative');openKit.cards[0]={front:'Give an example of a limitation of this method.',back:'It ignores friction',code:openKit.cards[0].code};
+r=v(openKit);ok('K10 a front that asks for an example must be an open card',!r.ok&&/open: true/.test(r.problems.join()),r.problems.join('|'));
+openKit.cards[0].open=true;r=v(openKit);ok('K10 an open card needs at least two acceptable answers',!r.ok&&/at least two acceptable answers/.test(r.problems.join()));
+openKit.cards[0].back='It ignores friction; it assumes the string is light; it treats the pulley as smooth';r=v(openKit);ok('K10 two or three answers separated by semicolons pass',r.ok,r.problems.join('|'));
 console.log(`PASSED: ${pass}`); fails.forEach(f => console.log('FAILED: ' + f)); console.log('-'.repeat(50)); console.log(fails.length ? `RESULT: ${fails.length} FAILURE(S)` : 'RESULT: ALL GREEN'); process.exit(fails.length ? 1 : 0);

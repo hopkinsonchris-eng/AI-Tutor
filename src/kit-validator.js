@@ -5,6 +5,9 @@
    Problems name the field and, for questions, the question number, so a model can act on them. */
 const { FAMILIES } = require('./families.js');
 
+/* A front that asks for any example, or for one of several acceptable answers: the back must offer more than one. */
+const OPEN_FRONT = /\b(give|name|suggest|state|identify|describe|provide|outline|quote|pick|choose)\s+(an?|one|two|three)\s+(example|examples|named|possible|way|ways|reason|reasons|factor|factors|method|methods|cause|causes|effect|effects|limitation|limitations|advantage|advantages|disadvantage|disadvantages|benefit|benefits|risk|risks|use|uses|application|applications|source|sources|technique|techniques|strategy|strategies|consequence|consequences|impact|impacts|piece|pieces|situation|situations|case|cases|technology|technologies|policy|policies|difficulty|difficulties|problem|problems)\b|\b(an|one) example\b|\bfor example\b|\bsuch as\b.*\?/i;
+
 const KINDS = ['formulae', 'practical', 'extended', 'paragraph', 'factfile', 'plan', 'vocab', 'grammar', 'notes'];
 
 function validateKit(kit, topic, family) {
@@ -24,7 +27,11 @@ function validateKit(kit, topic, family) {
   });
   const ex = Array.isArray(L.examples) ? L.examples : [];
   if (ex.length < 4 || ex.length > 6) bad(`lesson.examples: between 4 and 6 worked examples, has ${ex.length}`);
-  ex.forEach((e, i) => { if (!e || !e.title || !Array.isArray(e.steps) || e.steps.length < 3 || e.steps.some(x => !x)) bad(`lesson.examples[${i}]: needs a title and at least 3 non-empty steps`); });
+  ex.forEach((e, i) => {
+    if (!e || !e.title || !Array.isArray(e.steps) || e.steps.length < 3 || e.steps.some(x => !x)) bad(`lesson.examples[${i}]: needs a title and at least 3 non-empty steps`);
+    if (!e || typeof e.setup !== 'string' || e.setup.trim().length < 40) bad(`lesson.examples[${i}]: needs setup — the full problem the student sees before predicting: every value, statement or source given, and what is asked (at least 40 characters)`);
+    if (!e || !Array.isArray(e.cues) || !Array.isArray(e.steps) || e.cues.length !== e.steps.length || e.cues.some(c => typeof c !== 'string' || c.trim().length < 8)) bad(`lesson.examples[${i}]: needs cues — one short question per step, asked before that step is revealed, that the setup and the steps so far make answerable`);
+  });
   const ch = Array.isArray(L.check) ? L.check : [];
   if (ch.length < 3) bad(`lesson.check: at least 3 check-yourself questions, has ${ch.length}`);
   ch.forEach((c, i) => { if (!c || !c.q || !c.a) bad(`lesson.check[${i}]: needs q and a`); });
@@ -53,7 +60,10 @@ function validateKit(kit, topic, family) {
   if (cards.length < 12 || cards.length > 15) bad(`cards: between 12 and 15 recall cards, has ${cards.length}`);
   cards.forEach((c, i) => {
     if (!c || !c.front || !c.back) bad(`cards[${i}]: needs front and back`);
-    else if (String(c.back).split(/\s+/).length > 40) bad(`cards[${i}]: back is over 40 words`);
+    else if (String(c.back).split(/\s+/).length > (c.open ? 60 : 40)) bad(`cards[${i}]: back is over ${c.open ? 60 : 40} words`);
+    if (c && c.open !== undefined && typeof c.open !== 'boolean') bad(`cards[${i}]: open must be true or false`);
+    if (c && c.open && String(c.back).split(/;|\bor\b/).length < 2) bad(`cards[${i}]: an open card's back lists at least two acceptable answers separated by semicolons`);
+    if (c && !c.open && OPEN_FRONT.test(String(c.front))) bad(`cards[${i}]: "${String(c.front).slice(0, 60)}" asks for an example or one of several possible answers, so it must be open: true with two or three acceptable answers on the back`);
     if (!(c && codes.has(c.code))) bad(`cards[${i}]: code "${c && c.code}" is not one of ${codeList}`);
   });
 
@@ -68,4 +78,4 @@ function validateKit(kit, topic, family) {
   return { ok: problems.length === 0, problems };
 }
 
-module.exports = { validateKit, KINDS };
+module.exports = { validateKit, KINDS, OPEN_FRONT };

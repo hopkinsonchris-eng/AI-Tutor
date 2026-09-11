@@ -6,7 +6,7 @@ function sampleKit(topic, family, over = {}) {
     lesson: {
       why: `Why this room exists for ${topic.name}: `.padEnd(220, 'because it is examined in every series and lost for avoidable reasons. '),
       idea: topic.ideas.map(i => ({ h: `${i.idea}`, t: `${i.content} `.padEnd(180, 'In the exam this is tested by asking you to apply it to an unfamiliar case, so learn the form and the reason. '), code: i.code })),
-      examples: [1, 2, 3, 4].map(n => ({ title: `Worked example ${n} for ${topic.name}`, steps: ['State what is given and what is asked.', 'Apply the key idea in the standard form.', 'Check the result against the question and state the conclusion.'] })),
+      examples: [1, 2, 3, 4].map(n => ({ title: `Worked example ${n} for ${topic.name}`, setup: `A student is given the full situation for ${topic.name}: the values 4, 8 and 12 and is asked for the mean.`, steps: ['The three values are 4, 8 and 12, so the total is 24.', 'Mean = total ÷ count = 24 ÷ 3 = 8.', 'Check: 8 sits between 4 and 12, so the answer is sensible.'], cues: ['What is the total of the three values?', 'How do you turn the total into a mean?', 'How would you check the answer is sensible?'] })),
       check: [1, 2, 3].map(n => ({ q: `Check ${n}?`, a: `Answer ${n}.` })),
     },
     room: {

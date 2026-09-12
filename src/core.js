@@ -125,6 +125,18 @@ function subjectPriority(state, specs, today) {
   }
   return Object.values(bySpec).map(b => ({ ...b, score: (1 - b.mastery / Math.max(1, b.nodes)) + Math.min(1, b.stale / 30) })).sort((a, b) => b.score - a.score);
 }
+/* How much a room's recent mistakes should pull it forward: a paper mistake counts double, an open re-test more,
+   a knowledge gap one more; only the last thirty days count. */
+function errorUrgency(state, id, today) {
+  let u = 0; const modes = {};
+  for (const e of state.errors || []) {
+    if (e.node !== id || !e.date || days(e.date, today) > 30 || e.resolved) continue;
+    u += e.paper ? (e.retestDue ? 3 : 2) : 1; if (e.mode === 'KNOWLEDGE-GAP') u += 1;
+    modes[e.mode] = (modes[e.mode] || 0) + 1;
+  }
+  const mode = Object.keys(modes).sort((a, b) => modes[b] - modes[a])[0] || null;
+  return { urgency: u, count: Object.values(modes).reduce((a, b) => a + b, 0), mode };
+}
 function buildSession(state, specs, today) {
   const phase = phaseFor(today); if (!phase) return { phase: null, steps: [] };
   const decayed = applyDecay(state, today);
@@ -132,11 +144,12 @@ function buildSession(state, specs, today) {
   const steps = [];
   const cards = dueCards(state, today).length;
   steps.push({ kind: 'cards', title: 'Recall cards', minutes: cards ? Math.min(20, 5 + cards) : 10, detail: cards ? `${cards} due — definitions, figures, case-study facts.` : 'Nothing due. Ten minutes on the weakest room\u2019s cards instead.', nodes: [] });
-  const due = dueForReview(state, today);
+  const urg = {}; const due = dueForReview(state, today).map((id, i) => ({ id, i, u: (urg[id] = errorUrgency(state, id, today)).urgency })).sort((a, b) => b.u - a.u || a.i - b.i).map(x => x.id);
   const prio = subjectPriority(state, specs, today);
   for (const d of due.slice(0, holiday ? 3 : 2)) {
-    const n = state.nodes[d]; const spec = specs[n.spec]; const topic = spec.topics.find(t => t.id === n.topic);
-    steps.push({ kind: 'review', title: `Review: ${spec.subject} \u2014 ${topic.name}`, minutes: n.state === 'Learning' ? 25 : 15, detail: `${n.state}. Short questions and one case-study recall, then log.`, nodes: [d] });
+    const n = state.nodes[d]; const spec = specs[n.spec]; const topic = spec.topics.find(t => t.id === n.topic); const e = urg[d];
+    const why = e && e.count ? `${e.count} mistake${e.count === 1 ? '' : 's'} here lately, mostly ${e.mode}: ${REMEDY[e.mode] || ''}` : 'Short questions and one case-study recall, then log.';
+    steps.push({ kind: 'review', title: `Review: ${spec.subject} \u2014 ${topic.name}`, minutes: n.state === 'Learning' ? 25 : 15, detail: `${n.state}. ${why}`, nodes: [d], mode: e && e.count ? e.mode : null });
   }
   const retests = retestQueue(state, today);
   if (retests.length) steps.push({ kind: 'retest', title: `Re-test: ${retests.length} question${retests.length === 1 ? '' : 's'} from your papers`, minutes: Math.min(30, 5 + 3 * retests.length), detail: 'Fresh questions shaped like the ones that lost marks. Two clean passes a week apart clear one.', nodes: [...new Set(retests.map(e => e.node))] });
@@ -356,4 +369,4 @@ function gradeFromBoundaries(score, boundaries) {
   return rows.length ? 'U' : null;
 }
 if (typeof module !== 'undefined') module.exports = { DAY, STATES, FAILURE_MODES, REMEDY, BLOCKS, phaseFor, days, iso, resolveTopics, nodeId, newState, topicWeights, deskResurface, daysToExam, pileCounts,
-  recordResult, recordWrong, applyDecay, dueForReview, scheduleCard, dueCards, subjectPriority, buildSession, topicForCode, questionTopic, paperTopics, paperPriority, applyPaper, retestQueue, recordRetest, gradeFromBoundaries, RETEST_CAP, MASTERY_FACTOR, DEFAULT_BOUNDS, gradeFor, predictSubject, weeklyReport, streakDays, nudgeFallback, nudgePrompt, topicLinks };
+  recordResult, recordWrong, applyDecay, dueForReview, scheduleCard, dueCards, subjectPriority, buildSession, topicForCode, questionTopic, paperTopics, paperPriority, applyPaper, retestQueue, recordRetest, gradeFromBoundaries, RETEST_CAP, errorUrgency, MASTERY_FACTOR, DEFAULT_BOUNDS, gradeFor, predictSubject, weeklyReport, streakDays, nudgeFallback, nudgePrompt, topicLinks };

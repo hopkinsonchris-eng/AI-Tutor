@@ -106,4 +106,16 @@ ok('P6 the re-test queue is capped at ten questions',C.retestQueue(many,'2026-09
 ok('P7 grade from a series’ published boundaries works for 9–1 and A*–E labels and gives U below the lowest',C.gradeFromBoundaries(45,{9:78,7:64,5:45,4:36,1:10})==='5'&&C.gradeFromBoundaries(35,{9:78,7:64,5:45,4:36,1:10})==='1'&&C.gradeFromBoundaries(9,{9:78,1:10})==='U'&&C.gradeFromBoundaries(50,{'A*':60,A:50,E:20})==='A'&&C.gradeFromBoundaries(50,null)===null);
 }
 
+/* ---------- mistakes steer the review order and its wording ---------- */
+{
+const su=C.newState(setup,SPECS);const T='2026-09-12';const a=C.nodeId('OCR-H481','1.2'),b=C.nodeId('OCR-H481','2.1');
+for(const id of [a,b]){su.nodes[id].state='Fluent';su.nodes[id].lastPractised='2026-08-20';}
+su.errors.push({date:'2026-09-10',node:b,mode:'APPLICATION',paper:'p1',q:'2',retestDue:'2026-09-17'},{date:'2026-09-10',node:b,mode:'APPLICATION',paper:'p1',q:'4',retestDue:'2026-09-17'},{date:'2026-09-11',node:a,mode:'RECALL-GAP'});
+const ua=C.errorUrgency(su,a,T),ub=C.errorUrgency(su,b,T);
+ok('U1 a paper mistake with a re-test pending weighs three, a practice mistake one; the dominant mode is named',ua.urgency===1&&ua.mode==='RECALL-GAP'&&ub.urgency===6&&ub.count===2&&ub.mode==='APPLICATION',JSON.stringify([ua,ub]));
+const sess=C.buildSession(su,SPECS,T);const revs=sess.steps.filter(x=>x.kind==='review');
+ok('U2 the room with the paper mistakes is reviewed first, and the step says why in the failure mode’s own remedy',revs.length>=2&&revs[0].nodes[0]===b&&revs[0].mode==='APPLICATION'&&/2 mistakes here lately, mostly APPLICATION: Every paragraph must name/.test(revs[0].detail)&&revs[1].nodes[0]===a&&/1 mistake here lately, mostly RECALL-GAP/.test(revs[1].detail),JSON.stringify(revs.map(r=>[r.nodes[0],r.detail.slice(0,60)])));
+ok('U3 a mistake older than thirty days or already cleared no longer pulls',(()=>{su.errors[0].resolved=true;su.errors[1].date='2026-07-01';return C.errorUrgency(su,b,T).urgency===0;})());
+}
+
 console.log(`PASSED: ${pass}`);fails.forEach(f=>console.log('FAILED: '+f));console.log('-'.repeat(50));console.log(fails.length?`RESULT: ${fails.length} FAILURE(S)`:'RESULT: ALL GREEN');process.exit(fails.length?1:0);

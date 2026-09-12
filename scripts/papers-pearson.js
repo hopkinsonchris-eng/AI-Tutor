@@ -134,7 +134,6 @@ const COURSES = [
   {
     spec: 'EDX-4GN1', code: '4GN1', level: 'igcse', specFile: 'edexcel-4gn1.js',
     family: 'International-GCSE', subject: 'german', year: '2017',
-    legacy: ['International%20GCSE/German/2017', 'International%20GCSE/German'],
     // Paper 3 (speaking) has no written paper and is deliberately omitted.
     papers: [
       { id: '01', name: 'Paper 1: Listening', component: 'P1', audio: true },
@@ -207,9 +206,12 @@ function formsFor(course, series) {
     forms.push({ id: 'upper', dir: cur, file: upper });
     const famSp = course.family.replace(/-/g, '%20');
     const subSp = course.subject.replace(/-/g, '%20');
+    // Confirmed legacy hits: International%20GCSE/Mathematics%20A/Exam-materials/ (4MA1 2021),
+    // International%20GCSE/English%20Literature/Exam-materials/ (4ET1 2021),
+    // International%20GCSE/german/2017/Exam-materials/ (4GN1 2019-2020) and
+    // International%20GCSE/german/Exam-materials/ (4GN1 2021).
     const legacy = new Set([
       ...(course.legacy || []).map((p) => p + '/Exam-materials/'),
-      ...(course.legacy || []).map((p) => p + '/exam-materials/'),
       `${famSp}/${subSp}/${course.year}/Exam-materials/`,
       `${famSp}/${subSp}/Exam-materials/`,
     ]);
@@ -221,7 +223,7 @@ function formsFor(course, series) {
 // ---------------------------------------------------------------------------
 // HTTP: HEAD with a small pool, retries, and strict hit test
 // ---------------------------------------------------------------------------
-const stats = { requests: 0, errors: 0 };
+const stats = { requests: 0, errors: 0, unknown: 0 }; // unknown = probes that failed all retries
 let active = 0;
 const waiters = [];
 function acquire() {
@@ -249,6 +251,7 @@ async function probe(url, wantType = 'application/pdf') {
       }
       await new Promise((res) => setTimeout(res, 500 * (attempt + 1)));
     }
+    stats.unknown++;
     return false;
   } finally {
     release();
@@ -289,13 +292,15 @@ function missIsFresh(cache, key) {
   return (TODAY - new Date(when)) / 86400000 < RECHECK_DAYS;
 }
 
-// Memoised lookup: returns url or null, consulting/updating the cache.
+// Memoised lookup: returns url or null, consulting/updating the cache. A miss is only
+// cached when every probe got a definite answer; network failures leave it unknown.
 async function lookup(cache, key, finder) {
   if (cache.hits[key]) return cache.hits[key];
   if (missIsFresh(cache, key)) return null;
+  const unknownBefore = stats.unknown;
   const url = await finder();
   if (url) { cache.hits[key] = url; delete cache.misses[key]; }
-  else cache.misses[key] = TODAY_ISO;
+  else if (stats.unknown === unknownBefore) cache.misses[key] = TODAY_ISO;
   return url;
 }
 
@@ -373,8 +378,8 @@ async function harvest(course) {
   for (const series of [...allSeries].reverse()) {
     const forms = formsFor(course, series);
     let preferred = null; // form id that hit first for this series
-    const queDates = [...weekdays(series.que[0], series.que[1])];
-    const msDates = [...weekdays(series.ms[0], series.ms[1])];
+    const queDates = [...days(series.que[0], series.que[1])];
+    const msDates = [...days(series.ms[0], series.ms[1])];
     const papers = [];
 
     for (const p of course.papers) {
@@ -382,12 +387,13 @@ async function harvest(course) {
       let que = cache.hits[qKey] || null;
       if (!que && !missIsFresh(cache, qKey)) {
         const order = preferred ? [forms.find((f) => f.id === preferred), ...forms.filter((f) => f.id !== preferred)] : forms;
-        for (const f of order) {
-          que = await findInWindow(f.dir, f.file, p.id, 'que', queDates);
-          if (que) { preferred = f.id; report.forms[series.id] = f.id; break; }
-        }
-        if (que) { cache.hits[qKey] = que; delete cache.misses[qKey]; }
-        else cache.misses[qKey] = TODAY_ISO;
+        que = await lookup(cache, qKey, async () => {
+          for (const f of order) {
+            const u = await findInWindow(f.dir, f.file, p.id, 'que', queDates);
+            if (u) { preferred = f.id; report.forms[series.id] = f.id; return u; }
+          }
+          return null;
+        });
       } else if (que) {
         // remember which form the cached hit used so sibling papers try it first
         const f = forms.find((f) => que.startsWith(BASE + f.dir));
@@ -517,7 +523,7 @@ async function main() {
     reports.push(r);
     console.error(`[${course.spec}] ${r.seriesFound.length} series, ${r.papersFound} papers, ${r.seriesLocked.length} locked, ${r.seriesOmitted.length} omitted (${r.seconds}s, ${stats.requests} requests so far)`);
   }
-  console.log(JSON.stringify({ checked: TODAY_ISO, requests: stats.requests, networkErrors: stats.errors, courses: reports }, null, 2));
+  console.log(JSON.stringify({ checked: TODAY_ISO, requests: stats.requests, networkErrors: stats.errors, unresolvedProbes: stats.unknown, courses: reports }, null, 2));
 }
 
 main().catch((e) => { console.error(e); process.exit(1); });

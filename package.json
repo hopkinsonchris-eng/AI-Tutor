@@ -1,7 +1,7 @@
 {
   "name": "study-platform",
-  "version": "1.5.0",
-  "description": "Spec-anchored A level study platform: rooms per topic, spaced recall, essay and photo marking to each board's conventions, a Socratic coach, and a multi-subject scheduler.",
+  "version": "1.6.0",
+  "description": "Spec-anchored A level study platform: rooms per topic, spaced recall, essay and photo marking to each board's conventions, a Socratic coach that floats on every page, a multi-subject scheduler, and support for reading, attention and focus.",
   "private": true,
   "scripts": {
     "build": "node build.js",

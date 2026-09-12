@@ -21,6 +21,11 @@ ADMIN_NAME = "Chris"
 ACCESS_TEAM_DOMAIN = "hoppyc.cloudflareaccess.com"
 ACCESS_AUD = "b77150c77c9a5256b929ff1708b80cc7ee7bf334a7c45b237ed690cc2427cf08"
 
+# Dictation fallback: Whisper on Workers AI transcribes a recording for browsers that cannot recognise speech
+# themselves (Firefox). Nothing is stored; each call counts against the student's daily cap.
+[ai]
+binding = "AI"
+
 # Course building runs as durable Workflows: a build survives minutes of model calls with per-step
 # retries and reports progress; the reviewer is what the monthly cron starts, one instance per course.
 [[workflows]]

@@ -133,3 +133,39 @@ Step 4: marks per mark point quoting the student’s own words, what was missing
 The report: the score and grade on the series’ boundaries, topics ordered by marks lost × weight with each room’s move and an Open room button, the coach’s note, and what went into the rooms and the daily plan.
 
 ![19-paper-report](19-paper-report.png)
+
+## 23-coach-floating
+
+The coach floats beside every page: opened from the button at the bottom right, it says what it can see (the room, the station, the question on screen) and answers about that question; the chips fit the scene
+
+![23-coach-floating](23-coach-floating.png)
+
+## 24-reader-line-focus
+
+The reader: Read this page under the header, a 🔊 on every block, the block being read highlighted with its current sentence, a three-line focus window dimming the rest, and wider spacing
+
+![24-reader-line-focus](24-reader-line-focus.png)
+
+## 25-calm-campus
+
+Calm mode: no animation or movement anywhere, a plain background instead of the grid, no shadows or pulses, and the campus drawn without its time-of-day tint
+
+![25-calm-campus](25-calm-campus.png)
+
+## 26-support-office
+
+The Office’s Support panel: reader, speed, line focus, spacing, coach speaks; dictation and where the audio goes; the prompter and its interval; break steps down and how small; calm mode; plain literal language; the visible timer, extra time and rest breaks
+
+![26-support-office](26-support-office.png)
+
+## 27-phone-coach
+
+Phone: Go started the step’s timer (25% extra time applied, Break stops the clock); the coach opens as a bottom sheet that says what it sees, with the mic beside its box
+
+![27-phone-coach](27-phone-coach.png)
+
+## 28-prompter
+
+The prompter after three quiet minutes at the desk: one line, the student’s name or “back to question 1”, never the content, with I’m here and a five-minute Break that stops the clock
+
+![28-prompter](28-prompter.png)

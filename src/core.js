@@ -52,6 +52,7 @@ function resolveTopics(spec, options) {
 }
 function nodeId(specId, topicId) { return `${specId}|${topicId}`; }
 function newState(setup, specs) {
+  setup = Object.assign({}, setup, { support: normaliseSupport(setup && setup.support) });
   const s = { version: 3, created: null, setup, nodes: {}, errors: [], hours: 0, dayHours: {}, transitions: [], practice: [],
     essays: [], papers: [], cards: {}, generated: {}, coach: {}, coachNotes: {}, pins: {}, doneToday: {}, coldDone: {}, checklist: {}, boundaries: {} };
   for (const sub of setup.subjects) {
@@ -240,7 +241,7 @@ function nudgeFallback(state, specs, today) {
   return { text: `${st.title} (${st.minutes} min): ${st.detail}`.slice(0, 200), node: st.nodes[0] || null, station };
 }
 /* What the tutor is asked when writing the next-step nudge: the session, mastery, recent errors, due cards, candidate rooms. */
-function nudgePrompt(state, specs, today) {
+function nudgePrompt(state, specs, today, extra = '') {
   const s = buildSession(state, specs, today);
   const done = (state.doneToday || {})[today] || [];
   const name = (state.setup && state.setup.student) || 'the student';
@@ -268,7 +269,7 @@ Recall cards due: ${due}. Study streak: ${streak} day${streak === 1 ? '' : 's'}.
 Rooms you may point to (use the id exactly as written):
 ${cand.map(nodeLine).join('\n') || 'none'}
 
-Reply with ONLY this JSON and nothing else: {"text": "<the sentence>", "node": "<one id from the list, or null>", "station": "<one of lesson, cards, practise, essay, exit>"}`;
+Reply with ONLY this JSON and nothing else: {"text": "<the sentence>", "node": "<one id from the list, or null>", "station": "<one of lesson, cards, practise, essay, exit>"}${extra ? '\n' + extra : ''}`;
 }
 /* Where to look things up for a topic: the topic's own links, the course's checked hub pages, then a Bitesize search.
    Videos are not a search link: the Worker finds, checks and lists real ones for the room (see the rail). */
@@ -368,5 +369,80 @@ function gradeFromBoundaries(score, boundaries) {
   for (const [g, m] of rows) if (score >= m) return g;
   return rows.length ? 'U' : null;
 }
+
+/* ---------- Support: the profile, the reader's sentences, the prompter, time, chunking, usage ---------- */
+const SUPPORT_DEFAULTS = { reader: false, readerRate: 1, lineFocus: 0, spacing: false, readCoach: false, voice: '', dictate: false, prompter: false, prompterMinutes: 5, chunk: false, chunkLevel: 2, calm: false, literal: false, timer: false, extra: 0, breaks: false };
+function normaliseSupport(s) {
+  const o = Object.assign({}, SUPPORT_DEFAULTS);
+  if (!s || typeof s !== 'object') return o;
+  for (const k of ['reader', 'spacing', 'readCoach', 'dictate', 'prompter', 'chunk', 'calm', 'literal', 'timer', 'breaks']) if (k in s) o[k] = !!s[k];
+  const rate = parseFloat(s.readerRate); if (Number.isFinite(rate)) o.readerRate = Math.round(Math.max(0.7, Math.min(1.4, rate)) * 10) / 10;
+  const lf = parseInt(s.lineFocus, 10); o.lineFocus = [0, 1, 3, 5].includes(lf) ? lf : 0;
+  const pm = parseInt(s.prompterMinutes, 10); o.prompterMinutes = [3, 5, 8].includes(pm) ? pm : 5;
+  const cl = parseInt(s.chunkLevel, 10); o.chunkLevel = [1, 2, 3].includes(cl) ? cl : 2;
+  const ex = parseInt(s.extra, 10); o.extra = [0, 25, 50].includes(ex) ? ex : 0;
+  if (typeof s.voice === 'string') o.voice = s.voice.slice(0, 80);
+  return o;
+}
+/* Sentences for the reader: split on . ? ! followed by a space and a capital, digit or quote; never inside decimals, codes or common abbreviations. */
+const ABBREV = /(?:\b(?:e\.g|i\.e|etc|cf|vs|Fig|Figs|No|Nos|Dr|Mr|Mrs|Ms|Prof|St|Ch|Eq|approx|p|pp|c|Jan|Feb|Mar|Apr|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec)|\b[A-Z])\.$/;
+function splitSentences(text) {
+  const t = String(text || '').replace(/\s+/g, ' ').trim(); if (!t) return [];
+  const out = []; let cur = '';
+  const parts = t.split(/(?<=[.?!]["')\]]?)\s+(?=["'(\[]?[A-Z0-9])/);
+  for (const p of parts) {
+    cur = cur ? cur + ' ' + p : p;
+    if (ABBREV.test(cur.replace(/["')\]]$/, ''))) continue;
+    out.push(cur); cur = '';
+  }
+  if (cur) out.push(cur);
+  return out;
+}
+/* The prompter's line: what a JCQ prompter may do — the name, a pointer back to the question, a timing reminder — and nothing about the content. */
+function prompterLine(name, sc, i, mins) {
+  const it = sc && sc.item; const st = sc && sc.station;
+  const q = it && it.kind === 'question' && it.n ? `question ${it.n}` : null;
+  const where = q || ({ lesson: 'the lesson', formulae: 'the key facts', cards: 'the cards', practise: 'the questions', essay: 'the essay', mark: 'the marking', exit: 'the exit ticket', planner: 'the planner', desktop: 'the desktop' }[st] || (sc && sc.view === 'exam' ? 'the paper' : 'the page'));
+  const k = (((i || 0) % 5) + 5) % 5; const m = mins || 5;
+  if (k === 0) return `${name}.`;
+  if (k === 1) return `${name}, back to ${where}.`;
+  if (k === 2) return `Focus on ${where}.`;
+  if (k === 3) return `${name}, ${m} quiet minutes have passed. Carry on with ${where}.`;
+  return q && it.of && it.n < it.of ? `${name}, carry on with ${q}, or move on to question ${it.n + 1}.` : `${name}, carry on with ${where}.`;
+}
+/* Time: extra time as a percentage, rounded up to whole minutes; a question's minutes from the paper's pace. */
+function timerMinutes(minutes, extraPct) { const m = Math.max(0, +minutes || 0); const e = +extraPct || 0; return Math.ceil(m * (1 + e / 100) - 1e-9); }
+function marksToMinutes(marks, paperMinutes, paperMarks) { const m = Math.max(0, +marks || 0); const per = paperMinutes && paperMarks ? paperMinutes / paperMarks : 1.2; return Math.max(1, Math.round(m * per)); }
+/* Chunking without a model: a sequence per kind of step, cut to the level, minutes shared out. */
+const CHUNK_SEQ = {
+  cards: ['Open the flash cards', 'Turn the first card over', 'Say the answer out loud before you turn it', 'Mark it Right or Wrong honestly', 'Keep going to the last card', 'Note the one card you got wrong', 'Read that card’s key idea in its room', 'Turn the wrong card over once more', 'Close the cards', 'Tick this step'],
+  review: ['Open the room', 'Read the lesson’s first paragraph', 'Read the first key idea', 'Say it back in one sentence', 'Do question 1 on paper', 'Check the answer', 'Do question 2 on paper', 'Check the answer', 'Do the exit ticket', 'Log any mistake', 'Stand up for one minute', 'Tick this step'],
+  new: ['Open the room', 'Read why this topic exists', 'Read the first key idea', 'Write it in your own words', 'Read the second key idea', 'Write it in your own words', 'Do the first worked example', 'Make five flash cards', 'Do the exit ticket', 'Log any mistake', 'Tick this step'],
+  essay: ['Read the question twice', 'Underline the command word', 'Write three points in the plan', 'Add one piece of evidence to each point', 'Write the introduction', 'Write paragraph one', 'Write paragraph two', 'Write paragraph three', 'Write the conclusion', 'Photograph or type it', 'Press Mark it', 'Read the feedback once'],
+  retest: ['Open the re-test', 'Read the first question', 'Answer it on paper', 'Reveal and mark it', 'Log the result', 'Go to the next question', 'Finish the set', 'Note what to revisit', 'Tick this step'],
+  exam: ['Open the paper', 'Read the first question', 'Underline the command word', 'Answer it on paper', 'Move to the next question', 'Photograph each page', 'Assign the questions to pages', 'Press Mark', 'Read the marks', 'Open the weakest room'],
+  generic: ['Open the page', 'Read the first block', 'Say what it asks in one sentence', 'Do the first part', 'Check it', 'Do the next part', 'Check it', 'Log any mistake', 'Tick this step'],
+};
+function chunkFallback(step, level) {
+  const kind = step && CHUNK_SEQ[step.kind] ? step.kind : /card/i.test(step && step.title || '') ? 'cards' : /essay/i.test(step && step.title || '') ? 'essay' : /re-?test/i.test(step && step.title || '') ? 'retest' : /review/i.test(step && step.title || '') ? 'review' : 'generic';
+  const seq = CHUNK_SEQ[kind]; const want = level === 1 ? 4 : level === 3 ? Math.min(12, seq.length) : 6;
+  const idx = []; for (let i = 0; i < want; i++) idx.push(Math.round(i * (seq.length - 1) / (want - 1)));
+  const texts = [...new Set(idx)].map(i => seq[i]);
+  const total = Math.max(texts.length, Math.round(+(step && step.minutes) || 15));
+  const base = Math.floor(total / texts.length); let rem = total - base * texts.length;
+  return texts.map((text, i) => ({ text, minutes: base + (i < rem ? 1 : 0) }));
+}
+/* The usage line for Progress: evidence of the student's normal way of working. */
+function supportUsageLine(state, today) {
+  const log = state && state.supportLog || {}; const t0 = new Date(today).getTime();
+  const sum = { reader: 0, dictations: 0, prompts: 0, breaks: 0 };
+  for (const [d, v] of Object.entries(log)) { const dt = new Date(d).getTime(); if (!(dt <= t0 && t0 - dt < 7 * 86400000)) continue; for (const k of Object.keys(sum)) sum[k] += +(v && v[k]) || 0; }
+  const parts = [];
+  if (sum.reader >= 0.5) parts.push(`reader ${Math.round(sum.reader)} min`);
+  if (sum.dictations) parts.push(sum.dictations === 1 ? 'dictated once' : `dictated ${sum.dictations} times`);
+  if (sum.prompts) parts.push(`${sum.prompts} prompt${sum.prompts === 1 ? '' : 's'}`);
+  if (sum.breaks) parts.push(`${sum.breaks} rest break${sum.breaks === 1 ? '' : 's'}`);
+  return parts.length ? 'Support this week: ' + parts.join(' · ') : '';
+}
 if (typeof module !== 'undefined') module.exports = { DAY, STATES, FAILURE_MODES, REMEDY, BLOCKS, phaseFor, days, iso, resolveTopics, nodeId, newState, topicWeights, deskResurface, daysToExam, pileCounts,
-  recordResult, recordWrong, applyDecay, dueForReview, scheduleCard, dueCards, subjectPriority, buildSession, topicForCode, questionTopic, paperTopics, paperPriority, applyPaper, retestQueue, recordRetest, gradeFromBoundaries, RETEST_CAP, errorUrgency, MASTERY_FACTOR, DEFAULT_BOUNDS, gradeFor, predictSubject, weeklyReport, streakDays, nudgeFallback, nudgePrompt, topicLinks };
+  recordResult, recordWrong, applyDecay, dueForReview, scheduleCard, dueCards, subjectPriority, buildSession, topicForCode, questionTopic, paperTopics, paperPriority, applyPaper, retestQueue, recordRetest, gradeFromBoundaries, RETEST_CAP, errorUrgency, MASTERY_FACTOR, DEFAULT_BOUNDS, gradeFor, predictSubject, weeklyReport, streakDays, nudgeFallback, nudgePrompt, topicLinks, SUPPORT_DEFAULTS, normaliseSupport, splitSentences, prompterLine, timerMinutes, marksToMinutes, chunkFallback, supportUsageLine };

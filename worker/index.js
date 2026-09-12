@@ -115,6 +115,7 @@ export default {
       if (p.startsWith('/manage/courses') || p.startsWith('/manage/reviews') || p === '/manage/catalogue') return manageCourses(request, env, url, cors);
       if (p.startsWith('/manage/')) return manage(request, env, url, cors);
       if (request.method === 'GET') return json({ ok: true, service: 'tutor-proxy' }, 200, cors);
+      if (p === '/speech' && request.method === 'POST') return speech(request, env, cors);
       if (request.method === 'POST' && (p === '/' || p === '/v1/messages')) return proxy(request, env, cors);
       return json({ error: 'not found' }, 404, cors);
     } catch (e) {
@@ -669,6 +670,35 @@ async function auth(request, env, url, cors) {
   }
 
   return json({ error: 'not found' }, 404, cors);
+}
+
+/* ---------- dictation fallback: a recording in, its transcript out ----------
+   For browsers without speech recognition (Firefox, some tablets). The audio goes to Whisper on Workers AI
+   (binding AI in wrangler.toml), the text comes back, nothing is stored. One call against the daily cap. */
+const SPEECH_MAX = 4 * 1024 * 1024, SPEECH_MODEL = '@cf/openai/whisper-large-v3-turbo';
+function b64Bytes(u8) { let s = ''; for (let i = 0; i < u8.length; i += 0x8000) s += String.fromCharCode.apply(null, u8.subarray(i, i + 0x8000)); return btoa(s); }
+async function speech(request, env, cors) {
+  const s = await sessionUser(request, env);
+  if (!s) return json({ error: 'Sign in to use dictation' }, 401, cors);
+  const type = (request.headers.get('Content-Type') || '').split(';')[0].trim().toLowerCase();
+  if (!/^audio\//.test(type)) return json({ error: 'Send the recording as audio' }, 415, cors);
+  if (!env.AI || typeof env.AI.run !== 'function') return json({ error: 'The dictation fallback is not set up on the tutor service (no AI binding). Chrome, Edge and Safari can dictate without it.' }, 503, cors);
+  const declared = parseInt(request.headers.get('Content-Length') || '0', 10);
+  if (declared > SPEECH_MAX) return json({ error: 'Recordings are limited to 4 MB (about four minutes)' }, 413, cors);
+  const body = new Uint8Array(await request.arrayBuffer());
+  if (body.byteLength > SPEECH_MAX) return json({ error: 'Recordings are limited to 4 MB (about four minutes)' }, 413, cors);
+  if (!body.byteLength) return json({ error: 'The recording is empty' }, 400, cors);
+  const { user } = s; const daily = user.daily || DEFAULT_DAILY; const uk = `usage:${user.username}:${today()}`;
+  const used = parseInt((await env.USAGE.get(uk)) || '0', 10);
+  if (used >= daily) return json(apiError('rate_limit_error', `${user.name}'s daily limit of ${daily} requests is used up — resets at midnight UTC`), 429, cors);
+  await env.USAGE.put(uk, String(used + 1), { expirationTtl: 100 * 86400 });
+  try {
+    const out = await env.AI.run(SPEECH_MODEL, { audio: b64Bytes(body), language: 'en', vad_filter: true });
+    const text = String(out && out.text || '').trim();
+    return json({ text, words: text ? text.split(/\s+/).length : 0 }, 200, cors);
+  } catch (e) {
+    return json({ error: 'Could not transcribe the recording: ' + String(e && e.message || e).slice(0, 160) }, 502, cors);
+  }
 }
 
 /* ---------- the AI proxy ---------- */

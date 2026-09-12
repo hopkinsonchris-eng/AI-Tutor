@@ -38,7 +38,7 @@ let REVIEW_ITEMS=[{kind:'request',id:'AQA-8300',subject:'Mathematics',board:'AQA
 const R=(status,body)=>({ok:status<300,status,text:async()=>JSON.stringify(body)});
 /* the per-room desktop: an in-memory index per room, a fake upload, a canned unfurl */
 let DESK={items:{},unavailable:false,lastUpload:null,lastPatch:null,unfurls:0};
-const VIDEOS={'OCR-H481|1.2':{items:[{id:'abc123def45',url:'https://www.youtube.com/watch?v=abc123def45',title:'Coasts: erosion landforms explained',channel:'Geography with Mr P',length:'9:12',why:'Covers wave-cut platforms, headlands and bays.',image:'https://i.ytimg.com/vi/abc123def45/hqdefault.jpg'}],at:'2026-09-12T08:00:00Z'}};let videoReqs=[];
+const VIDEOS={'OCR-H481|1.2':{items:[{id:'abc123def45',url:'https://www.youtube.com/watch?v=abc123def45',title:'Coasts: erosion landforms explained',channel:'Geography with Mr P',length:'9:12',why:'Covers wave-cut platforms, headlands and bays.',image:'https://i.ytimg.com/vi/abc123def45/hqdefault.jpg'}],at:'2026-09-12T08:00:00Z'}};let videoReqs=[];let speechReqs=[];
 function deskMock(path,m,o,body){if(DESK.unavailable)return R(503,{error:'Desktop is not set up yet — the DESK storage bucket is not bound'});
   if(path==='/desk/all'){const rooms={};for(const [rm,its] of Object.entries(DESK.items))if(its.length)rooms[rm]={count:its.length,latest:its.slice(0,12)};return R(200,{rooms,used:0,quota:262144000});}
   if(path.startsWith('/desk/unfurl')){DESK.unfurls++;const u=decodeURIComponent(path.split('url=')[1]||'');if(/youtu/.test(u))return R(200,{title:'A video',image:'https://i.ytimg.com/vi/dQw4w9WgXcQ/hqdefault.jpg',site:'youtube.com',video:'dQw4w9WgXcQ',provider:'youtube'});return R(200,{title:'Coasts explained',image:'https://cdn.example.org/c.jpg',site:'example.org'});}
@@ -54,6 +54,7 @@ async function tutor(u,o){const path=u.replace('https://tutor.studyplatform.co.u
   if(path==='/auth/me')return auth==='Bearer tok-test'||auth==='Bearer tok-2'?R(200,{user:ME}):R(401,{error:'not signed in'});
   if(path==='/auth/login')return body.username==='matthew'&&body.password==='pw12345678'?R(200,{token:'tok-2',user:ME}):body.username==='chris'&&body.password==='adminpass1'?R(200,{token:'tok-2',user:{username:'chris',name:'Chris',role:'admin',daily:2000}}):R(401,{error:'Wrong username or password'});
   if(path==='/auth/logout')return R(200,{ok:true});
+  if(path==='/speech'&&m==='POST'){speechReqs.push({type:(o.headers||{})['Content-Type'],size:o.body&&(o.body.size||o.body.byteLength||o.body.length)||0});return R(200,{text:'dictated by whisper'});}
   if(path.startsWith('/auth/invite?token='))return path.endsWith('good')?R(200,{username:'kitty',name:'Kitty'}):R(404,{error:'This invite has expired or was already used'});
   if(path==='/auth/invite')return body.token==='good'&&body.password.length>=8?R(200,{token:'tok-2',user:{username:'kitty',name:'Kitty',role:'student',daily:200}}):R(400,{error:'bad'});
   if(path==='/auth/password')return body.current==='pw12345678'?R(200,{ok:true}):R(401,{error:'Current password is wrong'});
@@ -344,7 +345,7 @@ const click=async s=>L.click({target:T(s)});const change=async s=>L.change({targ
  ok('Y1 the setup screen asks for the coach’s name and keeps it in the student’s own state',G.S.setup.coachName==='Ms Rowe'&&/id="suCoach"/.test(reg['v-setup'].innerHTML));
  let noteCalls=0;let notePrompt='';reply=f=>{const p=f.body.messages[0].content[0].text;if(/post-it/.test(p)){noteCalls++;notePrompt=p;return{content:[{type:'text',text:JSON.stringify({text:'Hard questions keep failing on hints. Do two without, then mark one.'})}]};}return{content:[{type:'text',text:JSON.stringify({text:'ok',node:null,station:'lesson'})}]};};
  G.UI.noteTried={};/* earlier openings met a non-JSON reply and were parked for the day */G.openRoom('OCR-H481|1.2','coach');await sleep(40);V=reg['v-rooms'].innerHTML;
- ok('Y1 the name is used on the tab, the desk, the station and the prompt',/data-station="coach"[^>]*>Ms Rowe</.test(V)&&/aria-label="Ms Rowe"/.test(svg())&&/Ms Rowe knows this room/.test(V)&&/Ask Ms Rowe/.test(V)&&/You are Ms Rowe, a Socratic tutor/.test(G.coachText()));
+ ok('Y1 the name is used on the tab, the desk, the station and the prompt',/data-station="coach"[^>]*>Ms Rowe</.test(V)&&/aria-label="Ms Rowe"/.test(svg())&&/Ms Rowe floats beside every page/.test(V)&&/Open Ms Rowe/.test(V)&&(G.UI.coachOpen=true,G.renderCoachPanel(),/Ask Ms Rowe/.test($('coachPanel').innerHTML))&&/You are Ms Rowe, a Socratic tutor/.test(G.coachPromptText()));
  ok('Y2 opening a room with work in it asks the tutor for one small weekly note from the room’s log',noteCalls===1&&lastFetch.body.model==='claude-haiku-4-5'&&/You are Ms Rowe, Matthew/.test(notePrompt)&&/Standard questions \(30 days\): 2 right of 3/.test(notePrompt)&&/Hard questions \(30 days\): 5 right of 5/.test(notePrompt)&&/Cards: \d+ in the deck/.test(notePrompt)&&/at most 14 words/.test(notePrompt),notePrompt.slice(0,300));
  const cn=G.S.coachNotes['OCR-H481|1.2'];if(!cn)console.log('Y2 debug: calls',noteCalls,'tried',JSON.stringify(G.UI.noteTried),'notes',JSON.stringify(G.S.coachNotes));ok('Y2 the note is kept with today’s date and shows on the pink post-it and in the Coach station',cn&&cn.at===G.TODAY&&cn.ai===true&&/data-postit="note"[\s\S]*?Hard questions/.test(svg())&&/From Ms Rowe/.test(svg())&&/data-station="coach" aria-label="From Ms Rowe: Hard questions keep failing/.test(svg())&&/This week from Ms Rowe:/.test(reg['v-rooms'].innerHTML));
  G.openRoom('OCR-H481|2.1','lesson');await sleep(30);G.openRoom('OCR-H481|1.2','lesson');await sleep(30);ok('Y2 reopening does not ask again while the log is unchanged',noteCalls===1);
@@ -525,6 +526,106 @@ const click=async s=>L.click({target:T(s)});const change=async s=>L.change({targ
   reply=(lf)=>{const txt=JSON.stringify(lf.body);const m=+((txt.match(/\((\d+) marks\)/)||[])[1]||6);return {content:[{type:'text',text:JSON.stringify({q:'Explain one flow of the water cycle.',marks:m,points:[{text:'Names the flow',max:2},{text:'Explains it',max:2},{text:'Gives a figure',max:m-4}],model:'Evaporation moves water up.'})}]};};
   await click({id:'rtNext'});await sleep(30);ok('R11 Next moves to the second question',G.UI.retest&&G.UI.retest.i===1&&G.UI.retest.variant,JSON.stringify(G.UI.retest&&G.UI.retest.err));
   await click({id:'rtStop'});ok('R11 Stop closes the re-test',!G.UI.retest);
+ }
+ /* ---- support: the floating coach, the reader, dictation, the prompter, calm, literal, time, chunking, the Support panel ---- */
+ { const TODAY=G.TODAY;const geo='OCR-H481|1.2';
+  G.UI.retest=null;G.UI.room=null;G.UI.coachOpen=false;G.go('campus');G.renderAll();
+  const P=()=>$('coachPanel').innerHTML,FAB=()=>$('coachFab').innerHTML;const CNAME=String(G.S.setup.coachName||'Coach').trim().slice(0,24)||'Coach';const SKEY=G.stateKey();
+  ok('SU1 the coach floats on every view: the button carries the coach’s name on the campus, the Exam Hall, Progress and the Office',(()=>{const seen=[];for(const v of ['campus','exam','prog','office']){G.go(v);G.renderAll();seen.push(FAB().includes(CNAME)&&$('coachFab').attrs['aria-expanded']==='false');}return seen.every(Boolean);})(),FAB());
+  ok('SU1 nothing in the app plays a sound',!/new Audio\(|AudioContext/.test(script));
+  G.go('campus');G.renderAll();await click({id:'coachFab'});
+  ok('SU2 the button opens the panel, which says what the coach can see: the campus notice board',G.UI.coachOpen===true&&/Campus · the notice board/.test(P())&&/id="coachIn"/.test(P())&&/id="coachGo"/.test(P())&&$('coachFab').attrs['aria-expanded']==='true',P().slice(0,300));
+  G.openRoom(geo,'practise');await sleep(5);
+  ok('SU2 in a room the panel names the subject, the topic, the station and the question on screen',/Geography · 1\.2 [^<]*· Practise · question 1 of 4/.test(P()),(P().match(/class="csees">[^<]*/)||[''])[0]);
+  ok('SU2 chips fit the scene: decode the command word and "I’m stuck" beside a question',/data-chip="[^"]*command word[^"]*"/i.test(P())&&/data-chip="I’m stuck[^"]*"/.test(P()),(P().match(/data-chip="[^"]*"/g)||[]).join(' '));
+  let seenPrompt='';reply=f=>{seenPrompt=f.body.messages[0].content[0].text;return{content:[{type:'text',text:JSON.stringify({text:'Which store does the question start from, Matthew?',open:null,view:null})}]};};
+  $('coachIn').value='I am stuck';await click({id:'coachGo'});await sleep(30);
+  ok('SU3 asking sends the scene: the station, the question on screen, hints used, minutes on it and the key ideas',/Practise/.test(seenPrompt)&&/question 1 of 4/.test(seenPrompt)&&/KEY IDEAS/.test(seenPrompt)&&/on screen/.test(seenPrompt)&&/minutes? on it/.test(seenPrompt)&&/hints? used/.test(seenPrompt),seenPrompt.slice(0,500));
+  ok('SU3 the reply is kept in this room’s history and shown in the panel',G.S.coach[geo].slice(-1)[0].text==='Which store does the question start from, Matthew?'&&/Which store does the question start from/.test(P()));
+  reply=()=>({content:[{type:'text',text:JSON.stringify({text:'Start with the cards in Earth’s life support systems.',open:{room:'OCR-H481|1.2',station:'cards'}})}]});
+  $('coachIn').value='what should I do first?';await click({id:'coachGo'});await sleep(30);
+  ok('SU4 a reply that names a door shows an Open button for it',/data-open="OCR-H481\|1\.2" data-st="cards"/.test(P()),(P().match(/data-open="[^"]*" data-st="[^"]*"/g)||[]).join(' '));
+  reply=()=>({content:[{type:'text',text:'Just a plain sentence.'}]});$('coachIn').value='hi';await click({id:'coachGo'});await sleep(30);
+  ok('SU4 a plain-text reply is accepted as the text',G.S.coach[geo].slice(-1)[0].text==='Just a plain sentence.');
+  G.UI.room=null;G.go('campus');G.renderAll();G.renderCoachPanel();
+  ok('SU5 history is per place: the campus starts its own thread while the room keeps its messages',!/Just a plain sentence/.test(P())&&G.S.coach[geo].length>=6&&(G.S.coach['~campus']||[]).length===0,String(G.S.coach[geo].length));
+  reply=f=>{seenPrompt=f.body.messages[0].content[0].text;return{content:[{type:'text',text:JSON.stringify({text:'Coasts are in Geography, room 1.1.1.',open:{room:'OCR-H481|1.1.1',station:'lesson'}})}]};};
+  $('coachIn').value='where do I revise coasts?';await click({id:'coachGo'});await sleep(30);
+  ok('SU5 outside a room the coach answers from the map of every room and what is due, with a door',/OCR-H481\|1\.1\.1 \|/.test(seenPrompt)&&!/KEY IDEAS/.test(seenPrompt)&&/flash cards due/.test(seenPrompt)&&/data-open="OCR-H481\|1\.1\.1"/.test(P())&&G.S.coach['~campus'].length===2,seenPrompt.slice(0,300));
+  await click({id:'coachClear'});ok('SU5 Clear empties this place’s thread only',G.S.coach['~campus'].length===0&&G.S.coach[geo].length>=6);
+  await click({id:'coachClose'});ok('SU6 the panel closes and the button says so',G.UI.coachOpen===false&&$('coachFab').attrs['aria-expanded']==='false');
+  G.UI.coachOpen=true;G.renderCoachPanel();L.keydown({key:'Escape',target:T({id:'x'}),preventDefault(){}});ok('SU6 Escape closes it',G.UI.coachOpen===false);
+  G.openRoom(geo,'coach');ok('SU7 the room’s Coach station opens the floating panel and keeps its weekly note and name',G.UI.coachOpen===true&&/floats/.test(reg['v-rooms'].innerHTML)&&/id="coachName"/.test(reg['v-rooms'].innerHTML));
+  G.UI.coachOpen=false;reply=f=>{seenPrompt=f.body.messages[0].content[0].text;return{content:[{type:'text',text:'Stage one.'}]};};await click({dataset:{teach:'1'}});await sleep(30);
+  ok('SU7 Teach me opens the panel in teaching mode',G.UI.coachOpen===true&&/TEACHING MODE/.test(seenPrompt)&&/Teaching mode/.test(P()),seenPrompt.slice(0,200));
+  /* the reader */
+  const spoken=[];sb.SpeechSynthesisUtterance=function(t){this.text=t;this.rate=1;};sb.speechSynthesis={speaking:false,cancel(){spoken.push('[cancel]');},speak(u){spoken.push(u.text);setTimeout(()=>{if(u.onstart)u.onstart();if(u.onend)u.onend();},1);},getVoices(){return[{name:'Google US English',lang:'en-US'},{name:'Daniel',lang:'en-GB'}];},pause(){},resume(){},addEventListener(){}};
+  ok('SU8 the reader is off by default: no bar, no body class',!/Read this page/.test($('reader').innerHTML)&&!G.supportClasses(G.S.setup.support).includes('rd-on'));
+  G.S.setup.support.reader=true;G.applySupport();G.renderAll();
+  ok('SU8 switched on, the bar offers Read this page, pause, stop and speed, and the body class is set',/Read this page/.test($('reader').innerHTML)&&/id="rdPause"/.test($('reader').innerHTML)&&/id="rdStop"/.test($('reader').innerHTML)&&/1\.0×/.test($('reader').innerHTML)&&G.supportClasses(G.S.setup.support).includes('rd-on'),$('reader').innerHTML.slice(0,300));
+  ok('SU8 it prefers a British English voice',G.pickVoice().name==='Daniel');
+  G.readText('The mean is 2.5 km. Is that right?');await sleep(20);
+  ok('SU9 reading speaks sentence by sentence, in order, and logs the minutes',spoken.filter(x=>x!=='[cancel]').join('|')==='The mean is 2.5 km.|Is that right?'&&(G.S.supportLog[TODAY]||{}).reader>0,spoken.join('|'));
+  spoken.length=0;await click({id:'rdFaster'});ok('SU9 speed steps by 0.1 and is saved with the profile',G.S.setup.support.readerRate===1.1&&/1\.1×/.test($('reader').innerHTML)&&JSON.parse(store[SKEY]).setup.support.readerRate===1.1,G.S.setup.support.readerRate+' | '+$('reader').innerHTML.slice(0,160)+' | '+JSON.stringify(JSON.parse(store[SKEY]).setup.support));
+  G.readText('One. Two.');await click({id:'rdStop'});ok('SU9 Stop cancels the voice and clears the highlight',spoken.includes('[cancel]')&&!G.UI.reader.cur);
+  G.S.setup.support.lineFocus=3;G.S.setup.support.spacing=true;G.applySupport();
+  ok('SU10 line focus and spacing are body classes, and the window is three lines high',G.supportClasses(G.S.setup.support).includes('rd-focus')&&G.supportClasses(G.S.setup.support).includes('rd-space')&&G.lineFocusPx(3)===78);
+  /* dictation */
+  G.S.setup.support.dictate=true;G.applySupport();G.openRoom(geo,'essay');G.UI.coachOpen=true;G.renderCoachPanel();
+  ok('SU11 with dictation on, a mic sits beside the coach box',/data-mic="coachIn"/.test(P())&&/aria-label="Dictate"/.test(P()));
+  sb.SpeechRecognition=function(){this.lang='';this.start=()=>{setTimeout(()=>{if(this.onresult)this.onresult({resultIndex:0,results:[Object.assign([{transcript:'the carbon cycle'}],{isFinal:true})]});if(this.onend)this.onend();},2);};this.stop=()=>{};this.abort=()=>{};};
+  $('coachIn').value='';await click({dataset:{mic:'coachIn'}});await sleep(30);
+  ok('SU11 the browser’s recognition puts the words in the box to edit, and logs one dictation',$('coachIn').value.trim()==='the carbon cycle'&&(G.S.supportLog[TODAY]||{}).dictations===1&&G.UI.dictating===null,JSON.stringify($('coachIn').value));
+  delete sb.SpeechRecognition;delete sb.webkitSpeechRecognition;
+  sb.MediaRecorder=function(stream,opts){this.state='inactive';this.mimeType=(opts&&opts.mimeType)||'audio/webm';this.start=()=>{this.state='recording';};this.stop=()=>{this.state='inactive';setTimeout(()=>{if(this.ondataavailable)this.ondataavailable({data:{size:4,type:'audio/webm'}});if(this.onstop)this.onstop();},2);};};sb.MediaRecorder.isTypeSupported=()=>true;
+  sb.navigator.mediaDevices={getUserMedia:async()=>({getTracks(){return[{stop(){}}];}})};
+  await click({dataset:{mic:'coachIn'}});ok('SU12 without recognition the mic records instead and says so',!!G.UI.dictating&&G.UI.dictating.mode==='record'&&/Recording/.test(P()),JSON.stringify(G.UI.dictating));
+  await click({dataset:{mic:'coachIn'}});await sleep(40);
+  ok('SU12 stopping sends the recording to the tutor’s /speech route and puts the transcript in the box',speechReqs.length===1&&speechReqs[0].type==='audio/webm'&&/dictated by whisper/.test($('coachIn').value)&&(G.S.supportLog[TODAY]||{}).dictations===2,JSON.stringify(speechReqs)+' '+JSON.stringify($('coachIn').value));
+  delete sb.MediaRecorder;await click({dataset:{mic:'coachIn'}});await sleep(5);ok('SU12 with neither, the panel says which browsers can dictate',/Chrome, Edge or Safari/.test(P()));
+  /* the prompter */
+  G.S.setup.support.prompter=true;G.S.setup.support.prompterMinutes=3;G.applySupport();G.openRoom(geo,'practise');
+  const now=Date.now();G.UI.lastActive=now-4*60000;G.UI.lastPrompt=0;
+  ok('SU13 after the quiet minutes in a working station the prompter says one line with the student’s name or the question, nothing about content, and logs it',G.prompterTick(now)===true&&/Matthew|question 1/.test($('prompt').innerHTML)&&!/answer|hint/i.test($('prompt').innerHTML)&&/id="promptOk"/.test($('prompt').innerHTML)&&/id="promptBreak"/.test($('prompt').innerHTML)&&(G.S.supportLog[TODAY]||{}).prompts===1,$('prompt').innerHTML);
+  ok('SU13 it does not repeat inside the cooldown',G.prompterTick(now+1000)===false&&(G.S.supportLog[TODAY]||{}).prompts===1);
+  await click({id:'promptOk'});ok('SU13 I’m here clears it and counts as activity',G.UI.promptShown===false&&G.UI.lastActive>=now);
+  G.UI.room=null;G.go('campus');G.UI.lastActive=now-10*60000;G.UI.lastPrompt=0;ok('SU13 on the campus nobody is prompted',G.prompterTick(now)===false);
+  G.S.setup.support.prompter=false;G.openRoom(geo,'practise');G.UI.lastActive=now-10*60000;G.UI.lastPrompt=0;ok('SU13 switched off, nothing fires',G.prompterTick(now)===false);
+  /* calm and literal */
+  G.S.setup.support.calm=true;G.applySupport();
+  ok('SU14 calm mode is a body class and reaches the campus drawing',G.supportClasses(G.S.setup.support).includes('calm')&&G.campusModel().calm===true);
+  G.S.setup.support.calm=false;G.applySupport();ok('SU14 off again, the drawing gets its tint back',G.campusModel().calm===false);
+  G.S.setup.support.literal=true;G.UI.coachOpen=true;G.renderCoachPanel();reply=f=>{seenPrompt=f.body.messages[0].content[0].text;return{content:[{type:'text',text:'Read the first key idea.'}]};};
+  $('coachIn').value='help';await click({id:'coachGo'});await sleep(30);ok('SU15 the literal register reaches the coach',/no idioms/.test(seenPrompt));
+  await G.requestNudge(true);ok('SU15 and the daily nudge',/no idioms/.test(seenPrompt));
+  G.S.setup.support.literal=false;
+  /* visible time */
+  G.S.setup.support.timer=true;G.S.setup.support.extra=25;G.S.setup.support.breaks=true;G.applySupport();
+  G.startTimer('Recall cards',10,'step');ok('SU16 a timer starts with extra time applied: 10 minutes at 25% is 13, shown as a ring with the label',!!G.UI.timer&&G.UI.timer.total===13&&G.UI.timer.running===true&&/Recall cards/.test($('timer').innerHTML)&&/<svg/.test($('timer').innerHTML)&&/13:00/.test($('timer').innerHTML),$('timer').innerHTML.slice(0,200));
+  G.timerTick(G.UI.timer.started+61000);ok('SU16 a minute later it shows 11:59',/11:59/.test($('timer').innerHTML),$('timer').innerHTML.slice(0,200));
+  await click({id:'tmBreak'});ok('SU16 a rest break stops the clock and counts; the pill shows the break',G.UI.timer.onBreak===true&&G.UI.timer.running===false&&/Break/.test($('timer').innerHTML)&&(G.S.supportLog[TODAY]||{}).breaks===1);
+  await click({id:'tmResume'});ok('SU16 resume carries on from the same time left',G.UI.timer.running===true&&G.UI.timer.onBreak===false&&/11:5/.test($('timer').innerHTML));
+  G.timerTick(Date.now()+60*60000);ok('SU16 when time is up the pill says so and stays until stopped',G.UI.timer.left===0&&/Time/.test($('timer').innerHTML)&&G.UI.timer.running===false);
+  await click({id:'tmStop'});ok('SU16 Stop clears it',!G.UI.timer&&$('timer').innerHTML==='');
+  G.UI.room=null;G.go('campus');G.renderCampus();await click({dataset:{go:'1',open:geo,st:'practise'}});
+  ok('SU17 Go on the notice board starts the step’s timer and opens the room',!!G.UI.timer&&G.UI.timer.label.length>0&&G.view==='rooms',G.UI.timer&&G.UI.timer.label);
+  G.timerStop();G.S.setup.support.timer=false;G.applySupport();G.UI.room=null;G.go('campus');G.renderCampus();await click({dataset:{go:'1',open:geo,st:'practise'}});ok('SU17 with the timer off, Go just opens the room',!G.UI.timer&&G.view==='rooms');
+  /* chunking: now and next */
+  G.S.setup.support.chunk=true;G.S.setup.support.chunkLevel=1;G.applySupport();G.UI.room=null;G.go('campus');G.renderCampus();const CV2=()=>reg['v-campus'].innerHTML;
+  ok('SU18 with chunking on, the Now note offers Break it into steps',/data-chunk="now"/.test(CV2()));
+  let chunkCalls=0;reply=f=>{seenPrompt=f.body.messages[0].content[0].text;chunkCalls++;return{content:[{type:'text',text:JSON.stringify({steps:[{text:'Open the flash cards',minutes:2},{text:'Turn the first card over',minutes:4},{text:'Mark each one honestly',minutes:4}]})}]};};
+  await click({dataset:{chunk:'now'}});await sleep(30);
+  ok('SU18 the small model breaks the step into 3–4 steps at level 1 and the board shows Now and Next',chunkCalls===1&&/3 to 4/.test(seenPrompt)&&/claude-haiku/.test(lastFetch.body.model)&&/class="nn now"><small>Now<\/small>[^<]*Open the flash cards/.test(CV2())&&/class="nn next"><small>Next<\/small>[^<]*Turn the first card over/.test(CV2()),(CV2().match(/class="nownext"[\s\S]{0,300}/)||[''])[0]);
+  const key=Object.keys(G.S.chunks)[0];ok('SU18 the steps are saved for today with none done',!!key&&key.startsWith(TODAY)&&G.S.chunks[key].steps.length===3&&G.S.chunks[key].done.length===0,key);
+  await click({dataset:{chunkdone:'0'}});ok('SU18 ticking the first step moves Next up to Now and persists',G.S.chunks[key].done.includes(0)&&/class="nn now"><small>Now<\/small>[^<]*Turn the first card over/.test(CV2())&&JSON.parse(store[SKEY]).chunks[key].done.includes(0));
+  delete G.S.chunks[key];reply=()=>({content:[{type:'text',text:'not json'}]});await click({dataset:{chunk:'now'}});await sleep(30);
+  ok('SU18 an unusable reply falls back to the built-in breakdown, so the student is never left without steps',Object.keys(G.S.chunks).length===1&&Object.values(G.S.chunks)[0].steps.length>=3&&Object.values(G.S.chunks)[0].ai===false);
+  /* the Support panel in the Office, and the evidence line in Progress */
+  G.go('office');G.renderOffice();const O=()=>reg['v-office'].innerHTML;
+  ok('SU19 the Office has a Support panel: every switch a real control with a plain explanation, the exam-arrangement names, the speech privacy note',/<h2>Support<\/h2>/.test(O())&&['reader','spacing','dictate','prompter','chunk','calm','literal','timer','breaks','readCoach'].every(k=>new RegExp(`type="checkbox"[^>]*data-sup="${k}"`).test(O()))&&/data-sup="lineFocus"/.test(O())&&/data-sup="prompterMinutes"/.test(O())&&/data-sup="chunkLevel"/.test(O())&&/data-sup="extra"/.test(O())&&/data-sup="readerRate"/.test(O())&&/JCQ/.test(O())&&/prompter/i.test(O())&&/rest breaks/i.test(O())&&/Google or Microsoft/.test(O())&&/Whisper/.test(O()),(O().match(/<h2>Support[\s\S]{0,200}/)||[''])[0]);
+  await change({dataset:{sup:'dictate'},checked:false});await change({dataset:{sup:'extra'},value:'50'});await change({dataset:{sup:'lineFocus'},value:'1'});
+  ok('SU19 changing a switch saves the profile with the progress, so it follows the student to the next device',G.S.setup.support.dictate===false&&G.S.setup.support.extra===50&&G.S.setup.support.lineFocus===1&&JSON.parse(store[SKEY]).setup.support.extra===50);
+  G.S.supportLog[TODAY].reader=12.4;G.renderProg();ok('SU20 Progress shows what support was used this week, as evidence for exam arrangements',/Support this week: reader 12 min · dictated 2 times · 1 prompt · 1 rest break/.test(reg['v-prog'].innerHTML),(reg['v-prog'].innerHTML.match(/Support this week[^<]*/)||[''])[0]);
  }
  console.log(`PASSED: ${pass}`);fails.forEach(f=>console.log('FAILED: '+f));console.log('-'.repeat(50));console.log(fails.length?`RESULT: ${fails.length} FAILURE(S)`:'RESULT: ALL GREEN');process.exit(fails.length?1:0);
 })().catch(e=>{console.log('CRASH',e&&e.stack||e);process.exit(2)});

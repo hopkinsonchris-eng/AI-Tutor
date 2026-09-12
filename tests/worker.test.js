@@ -780,6 +780,21 @@ const baseEnv = () => ({ ANTHROPIC_API_KEY: 'sk-ant-test', ALLOWED_ORIGIN: 'http
     ok('R8 every model request carried the paper and the scheme only as url document sources', docsOk && modelSeen.length > 10);
     r = await worker.fetch(req('/papers/' + AID, { method: 'DELETE', headers: SAM }), env);
     ok('R2 deleting an attempt removes its pages and their bytes', r.status === 200 && !env.DESK._map.has(p1.key) && !env.DESK._map.has(p2.key) && (await env.USAGE.get('deskq:sam')) === '0' && !(await env.USAGE.get(`paper:sam:${AID}`)));
+    /* 11. a step whose model call throws mid-job: the job carries on, that question is recorded as unreadable with the error, nothing is marked failed */
+    {
+      r = await worker.fetch(req('/papers', J('POST', paperBody, SAM)), env); const EID = (await r.json()).attempt.id;
+      const pe = (await (await upload(SAM, EID, jpeg)).json()).page;
+      await worker.fetch(req(`/papers/${EID}/questions`, J('POST', { spec }, SAM)), env);
+      await worker.fetch(req(`/papers/${EID}`, J('PATCH', { assign: { '1(a)': [pe.id], '1(b)': [pe.id] } }, SAM)), env);
+      const good = sandbox.__fetch; let blew = 0;
+      sandbox.__fetch = async (url, init) => { if (String(url).includes('api.anthropic.com') && /question 1\(a\)/.test(JSON.stringify(init.body)) && /Transcribe the answer/.test(JSON.stringify(init.body))) { blew++; throw new Error('socket hang up'); } return good(url, init); };
+      r = await worker.fetch(req(`/papers/${EID}/prepare`, { method: 'POST', headers: SAM }), env);
+      await runPending();
+      r = await worker.fetch(req(`/papers/${EID}/status`, { headers: SAM }), env); const st2 = await r.json();
+      r = await worker.fetch(req('/papers/' + EID, { headers: SAM }), env); const att2 = (await r.json()).attempt;
+      ok('R11 a step that throws is recorded as data on that question and the job still finishes as done', blew >= 1 && st2.job.status === 'done' && st2.status === 'check' && att2.transcripts['1(a)'].legibility === 'unreadable' && /socket hang up/.test(att2.transcripts['1(a)'].error || '') && att2.transcripts['1(b)'] && att2.transcripts['1(b)'].legibility !== undefined, JSON.stringify({ blew, job: st2.job, t: att2.transcripts }));
+      sandbox.__fetch = good;
+    }
     sandbox.__fetch = saveFetch;
   }
 

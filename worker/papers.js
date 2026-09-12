@@ -43,7 +43,7 @@ export const PAPER_MODELS = { qmap: 'claude-sonnet-5', points: 'claude-sonnet-5'
 export const PAPER_HOSTS = ['aqa.org.uk', 'www.aqa.org.uk', 'filestore.aqa.org.uk', 'cdn.sanity.io', 'qualifications.pearson.com', 'www.ocr.org.uk', 'ocr.org.uk', 'pastpapers.download.wjec.co.uk', 'www.wjec.co.uk', 'www.eduqas.co.uk'];
 const PAGE_TYPES = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp' };
 const PAGE_MAX = 8 * 1024 * 1024, PAGES_MAX = 40, QUOTA = 250 * 1024 * 1024, THUMB_MAX = 24_000, SPEC_MAX = 400_000, TRANSCRIPT_MAX = 20_000;
-const JOB_STALE_MS = 30 * 60 * 1000;
+const JOB_STALE_MS = 10 * 60 * 1000;
 const DEFAULT_DAILY = 200;                       // the same default as index.js
 const CONFIDENCE = ['sure', 'unsure', 'guessed'], LEGIBILITY = ['ok', 'partial', 'unreadable'];
 const ID_RE = /^[A-Za-z0-9._|-]{1,40}$/, Q_RE = /^[A-Za-z0-9()._-]{1,20}$/, ATTEMPT_RE = /^[A-Za-z0-9_-]{6,40}$/;
@@ -265,32 +265,32 @@ export async function runPaperJob(params, env, step) {
   if (!a || !a.job) return { error: 'no such attempt' };
   const save = async (fn) => { const fresh = (await env.USAGE.get(key, 'json')) || a; fn(fresh); fresh.job = { ...(fresh.job || {}), updatedAt: now() }; await env.USAGE.put(key, JSON.stringify(fresh)); return fresh; };
   const fail = (message) => save(f => { f.job.status = 'failed'; f.job.message = message; f.status = stage === 'prepare' ? 'assign' : 'check'; });
-  try {
-    const spec = await env.USAGE.get(`paperspec:${a.spec}`, 'json');
-    if (!spec) return fail('the specification was not posted');
-    const targets = stage === 'prepare' ? assigned(a) : transcribed(a);
-    for (let i = 0; i < targets.length; i++) {
-      const q = targets[i];
-      const r = await step.do(`${stage} ${q.q}`, async () => {
-        try { return stage === 'prepare' ? await prepareOne(env, user, a, spec, q) : { result: await markOne(env, user, a, spec, q) }; }
-        catch (e) { if (e instanceof CapError) return { capped: e.message }; throw e; }
-      });
-      await save(f => {
-        if (r.transcript) f.transcripts[q.q] = r.transcript;
-        if (r.points) { f.points = f.points || {}; f.points[q.q] = r.points; }
-        if (r.result) f.results[q.q] = r.result;
-        f.job.done = i + 1; f.job.message = i + 1 < targets.length ? `${stage === 'prepare' ? 'Reading' : 'Marking'} question ${targets[i + 1].q}…` : 'Finishing…';
-      });
-      if (r.capped) return fail(r.capped);
-    }
-    return save(f => {
-      f.job.status = 'done'; f.job.message = stage === 'prepare' ? 'Every answer is transcribed — check them before marking.' : 'Marked.';
-      if (stage === 'prepare') f.status = 'check';
-      else { f.status = 'marked'; f.score = scoreOf(f); f.total = f.marks; f.markedAt = now(); }
+  /* Nothing thrown by step.do is caught here: the Workflow engine drives retries by re-running this function with
+     finished steps replayed, and a catch around a step would mark the job failed on a mere retry. Each step swallows
+     its own errors and reports them as data, so one bad question never ends the job. */
+  const spec = await env.USAGE.get(`paperspec:${a.spec}`, 'json');
+  if (!spec) return fail('the specification was not posted');
+  const targets = stage === 'prepare' ? assigned(a) : transcribed(a);
+  for (let i = 0; i < targets.length; i++) {
+    const q = targets[i];
+    const r = await step.do(`${stage} ${q.q}`, async () => {
+      try { return stage === 'prepare' ? await prepareOne(env, user, a, spec, q) : { result: await markOne(env, user, a, spec, q) }; }
+      catch (e) { if (e instanceof CapError) return { capped: e.message }; return { error: String((e && e.message) || e).slice(0, 300) }; }
     });
-  } catch (e) {
-    return fail(String((e && e.message) || e).slice(0, 300));
+    await save(f => {
+      if (r.transcript) f.transcripts[q.q] = r.transcript;
+      if (r.points) { f.points = f.points || {}; f.points[q.q] = r.points; }
+      if (r.result) f.results[q.q] = r.result;
+      if (r.error) { if (stage === 'prepare') { if (!(f.transcripts[q.q] && f.transcripts[q.q].edited)) f.transcripts[q.q] = { transcript: '', legibility: 'unreadable', unsure: [], blank: false, edited: false, error: r.error }; } else f.results[q.q] = { awarded: null, max: q.marks, error: r.error }; }
+      f.job.done = i + 1; f.job.message = i + 1 < targets.length ? `${stage === 'prepare' ? 'Reading' : 'Marking'} question ${targets[i + 1].q}…` : 'Finishing…';
+    });
+    if (r.capped) return fail(r.capped);
   }
+  return save(f => {
+    f.job.status = 'done'; f.job.message = stage === 'prepare' ? 'Every answer is transcribed — check them before marking.' : 'Marked.';
+    if (stage === 'prepare') f.status = 'check';
+    else { f.status = 'marked'; f.score = scoreOf(f); f.total = f.marks; f.markedAt = now(); }
+  });
 }
 
 /* Transcribe one question's pages, and fetch or write the paper's mark points for it. */

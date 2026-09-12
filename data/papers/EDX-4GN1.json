@@ -228,7 +228,7 @@
      "minutes": 30,
      "date": "2020-11-20",
      "qp": "https://qualifications.pearson.com/content/dam/pdf/International%20GCSE/german/2017/Exam-materials/4GN1_01_que_20201120.pdf",
-     "ms": null,
+     "ms": "https://qualifications.pearson.com/content/dam/pdf/International%20GCSE/german/2017/Exam-materials/4GN1_01_msc_20210211.pdf",
      "insert": null,
      "report": null
     },
@@ -241,7 +241,7 @@
      "minutes": 105,
      "date": "2020-11-20",
      "qp": "https://qualifications.pearson.com/content/dam/pdf/International%20GCSE/german/2017/Exam-materials/4GN1_02_que_20201120.pdf",
-     "ms": null,
+     "ms": "https://qualifications.pearson.com/content/dam/pdf/International%20GCSE/german/2017/Exam-materials/4GN1_02_msc_20210211.pdf",
      "insert": null,
      "report": null
     },
@@ -254,7 +254,7 @@
      "minutes": 30,
      "date": "2020-11-20",
      "qp": "https://qualifications.pearson.com/content/dam/pdf/International%20GCSE/german/2017/Exam-materials/4GN1_01R_que_20201120.pdf",
-     "ms": null,
+     "ms": "https://qualifications.pearson.com/content/dam/pdf/International%20GCSE/german/2017/Exam-materials/4GN1_01R_msc_20210211.pdf",
      "insert": null,
      "report": null
     },
@@ -267,7 +267,7 @@
      "minutes": 105,
      "date": "2020-11-20",
      "qp": "https://qualifications.pearson.com/content/dam/pdf/International%20GCSE/german/2017/Exam-materials/4GN1_02R_que_20201120.pdf",
-     "ms": null,
+     "ms": "https://qualifications.pearson.com/content/dam/pdf/International%20GCSE/german/2017/Exam-materials/4GN1_02R_msc_20210211.pdf",
      "insert": null,
      "report": null
     }

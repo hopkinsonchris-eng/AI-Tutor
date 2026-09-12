@@ -1,427 +1,427 @@
 {
-  "spec": "EDX-4ET1",
-  "board": "Pearson Edexcel",
-  "code": "4ET1",
-  "checked": "2026-09-12",
-  "source": "https://qualifications.pearson.com/en/support/support-topics/exams/past-papers.html",
-  "series": [
+ "spec": "EDX-4ET1",
+ "board": "Pearson Edexcel",
+ "code": "4ET1",
+ "checked": "2026-09-12",
+ "source": "https://qualifications.pearson.com/en/support/support-topics/exams/past-papers.html",
+ "series": [
+  {
+   "id": "2026-06",
+   "name": "June 2026",
+   "public": false,
+   "releaseDate": "2027-03-01",
+   "boundaries": null,
+   "boundariesUrl": "https://qualifications.pearson.com/content/dam/pdf/Support/Grade-boundaries/International-GCSE/grade-boundaries-june-2026-international-gcse.pdf",
+   "papers": [
     {
-      "id": "2026-06",
-      "name": "June 2026",
-      "public": false,
-      "releaseDate": "2027-03-01",
-      "boundaries": null,
-      "boundariesUrl": "https://qualifications.pearson.com/content/dam/pdf/Support/Grade-boundaries/International-GCSE/grade-boundaries-june-2026-international-gcse.pdf",
-      "papers": [
-        {
-          "id": "01",
-          "name": "Paper 1: Poetry and Modern Prose",
-          "component": "C1",
-          "tier": null,
-          "marks": 90,
-          "minutes": 120,
-          "date": null,
-          "qp": null,
-          "ms": null,
-          "insert": null,
-          "report": null
-        },
-        {
-          "id": "02",
-          "name": "Paper 2: Modern Drama and Literary Heritage Texts",
-          "component": "C2",
-          "tier": null,
-          "marks": 60,
-          "minutes": 90,
-          "date": null,
-          "qp": null,
-          "ms": null,
-          "insert": null,
-          "report": null
-        },
-        {
-          "id": "01R",
-          "name": "Paper 1R (regional): Poetry and Modern Prose",
-          "component": "C1",
-          "tier": null,
-          "marks": 90,
-          "minutes": 120,
-          "date": null,
-          "qp": null,
-          "ms": null,
-          "insert": null,
-          "report": null
-        },
-        {
-          "id": "02R",
-          "name": "Paper 2R (regional): Modern Drama and Literary Heritage Texts",
-          "component": "C2",
-          "tier": null,
-          "marks": 60,
-          "minutes": 90,
-          "date": null,
-          "qp": null,
-          "ms": null,
-          "insert": null,
-          "report": null
-        }
-      ]
+     "id": "01",
+     "name": "Paper 1: Poetry and Modern Prose",
+     "component": "C1",
+     "tier": null,
+     "marks": 90,
+     "minutes": 120,
+     "date": null,
+     "qp": null,
+     "ms": null,
+     "insert": null,
+     "report": null
     },
     {
-      "id": "2025-11",
-      "name": "November 2025",
-      "public": false,
-      "releaseDate": "2026-08-01",
-      "boundaries": null,
-      "boundariesUrl": "https://qualifications.pearson.com/content/dam/pdf/Support/Grade-boundaries/International-GCSE/2511-international-gcse-subject-grade-boundaries.pdf",
-      "papers": [
-        {
-          "id": "01",
-          "name": "Paper 1: Poetry and Modern Prose",
-          "component": "C1",
-          "tier": null,
-          "marks": 90,
-          "minutes": 120,
-          "date": null,
-          "qp": null,
-          "ms": null,
-          "insert": null,
-          "report": null
-        },
-        {
-          "id": "02",
-          "name": "Paper 2: Modern Drama and Literary Heritage Texts",
-          "component": "C2",
-          "tier": null,
-          "marks": 60,
-          "minutes": 90,
-          "date": null,
-          "qp": null,
-          "ms": null,
-          "insert": null,
-          "report": null
-        },
-        {
-          "id": "01R",
-          "name": "Paper 1R (regional): Poetry and Modern Prose",
-          "component": "C1",
-          "tier": null,
-          "marks": 90,
-          "minutes": 120,
-          "date": null,
-          "qp": null,
-          "ms": null,
-          "insert": null,
-          "report": null
-        },
-        {
-          "id": "02R",
-          "name": "Paper 2R (regional): Modern Drama and Literary Heritage Texts",
-          "component": "C2",
-          "tier": null,
-          "marks": 60,
-          "minutes": 90,
-          "date": null,
-          "qp": null,
-          "ms": null,
-          "insert": null,
-          "report": null
-        }
-      ]
+     "id": "02",
+     "name": "Paper 2: Modern Drama and Literary Heritage Texts",
+     "component": "C2",
+     "tier": null,
+     "marks": 60,
+     "minutes": 90,
+     "date": null,
+     "qp": null,
+     "ms": null,
+     "insert": null,
+     "report": null
     },
     {
-      "id": "2025-06",
-      "name": "June 2025",
-      "public": true,
-      "releaseDate": null,
-      "boundaries": null,
-      "boundariesUrl": "https://qualifications.pearson.com/content/dam/pdf/Support/Grade-boundaries/International-GCSE/grade-boundaries-june-2025-int-gcse.pdf",
-      "papers": [
-        {
-          "id": "01",
-          "name": "Paper 1: Poetry and Modern Prose",
-          "component": "C1",
-          "tier": null,
-          "marks": 90,
-          "minutes": 120,
-          "date": "2025-05-13",
-          "qp": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Literature/2016/Exam-materials/4et1-01-que-20250513.pdf",
-          "ms": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Literature/2016/Exam-materials/4et1-01-rms-20250821.pdf",
-          "insert": null,
-          "report": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Literature/2016/Exam-materials/4et1-01-pef-20250821.pdf"
-        },
-        {
-          "id": "02",
-          "name": "Paper 2: Modern Drama and Literary Heritage Texts",
-          "component": "C2",
-          "tier": null,
-          "marks": 60,
-          "minutes": 90,
-          "date": "2025-05-21",
-          "qp": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Literature/2016/Exam-materials/4et1-02-que-20250521.pdf",
-          "ms": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Literature/2016/Exam-materials/4et1-02-rms-20250821.pdf",
-          "insert": null,
-          "report": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Literature/2016/Exam-materials/4et1-02-pef-20250821.pdf"
-        },
-        {
-          "id": "01R",
-          "name": "Paper 1R (regional): Poetry and Modern Prose",
-          "component": "C1",
-          "tier": null,
-          "marks": 90,
-          "minutes": 120,
-          "date": "2025-05-13",
-          "qp": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Literature/2016/Exam-materials/4et1-01r-que-20250513.pdf",
-          "ms": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Literature/2016/Exam-materials/4et1-01r-rms-20250821.pdf",
-          "insert": null,
-          "report": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Literature/2016/Exam-materials/4et1-01r-pef-20250821.pdf"
-        },
-        {
-          "id": "02R",
-          "name": "Paper 2R (regional): Modern Drama and Literary Heritage Texts",
-          "component": "C2",
-          "tier": null,
-          "marks": 60,
-          "minutes": 90,
-          "date": "2025-05-21",
-          "qp": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Literature/2016/Exam-materials/4et1-02r-que-20250521.pdf",
-          "ms": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Literature/2016/Exam-materials/4et1-02r-rms-20250821.pdf",
-          "insert": null,
-          "report": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Literature/2016/Exam-materials/4et1-02r-pef-20250821.pdf"
-        }
-      ]
+     "id": "01R",
+     "name": "Paper 1R (regional): Poetry and Modern Prose",
+     "component": "C1",
+     "tier": null,
+     "marks": 90,
+     "minutes": 120,
+     "date": null,
+     "qp": null,
+     "ms": null,
+     "insert": null,
+     "report": null
     },
     {
-      "id": "2024-11",
-      "name": "November 2024",
-      "public": true,
-      "releaseDate": null,
-      "boundaries": null,
-      "boundariesUrl": "https://qualifications.pearson.com/content/dam/pdf/Support/Grade-boundaries/International-GCSE/grade-boundaries-november-2024-int-gcse.pdf",
-      "papers": [
-        {
-          "id": "01",
-          "name": "Paper 1: Poetry and Modern Prose",
-          "component": "C1",
-          "tier": null,
-          "marks": 90,
-          "minutes": 120,
-          "date": "2024-11-05",
-          "qp": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Literature/2016/Exam-materials/4et1-01-que-20241105.pdf",
-          "ms": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Literature/2016/Exam-materials/4et1-01-rms-20250123.pdf",
-          "insert": null,
-          "report": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Literature/2016/Exam-materials/4et1-01-pef-20250123.pdf"
-        },
-        {
-          "id": "02",
-          "name": "Paper 2: Modern Drama and Literary Heritage Texts",
-          "component": "C2",
-          "tier": null,
-          "marks": 60,
-          "minutes": 90,
-          "date": "2024-11-23",
-          "qp": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Literature/2016/Exam-materials/4et1-02-que-20241123.pdf",
-          "ms": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Literature/2016/Exam-materials/4et1-02-rms-20250123.pdf",
-          "insert": null,
-          "report": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Literature/2016/Exam-materials/4et1-02-pef-20250123.pdf"
-        }
-      ]
-    },
-    {
-      "id": "2024-06",
-      "name": "June 2024",
-      "public": true,
-      "releaseDate": null,
-      "boundaries": null,
-      "boundariesUrl": "https://qualifications.pearson.com/content/dam/pdf/Support/Grade-boundaries/International-GCSE/grade-boundaries-june-2024-int-gcse.pdf",
-      "papers": [
-        {
-          "id": "01",
-          "name": "Paper 1: Poetry and Modern Prose",
-          "component": "C1",
-          "tier": null,
-          "marks": 90,
-          "minutes": 120,
-          "date": "2024-05-14",
-          "qp": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Literature/2016/Exam-materials/4et1-01-que-20240514.pdf",
-          "ms": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Literature/2016/Exam-materials/4et1-01-rms-20240822.pdf",
-          "insert": null,
-          "report": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Literature/2016/Exam-materials/4et1-01-pef-20240822.pdf"
-        },
-        {
-          "id": "02",
-          "name": "Paper 2: Modern Drama and Literary Heritage Texts",
-          "component": "C2",
-          "tier": null,
-          "marks": 60,
-          "minutes": 90,
-          "date": "2024-05-21",
-          "qp": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Literature/2016/Exam-materials/4et1-02-que-20240521.pdf",
-          "ms": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Literature/2016/Exam-materials/4et1-02-rms-20240822.pdf",
-          "insert": null,
-          "report": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Literature/2016/Exam-materials/4et1-02-pef-20240822.pdf"
-        },
-        {
-          "id": "01R",
-          "name": "Paper 1R (regional): Poetry and Modern Prose",
-          "component": "C1",
-          "tier": null,
-          "marks": 90,
-          "minutes": 120,
-          "date": "2024-05-14",
-          "qp": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Literature/2016/Exam-materials/4et1-01r-que-20240514.pdf",
-          "ms": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Literature/2016/Exam-materials/4et1-01r-rms-20240822.pdf",
-          "insert": null,
-          "report": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Literature/2016/Exam-materials/4et1-01r-pef-20240822.pdf"
-        },
-        {
-          "id": "02R",
-          "name": "Paper 2R (regional): Modern Drama and Literary Heritage Texts",
-          "component": "C2",
-          "tier": null,
-          "marks": 60,
-          "minutes": 90,
-          "date": "2024-05-21",
-          "qp": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Literature/2016/Exam-materials/4et1-02r-que-20240521.pdf",
-          "ms": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Literature/2016/Exam-materials/4et1-02r-rms-20240822.pdf",
-          "insert": null,
-          "report": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Literature/2016/Exam-materials/4et1-02r-pef-20240822.pdf"
-        }
-      ]
-    },
-    {
-      "id": "2023-11",
-      "name": "November 2023",
-      "public": true,
-      "releaseDate": null,
-      "boundaries": null,
-      "boundariesUrl": "https://qualifications.pearson.com/content/dam/pdf/Support/Grade-boundaries/International-GCSE/2311-intgcse-9-1-subject-grade-boundaries.pdf",
-      "papers": [
-        {
-          "id": "01",
-          "name": "Paper 1: Poetry and Modern Prose",
-          "component": "C1",
-          "tier": null,
-          "marks": 90,
-          "minutes": 120,
-          "date": "2023-11-07",
-          "qp": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Literature/2016/Exam-materials/4et1-01-que-20231107.pdf",
-          "ms": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Literature/2016/Exam-materials/4et1-01-rms-20240125.pdf",
-          "insert": null,
-          "report": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Literature/2016/Exam-materials/4et1-01-pef-20240125.pdf"
-        },
-        {
-          "id": "02",
-          "name": "Paper 2: Modern Drama and Literary Heritage Texts",
-          "component": "C2",
-          "tier": null,
-          "marks": 60,
-          "minutes": 90,
-          "date": "2023-11-25",
-          "qp": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Literature/2016/Exam-materials/4et1-02-que-20231125.pdf",
-          "ms": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Literature/2016/Exam-materials/4et1-02-rms-20240125.pdf",
-          "insert": null,
-          "report": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Literature/2016/Exam-materials/4et1-02-pef-20240125.pdf"
-        }
-      ]
-    },
-    {
-      "id": "2023-06",
-      "name": "June 2023",
-      "public": true,
-      "releaseDate": null,
-      "boundaries": null,
-      "boundariesUrl": "https://qualifications.pearson.com/content/dam/pdf/Support/Grade-boundaries/International-GCSE/2306-intgcse-9-1-subject-grade-boundaries.pdf",
-      "papers": [
-        {
-          "id": "01",
-          "name": "Paper 1: Poetry and Modern Prose",
-          "component": "C1",
-          "tier": null,
-          "marks": 90,
-          "minutes": 120,
-          "date": "2023-05-18",
-          "qp": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Literature/2016/Exam-materials/4et1-01-que-20230518.pdf",
-          "ms": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Literature/2016/Exam-materials/4et1-01-rms-20230824.pdf",
-          "insert": null,
-          "report": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Literature/2016/Exam-materials/4et1-01-pef-20230824.pdf"
-        },
-        {
-          "id": "02",
-          "name": "Paper 2: Modern Drama and Literary Heritage Texts",
-          "component": "C2",
-          "tier": null,
-          "marks": 60,
-          "minutes": 90,
-          "date": "2023-05-25",
-          "qp": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Literature/2016/Exam-materials/4et1-02-que-20230525.pdf",
-          "ms": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Literature/2016/Exam-materials/4et1-02-rms-20230824.pdf",
-          "insert": null,
-          "report": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Literature/2016/Exam-materials/4et1-02-pef-20230824.pdf"
-        },
-        {
-          "id": "01R",
-          "name": "Paper 1R (regional): Poetry and Modern Prose",
-          "component": "C1",
-          "tier": null,
-          "marks": 90,
-          "minutes": 120,
-          "date": "2023-05-18",
-          "qp": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Literature/2016/Exam-materials/4et1-01r-que-20230518.pdf",
-          "ms": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Literature/2016/Exam-materials/4et1-01r-rms-20230824.pdf",
-          "insert": null,
-          "report": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Literature/2016/Exam-materials/4et1-01r-pef-20230824.pdf"
-        },
-        {
-          "id": "02R",
-          "name": "Paper 2R (regional): Modern Drama and Literary Heritage Texts",
-          "component": "C2",
-          "tier": null,
-          "marks": 60,
-          "minutes": 90,
-          "date": "2023-05-25",
-          "qp": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Literature/2016/Exam-materials/4et1-02r-que-20230525.pdf",
-          "ms": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Literature/2016/Exam-materials/4et1-02r-rms-20230824.pdf",
-          "insert": null,
-          "report": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Literature/2016/Exam-materials/4et1-02r-pef-20230824.pdf"
-        }
-      ]
-    },
-    {
-      "id": "2021-06",
-      "name": "June 2021",
-      "public": true,
-      "releaseDate": null,
-      "boundaries": null,
-      "boundariesUrl": null,
-      "papers": [
-        {
-          "id": "01",
-          "name": "Paper 1: Poetry and Modern Prose",
-          "component": "C1",
-          "tier": null,
-          "marks": 90,
-          "minutes": 120,
-          "date": "2021-04-27",
-          "qp": "https://qualifications.pearson.com/content/dam/pdf/International%20GCSE/English%20Literature/Exam-materials/4ET1_01_que_20210427.pdf",
-          "ms": null,
-          "insert": null,
-          "report": null
-        },
-        {
-          "id": "02",
-          "name": "Paper 2: Modern Drama and Literary Heritage Texts",
-          "component": "C2",
-          "tier": null,
-          "marks": 60,
-          "minutes": 90,
-          "date": "2021-05-05",
-          "qp": "https://qualifications.pearson.com/content/dam/pdf/International%20GCSE/English%20Literature/Exam-materials/4ET1_02_que_20210505.pdf",
-          "ms": null,
-          "insert": null,
-          "report": null
-        }
-      ]
+     "id": "02R",
+     "name": "Paper 2R (regional): Modern Drama and Literary Heritage Texts",
+     "component": "C2",
+     "tier": null,
+     "marks": 60,
+     "minutes": 90,
+     "date": null,
+     "qp": null,
+     "ms": null,
+     "insert": null,
+     "report": null
     }
-  ]
+   ]
+  },
+  {
+   "id": "2025-11",
+   "name": "November 2025",
+   "public": false,
+   "releaseDate": "2026-08-01",
+   "boundaries": null,
+   "boundariesUrl": "https://qualifications.pearson.com/content/dam/pdf/Support/Grade-boundaries/International-GCSE/2511-international-gcse-subject-grade-boundaries.pdf",
+   "papers": [
+    {
+     "id": "01",
+     "name": "Paper 1: Poetry and Modern Prose",
+     "component": "C1",
+     "tier": null,
+     "marks": 90,
+     "minutes": 120,
+     "date": null,
+     "qp": null,
+     "ms": null,
+     "insert": null,
+     "report": null
+    },
+    {
+     "id": "02",
+     "name": "Paper 2: Modern Drama and Literary Heritage Texts",
+     "component": "C2",
+     "tier": null,
+     "marks": 60,
+     "minutes": 90,
+     "date": null,
+     "qp": null,
+     "ms": null,
+     "insert": null,
+     "report": null
+    },
+    {
+     "id": "01R",
+     "name": "Paper 1R (regional): Poetry and Modern Prose",
+     "component": "C1",
+     "tier": null,
+     "marks": 90,
+     "minutes": 120,
+     "date": null,
+     "qp": null,
+     "ms": null,
+     "insert": null,
+     "report": null
+    },
+    {
+     "id": "02R",
+     "name": "Paper 2R (regional): Modern Drama and Literary Heritage Texts",
+     "component": "C2",
+     "tier": null,
+     "marks": 60,
+     "minutes": 90,
+     "date": null,
+     "qp": null,
+     "ms": null,
+     "insert": null,
+     "report": null
+    }
+   ]
+  },
+  {
+   "id": "2025-06",
+   "name": "June 2025",
+   "public": true,
+   "releaseDate": null,
+   "boundaries": null,
+   "boundariesUrl": "https://qualifications.pearson.com/content/dam/pdf/Support/Grade-boundaries/International-GCSE/grade-boundaries-june-2025-int-gcse.pdf",
+   "papers": [
+    {
+     "id": "01",
+     "name": "Paper 1: Poetry and Modern Prose",
+     "component": "C1",
+     "tier": null,
+     "marks": 90,
+     "minutes": 120,
+     "date": "2025-05-13",
+     "qp": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Literature/2016/Exam-materials/4et1-01-que-20250513.pdf",
+     "ms": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Literature/2016/Exam-materials/4et1-01-rms-20250821.pdf",
+     "insert": null,
+     "report": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Literature/2016/Exam-materials/4et1-01-pef-20250821.pdf"
+    },
+    {
+     "id": "02",
+     "name": "Paper 2: Modern Drama and Literary Heritage Texts",
+     "component": "C2",
+     "tier": null,
+     "marks": 60,
+     "minutes": 90,
+     "date": "2025-05-21",
+     "qp": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Literature/2016/Exam-materials/4et1-02-que-20250521.pdf",
+     "ms": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Literature/2016/Exam-materials/4et1-02-rms-20250821.pdf",
+     "insert": null,
+     "report": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Literature/2016/Exam-materials/4et1-02-pef-20250821.pdf"
+    },
+    {
+     "id": "01R",
+     "name": "Paper 1R (regional): Poetry and Modern Prose",
+     "component": "C1",
+     "tier": null,
+     "marks": 90,
+     "minutes": 120,
+     "date": "2025-05-13",
+     "qp": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Literature/2016/Exam-materials/4et1-01r-que-20250513.pdf",
+     "ms": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Literature/2016/Exam-materials/4et1-01r-rms-20250821.pdf",
+     "insert": null,
+     "report": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Literature/2016/Exam-materials/4et1-01r-pef-20250821.pdf"
+    },
+    {
+     "id": "02R",
+     "name": "Paper 2R (regional): Modern Drama and Literary Heritage Texts",
+     "component": "C2",
+     "tier": null,
+     "marks": 60,
+     "minutes": 90,
+     "date": "2025-05-21",
+     "qp": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Literature/2016/Exam-materials/4et1-02r-que-20250521.pdf",
+     "ms": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Literature/2016/Exam-materials/4et1-02r-rms-20250821.pdf",
+     "insert": null,
+     "report": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Literature/2016/Exam-materials/4et1-02r-pef-20250821.pdf"
+    }
+   ]
+  },
+  {
+   "id": "2024-11",
+   "name": "November 2024",
+   "public": true,
+   "releaseDate": null,
+   "boundaries": null,
+   "boundariesUrl": "https://qualifications.pearson.com/content/dam/pdf/Support/Grade-boundaries/International-GCSE/grade-boundaries-november-2024-int-gcse.pdf",
+   "papers": [
+    {
+     "id": "01",
+     "name": "Paper 1: Poetry and Modern Prose",
+     "component": "C1",
+     "tier": null,
+     "marks": 90,
+     "minutes": 120,
+     "date": "2024-11-05",
+     "qp": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Literature/2016/Exam-materials/4et1-01-que-20241105.pdf",
+     "ms": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Literature/2016/Exam-materials/4et1-01-rms-20250123.pdf",
+     "insert": null,
+     "report": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Literature/2016/Exam-materials/4et1-01-pef-20250123.pdf"
+    },
+    {
+     "id": "02",
+     "name": "Paper 2: Modern Drama and Literary Heritage Texts",
+     "component": "C2",
+     "tier": null,
+     "marks": 60,
+     "minutes": 90,
+     "date": "2024-11-23",
+     "qp": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Literature/2016/Exam-materials/4et1-02-que-20241123.pdf",
+     "ms": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Literature/2016/Exam-materials/4et1-02-rms-20250123.pdf",
+     "insert": null,
+     "report": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Literature/2016/Exam-materials/4et1-02-pef-20250123.pdf"
+    }
+   ]
+  },
+  {
+   "id": "2024-06",
+   "name": "June 2024",
+   "public": true,
+   "releaseDate": null,
+   "boundaries": null,
+   "boundariesUrl": "https://qualifications.pearson.com/content/dam/pdf/Support/Grade-boundaries/International-GCSE/grade-boundaries-june-2024-int-gcse.pdf",
+   "papers": [
+    {
+     "id": "01",
+     "name": "Paper 1: Poetry and Modern Prose",
+     "component": "C1",
+     "tier": null,
+     "marks": 90,
+     "minutes": 120,
+     "date": "2024-05-14",
+     "qp": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Literature/2016/Exam-materials/4et1-01-que-20240514.pdf",
+     "ms": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Literature/2016/Exam-materials/4et1-01-rms-20240822.pdf",
+     "insert": null,
+     "report": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Literature/2016/Exam-materials/4et1-01-pef-20240822.pdf"
+    },
+    {
+     "id": "02",
+     "name": "Paper 2: Modern Drama and Literary Heritage Texts",
+     "component": "C2",
+     "tier": null,
+     "marks": 60,
+     "minutes": 90,
+     "date": "2024-05-21",
+     "qp": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Literature/2016/Exam-materials/4et1-02-que-20240521.pdf",
+     "ms": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Literature/2016/Exam-materials/4et1-02-rms-20240822.pdf",
+     "insert": null,
+     "report": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Literature/2016/Exam-materials/4et1-02-pef-20240822.pdf"
+    },
+    {
+     "id": "01R",
+     "name": "Paper 1R (regional): Poetry and Modern Prose",
+     "component": "C1",
+     "tier": null,
+     "marks": 90,
+     "minutes": 120,
+     "date": "2024-05-14",
+     "qp": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Literature/2016/Exam-materials/4et1-01r-que-20240514.pdf",
+     "ms": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Literature/2016/Exam-materials/4et1-01r-rms-20240822.pdf",
+     "insert": null,
+     "report": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Literature/2016/Exam-materials/4et1-01r-pef-20240822.pdf"
+    },
+    {
+     "id": "02R",
+     "name": "Paper 2R (regional): Modern Drama and Literary Heritage Texts",
+     "component": "C2",
+     "tier": null,
+     "marks": 60,
+     "minutes": 90,
+     "date": "2024-05-21",
+     "qp": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Literature/2016/Exam-materials/4et1-02r-que-20240521.pdf",
+     "ms": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Literature/2016/Exam-materials/4et1-02r-rms-20240822.pdf",
+     "insert": null,
+     "report": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Literature/2016/Exam-materials/4et1-02r-pef-20240822.pdf"
+    }
+   ]
+  },
+  {
+   "id": "2023-11",
+   "name": "November 2023",
+   "public": true,
+   "releaseDate": null,
+   "boundaries": null,
+   "boundariesUrl": "https://qualifications.pearson.com/content/dam/pdf/Support/Grade-boundaries/International-GCSE/2311-intgcse-9-1-subject-grade-boundaries.pdf",
+   "papers": [
+    {
+     "id": "01",
+     "name": "Paper 1: Poetry and Modern Prose",
+     "component": "C1",
+     "tier": null,
+     "marks": 90,
+     "minutes": 120,
+     "date": "2023-11-07",
+     "qp": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Literature/2016/Exam-materials/4et1-01-que-20231107.pdf",
+     "ms": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Literature/2016/Exam-materials/4et1-01-rms-20240125.pdf",
+     "insert": null,
+     "report": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Literature/2016/Exam-materials/4et1-01-pef-20240125.pdf"
+    },
+    {
+     "id": "02",
+     "name": "Paper 2: Modern Drama and Literary Heritage Texts",
+     "component": "C2",
+     "tier": null,
+     "marks": 60,
+     "minutes": 90,
+     "date": "2023-11-25",
+     "qp": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Literature/2016/Exam-materials/4et1-02-que-20231125.pdf",
+     "ms": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Literature/2016/Exam-materials/4et1-02-rms-20240125.pdf",
+     "insert": null,
+     "report": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Literature/2016/Exam-materials/4et1-02-pef-20240125.pdf"
+    }
+   ]
+  },
+  {
+   "id": "2023-06",
+   "name": "June 2023",
+   "public": true,
+   "releaseDate": null,
+   "boundaries": null,
+   "boundariesUrl": "https://qualifications.pearson.com/content/dam/pdf/Support/Grade-boundaries/International-GCSE/2306-intgcse-9-1-subject-grade-boundaries.pdf",
+   "papers": [
+    {
+     "id": "01",
+     "name": "Paper 1: Poetry and Modern Prose",
+     "component": "C1",
+     "tier": null,
+     "marks": 90,
+     "minutes": 120,
+     "date": "2023-05-18",
+     "qp": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Literature/2016/Exam-materials/4et1-01-que-20230518.pdf",
+     "ms": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Literature/2016/Exam-materials/4et1-01-rms-20230824.pdf",
+     "insert": null,
+     "report": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Literature/2016/Exam-materials/4et1-01-pef-20230824.pdf"
+    },
+    {
+     "id": "02",
+     "name": "Paper 2: Modern Drama and Literary Heritage Texts",
+     "component": "C2",
+     "tier": null,
+     "marks": 60,
+     "minutes": 90,
+     "date": "2023-05-25",
+     "qp": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Literature/2016/Exam-materials/4et1-02-que-20230525.pdf",
+     "ms": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Literature/2016/Exam-materials/4et1-02-rms-20230824.pdf",
+     "insert": null,
+     "report": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Literature/2016/Exam-materials/4et1-02-pef-20230824.pdf"
+    },
+    {
+     "id": "01R",
+     "name": "Paper 1R (regional): Poetry and Modern Prose",
+     "component": "C1",
+     "tier": null,
+     "marks": 90,
+     "minutes": 120,
+     "date": "2023-05-18",
+     "qp": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Literature/2016/Exam-materials/4et1-01r-que-20230518.pdf",
+     "ms": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Literature/2016/Exam-materials/4et1-01r-rms-20230824.pdf",
+     "insert": null,
+     "report": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Literature/2016/Exam-materials/4et1-01r-pef-20230824.pdf"
+    },
+    {
+     "id": "02R",
+     "name": "Paper 2R (regional): Modern Drama and Literary Heritage Texts",
+     "component": "C2",
+     "tier": null,
+     "marks": 60,
+     "minutes": 90,
+     "date": "2023-05-25",
+     "qp": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Literature/2016/Exam-materials/4et1-02r-que-20230525.pdf",
+     "ms": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Literature/2016/Exam-materials/4et1-02r-rms-20230824.pdf",
+     "insert": null,
+     "report": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Literature/2016/Exam-materials/4et1-02r-pef-20230824.pdf"
+    }
+   ]
+  },
+  {
+   "id": "2021-06",
+   "name": "June 2021",
+   "public": true,
+   "releaseDate": null,
+   "boundaries": null,
+   "boundariesUrl": null,
+   "papers": [
+    {
+     "id": "01",
+     "name": "Paper 1: Poetry and Modern Prose",
+     "component": "C1",
+     "tier": null,
+     "marks": 90,
+     "minutes": 120,
+     "date": "2021-04-27",
+     "qp": "https://qualifications.pearson.com/content/dam/pdf/International%20GCSE/English%20Literature/Exam-materials/4ET1_01_que_20210427.pdf",
+     "ms": null,
+     "insert": null,
+     "report": null
+    },
+    {
+     "id": "02",
+     "name": "Paper 2: Modern Drama and Literary Heritage Texts",
+     "component": "C2",
+     "tier": null,
+     "marks": 60,
+     "minutes": 90,
+     "date": "2021-05-05",
+     "qp": "https://qualifications.pearson.com/content/dam/pdf/International%20GCSE/English%20Literature/Exam-materials/4ET1_02_que_20210505.pdf",
+     "ms": null,
+     "insert": null,
+     "report": null
+    }
+   ]
+  }
+ ]
 }

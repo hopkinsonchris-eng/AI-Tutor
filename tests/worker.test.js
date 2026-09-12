@@ -514,7 +514,17 @@ const baseEnv = () => ({ ANTHROPIC_API_KEY: 'sk-ant-test', ALLOWED_ORIGIN: 'http
     sandbox.__fetch = async (url, init) => { const u = String(url); if (u.startsWith('https://www.youtube.com/results')) return new Response('<html>nothing here</html>'); if (u.includes('api.anthropic.com')) return new Response(JSON.stringify({ content: [{ type: 'text', text: JSON.stringify({ queries: ['x y z w'] }) }] })); return saveFetch(url, init); };
     r = await worker.fetch(req('/videos', J('POST', { ...body, topic: 'B', topicName: 'B. Education and employment' }, VST)), env);
     v = await r.json();
-    ok('V4 when the search page yields nothing the room lists no videos rather than a guess', r.status === 200 && v.items.length === 0 && !v.error);
+    ok('V4 when the search page yields nothing and the model’s web search finds nothing the room lists no videos rather than a guess', r.status === 200 && v.items.length === 0 && !v.error && v.found === 0 && v.via === 'search', JSON.stringify(v));
+    let searchCalls = 0;
+    sandbox.__fetch = async (url, init) => { const u = String(url);
+      if (u.startsWith('https://www.youtube.com/results')) return new Response('<html>consent wall</html>');
+      if (u.startsWith('https://www.youtube.com/oembed')) return /srch1234567/.test(u) ? new Response(JSON.stringify({ title: 'GCSE German: Ferien und Urlaub — holidays', author_name: 'Frau Schmidt teaches' })) : new Response('Bad Request', { status: 400 });
+      if (u.includes('api.anthropic.com')) { const b = JSON.parse(init.body); if (b.tools) { searchCalls++; ok('V4 the fallback search is fenced to youtube.com', b.tools[0].allowed_domains.includes('youtube.com') && b.tools[0].max_uses <= 4); return new Response(JSON.stringify({ stop_reason: 'end_turn', content: [{ type: 'text', text: 'https://www.youtube.com/watch?v=srch1234567 | GCSE German holidays\nhttps://youtu.be/dead1234567 | gone video' }] })); }
+        const isQueries = /queries/.test(JSON.stringify(b.output_config)); return new Response(JSON.stringify({ content: [{ type: 'text', text: isQueries ? JSON.stringify({ queries: ['a b c d'] }) : JSON.stringify({ picks: [{ id: 'srch1234567', why: 'Covers holidays and travel.' }] }) }] })); }
+      return saveFetch(url, init); };
+    r = await worker.fetch(req('/videos', J('POST', { ...body, topic: 'D', topicName: 'D. Holidays' }, VST)), env);
+    v = await r.json();
+    ok('V4 when YouTube’s page cannot be read, candidates come from the model’s web search, read back from oEmbed, and still go through the picking and checking steps', r.status === 200 && v.via === 'search' && v.found === 1 && searchCalls === 1 && v.items.length === 1 && v.items[0].id === 'srch1234567' && v.items[0].channel === 'Frau Schmidt teaches' && /Ferien/.test(v.items[0].title), JSON.stringify(v));
     sandbox.__fetch = async (url, init) => { if (String(url).includes('api.anthropic.com')) return new Response('overloaded', { status: 529 }); return saveFetch(url, init); };
     r = await worker.fetch(req('/videos', J('POST', { ...body, topic: 'C', topicName: 'C. Personal life and relationships' }, VST)), env);
     v = await r.json();

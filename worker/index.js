@@ -144,8 +144,10 @@ async function findVideos(env, ctx) {
   const queries = await videoQueries(env, ctx);
   const pool = new Map();
   for (const q of queries) for (const v of await youtubeSearch(q)) if (!pool.has(v.id)) pool.set(v.id, v);
+  let via = 'page';
+  if (!pool.size) { via = 'search'; for (const v of await youtubeViaSearch(env, ctx)) if (!pool.has(v.id)) pool.set(v.id, v); }
   const cands = [...pool.values()].slice(0, 48);
-  if (!cands.length) return { items: [], at, queries };
+  if (!cands.length) return { items: [], at, queries, found: 0, via };
   const picks = await videoPicks(env, ctx, cands);
   const items = [];
   for (const p of picks) {
@@ -154,7 +156,29 @@ async function findVideos(env, ctx) {
     items.push({ id: p.id, url: `https://www.youtube.com/watch?v=${p.id}`, title: o.title || c.title, channel: o.author || c.channel, length: c.length, views: c.views, why: p.why, image: `https://i.ytimg.com/vi/${p.id}/hqdefault.jpg` });
     if (items.length >= VIDEO_MAX) break;
   }
-  return { items, at, queries };
+  return { items, at, queries, found: cands.length, via };
+}
+/* When YouTube's page cannot be read from here, the model's own web search over youtube.com finds candidates instead;
+   each is read back from oEmbed before the picking step so the choice is made on real titles and channels. */
+async function youtubeViaSearch(env, ctx) {
+  const prompt = `${videoContext(ctx)}\n\nUsing web search over youtube.com only, find up to 12 YouTube videos that teach this topic for this level. Answer with one video per line and nothing else, in the form:\nhttps://www.youtube.com/watch?v=VIDEO_ID | title`;
+  const body = { model: VIDEO_MODEL, max_tokens: 3000, tools: [{ type: 'web_search_20260209', name: 'web_search', max_uses: 4, allowed_domains: ['youtube.com', 'www.youtube.com', 'm.youtube.com', 'youtu.be'] }], messages: [{ role: 'user', content: prompt }] };
+  const headers = { 'Content-Type': 'application/json', 'x-api-key': env.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01' };
+  let data, turns = 0;
+  while (turns++ < 4) {
+    const res = await fetch('https://api.anthropic.com/v1/messages', { method: 'POST', headers, body: JSON.stringify(body) });
+    const text = await res.text();
+    if (!res.ok) throw new Error(`Anthropic ${res.status}: ${text.slice(0, 200)}`);
+    data = JSON.parse(text);
+    if (data.stop_reason !== 'pause_turn') break;
+    body.messages.push({ role: 'assistant', content: data.content });
+  }
+  const said = (data.content || []).filter(c => c.type === 'text').map(c => c.text).join('\n');
+  const ids = [], seen = new Set();
+  for (const m of said.matchAll(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([A-Za-z0-9_-]{6,20})/g)) if (!seen.has(m[1]) && seen.add(m[1])) ids.push(m[1]);
+  const out = [];
+  for (const id of ids.slice(0, 12)) { const o = await oembed(id); if (o) out.push({ id, title: o.title, channel: o.author, length: '', views: '', published: '' }); }
+  return out;
 }
 function videoContext(ctx) {
   return `Course: ${ctx.board} ${ctx.code} ${ctx.level} ${ctx.subject}.\nTopic: ${ctx.topicName}.\nKey ideas: ${ctx.ideas.length ? ctx.ideas.join('; ') : 'not listed'}.`;

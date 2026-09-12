@@ -40,6 +40,13 @@ name = "course-depth"
 binding = "COURSE_DEPTH"
 class_name = "CourseDepth"
 
+# Real papers: transcribing and marking a photographed paper is one model call per question, so it runs as a
+# Workflow too — one step per question, progress on the attempt record (paper:<user>:<id>).
+[[workflows]]
+name = "paper-marker"
+binding = "PAPER_MARKER"
+class_name = "PaperMarker"
+
 # The monthly pass: 06:00 UTC on the first of the month. It HEAD-checks each course's document and
 # only reads it again if it changed, so most months it costs nothing.
 [triggers]

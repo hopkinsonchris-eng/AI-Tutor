@@ -1,0 +1,381 @@
+{
+ "spec": "OCR-H481",
+ "board": "OCR",
+ "code": "H481",
+ "checked": "2026-09-12",
+ "source": "https://www.ocr.org.uk/qualifications/as-and-a-level/geography-h081-h481-from-2016/assessment/",
+ "series": [
+  {
+   "id": "2026-06",
+   "name": "June 2026",
+   "public": false,
+   "releaseDate": "2027-08-01",
+   "boundaries": null,
+   "boundariesUrl": "https://www.ocr.org.uk/Images/760861-as-and-a-level-grade-boundaries-june-2026.pdf",
+   "papers": [
+    {
+     "id": "01",
+     "name": "Physical systems · H481/01",
+     "component": "C1",
+     "tier": null,
+     "marks": 66,
+     "minutes": 90,
+     "date": null,
+     "qp": null,
+     "ms": null,
+     "insert": null,
+     "report": null
+    },
+    {
+     "id": "02",
+     "name": "Human interactions · H481/02",
+     "component": "C2",
+     "tier": null,
+     "marks": 66,
+     "minutes": 90,
+     "date": null,
+     "qp": null,
+     "ms": null,
+     "insert": null,
+     "report": null
+    },
+    {
+     "id": "03",
+     "name": "Geographical debates · H481/03",
+     "component": "C3",
+     "tier": null,
+     "marks": 108,
+     "minutes": 150,
+     "date": null,
+     "qp": null,
+     "ms": null,
+     "insert": null,
+     "report": null
+    },
+    {
+     "id": "04",
+     "name": "Investigative geography · H481/04",
+     "component": "C4",
+     "tier": null,
+     "marks": 60,
+     "minutes": null,
+     "date": null,
+     "qp": null,
+     "ms": null,
+     "insert": null,
+     "report": null
+    }
+   ]
+  },
+  {
+   "id": "2025-06",
+   "name": "June 2025",
+   "public": true,
+   "releaseDate": null,
+   "boundaries": null,
+   "boundariesUrl": "https://www.ocr.org.uk/Images/739509-as-and-a-level-grade-boundaries-june-2025.pdf",
+   "papers": [
+    {
+     "id": "01",
+     "name": "Physical systems · H481/01",
+     "component": "C1",
+     "tier": null,
+     "marks": 66,
+     "minutes": 90,
+     "date": null,
+     "qp": "https://www.ocr.org.uk/Images/752283-question-paper-physical-systems.pdf",
+     "ms": "https://www.ocr.org.uk/Images/752442-mark-scheme-physical-systems.pdf",
+     "insert": "https://www.ocr.org.uk/Images/752284-question-paper-physical-systems-resource-booklet.pdf",
+     "report": "https://www.ocr.org.uk/Images/752027-examiners-report-physical-systems.pdf"
+    },
+    {
+     "id": "02",
+     "name": "Human interactions · H481/02",
+     "component": "C2",
+     "tier": null,
+     "marks": 66,
+     "minutes": 90,
+     "date": null,
+     "qp": "https://www.ocr.org.uk/Images/752285-question-paper-human-interactions.pdf",
+     "ms": "https://www.ocr.org.uk/Images/752443-mark-scheme-human-interactions.pdf",
+     "insert": "https://www.ocr.org.uk/Images/752286-question-paper-human-interactions-resource-booklet.pdf",
+     "report": "https://www.ocr.org.uk/Images/752026-examiners-report-human-interactions.pdf"
+    },
+    {
+     "id": "03",
+     "name": "Geographical debates · H481/03",
+     "component": "C3",
+     "tier": null,
+     "marks": 108,
+     "minutes": 150,
+     "date": null,
+     "qp": "https://www.ocr.org.uk/Images/752287-question-paper-geographical-debates.pdf",
+     "ms": "https://www.ocr.org.uk/Images/752444-mark-scheme-geographical-debates.pdf",
+     "insert": "https://www.ocr.org.uk/Images/752288-question-paper-geographical-debates-resource-booklet.pdf",
+     "report": "https://www.ocr.org.uk/Images/752025-examiners-report-geographical-debates.pdf"
+    },
+    {
+     "id": "04",
+     "name": "Investigative geography · H481/04",
+     "component": "C4",
+     "tier": null,
+     "marks": 60,
+     "minutes": null,
+     "date": null,
+     "qp": null,
+     "ms": null,
+     "insert": null,
+     "report": "https://www.ocr.org.uk/Images/752024-moderators-report-investigative-geography.pdf"
+    }
+   ]
+  },
+  {
+   "id": "2024-06",
+   "name": "June 2024",
+   "public": true,
+   "releaseDate": null,
+   "boundaries": null,
+   "boundariesUrl": "https://www.ocr.org.uk/Images/714687-as-and-a-level-grade-boundaries-june-2024.pdf",
+   "papers": [
+    {
+     "id": "01",
+     "name": "Physical systems · H481/01",
+     "component": "C1",
+     "tier": null,
+     "marks": 66,
+     "minutes": 90,
+     "date": null,
+     "qp": "https://www.ocr.org.uk/Images/726608-question-paper-physical-systems.pdf",
+     "ms": "https://www.ocr.org.uk/Images/726768-mark-scheme-physical-systems.pdf",
+     "insert": "https://www.ocr.org.uk/Images/726609-question-paper-physical-systems-resource-booklet.pdf",
+     "report": "https://www.ocr.org.uk/Images/726348-examiners-report-physical-systems.pdf"
+    },
+    {
+     "id": "02",
+     "name": "Human interactions · H481/02",
+     "component": "C2",
+     "tier": null,
+     "marks": 66,
+     "minutes": 90,
+     "date": null,
+     "qp": "https://www.ocr.org.uk/Images/726610-question-paper-human-interactions.pdf",
+     "ms": "https://www.ocr.org.uk/Images/726769-mark-scheme-human-interactions.pdf",
+     "insert": "https://www.ocr.org.uk/Images/726611-question-paper-human-interactions-resource-booklet.pdf",
+     "report": "https://www.ocr.org.uk/Images/726347-examiners-report-human-interactions.pdf"
+    },
+    {
+     "id": "03",
+     "name": "Geographical debates · H481/03",
+     "component": "C3",
+     "tier": null,
+     "marks": 108,
+     "minutes": 150,
+     "date": null,
+     "qp": "https://www.ocr.org.uk/Images/726612-question-paper-geographical-debates.pdf",
+     "ms": "https://www.ocr.org.uk/Images/726770-mark-scheme-geographical-debates.pdf",
+     "insert": "https://www.ocr.org.uk/Images/726613-question-paper-geographical-debates-resource-booklet.pdf",
+     "report": "https://www.ocr.org.uk/Images/726346-examiners-report-geographical-debates.pdf"
+    },
+    {
+     "id": "04",
+     "name": "Investigative geography · H481/04",
+     "component": "C4",
+     "tier": null,
+     "marks": 60,
+     "minutes": null,
+     "date": null,
+     "qp": null,
+     "ms": null,
+     "insert": null,
+     "report": "https://www.ocr.org.uk/Images/726345-moderators-report-investigative-geography.pdf"
+    }
+   ]
+  },
+  {
+   "id": "2023-06",
+   "name": "June 2023",
+   "public": true,
+   "releaseDate": null,
+   "boundaries": null,
+   "boundariesUrl": "https://www.ocr.org.uk/Images/690902-as-and-a-level-grade-boundaries-june-2023.pdf",
+   "papers": [
+    {
+     "id": "01",
+     "name": "Physical systems · H481/01",
+     "component": "C1",
+     "tier": null,
+     "marks": 66,
+     "minutes": 90,
+     "date": null,
+     "qp": "https://www.ocr.org.uk/Images/703819-question-paper-physical-systems.pdf",
+     "ms": "https://www.ocr.org.uk/Images/703980-mark-scheme-physical-systems.pdf",
+     "insert": "https://www.ocr.org.uk/Images/703820-question-paper-physical-systems-resource-booklet.pdf",
+     "report": "https://www.ocr.org.uk/Images/703562-examiners-report-physical-systems.pdf"
+    },
+    {
+     "id": "02",
+     "name": "Human interactions · H481/02",
+     "component": "C2",
+     "tier": null,
+     "marks": 66,
+     "minutes": 90,
+     "date": null,
+     "qp": "https://www.ocr.org.uk/Images/703821-question-paper-human-interactions.pdf",
+     "ms": "https://www.ocr.org.uk/Images/703981-mark-scheme-human-interactions.pdf",
+     "insert": "https://www.ocr.org.uk/Images/703822-question-paper-human-interactions-resource-booklet.pdf",
+     "report": "https://www.ocr.org.uk/Images/703561-examiners-report-human-interactions.pdf"
+    },
+    {
+     "id": "03",
+     "name": "Geographical debates · H481/03",
+     "component": "C3",
+     "tier": null,
+     "marks": 108,
+     "minutes": 150,
+     "date": null,
+     "qp": "https://www.ocr.org.uk/Images/703823-question-paper-geographical-debates.pdf",
+     "ms": "https://www.ocr.org.uk/Images/703982-mark-scheme-geographical-debates.pdf",
+     "insert": "https://www.ocr.org.uk/Images/703824-question-paper-geographical-debates-resource-booklet.pdf",
+     "report": "https://www.ocr.org.uk/Images/703560-examiners-report-geographical-debates.pdf"
+    },
+    {
+     "id": "04",
+     "name": "Investigative geography · H481/04",
+     "component": "C4",
+     "tier": null,
+     "marks": 60,
+     "minutes": null,
+     "date": null,
+     "qp": null,
+     "ms": null,
+     "insert": null,
+     "report": "https://www.ocr.org.uk/Images/703559-moderators-report-investigative-geography.pdf"
+    }
+   ]
+  },
+  {
+   "id": "2022-06",
+   "name": "June 2022",
+   "public": true,
+   "releaseDate": null,
+   "boundaries": null,
+   "boundariesUrl": "https://www.ocr.org.uk/Images/658475-as-and-a-level-grade-boundaries-june-2022.pdf",
+   "papers": [
+    {
+     "id": "01",
+     "name": "Physical systems · H481/01",
+     "component": "C1",
+     "tier": null,
+     "marks": 66,
+     "minutes": 90,
+     "date": null,
+     "qp": "https://www.ocr.org.uk/Images/676789-question-paper-physical-systems.pdf",
+     "ms": "https://www.ocr.org.uk/Images/676971-mark-scheme-physical-systems.pdf",
+     "insert": "https://www.ocr.org.uk/Images/676790-question-paper-physical-systems-resource-booklet.pdf",
+     "report": "https://www.ocr.org.uk/Images/687983-examiners-report-physical-systems.pdf"
+    },
+    {
+     "id": "02",
+     "name": "Human interactions · H481/02",
+     "component": "C2",
+     "tier": null,
+     "marks": 66,
+     "minutes": 90,
+     "date": null,
+     "qp": "https://www.ocr.org.uk/Images/676791-question-paper-human-interactions.pdf",
+     "ms": "https://www.ocr.org.uk/Images/676972-mark-scheme-human-interactions.pdf",
+     "insert": "https://www.ocr.org.uk/Images/676792-question-paper-human-interactions-resource-booklet.pdf",
+     "report": "https://www.ocr.org.uk/Images/687982-examiners-report-human-interactions.pdf"
+    },
+    {
+     "id": "03",
+     "name": "Geographical debates · H481/03",
+     "component": "C3",
+     "tier": null,
+     "marks": 108,
+     "minutes": 150,
+     "date": null,
+     "qp": "https://www.ocr.org.uk/Images/676793-question-paper-geographical-debates.pdf",
+     "ms": "https://www.ocr.org.uk/Images/676973-mark-scheme-geographical-debates.pdf",
+     "insert": "https://www.ocr.org.uk/Images/676794-question-paper-geographical-debates-resource-booklet.pdf",
+     "report": "https://www.ocr.org.uk/Images/687981-examiners-report-geographical-debates.pdf"
+    },
+    {
+     "id": "04",
+     "name": "Investigative geography · H481/04",
+     "component": "C4",
+     "tier": null,
+     "marks": 60,
+     "minutes": null,
+     "date": null,
+     "qp": null,
+     "ms": null,
+     "insert": null,
+     "report": "https://www.ocr.org.uk/Images/687980-moderators-report-investigative-geography.pdf"
+    }
+   ]
+  },
+  {
+   "id": "2021-11",
+   "name": "November 2021",
+   "public": true,
+   "releaseDate": null,
+   "boundaries": null,
+   "boundariesUrl": "https://www.ocr.org.uk/Images/643002-as-a-level-and-core-maths-grade-boundaries-november-2021.pdf",
+   "papers": [
+    {
+     "id": "01",
+     "name": "Physical systems · H481/01",
+     "component": "C1",
+     "tier": null,
+     "marks": 66,
+     "minutes": 90,
+     "date": null,
+     "qp": "https://www.ocr.org.uk/Images/666893-question-paper-physical-systems.pdf",
+     "ms": "https://www.ocr.org.uk/Images/666900-mark-scheme-physical-systems.pdf",
+     "insert": "https://www.ocr.org.uk/Images/666894-question-paper-physical-systems-resource-booklet.pdf",
+     "report": null
+    },
+    {
+     "id": "02",
+     "name": "Human interactions · H481/02",
+     "component": "C2",
+     "tier": null,
+     "marks": 66,
+     "minutes": 90,
+     "date": null,
+     "qp": "https://www.ocr.org.uk/Images/666895-question-paper-human-interactions.pdf",
+     "ms": "https://www.ocr.org.uk/Images/666901-mark-scheme-human-interactions.pdf",
+     "insert": "https://www.ocr.org.uk/Images/666896-question-paper-human-interactions-resource-booklet.pdf",
+     "report": null
+    },
+    {
+     "id": "03",
+     "name": "Geographical debates · H481/03",
+     "component": "C3",
+     "tier": null,
+     "marks": 108,
+     "minutes": 150,
+     "date": null,
+     "qp": "https://www.ocr.org.uk/Images/666897-question-paper-geographical-debates.pdf",
+     "ms": "https://www.ocr.org.uk/Images/666902-mark-scheme-geographical-debates.pdf",
+     "insert": "https://www.ocr.org.uk/Images/666898-question-paper-geographical-debates-resource-booklet.pdf",
+     "report": null
+    },
+    {
+     "id": "04",
+     "name": "Investigative geography · H481/04",
+     "component": "C4",
+     "tier": null,
+     "marks": 60,
+     "minutes": null,
+     "date": null,
+     "qp": null,
+     "ms": null,
+     "insert": null,
+     "report": null
+    }
+   ]
+  }
+ ]
+}

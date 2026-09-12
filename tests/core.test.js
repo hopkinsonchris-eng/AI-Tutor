@@ -70,4 +70,40 @@ ok('X1 a year the calendar does not reach falls back to mid-May of that year',C.
 const bank=[{d:1},{d:1},{d:1},{d:2},{d:2},{d:3}];const prac=[{node:'R|1',ok:true,d:1},{node:'R|1',ok:true,d:1},{node:'R|1',ok:false,d:1},{node:'R|2',ok:true,d:2},{node:'R|1',ok:true},{node:'R|1',ok:true,d:3},{node:'R|1',ok:true,d:3}];
 const pc=C.pileCounts(bank,prac,'R|1');ok('X2 a pile holds the bank minus the questions got right there in this room, never below one sheet while the bank has any',pc.map(x=>x.left).join()==='1,2,1'&&pc.map(x=>x.bank).join()==='3,2,1'&&pc.map(x=>x.done).join()==='2,0,2',JSON.stringify(pc));
 ok('X2 no bank, no sheets',C.pileCounts([],prac,'R|1').map(x=>x.left).join()==='0,0,0'&&C.pileCounts(undefined,undefined,'R|1').every(x=>x.left===0));
+/* ---------- real papers: damped moves, errors, re-tests, priority, boundaries ---------- */
+{
+const sp=C.newState(setup,SPECS);const T='2026-09-12';const g=(tid)=>sp.nodes[C.nodeId('OCR-H481',tid)];
+g('1.2').state='Secure';g('2.1').state='Fluent';g('2.2.1').state='Learning';g('3.1').state='Fluent';g('3.5').state='Learning';
+const paper={id:'p1',spec:'OCR-H481',series:'2025-06',seriesName:'June 2025',paper:'01',component:'C1',name:'Paper 1',total:66,questions:[
+ {q:'1',marks:10,awarded:4,topic:'1.2',attempted:true,failureMode:'ANALYSIS',comment:'Chains of reasoning stop after one link.',confidence:'sure'},
+ {q:'2',marks:8,awarded:8,topic:'2.1',attempted:true},
+ {q:'3',marks:6,awarded:6,topic:'2.2.1',attempted:true},
+ {q:'4',marks:12,awarded:7,codes:['3.1.a'],attempted:true,failureMode:'EVALUATION',comment:'No judgement.'},
+ {q:'5',marks:8,awarded:0,topic:'3.5',attempted:false},
+ {q:'6',marks:6,awarded:0,topic:'2e',legibility:'unreadable',attempted:true}]};
+ok('P0 a question names its topic directly, or by a code that only one topic carries; an unknown code is null',C.questionTopic(SPEC_H481,{topic:'1.2'})==='1.2'&&C.questionTopic(SPEC_H481,{codes:['3.1.a']})==='3.1'&&C.questionTopic(SPEC_H481,{codes:['1.a']})===null,String(C.questionTopic(SPEC_H481,{codes:['1.a']})));
+const pt=C.paperTopics(SPEC_H481,paper);
+ok('P1 marks roll up by topic and an unreadable answer earns nothing but keeps its marks available',pt.find(x=>x.topic==='2e').awarded===0&&pt.find(x=>x.topic==='2e').marks===6&&pt.find(x=>x.topic==='1.2').awarded===4,JSON.stringify(pt));
+const moves=C.applyPaper(sp,SPEC_H481,paper,T);
+ok('P2 below 70% drops one state and only one: Secure → Fluent (1.2 at 40%), Fluent → Learning (3.1 at 58%), Learning stays (3.5 at 0%)',g('1.2').state==='Fluent'&&g('3.1').state==='Learning'&&g('3.5').state==='Learning',JSON.stringify(moves));
+ok('P2 full marks on at least four marks lifts Learning → Fluent (2.2.1) and is a fluent pass for a Fluent room (2.1)',g('2.2.1').state==='Fluent'&&g('2.1').state==='Fluent'&&g('2.1').fluentPasses.length===1);
+ok('P2 an untouched room becomes Learning when a paper reaches it (2e was Unassessed, unreadable)',g('2e').state==='Learning'&&moves.find(m=>m.topic==='2e').before==='Unassessed');
+const errs=sp.errors.filter(e=>e.paper==='p1');
+ok('P3 every lost-mark question logs one error with its failure mode, paper reference and a re-test date a week on; unreadable and full-mark questions do not',errs.length===3&&errs.every(e=>e.retestDue==='2026-09-19')&&errs.some(e=>e.q==='1'&&e.mode==='ANALYSIS'&&/Q1 · Paper 1 · June 2025/.test(e.ref))&&errs.some(e=>e.q==='5'&&e.mode==='KNOWLEDGE-GAP'),JSON.stringify(errs.map(e=>[e.q,e.mode])));
+ok('P3 nothing is due for re-test before the week is up',C.retestQueue(sp,'2026-09-18').length===0&&C.retestQueue(sp,'2026-09-19').length===3);
+const pr=C.paperPriority(sp,SPEC_H481,paper,setup.subjects[0].options);
+ok('P4 the report orders topics by marks lost × weight: 3.5 (8 lost, 18%) leads 3.1 (5 lost, 18%), then 1.2 (6 lost, 11%); full-mark topics sit last',pr[0].topic==='3.5'&&pr[1].topic==='3.1'&&pr[2].topic==='1.2'&&pr[pr.length-1].lost===0,JSON.stringify(pr.map(x=>[x.topic,x.lost,Math.round(x.priority*100)/100])));
+const e1=errs.find(e=>e.q==='1');
+C.recordRetest(sp,e1,true,'2026-09-19');ok('P5 one clean pass is not enough: it comes back a week later',!e1.resolved&&e1.retestDue==='2026-09-26'&&e1.passes===1);
+C.recordRetest(sp,e1,true,'2026-09-26');ok('P5 two clean passes clear the error',e1.resolved===true&&!e1.retestDue);
+const e5=errs.find(e=>e.q==='5');
+C.recordRetest(sp,e5,false,'2026-09-19');C.recordRetest(sp,e5,false,'2026-09-26');ok('P5 a miss resets the passes and comes back in a week',e5.attempts===2&&e5.retestDue==='2026-10-03'&&!e5.relearn);
+C.recordRetest(sp,e5,false,'2026-10-03');ok('P5 the third miss escalates to relearning: out of the queue, room to Learning',e5.relearn===true&&C.retestQueue(sp,'2026-10-20').every(e=>e!==e5)&&g('3.5').state==='Learning');
+const sess=C.buildSession(sp,SPECS,'2026-09-22');const rt=sess.steps.find(x=>x.kind==='retest');
+ok('P6 the daily plan carries a re-test step while paper questions are due, naming the rooms',rt&&/Re-test: 1 question/.test(rt.title)&&rt.nodes.includes(C.nodeId('OCR-H481','3.1')),JSON.stringify(sess.steps.map(x=>x.kind)));
+const many=C.newState(setup,SPECS);for(let i=0;i<14;i++)many.errors.push({date:T,node:C.nodeId('OCR-H481','1.2'),mode:'APPLICATION',paper:'px',q:String(i),retestDue:'2026-09-19',attempts:0,passes:0});
+ok('P6 the re-test queue is capped at ten questions',C.retestQueue(many,'2026-09-19').length===10);
+ok('P7 grade from a series’ published boundaries works for 9–1 and A*–E labels and gives U below the lowest',C.gradeFromBoundaries(45,{9:78,7:64,5:45,4:36,1:10})==='5'&&C.gradeFromBoundaries(35,{9:78,7:64,5:45,4:36,1:10})==='1'&&C.gradeFromBoundaries(9,{9:78,1:10})==='U'&&C.gradeFromBoundaries(50,{'A*':60,A:50,E:20})==='A'&&C.gradeFromBoundaries(50,null)===null);
+}
+
 console.log(`PASSED: ${pass}`);fails.forEach(f=>console.log('FAILED: '+f));console.log('-'.repeat(50));console.log(fails.length?`RESULT: ${fails.length} FAILURE(S)`:'RESULT: ALL GREEN');process.exit(fails.length?1:0);

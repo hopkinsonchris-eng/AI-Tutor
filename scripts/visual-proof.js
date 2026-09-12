@@ -27,6 +27,26 @@ const core = require(path.join(ROOT, 'src', 'core.js'));
 const SPECS = {}; for (const sp of Object.values({ ...require(path.join(ROOT, 'src', 'specs', 'ocr-h481.js')), ...require(path.join(ROOT, 'src', 'specs', 'edexcel-9ma0.js')), ...require(path.join(ROOT, 'src', 'specs', 'edexcel-4gn1.js')), ...require(path.join(ROOT, 'src', 'specs', 'edexcel-4ma1.js')) })) SPECS[sp.id] = sp; SPECS['AQA-7402'] = biology;
 const setup = { student: 'Matthew', examYear: 2028, subjects: [{ specId: 'OCR-H481', options: { landscape: '1.1.1', globalSystems: '2.2.1', globalGovernance: '2.2.4', debates: ['3.1', '3.5'] } }, { specId: 'EDX-9MA0', options: {} }, { specId: 'AQA-7402', options: {} }, { specId: 'EDX-4GN1', options: {} }, { specId: 'EDX-4MA1', options: {} }] };
 const progress = core.newState(setup, SPECS); progress.created = '2026-09-01';
+/* real papers: a stand-in for the tutor's attempt routes, answering as the Worker would once the model has spoken */
+const ATTEMPTS = {}; let nextAttempt = 1;
+const QMAP = { questions: [{ q: '1', marks: 6, topic: '1.2', codes: ['1.a'], mode: 'points', command: 'Explain' }, { q: '2', marks: 10, topic: '2.1', codes: [], mode: 'levels', command: 'Assess' }, { q: '3', marks: 4, topic: '2.2.1', codes: [], mode: 'points', command: 'Describe' }] };
+const POINTS = { 1: { points: [{ text: 'Names a store of carbon', max: 1 }, { text: 'Explains a flow between two stores', max: 3 }, { text: 'Gives a figure or rate', max: 2 }] }, 2: { points: [{ text: 'Level 3: developed and evaluative', max: 10 }, { text: 'Level 2: clear with some development', max: 7 }, { text: 'Level 1: basic', max: 4 }] }, 3: { points: [{ text: 'Two features of the landform', max: 2 }, { text: 'Names the process', max: 2 }] } };
+function papersStub(p, m, req, body) {
+  const R = (status, b) => ({ status, body: b });
+  if (p === '/papers/admin/boards') return R(200, { off: [] });
+  if (p === '/papers' && m === 'POST') { const id = 'pa' + (nextAttempt++); ATTEMPTS[id] = { id, at: new Date().toISOString(), status: 'pages', ...body, pages: [], assign: {}, confidence: {}, attempted: {}, transcripts: {}, ticks: {}, results: {}, points: {}, job: null }; return R(200, { attempt: ATTEMPTS[id] }); }
+  const mm = p.match(/^\/papers\/([^/]+)(?:\/(.*))?$/); if (!mm) return null; const A = ATTEMPTS[mm[1]]; if (!A) return R(404, { error: 'not found' }); const sub = mm[2] || '';
+  if (!sub && m === 'GET') return R(200, { attempt: A });
+  if (!sub && m === 'PATCH') { for (const k of ['assign', 'confidence', 'attempted', 'ticks']) if (body[k]) A[k] = Object.assign(A[k] || {}, body[k]); if (body.transcripts) for (const [q, t] of Object.entries(body.transcripts)) A.transcripts[q] = Object.assign(A.transcripts[q] || {}, t, { edited: true }); return R(200, { attempt: A }); }
+  if (sub === 'pages/upload' && m === 'POST') { const pg = { id: 'pg' + (A.pages.length + 1), n: A.pages.length + 1, size: 1000, type: 'image/jpeg', thumb: null }; A.pages.push(pg); return R(200, { page: pg }); }
+  const pm = sub.match(/^pages\/([^/]+)$/); if (pm) { const pg = A.pages.find(x => x.id === pm[1]); if (m === 'PATCH' && pg) Object.assign(pg, body); if (m === 'DELETE') A.pages = A.pages.filter(x => x.id !== pm[1]); return R(200, { page: pg }); }
+  if (sub === 'questions' && m === 'POST') { A.questions = QMAP; return R(200, { questions: QMAP }); }
+  if (sub === 'prepare' && m === 'POST') { for (const q of QMAP.questions) { if (A.attempted[q.q] === false || !(A.assign[q.q] || []).length) continue; A.transcripts[q.q] = q.q === '3' ? { transcript: '', legibility: 'unreadable', unsure: [], blank: false } : { transcript: 'Carbon is stored in the oceans. It moves from the atmosphere into the sea by dissolving, about 2 GtC a year.', legibility: 'ok', unsure: ['dissolving'], blank: false }; A.points[q.q] = POINTS[q.q]; } A.job = { stage: 'prepare', status: 'done', done: 3, total: 3, message: 'Read 3 answers' }; return R(202, { job: A.job }); }
+  if (sub === 'mark' && m === 'POST') { for (const q of QMAP.questions) { const t = A.transcripts[q.q]; if (!t) { if (A.attempted[q.q] === false) A.results[q.q] = { awarded: 0, max: q.marks, attempted: false }; continue; } if (t.legibility === 'unreadable') { A.results[q.q] = { awarded: null, max: q.marks, legibility: 'unreadable' }; continue; } A.results[q.q] = { awarded: 4, max: 6, lines: [{ i: 1, awarded: 1, evidence: 'stored in the oceans' }, { i: 2, awarded: 3, evidence: 'moves from the atmosphere into the sea' }, { i: 3, awarded: 0, missing: 'no figure given' }], failureMode: 'RECALL-GAP', note: 'Most answers that lost marks here gave no figure; a full-mark answer named a rate such as 2 GtC a year. Learn one figure for every flow you can name.', disagree: [3] }; } A.status = 'marked'; A.score = Object.values(A.results).reduce((a, r) => a + (r.awarded || 0), 0); A.total = A.marks; A.job = { stage: 'mark', status: 'done', done: 3, total: 3, message: 'Marked' }; return R(202, { job: A.job }); }
+  const qm = sub.match(/^questions\/([^/]+)\/mark$/); if (qm && m === 'POST') { A.results[qm[1]] = { awarded: 4, max: 4, lines: [{ i: 1, awarded: 2, evidence: 'steep cliff' }, { i: 2, awarded: 2, evidence: 'hydraulic action' }], failureMode: 'NONE', note: 'Full marks.' }; return R(200, { result: A.results[qm[1]] }); }
+  if (sub === 'status') return R(200, { job: A.job, status: A.status, score: A.score, total: A.total });
+  return R(404, { error: 'no such papers route' });
+}
 const set = (id, st, last) => { const n = progress.nodes[id]; if (n) { n.state = st; n.lastPractised = last; } };
 set('OCR-H481|1.2', 'Fluent', '2026-09-08'); set('OCR-H481|1.1.1', 'Secure', '2026-08-30'); set('OCR-H481|2.1', 'Learning', '2026-09-09'); set('OCR-H481|3.1', 'Learning', '2026-09-02');
 set('EDX-9MA0|P2', 'Secure', '2026-09-01'); set('EDX-9MA0|P3', 'Fluent', '2026-09-07'); set('EDX-9MA0|P4', 'Learning', '2026-09-09'); set('EDX-9MA0|P7', 'Learning', '2026-09-05');
@@ -59,11 +79,13 @@ const server = http.createServer((req, res) => {
   const send = (status, body, type = 'application/json') => { res.writeHead(status, { 'Content-Type': type, 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'Content-Type, Authorization', 'Access-Control-Allow-Methods': 'GET, POST, PUT, PATCH, DELETE, OPTIONS' }); res.end(typeof body === 'string' ? body : JSON.stringify(body)); };
   if (m === 'OPTIONS') return send(204, '');
   if (p === '/' && m === 'GET') return send(200, html, 'text/html; charset=utf-8');
+  if (/^\/papers\/[^/]+\.json$/.test(p) && m === 'GET') { const f = path.join(ROOT, 'dist', decodeURIComponent(p)); return fs.existsSync(f) ? send(200, fs.readFileSync(f, 'utf8')) : send(404, { error: 'no index' }); }
   if (/^\/kits\/[^/]+\/[^/]+\.json$/.test(p) && m === 'GET') { /* the site serves the hand-built kits next to the page */ const f = path.join(ROOT, 'dist', decodeURIComponent(p)); return fs.existsSync(f) ? send(200, fs.readFileSync(f, 'utf8')) : send(404, { error: 'no such kit' }); }
   const tok = (req.headers.authorization || '').replace('Bearer ', ''); const me = users[tok];
   let raw = ''; req.on('data', c => raw += c); req.on('end', () => {
-    const body = raw ? JSON.parse(raw) : {};
+    let body = {}; try { body = raw && /json/.test(req.headers['content-type'] || '') ? JSON.parse(raw) : {}; } catch (e) { body = {}; }
     if (p === '/auth/me') return me ? send(200, { user: me }) : send(401, { error: 'not signed in' });
+    if (p === '/papers' || p.startsWith('/papers/')) { const r = papersStub(p, m, req, body); if (r) return send(r.status, r.body); }
     if (p === '/videos' && m === 'POST') return send(200, body.spec === 'EDX-4GN1' && body.topic === 'A' ? { items: [{ id: 'abc123def45', url: 'https://www.youtube.com/watch?v=abc123def45', title: 'GCSE German: describing your house and home', channel: 'German with Anna', length: '9:12', why: 'Covers rooms, furniture and describing where you live.', image: '' }, { id: 'def456ghi78', url: 'https://www.youtube.com/watch?v=def456ghi78', title: 'GCSE German: my town and region', channel: 'Deutsch für Alle', length: '11:40', why: 'Covers your town, the countryside and giving directions.', image: '' }], at: '2026-09-12T08:00:00Z' } : { items: [], at: '2026-09-12T08:00:00Z' });
     if (p === '/' && m === 'POST') return send(200, { id: 'msg_1', content: [{ type: 'text', text: JSON.stringify(nudge) }] });
     if (p === '/progress') return m === 'GET' ? (tok === 'tok-matthew' ? send(200, { updatedAt: new Date().toISOString(), device: 'an iPad', state: progress }) : send(404, { error: 'nothing saved yet' })) : send(200, { ok: true, updatedAt: new Date().toISOString() });
@@ -217,6 +239,30 @@ const server = http.createServer((req, res) => {
   await page.waitForFunction(() => /Written and checked/.test(document.querySelector('#v-rooms').textContent), null, { timeout: 10000 });
   must(/Formulae & links/.test(await page.locator('.stations').textContent()) && /Formulae sheet/.test(await page.locator('#v-rooms').textContent()), 'Foundation Maths room: the checked kit has a Formulae sheet and the Formulae & links tab');
   await snap(page, '15-igcse-maths-room', 'Edexcel International GCSE Mathematics A (Foundation), Integers: the checked kit lesson, one section per content statement, and its Formulae sheet against the paper’s Appendix 4');
+  await page.context().close();
+
+  /* ---- real papers: pick a real OCR paper, photograph a page, assign, confirm, marks with slip-first, report ---- */
+  page = await open('tok-matthew', { width: 1280, height: 900 }, '#rail-l .ccard');
+  await page.click('nav.side button[data-v="exam"]'); await page.waitForSelector('.pser', { timeout: 15000 });
+  must((await page.locator('.pser').count()) >= 3 && (await page.locator('.pser.locked[disabled]').count()) >= 1 && /Locked until/.test(await page.locator('.pser.locked').first().textContent()), 'exam: the board’s series from the index, the newest locked with its release date');
+  must(/^https:\/\/www\.ocr\.org\.uk\//.test(await page.locator('.prow a.act').first().getAttribute('href')) && (await page.locator('[data-pmark]').count()) >= 1 && /stay on OCR’s website/.test(await page.locator('#v-exam').textContent()), 'exam: papers open on the board’s own site and can be marked');
+  await snap(page, '16-exam-real-papers', 'The Exam Hall for OCR A level Geography: every public series from OCR’s own site, June 2026 locked until its release date, each paper opening on ocr.org.uk with Open paper and Mark my answers, and the notice that nothing of the board’s is stored.');
+  await page.click('[data-pmark]'); await page.waitForSelector('#pfPick', { state: 'attached' });
+  const jpg = await page.evaluate(() => { const c = document.createElement('canvas'); c.width = 900; c.height = 1200; const g = c.getContext('2d'); g.fillStyle = '#fbfaf6'; g.fillRect(0, 0, 900, 1200); g.fillStyle = '#1b1b1b'; g.font = '34px serif'; ['1  Carbon is stored in the oceans.', '   It moves from the atmosphere into the', '   sea by dissolving, about 2 GtC a year.', '', '3  A steep cliff formed by hydraulic action.'].forEach((t, i) => g.fillText(t, 60, 160 + i * 70)); return c.toDataURL('image/jpeg', 0.85).split(',')[1]; });
+  await page.setInputFiles('#pfPick', { name: 'page1.jpg', mimeType: 'image/jpeg', buffer: Buffer.from(jpg, 'base64') });
+  await page.waitForSelector('.ppages .ppage', { timeout: 15000 }); await page.click('#pfToAssign'); await page.waitForSelector('[data-pq="1"]', { timeout: 15000 });
+  await page.click('[data-ppage]'); await page.click('[data-pq="1"]'); await page.click('[data-pq="3"]'); await page.click('[data-pconf="1|sure"]'); await page.click('[data-pna="2"]');
+  must(/pages 1/.test(await page.locator('[data-pq="1"]').textContent()) && /not attempted/.test(await page.locator('[data-pq="2"]').textContent()), 'assign: a page tapped then its questions, one question left blank');
+  await snap(page, '17-paper-assign', 'Step 2: the paper’s questions read once from the paper itself with their marks and topics; the photographed page is tapped, then the questions it holds; confidence per question before any mark; a question left blank.');
+  await page.click('#pfPrepare'); await page.waitForSelector('[data-ptr="1"]', { timeout: 15000 });
+  must(/Carbon is stored in the oceans/.test(await page.locator('#v-exam').textContent()) && (await page.locator('[data-ptick="1|0"]').count()) === 1, 'confirm: the transcription is shown to correct and the mark points to tick');
+  await page.click('[data-ptick="1|0"]'); await page.click('[data-ptick="1|1"]'); await page.click('#pfMark'); await page.waitForSelector('[data-pslip]', { timeout: 15000 });
+  must(/“stored in the oceans”/.test(await page.locator('#v-exam').textContent()) && /differs from your tick/.test(await page.locator('#v-exam').textContent()) && (await page.locator('#pfFinish[disabled]').count()) === 1 && (await page.locator('[data-premark="3"]').count()) === 1, 'marks: per point with the student’s own words as evidence, the checker’s disagreement, an unreadable answer withheld, Finish waiting');
+  await snap(page, '18-paper-marks', 'Step 4: marks per mark point quoting the student’s own words, what was missing, where the checker differed from the student’s tick, an unreadable answer left unmarked with a type-in path, and the slip-first question before the examiner’s note.');
+  await page.fill('[data-ptype="3"]', 'A steep cliff formed by hydraulic action'); await page.click('[data-premark="3"]'); await page.waitForSelector('[data-pslip="1|unfinished"]'); await page.click('[data-pslip="1|unfinished"]');
+  await page.waitForSelector('#pfFinish:not([disabled])'); await page.click('#pfFinish'); await page.waitForFunction(() => /Where the marks went/.test(document.querySelector('#v-exam').textContent), null, { timeout: 15000 });
+  must(/8 \/ 66/.test(await page.locator('#v-exam').textContent()) && (await page.locator('.ptopic [data-open]').count()) >= 3 && /Re-test on/.test(await page.locator('#v-exam').textContent()), 'report: score, topics with room moves and Open room, re-test date');
+  await snap(page, '19-paper-report', 'The report: the score and grade on the series’ boundaries, topics ordered by marks lost × weight with each room’s move and an Open room button, the coach’s note, and what went into the rooms and the daily plan.');
   await page.context().close();
 
   await browser.close(); server.close();

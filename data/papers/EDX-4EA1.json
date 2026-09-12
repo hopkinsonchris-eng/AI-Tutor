@@ -1,0 +1,300 @@
+{
+ "spec": "EDX-4EA1",
+ "board": "Pearson Edexcel",
+ "code": "4EA1",
+ "checked": "2026-09-12",
+ "source": "https://qualifications.pearson.com/en/support/support-topics/exams/past-papers.html",
+ "series": [
+  {
+   "id": "2026-06",
+   "name": "June 2026",
+   "public": false,
+   "releaseDate": "2027-03-01",
+   "boundaries": null,
+   "boundariesUrl": null,
+   "papers": [
+    {
+     "id": "01",
+     "name": "Paper 1: Non-fiction Texts and Transactional Writing",
+     "component": "C1",
+     "tier": null,
+     "marks": 90,
+     "minutes": 135,
+     "date": null,
+     "qp": null,
+     "ms": null,
+     "insert": null,
+     "report": null
+    },
+    {
+     "id": "02",
+     "name": "Paper 2: Poetry and Prose Texts and Imaginative Writing",
+     "component": "C2",
+     "tier": null,
+     "marks": 60,
+     "minutes": 90,
+     "date": null,
+     "qp": null,
+     "ms": null,
+     "insert": null,
+     "report": null
+    }
+   ]
+  },
+  {
+   "id": "2026-01",
+   "name": "January 2026",
+   "public": false,
+   "releaseDate": "2026-10-01",
+   "boundaries": null,
+   "boundariesUrl": null,
+   "papers": [
+    {
+     "id": "01",
+     "name": "Paper 1: Non-fiction Texts and Transactional Writing",
+     "component": "C1",
+     "tier": null,
+     "marks": 90,
+     "minutes": 135,
+     "date": null,
+     "qp": null,
+     "ms": null,
+     "insert": null,
+     "report": null
+    },
+    {
+     "id": "02",
+     "name": "Paper 2: Poetry and Prose Texts and Imaginative Writing",
+     "component": "C2",
+     "tier": null,
+     "marks": 60,
+     "minutes": 90,
+     "date": null,
+     "qp": null,
+     "ms": null,
+     "insert": null,
+     "report": null
+    }
+   ]
+  },
+  {
+   "id": "2025-11",
+   "name": "November 2025",
+   "public": false,
+   "releaseDate": "2026-08-01",
+   "boundaries": null,
+   "boundariesUrl": null,
+   "papers": [
+    {
+     "id": "01",
+     "name": "Paper 1: Non-fiction Texts and Transactional Writing",
+     "component": "C1",
+     "tier": null,
+     "marks": 90,
+     "minutes": 135,
+     "date": null,
+     "qp": null,
+     "ms": null,
+     "insert": null,
+     "report": null
+    },
+    {
+     "id": "02",
+     "name": "Paper 2: Poetry and Prose Texts and Imaginative Writing",
+     "component": "C2",
+     "tier": null,
+     "marks": 60,
+     "minutes": 90,
+     "date": null,
+     "qp": null,
+     "ms": null,
+     "insert": null,
+     "report": null
+    }
+   ]
+  },
+  {
+   "id": "2024-11",
+   "name": "November 2024",
+   "public": true,
+   "releaseDate": null,
+   "boundaries": null,
+   "boundariesUrl": null,
+   "papers": [
+    {
+     "id": "01",
+     "name": "Paper 1: Non-fiction Texts and Transactional Writing",
+     "component": "C1",
+     "tier": null,
+     "marks": 90,
+     "minutes": 135,
+     "date": "2024-11-06",
+     "qp": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Language-A/2016/Exam-materials/4ea1-01-que-20241106.pdf",
+     "ms": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Language-A/2016/Exam-materials/4ea1-01-rms-20250123.pdf",
+     "insert": null,
+     "report": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Language-A/2016/Exam-materials/4ea1-01-pef-20250123.pdf"
+    },
+    {
+     "id": "02",
+     "name": "Paper 2: Poetry and Prose Texts and Imaginative Writing",
+     "component": "C2",
+     "tier": null,
+     "marks": 60,
+     "minutes": 90,
+     "date": "2024-11-08",
+     "qp": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Language-A/2016/Exam-materials/4ea1-02-que-20241108.pdf",
+     "ms": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Language-A/2016/Exam-materials/4ea1-02-rms-20250123.pdf",
+     "insert": null,
+     "report": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Language-A/2016/Exam-materials/4ea1-02-pef-20250123.pdf"
+    }
+   ]
+  },
+  {
+   "id": "2024-06",
+   "name": "June 2024",
+   "public": true,
+   "releaseDate": null,
+   "boundaries": null,
+   "boundariesUrl": null,
+   "papers": [
+    {
+     "id": "01",
+     "name": "Paper 1: Non-fiction Texts and Transactional Writing",
+     "component": "C1",
+     "tier": null,
+     "marks": 90,
+     "minutes": 135,
+     "date": "2024-05-24",
+     "qp": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Language-A/2016/Exam-materials/4ea1-01-que-20240524.pdf",
+     "ms": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Language-A/2016/Exam-materials/4ea1-01-rms-20240822.pdf",
+     "insert": null,
+     "report": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Language-A/2016/Exam-materials/4ea1-01-pef-20240822.pdf"
+    },
+    {
+     "id": "02",
+     "name": "Paper 2: Poetry and Prose Texts and Imaginative Writing",
+     "component": "C2",
+     "tier": null,
+     "marks": 60,
+     "minutes": 90,
+     "date": "2024-06-07",
+     "qp": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Language-A/2016/Exam-materials/4ea1-02-que-20240607.pdf",
+     "ms": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Language-A/2016/Exam-materials/4ea1-02-rms-20240822.pdf",
+     "insert": null,
+     "report": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Language-A/2016/Exam-materials/4ea1-02-pef-20240822.pdf"
+    },
+    {
+     "id": "01R",
+     "name": "Paper 1R (regional): Non-fiction Texts and Transactional Writing",
+     "component": "C1",
+     "tier": null,
+     "marks": 90,
+     "minutes": 135,
+     "date": "2024-05-24",
+     "qp": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Language-A/2016/Exam-materials/4ea1-01r-que-20240524.pdf",
+     "ms": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Language-A/2016/Exam-materials/4ea1-01r-rms-20240822.pdf",
+     "insert": null,
+     "report": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Language-A/2016/Exam-materials/4ea1-01r-pef-20240822.pdf"
+    },
+    {
+     "id": "02R",
+     "name": "Paper 2R (regional): Poetry and Prose Texts and Imaginative Writing",
+     "component": "C2",
+     "tier": null,
+     "marks": 60,
+     "minutes": 90,
+     "date": "2024-06-07",
+     "qp": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Language-A/2016/Exam-materials/4ea1-02r-que-20240607.pdf",
+     "ms": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Language-A/2016/Exam-materials/4ea1-02r-rms-20240822.pdf",
+     "insert": null,
+     "report": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Language-A/2016/Exam-materials/4ea1-02r-pef-20240822.pdf"
+    }
+   ]
+  },
+  {
+   "id": "2023-11",
+   "name": "November 2023",
+   "public": true,
+   "releaseDate": null,
+   "boundaries": null,
+   "boundariesUrl": null,
+   "papers": [
+    {
+     "id": "01",
+     "name": "Paper 1: Non-fiction Texts and Transactional Writing",
+     "component": "C1",
+     "tier": null,
+     "marks": 90,
+     "minutes": 135,
+     "date": "2023-11-08",
+     "qp": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Language-A/2016/Exam-materials/4ea1-01-que-20231108.pdf",
+     "ms": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Language-A/2016/Exam-materials/4ea1-01-rms-20240125.pdf",
+     "insert": null,
+     "report": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Language-A/2016/Exam-materials/4ea1-01-pef-20240125.pdf"
+    },
+    {
+     "id": "02",
+     "name": "Paper 2: Poetry and Prose Texts and Imaginative Writing",
+     "component": "C2",
+     "tier": null,
+     "marks": 60,
+     "minutes": 90,
+     "date": "2023-11-10",
+     "qp": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Language-A/2016/Exam-materials/4ea1-02-que-20231110.pdf",
+     "ms": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Language-A/2016/Exam-materials/4ea1-02-rms-20240125.pdf",
+     "insert": null,
+     "report": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Language-A/2016/Exam-materials/4ea1-02-pef-20240125.pdf"
+    }
+   ]
+  },
+  {
+   "id": "2023-06",
+   "name": "June 2023",
+   "public": true,
+   "releaseDate": null,
+   "boundaries": null,
+   "boundariesUrl": null,
+   "papers": [
+    {
+     "id": "02",
+     "name": "Paper 2: Poetry and Prose Texts and Imaginative Writing",
+     "component": "C2",
+     "tier": null,
+     "marks": 60,
+     "minutes": 90,
+     "date": "2023-06-13",
+     "qp": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Language-A/2016/Exam-materials/4ea1-02-que-20230613.pdf",
+     "ms": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Language-A/2016/Exam-materials/4ea1-02-rms-20230824.pdf",
+     "insert": null,
+     "report": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Language-A/2016/Exam-materials/4ea1-02-pef-20230824.pdf"
+    },
+    {
+     "id": "01R",
+     "name": "Paper 1R (regional): Non-fiction Texts and Transactional Writing",
+     "component": "C1",
+     "tier": null,
+     "marks": 90,
+     "minutes": 135,
+     "date": "2023-06-06",
+     "qp": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Language-A/2016/Exam-materials/4ea1-01r-que-20230606.pdf",
+     "ms": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Language-A/2016/Exam-materials/4ea1-01r-rms-20230824.pdf",
+     "insert": null,
+     "report": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Language-A/2016/Exam-materials/4ea1-01r-pef-20230824.pdf"
+    },
+    {
+     "id": "02R",
+     "name": "Paper 2R (regional): Poetry and Prose Texts and Imaginative Writing",
+     "component": "C2",
+     "tier": null,
+     "marks": 60,
+     "minutes": 90,
+     "date": "2023-06-13",
+     "qp": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Language-A/2016/Exam-materials/4ea1-02r-que-20230613.pdf",
+     "ms": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Language-A/2016/Exam-materials/4ea1-02r-rms-20230824.pdf",
+     "insert": null,
+     "report": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Language-A/2016/Exam-materials/4ea1-02r-pef-20230824.pdf"
+    }
+   ]
+  }
+ ]
+}

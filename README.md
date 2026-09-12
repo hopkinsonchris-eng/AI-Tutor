@@ -137,6 +137,33 @@ student's state under `coachNotes`, shown on the pink post-it and at the top of 
 **The coach's name.** Each student names their coach at setup or from the Coach station ("Your coach's
 name"); it is kept in their own state and used on the tab, the desk, the chat and in every coach prompt.
 
+## Real papers, marked from a photograph, back into the rooms
+
+The Exam page lists the board's own published papers for each course (`data/papers/<ID>.json`, built by
+`scripts/papers-index.js` for AQA and OCR from their listing pages and `scripts/papers-pearson.js` for Pearson
+by probing its deterministic filenames; `node scripts/papers-index.js check` HEAD-checks every address). A paper
+opens on the board's site; the newest series stay locked until the board's own release date and say so. Nothing
+of the board's is ever stored: the tutor passes the paper's and mark scheme's addresses to the model while it
+works, and keeps only the student's photographs, the derived question map (numbers, marks, topic, marking mode),
+the paraphrased mark points, the marks and the notes. An admin can switch a board off from the Admin tab.
+
+*Mark my answers* is four steps: photograph the pages (straightened and sharpened as on the desk); tap a page,
+then the questions it holds, and say how sure you were; confirm what the model read of each answer and tick the
+paraphrased mark points you think you met; then the marks, point by point, quoting the student's own words as
+evidence, with what was missing, where the checker differed from the student's ticks, and an unreadable answer
+withheld rather than guessed (type it in or skip it). The examiner-style note on a lost-mark question stays hidden
+until the student says where the marks went. The report orders topics by marks lost × weight, shows the grade on
+that series' boundaries where the index carries them, and the coach's note. Rooms move by damped rules (below 70%
+of a topic's marks is one state down, never more from one paper; full marks under exam conditions is a fluent
+pass), every lost-mark question becomes a mistake with its failure mode and a re-test a week later — a fresh
+question of the same shape, marked against its own points; two clean passes clear it, three misses send the room
+back to its lesson. The daily plan carries the re-test step, capped at ten questions. Marks can also be typed in.
+
+Worker routes: `POST /papers`, `GET /papers[/<id>]`, `PATCH /papers/<id>`, page upload/patch/delete under
+`/papers/<id>/pages`, `POST /papers/<id>/questions` (question map, shared per paper), `/prepare` and `/mark`
+(Workflows, one step per question), `/questions/<q>/mark`, `/status`, and `/papers/admin/boards`. Each model
+call counts against the student's daily cap.
+
 ## Worked examples you can actually predict, and cards with more than one right answer
 
 Every worked example now opens with its **setup**: the whole problem as the student would see it (every

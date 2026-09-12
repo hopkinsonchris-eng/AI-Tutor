@@ -1,0 +1,45 @@
+/* Real papers: the prompts and validators shared by the app and the Worker. */
+const P=require('../src/papers.js');const {SPEC_H481}=require('../src/specs/ocr-h481.js');
+let pass=0;const fails=[];const ok=(l,c,d='')=>c?pass++:fails.push(l+' '+d);
+const paper={name:'Paper 1',series:'2025-06',seriesName:'June 2025',marks:66};
+const qm=P.questionMapPrompt(SPEC_H481,paper);
+ok('Q1 the question-map prompt names the paper, lists every topic id with its codes and forbids copying question text',/Paper 1, June 2025, 66 marks/.test(qm)&&/^1\.2 \| Earth/m.test(qm)&&/3\.5 \|/.test(qm)&&/Do not copy any question text/.test(qm)&&/"choice"/.test(qm));
+ok('Q2 a question map must have unique ids, marks in range, a real topic, a mode, and marks near the paper total',P.validateQuestionMap(SPEC_H481,{questions:[{q:'1',marks:33,topic:'1.2',mode:'levels'},{q:'2',marks:33,topic:'2.1',mode:'points'}]},66)===null&&/topic 9\.9/.test(P.validateQuestionMap(SPEC_H481,{questions:[{q:'1',marks:33,topic:'9.9',mode:'points'}]},66))&&/listed twice/.test(P.validateQuestionMap(SPEC_H481,{questions:[{q:'1',marks:33,topic:'1.2',mode:'points'},{q:'1',marks:33,topic:'1.2',mode:'points'}]},66))&&/add up to 20/.test(P.validateQuestionMap(SPEC_H481,{questions:[{q:'1',marks:20,topic:'1.2',mode:'points'}]},66)));
+ok('Q2 optional alternatives do not count towards the total',P.validateQuestionMap(SPEC_H481,{questions:[{q:'1',marks:33,topic:'1.2',mode:'levels'},{q:'2',marks:33,topic:'2.1',mode:'levels',choice:'A'},{q:'3',marks:33,topic:'2.1',mode:'levels',choice:'A'}]},66)===null);
+const q={q:'2(b)',marks:4,mode:'points',topic:'1.2'};
+const pp=P.pointsPrompt(SPEC_H481,paper,q);
+ok('P1 the points prompt asks for paraphrased points in the model’s own words that add up to the tariff',/question 2\(b\) \(4 marks/.test(pp)&&/never the scheme's wording/.test(pp)&&/add up to 4/.test(pp));
+const points=[{text:'Names a store of carbon',max:1,kind:'B'},{text:'Explains a flow between two stores',max:2,kind:'A'},{text:'Gives a figure or rate',max:1,kind:'B'}];
+ok('P2 points must carry text and mark values that add up to the tariff for points marking',P.validatePoints({points},q)===null&&/add up to 3/.test(P.validatePoints({points:points.slice(0,2)},q))&&/too long/.test(P.validatePoints({points:[{text:'x '.repeat(30),max:4}]},q)));
+const tp=P.transcribeQuestionPrompt(q);
+ok('T1 the transcription prompt asks for exact wording, crossed-out work kept, legibility and blank flags',/exactly as written/.test(tp)&&/crossed out/.test(tp)&&/"legibility"/.test(tp)&&/"blank"/.test(tp));
+ok('T2 a transcript needs text unless unreadable or blank',P.validateTranscript({transcript:'The oceans store carbon',legibility:'ok'})===null&&P.validateTranscript({transcript:'',legibility:'unreadable'})===null&&P.validateTranscript({transcript:'',legibility:'ok',blank:true})===null&&/empty/.test(P.validateTranscript({transcript:' ',legibility:'ok'}))&&/legibility/.test(P.validateTranscript({transcript:'x',legibility:'fine'})));
+const transcript='Carbon is stored in the oceans. It moves from the atmosphere into the sea by dissolving, about 2 GtC a year.';
+const mp=P.markQuestionPrompt(SPEC_H481,paper,q,points,transcript,[true,true,false],true);
+ok('M1 the marking prompt carries the board’s marking summary, the points with the student’s claims, the transcript, and asks for evidence quotes and a failure mode',/MARKING: /.test(mp)&&/1\. \[1\] Names a store of carbon  — the student claims this/.test(mp)&&/3\. \[1\] Gives a figure or rate  — the student does not claim this/.test(mp)&&mp.includes(transcript)&&/quote the exact words/.test(mp)&&/"disagree"/.test(mp)&&/Do not quote the mark scheme/.test(mp));
+const good={awarded:4,max:4,lines:[{i:1,awarded:1,evidence:'stored in the oceans'},{i:2,awarded:2,evidence:'moves from the atmosphere into the sea by dissolving'},{i:3,awarded:1,evidence:'2 GtC a year'}],failureMode:'NONE',note:'Full marks: a store, a flow with a mechanism, and a figure.',disagree:[3]};
+ok('M2 a valid mark result: one line per point, evidence found in the answer, lines add up, note present',P.validateMarkResult(good,q,points,transcript)===null);
+ok('M3 an awarded point whose evidence is not in the answer is refused',/not in the answer/.test(P.validateMarkResult({...good,lines:[{i:1,awarded:1,evidence:'photosynthesis'},...good.lines.slice(1)]},q,points,transcript)));
+ok('M3 a mark above the tariff, a missing line, and lost marks without a failure mode are refused',/out of range/.test(P.validateMarkResult({...good,awarded:5},q,points,transcript))&&/one line per/.test(P.validateMarkResult({...good,lines:good.lines.slice(0,2)},q,points,transcript))&&/failure mode/.test(P.validateMarkResult({...good,awarded:3,lines:[good.lines[0],good.lines[1],{i:3,awarded:0,missing:'no figure'}]},q,points,transcript)));
+ok('M3 a point not awarded must say what is missing',/say what is missing/.test(P.validateMarkResult({...good,awarded:3,failureMode:'RECALL-GAP',lines:[good.lines[0],good.lines[1],{i:3,awarded:0}]},q,points,transcript)));
+const lv={q:'5',marks:16,mode:'levels',topic:'1.2'};const lpts=[{text:'Level 4: thorough, developed, evaluative',max:16},{text:'Level 3: clear with some development',max:12},{text:'Level 2: partial',max:8},{text:'Level 1: basic',max:4}];
+ok('M4 levels marking: lines need not add up, evidence is optional, level reported',P.validatePoints({points:lpts},lv)===null&&P.validateMarkResult({awarded:11,max:16,lines:lpts.map((p,i)=>({i:i+1,awarded:i===1?11:0,missing:i===1?null:'not reached'})),level:3,failureMode:'EVALUATION',note:'Level 3: developed but the judgement is missing.'},lv,lpts,'long essay')===null);
+const vp=P.variantPrompt(SPEC_H481,SPEC_H481.topics[3],{marks:4,fix:'Chains of reasoning stop after one link.'},points,transcript);
+ok('V1 the variant prompt asks for one new question of the same marks and shape with its own points and a model answer',/ONE new question/.test(vp)&&/adding up to 4/.test(vp)&&/Names a store of carbon/.test(vp)&&/"model"/.test(vp));
+ok('V2 a variant must match the marks and carry points that add up',P.validateVariant({q:'Explain how carbon moves between the atmosphere and the biosphere.',marks:4,points,model:'Photosynthesis takes carbon in; respiration returns it.'},4)===null&&/marks differ/.test(P.validateVariant({q:'Explain how carbon moves between the atmosphere and the biosphere.',marks:3,points,model:'x'},4)));
+const np=P.paperNotePrompt(SPEC_H481,{...paper,score:41,total:66},'Matthew','Rinn',[{name:'Earth’s life support systems',marks:33,awarded:14,before:'Fluent',after:'Learning',modes:['ANALYSIS']}]);
+ok('N1 the coach’s paper note is addressed by name, carries the rows and asks for one pattern and two things to do',/Matthew/.test(np)&&/41 of 66/.test(np)&&/Fluent → Learning \| ANALYSIS/.test(np)&&/exactly two things/.test(np)&&P.validatePaperNote({text:'Matthew, one thing.'})===null&&P.validatePaperNote({})!==null);
+ok('S1 slip choices each map to a failure mode',P.SLIPS.length>=5&&P.SLIPS.every(s=>P.FAILURE_CODES.includes(s.mode)&&s.label&&s.id));
+/* the shipped paper indexes: shape, board-hosted addresses only, locked series say when */
+{
+const fs=require('fs'),path=require('path');const dir=path.join(__dirname,'..','data','papers');const files=fs.existsSync(dir)?fs.readdirSync(dir).filter(f=>f.endsWith('.json')):[];
+const HOST=/^https:\/\/(www\.aqa\.org\.uk|filestore\.aqa\.org\.uk|cdn\.sanity\.io|qualifications\.pearson\.com|www\.ocr\.org\.uk|ocr\.org\.uk|pastpapers\.download\.wjec\.co\.uk)\//;
+let bad=[];let papers=0;
+for(const f of files){const d=JSON.parse(fs.readFileSync(path.join(dir,f),'utf8'));if(d.spec!==f.replace(/\.json$/,''))bad.push(f+': spec id');if(!Array.isArray(d.series)||!d.series.length)bad.push(f+': no series');
+  for(let i=1;i<d.series.length;i++)if(d.series[i].id>d.series[i-1].id)bad.push(f+': series not newest first at '+d.series[i].id);
+  for(const s of d.series){if(!s.public&&!s.releaseDate)bad.push(f+' '+s.id+': locked without a release date');
+    for(const p of s.papers){if(!(p.marks>0))bad.push(f+' '+s.id+' '+p.id+': marks');for(const k of ['qp','ms','insert','report'])if(p[k]&&!HOST.test(p[k]))bad.push(f+' '+s.id+' '+p.id+': '+k+' not on a board host');if(s.public&&p.qp&&p.ms)papers++;}}}
+ok('I1 every shipped index is well formed: spec id, newest series first, board-hosted addresses only, locked series dated',files.length>=9&&bad.length===0,bad.slice(0,5).join(' | '));
+ok('I2 the nine courses carry real papers with both documents public',papers>=150,String(papers));
+}
+console.log(`PASSED: ${pass}`);fails.forEach(f=>console.log('FAILED: '+f));console.log('-'.repeat(50));console.log(fails.length?`RESULT: ${fails.length} FAILURE(S)`:'RESULT: ALL GREEN');if(fails.length)process.exit(1);

@@ -138,6 +138,8 @@ function buildSession(state, specs, today) {
     const n = state.nodes[d]; const spec = specs[n.spec]; const topic = spec.topics.find(t => t.id === n.topic);
     steps.push({ kind: 'review', title: `Review: ${spec.subject} \u2014 ${topic.name}`, minutes: n.state === 'Learning' ? 25 : 15, detail: `${n.state}. Short questions and one case-study recall, then log.`, nodes: [d] });
   }
+  const retests = retestQueue(state, today);
+  if (retests.length) steps.push({ kind: 'retest', title: `Re-test: ${retests.length} question${retests.length === 1 ? '' : 's'} from your papers`, minutes: Math.min(30, 5 + 3 * retests.length), detail: 'Fresh questions shaped like the ones that lost marks. Two clean passes a week apart clear one.', nodes: [...new Set(retests.map(e => e.node))] });
   /* New topics come from several courses, not the same one every day: subjects with untouched topics are taken in
      priority order, equal-priority subjects rotating with the date, up to three a day in the holidays and two in
      term (one when reviews are already due), one topic each. */
@@ -279,5 +281,79 @@ function pileCounts(questions, practice, room) {
   for (const o of out) o.left = o.bank ? Math.max(1, o.bank - o.done) : 0;
   return out;
 }
+/* ---------- Real papers: marked question by question, fed back into rooms with damping ----------
+   A paper record: {id, spec, series, paper, component, name, date, total, score, status, questions:[{q, marks, awarded,
+   topic, codes, mode, confidence, legibility, attempted, failureMode, comment, lines, slipGuess, selfMark}], boundaries}.
+   Rules (Khan Academy's mastery ladder, FSRS's lapse damping): below 70% of a topic's marks moves the room one state down,
+   never more than one step from one paper; full marks on at least four marks under exam conditions counts as a fluent pass;
+   an Unassessed room becomes Learning the moment a paper touches it. */
+const PAPER_DROP_BELOW = 0.7, RETEST_DAYS = 7, RETEST_MAX_ATTEMPTS = 3, RETEST_CAP = 10;
+function topicForCode(spec, code) {
+  const c = String(code || '').trim(); if (!c) return null;
+  const hits = spec.topics.filter(t => (t.ideas || []).some(i => i.code === c));
+  if (hits.length === 1) return hits[0].id;
+  const byPrefix = spec.topics.filter(t => c === t.id || c.startsWith(t.id + '.'));
+  return byPrefix.length ? byPrefix.sort((a, b) => b.id.length - a.id.length)[0].id : null;
+}
+function questionTopic(spec, q) {
+  if (q.topic && spec.topics.some(t => t.id === q.topic)) return q.topic;
+  for (const c of q.codes || []) { const t = topicForCode(spec, c); if (t) return t; }
+  return null;
+}
+function paperTopics(spec, paper) {
+  const by = {};
+  for (const q of paper.questions || []) {
+    const tid = questionTopic(spec, q); if (!tid || !(q.marks > 0)) continue;
+    const t = by[tid] = by[tid] || { topic: tid, marks: 0, awarded: 0, questions: [] };
+    t.marks += q.marks; t.awarded += q.legibility === 'unreadable' ? 0 : Math.max(0, Math.min(q.marks, q.awarded || 0)); t.questions.push(q.q);
+  }
+  return Object.values(by);
+}
+/* Priority = marks lost on the topic, as a share of the paper, weighted by the topic's share of the qualification. */
+function paperPriority(state, spec, paper, options) {
+  const w = topicWeights(spec, options || {}); const total = paper.total || (paper.questions || []).reduce((a, q) => a + (q.marks || 0), 0) || 1;
+  return paperTopics(spec, paper).map(t => ({ ...t, weight: w[t.topic] || 0, lost: t.marks - t.awarded, priority: ((t.marks - t.awarded) / total) * (w[t.topic] || 0) })).sort((a, b) => b.priority - a.priority || b.lost - a.lost);
+}
+function applyPaper(state, spec, paper, today) {
+  const moves = [];
+  for (const t of paperTopics(spec, paper)) {
+    const id = nodeId(spec.id, t.topic); const n = state.nodes[id]; if (!n) continue;
+    const before = n.state; const frac = t.awarded / t.marks;
+    if (n.state === 'Unassessed') { n.state = 'Learning'; n.taught = n.taught || today; }
+    if (frac < PAPER_DROP_BELOW) { if (before === 'Secure') n.state = 'Fluent'; else if (before === 'Fluent') n.state = 'Learning'; }
+    else if (frac >= 1 && t.marks >= 4) {
+      if (n.state === 'Learning') n.state = 'Fluent';
+      else if (n.state === 'Fluent' && before === 'Fluent') recordResult(state, id, { examStandard: true, allCorrect: true, interleaved: true }, today);
+    }
+    n.lastPractised = today;
+    moves.push({ topic: t.topic, marks: t.marks, awarded: t.awarded, before, after: n.state });
+  }
+  for (const q of paper.questions || []) {
+    const tid = questionTopic(spec, q); if (!tid || !(q.marks > 0)) continue;
+    const awarded = q.legibility === 'unreadable' ? null : Math.max(0, Math.min(q.marks, q.awarded || 0));
+    if (awarded === null || awarded >= q.marks) continue;
+    const id = nodeId(spec.id, tid); const n = state.nodes[id]; if (!n) continue;
+    const mode = FAILURE_MODES.some(m => m.code === q.failureMode) ? q.failureMode : (q.attempted === false ? 'KNOWLEDGE-GAP' : 'APPLICATION');
+    n.wrong.push({ date: today, mode });
+    state.errors.unshift({ date: today, node: id, ref: `Q${q.q} · ${paper.name || paper.paper} · ${paper.seriesName || paper.series}`, mode, fix: q.comment || REMEDY[mode], paper: paper.id, q: q.q, marks: q.marks, awarded, confidence: q.confidence || null, slipGuess: q.slipGuess || null, retestDue: iso(new Date(today).getTime() + RETEST_DAYS * DAY), attempts: 0, passes: 0, points: (q.points || []).map(p => ({ text: p.text, max: p.max })), transcript: String(q.transcript || '').slice(0, 600) });
+  }
+  return moves;
+}
+/* Errors from papers come back as fresh questions a week later; three misses escalate to relearning the room instead. */
+function retestQueue(state, today) {
+  return state.errors.filter(e => e.paper && e.retestDue && e.retestDue <= today && !e.resolved && !e.relearn && state.nodes[e.node]).slice(0, RETEST_CAP);
+}
+function recordRetest(state, err, ok, today) {
+  if (ok) { err.passes = (err.passes || 0) + 1; if (err.passes >= 2) { err.resolved = true; err.retestDue = null; } else err.retestDue = iso(new Date(today).getTime() + RETEST_DAYS * DAY); }
+  else { err.attempts = (err.attempts || 0) + 1; err.passes = 0; if (err.attempts >= RETEST_MAX_ATTEMPTS) { err.relearn = true; err.retestDue = null; const n = state.nodes[err.node]; if (n && n.state !== 'Unassessed') n.state = 'Learning'; } else err.retestDue = iso(new Date(today).getTime() + RETEST_DAYS * DAY); }
+  const n = state.nodes[err.node]; if (n) n.lastPractised = today;
+}
+/* Grade on a series' published boundaries: {grade: marks needed on this paper}. Any grade labels (9–1 or A*–E). */
+function gradeFromBoundaries(score, boundaries) {
+  if (!boundaries) return null;
+  const rows = Object.entries(boundaries).map(([g, m]) => [g, +m]).filter(([, m]) => !isNaN(m)).sort((a, b) => b[1] - a[1]);
+  for (const [g, m] of rows) if (score >= m) return g;
+  return rows.length ? 'U' : null;
+}
 if (typeof module !== 'undefined') module.exports = { DAY, STATES, FAILURE_MODES, REMEDY, BLOCKS, phaseFor, days, iso, resolveTopics, nodeId, newState, topicWeights, deskResurface, daysToExam, pileCounts,
-  recordResult, recordWrong, applyDecay, dueForReview, scheduleCard, dueCards, subjectPriority, buildSession, MASTERY_FACTOR, DEFAULT_BOUNDS, gradeFor, predictSubject, weeklyReport, streakDays, nudgeFallback, nudgePrompt, topicLinks };
+  recordResult, recordWrong, applyDecay, dueForReview, scheduleCard, dueCards, subjectPriority, buildSession, topicForCode, questionTopic, paperTopics, paperPriority, applyPaper, retestQueue, recordRetest, gradeFromBoundaries, RETEST_CAP, MASTERY_FACTOR, DEFAULT_BOUNDS, gradeFor, predictSubject, weeklyReport, streakDays, nudgeFallback, nudgePrompt, topicLinks };

@@ -23,6 +23,16 @@
  *   PATCH/DELETE /desk/<room>/<id>  bearer
  *   POST /                    bearer, an Anthropic messages request -> forwarded
  *
+ *   Real papers (bearer, owner only; every model call counts against the daily cap; see papers.js):
+ *   GET/POST /papers                          list the student's attempts / create one {spec, series, paper, name, marks, qp, ms, …}
+ *   GET/PATCH/DELETE /papers/<id>             the attempt / merge assign, confidence, attempted, transcripts, ticks, status
+ *   POST  /papers/<id>/pages/upload           raw image, X-Page-Name -> {page};  GET/PATCH/DELETE /papers/<id>/pages/<pid>
+ *   POST  /papers/<id>/questions              {spec} -> {questions} (shared per paper) or {questions:null, fallback:'typed', error}
+ *   POST  /papers/<id>/prepare | /mark        -> 202 {job}   the PaperMarker Workflow: transcribe + mark points / mark every question
+ *   POST  /papers/<id>/questions/<q>/mark     -> {result}    one question again
+ *   GET   /papers/<id>/status                 -> {job, status, score, total}
+ *   GET/POST /papers/admin/boards             (admin) which boards' papers are switched off; GET /courses carries papersOff too
+ *
  *   Admin (bearer, role admin):
  *   GET    /manage/users
  *   POST   /manage/users              {username, name, daily, role?} -> {user, invite}
@@ -43,7 +53,14 @@
  *   deskq:<username>     bytes of files stored in R2 (quota)
  *   unfurl:<sha>         a link's title and preview image, cached a week
  *   videos2:<spec>:<topic> the room's verified YouTube videos, cached 60 days (7 when none were found)
+ *   paper:<username>:<id>  a real-paper attempt: pages, assignments, transcripts, ticks, results, job (papers.js)
+ *   paperspec:<spec>       the trimmed specification the app posted for papers (ids, names, codes, marking summary)
+ *   qmap:<spec>:<series>:<paper>          the paper's question map, shared by every student (derived metadata, never the paper's text)
+ *   points:<spec>:<series>:<paper>:<q>    one question's paraphrased mark points, shared by every student
+ *   papers:off             ["AQA", …] boards whose papers the admin has switched off
  *   usage:<username>:<day>, fail:<ip>:<day>, fail:user:<username>:<day>
+ * R2 (DESK bucket): desk/<username>/<room>/<id>.<ext> the desktop's files; paper/<username>/<id>/<pageId>.<ext> paper photographs
+ *   (both count against deskq:<username>)
  *
  * Variables and secrets:
  *   ANTHROPIC_API_KEY    secret   from console.anthropic.com
@@ -58,7 +75,11 @@
 import { WorkflowEntrypoint } from 'cloudflare:workers';
 import { runBuild, runReview, anthropicAI, headOf, specIdFor } from './builder.js';
 import { runDepth, kitAI } from './depth.js';
+import { papers, PaperMarker } from './papers.js';
 import CATALOGUE from '../data/catalogue.json';
+
+/* The paper marker Workflow lives in papers.js with its routes; wrangler binds it by this name (PAPER_MARKER). */
+export { PaperMarker };
 
 const MODELS = ['claude-sonnet-5', 'claude-haiku-4-5'];
 const BUILD_STALE_MS = 30 * 60 * 1000;   // a build record older than this with no progress is treated as dead
@@ -86,6 +107,7 @@ export default {
       if (p === '/progress') return progress(request, env, cors);
       if (p === '/videos' && request.method === 'POST') return roomVideos(request, env, cors);
       if (p === '/desk' || p.startsWith('/desk/')) return desk(request, env, url, cors);
+      if (p === '/papers' || p.startsWith('/papers/')) return papers(request, env, url, cors);
       if (p === '/courses' || p.startsWith('/courses/')) return courses(request, env, url, cors);
       if (p.startsWith('/manage/courses') || p.startsWith('/manage/reviews') || p === '/manage/catalogue') return manageCourses(request, env, url, cors);
       if (p.startsWith('/manage/')) return manage(request, env, url, cors);
@@ -312,7 +334,8 @@ async function courses(request, env, url, cors) {
     const depth = {};
     const dl = await env.USAGE.list({ prefix: 'depth:' });
     for (const e of dl.keys) { const d = await env.USAGE.get(e.name, 'json'); if (d) depth[d.id] = publicDepth(d); }
-    return json({ catalogue: entries.map(q => ({ id: q.id, level: q.level, subject: q.subject, board: q.board, code: q.code, hasUrl: !!q.specUrl })), courses: states, building, depth }, 200, cors);
+    const papersOffList = await env.USAGE.get('papers:off', 'json');
+    return json({ catalogue: entries.map(q => ({ id: q.id, level: q.level, subject: q.subject, board: q.board, code: q.code, hasUrl: !!q.specUrl })), courses: states, building, depth, papersOff: Array.isArray(papersOffList) ? papersOffList : [] }, 200, cors);
   }
 
   let km = /^\/courses\/([^/]+)\/kit\/([^/]+)$/.exec(p);

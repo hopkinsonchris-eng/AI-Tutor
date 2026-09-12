@@ -1,0 +1,339 @@
+{
+ "spec": "EDX-4GN1",
+ "board": "Pearson Edexcel",
+ "code": "4GN1",
+ "checked": "2026-09-12",
+ "source": "https://qualifications.pearson.com/en/support/support-topics/exams/past-papers.html",
+ "series": [
+  {
+   "id": "2026-06",
+   "name": "June 2026",
+   "public": false,
+   "releaseDate": "2027-03-01",
+   "boundaries": null,
+   "boundariesUrl": null,
+   "papers": [
+    {
+     "id": "01",
+     "name": "Paper 1: Listening",
+     "component": "P1",
+     "tier": null,
+     "marks": 40,
+     "minutes": 30,
+     "date": null,
+     "qp": null,
+     "ms": null,
+     "insert": null,
+     "report": null
+    },
+    {
+     "id": "02",
+     "name": "Paper 2: Reading and Writing",
+     "component": "P2",
+     "tier": null,
+     "marks": 80,
+     "minutes": 105,
+     "date": null,
+     "qp": null,
+     "ms": null,
+     "insert": null,
+     "report": null
+    }
+   ]
+  },
+  {
+   "id": "2026-01",
+   "name": "January 2026",
+   "public": false,
+   "releaseDate": "2026-10-01",
+   "boundaries": null,
+   "boundariesUrl": null,
+   "papers": [
+    {
+     "id": "01",
+     "name": "Paper 1: Listening",
+     "component": "P1",
+     "tier": null,
+     "marks": 40,
+     "minutes": 30,
+     "date": null,
+     "qp": null,
+     "ms": null,
+     "insert": null,
+     "report": null
+    },
+    {
+     "id": "02",
+     "name": "Paper 2: Reading and Writing",
+     "component": "P2",
+     "tier": null,
+     "marks": 80,
+     "minutes": 105,
+     "date": null,
+     "qp": null,
+     "ms": null,
+     "insert": null,
+     "report": null
+    }
+   ]
+  },
+  {
+   "id": "2025-11",
+   "name": "November 2025",
+   "public": false,
+   "releaseDate": "2026-08-01",
+   "boundaries": null,
+   "boundariesUrl": null,
+   "papers": [
+    {
+     "id": "01",
+     "name": "Paper 1: Listening",
+     "component": "P1",
+     "tier": null,
+     "marks": 40,
+     "minutes": 30,
+     "date": null,
+     "qp": null,
+     "ms": null,
+     "insert": null,
+     "report": null
+    },
+    {
+     "id": "02",
+     "name": "Paper 2: Reading and Writing",
+     "component": "P2",
+     "tier": null,
+     "marks": 80,
+     "minutes": 105,
+     "date": null,
+     "qp": null,
+     "ms": null,
+     "insert": null,
+     "report": null
+    }
+   ]
+  },
+  {
+   "id": "2025-06",
+   "name": "June 2025",
+   "public": true,
+   "releaseDate": null,
+   "boundaries": null,
+   "boundariesUrl": null,
+   "papers": [
+    {
+     "id": "01",
+     "name": "Paper 1: Listening",
+     "component": "P1",
+     "tier": null,
+     "marks": 40,
+     "minutes": 30,
+     "date": "2025-05-09",
+     "qp": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/german/2017/Exam-materials/4gn1-01-que-20250509.pdf",
+     "ms": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/german/2017/Exam-materials/4gn1-01-rms-20250821.pdf",
+     "insert": null,
+     "report": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/german/2017/Exam-materials/4gn1-01-pef-20250821.pdf"
+    },
+    {
+     "id": "02",
+     "name": "Paper 2: Reading and Writing",
+     "component": "P2",
+     "tier": null,
+     "marks": 80,
+     "minutes": 105,
+     "date": "2025-05-09",
+     "qp": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/german/2017/Exam-materials/4gn1-02-que-20250509.pdf",
+     "ms": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/german/2017/Exam-materials/4gn1-02-rms-20250821.pdf",
+     "insert": null,
+     "report": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/german/2017/Exam-materials/4gn1-02-pef-20250821.pdf"
+    },
+    {
+     "id": "01R",
+     "name": "Paper 1R (regional): Listening",
+     "component": "P1",
+     "tier": null,
+     "marks": 40,
+     "minutes": 30,
+     "date": "2025-05-09",
+     "qp": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/german/2017/Exam-materials/4gn1-01r-que-20250509.pdf",
+     "ms": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/german/2017/Exam-materials/4gn1-01r-rms-20250821.pdf",
+     "insert": null,
+     "report": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/german/2017/Exam-materials/4gn1-01r-pef-20250821.pdf"
+    },
+    {
+     "id": "02R",
+     "name": "Paper 2R (regional): Reading and Writing",
+     "component": "P2",
+     "tier": null,
+     "marks": 80,
+     "minutes": 105,
+     "date": "2025-05-09",
+     "qp": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/german/2017/Exam-materials/4gn1-02r-que-20250509.pdf",
+     "ms": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/german/2017/Exam-materials/4gn1-02r-rms-20250821.pdf",
+     "insert": null,
+     "report": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/german/2017/Exam-materials/4gn1-02r-pef-20250821.pdf"
+    }
+   ]
+  },
+  {
+   "id": "2021-06",
+   "name": "June 2021",
+   "public": true,
+   "releaseDate": null,
+   "boundaries": null,
+   "boundariesUrl": null,
+   "papers": [
+    {
+     "id": "01",
+     "name": "Paper 1: Listening",
+     "component": "P1",
+     "tier": null,
+     "marks": 40,
+     "minutes": 30,
+     "date": "2021-05-11",
+     "qp": "https://qualifications.pearson.com/content/dam/pdf/International%20GCSE/german/Exam-materials/4GN1_01_que_20210511.pdf",
+     "ms": null,
+     "insert": null,
+     "report": null
+    },
+    {
+     "id": "02",
+     "name": "Paper 2: Reading and Writing",
+     "component": "P2",
+     "tier": null,
+     "marks": 80,
+     "minutes": 105,
+     "date": "2021-05-11",
+     "qp": "https://qualifications.pearson.com/content/dam/pdf/International%20GCSE/german/Exam-materials/4GN1_02_que_20210511.pdf",
+     "ms": null,
+     "insert": null,
+     "report": null
+    }
+   ]
+  },
+  {
+   "id": "2020-11",
+   "name": "November 2020",
+   "public": true,
+   "releaseDate": null,
+   "boundaries": null,
+   "boundariesUrl": null,
+   "papers": [
+    {
+     "id": "01",
+     "name": "Paper 1: Listening",
+     "component": "P1",
+     "tier": null,
+     "marks": 40,
+     "minutes": 30,
+     "date": "2020-11-20",
+     "qp": "https://qualifications.pearson.com/content/dam/pdf/International%20GCSE/german/2017/Exam-materials/4GN1_01_que_20201120.pdf",
+     "ms": null,
+     "insert": null,
+     "report": null
+    },
+    {
+     "id": "02",
+     "name": "Paper 2: Reading and Writing",
+     "component": "P2",
+     "tier": null,
+     "marks": 80,
+     "minutes": 105,
+     "date": "2020-11-20",
+     "qp": "https://qualifications.pearson.com/content/dam/pdf/International%20GCSE/german/2017/Exam-materials/4GN1_02_que_20201120.pdf",
+     "ms": null,
+     "insert": null,
+     "report": null
+    },
+    {
+     "id": "01R",
+     "name": "Paper 1R (regional): Listening",
+     "component": "P1",
+     "tier": null,
+     "marks": 40,
+     "minutes": 30,
+     "date": "2020-11-20",
+     "qp": "https://qualifications.pearson.com/content/dam/pdf/International%20GCSE/german/2017/Exam-materials/4GN1_01R_que_20201120.pdf",
+     "ms": null,
+     "insert": null,
+     "report": null
+    },
+    {
+     "id": "02R",
+     "name": "Paper 2R (regional): Reading and Writing",
+     "component": "P2",
+     "tier": null,
+     "marks": 80,
+     "minutes": 105,
+     "date": "2020-11-20",
+     "qp": "https://qualifications.pearson.com/content/dam/pdf/International%20GCSE/german/2017/Exam-materials/4GN1_02R_que_20201120.pdf",
+     "ms": null,
+     "insert": null,
+     "report": null
+    }
+   ]
+  },
+  {
+   "id": "2019-06",
+   "name": "June 2019",
+   "public": true,
+   "releaseDate": null,
+   "boundaries": null,
+   "boundariesUrl": null,
+   "papers": [
+    {
+     "id": "01",
+     "name": "Paper 1: Listening",
+     "component": "P1",
+     "tier": null,
+     "marks": 40,
+     "minutes": 30,
+     "date": "2019-06-13",
+     "qp": "https://qualifications.pearson.com/content/dam/pdf/International%20GCSE/german/2017/Exam-materials/4GN1_01_que_20190613.pdf",
+     "ms": "https://qualifications.pearson.com/content/dam/pdf/International%20GCSE/german/2017/Exam-materials/4GN1_01_rms_20190822.pdf",
+     "insert": null,
+     "report": "https://qualifications.pearson.com/content/dam/pdf/International%20GCSE/german/2017/Exam-materials/4GN1_01_pef_20190822.pdf"
+    },
+    {
+     "id": "02",
+     "name": "Paper 2: Reading and Writing",
+     "component": "P2",
+     "tier": null,
+     "marks": 80,
+     "minutes": 105,
+     "date": "2019-06-13",
+     "qp": "https://qualifications.pearson.com/content/dam/pdf/International%20GCSE/german/2017/Exam-materials/4GN1_02_que_20190613.pdf",
+     "ms": "https://qualifications.pearson.com/content/dam/pdf/International%20GCSE/german/2017/Exam-materials/4GN1_02_rms_20190822.pdf",
+     "insert": null,
+     "report": "https://qualifications.pearson.com/content/dam/pdf/International%20GCSE/german/2017/Exam-materials/4GN1_02_pef_20190822.pdf"
+    },
+    {
+     "id": "01R",
+     "name": "Paper 1R (regional): Listening",
+     "component": "P1",
+     "tier": null,
+     "marks": 40,
+     "minutes": 30,
+     "date": "2019-06-13",
+     "qp": "https://qualifications.pearson.com/content/dam/pdf/International%20GCSE/german/2017/Exam-materials/4GN1_01R_que_20190613.pdf",
+     "ms": "https://qualifications.pearson.com/content/dam/pdf/International%20GCSE/german/2017/Exam-materials/4GN1_01R_rms_20190822.pdf",
+     "insert": null,
+     "report": "https://qualifications.pearson.com/content/dam/pdf/International%20GCSE/german/2017/Exam-materials/4GN1_01R_pef_20190822.pdf"
+    },
+    {
+     "id": "02R",
+     "name": "Paper 2R (regional): Reading and Writing",
+     "component": "P2",
+     "tier": null,
+     "marks": 80,
+     "minutes": 105,
+     "date": "2019-06-13",
+     "qp": "https://qualifications.pearson.com/content/dam/pdf/International%20GCSE/german/2017/Exam-materials/4GN1_02R_que_20190613.pdf",
+     "ms": "https://qualifications.pearson.com/content/dam/pdf/International%20GCSE/german/2017/Exam-materials/4GN1_02R_rms_20190822.pdf",
+     "insert": null,
+     "report": "https://qualifications.pearson.com/content/dam/pdf/International%20GCSE/german/2017/Exam-materials/4GN1_02R_pef_20190822.pdf"
+    }
+   ]
+  }
+ ]
+}

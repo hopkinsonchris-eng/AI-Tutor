@@ -1,0 +1,258 @@
+{
+ "spec": "EDX-4MA1",
+ "board": "Pearson Edexcel",
+ "code": "4MA1",
+ "checked": "2026-09-12",
+ "source": "https://qualifications.pearson.com/en/support/support-topics/exams/past-papers.html",
+ "series": [
+  {
+   "id": "2026-06",
+   "name": "June 2026",
+   "public": false,
+   "releaseDate": "2027-03-01",
+   "boundaries": null,
+   "boundariesUrl": null,
+   "papers": [
+    {
+     "id": "1F",
+     "name": "Paper 1F",
+     "component": "P1F",
+     "tier": "Foundation",
+     "marks": 100,
+     "minutes": 120,
+     "date": null,
+     "qp": null,
+     "ms": null,
+     "insert": null,
+     "report": null
+    },
+    {
+     "id": "2F",
+     "name": "Paper 2F",
+     "component": "P2F",
+     "tier": "Foundation",
+     "marks": 100,
+     "minutes": 120,
+     "date": null,
+     "qp": null,
+     "ms": null,
+     "insert": null,
+     "report": null
+    }
+   ]
+  },
+  {
+   "id": "2025-11",
+   "name": "November 2025",
+   "public": false,
+   "releaseDate": "2026-08-01",
+   "boundaries": null,
+   "boundariesUrl": null,
+   "papers": [
+    {
+     "id": "1F",
+     "name": "Paper 1F",
+     "component": "P1F",
+     "tier": "Foundation",
+     "marks": 100,
+     "minutes": 120,
+     "date": null,
+     "qp": null,
+     "ms": null,
+     "insert": null,
+     "report": null
+    },
+    {
+     "id": "2F",
+     "name": "Paper 2F",
+     "component": "P2F",
+     "tier": "Foundation",
+     "marks": 100,
+     "minutes": 120,
+     "date": null,
+     "qp": null,
+     "ms": null,
+     "insert": null,
+     "report": null
+    }
+   ]
+  },
+  {
+   "id": "2025-06",
+   "name": "June 2025",
+   "public": true,
+   "releaseDate": null,
+   "boundaries": null,
+   "boundariesUrl": "https://qualifications.pearson.com/content/dam/pdf/Support/Grade-boundaries/International-GCSE/grade-boundaries-june-2025-int-gcse.pdf",
+   "papers": [
+    {
+     "id": "1F",
+     "name": "Paper 1F",
+     "component": "P1F",
+     "tier": "Foundation",
+     "marks": 100,
+     "minutes": 120,
+     "date": "2025-05-16",
+     "qp": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/Mathematics-A/2016/Exam-materials/4ma1-1f-que-20250516.pdf",
+     "ms": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/Mathematics-A/2016/Exam-materials/4ma1-1f-rms-20250821.pdf",
+     "insert": null,
+     "report": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/Mathematics-A/2016/Exam-materials/4ma1-1f-pef-20250821.pdf"
+    },
+    {
+     "id": "2F",
+     "name": "Paper 2F",
+     "component": "P2F",
+     "tier": "Foundation",
+     "marks": 100,
+     "minutes": 120,
+     "date": "2025-06-05",
+     "qp": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/Mathematics-A/2016/Exam-materials/4ma1-2f-que-20250605.pdf",
+     "ms": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/Mathematics-A/2016/Exam-materials/4ma1-2f-rms-20250821.pdf",
+     "insert": null,
+     "report": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/Mathematics-A/2016/Exam-materials/4ma1-2f-pef-20250821.pdf"
+    }
+   ]
+  },
+  {
+   "id": "2024-11",
+   "name": "November 2024",
+   "public": true,
+   "releaseDate": null,
+   "boundaries": null,
+   "boundariesUrl": "https://qualifications.pearson.com/content/dam/pdf/Support/Grade-boundaries/International-GCSE/grade-boundaries-november-2024-int-gcse.pdf",
+   "papers": [
+    {
+     "id": "1F",
+     "name": "Paper 1F",
+     "component": "P1F",
+     "tier": "Foundation",
+     "marks": 100,
+     "minutes": 120,
+     "date": "2024-11-07",
+     "qp": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/Mathematics-A/2016/Exam-materials/4ma1-1f-que-20241107.pdf",
+     "ms": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/Mathematics-A/2016/Exam-materials/4ma1-1f-rms-20250123.pdf",
+     "insert": null,
+     "report": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/Mathematics-A/2016/Exam-materials/4ma1-1f-pef-20250123.pdf"
+    }
+   ]
+  },
+  {
+   "id": "2024-06",
+   "name": "June 2024",
+   "public": true,
+   "releaseDate": null,
+   "boundaries": null,
+   "boundariesUrl": "https://qualifications.pearson.com/content/dam/pdf/Support/Grade-boundaries/International-GCSE/grade-boundaries-june-2024-int-gcse.pdf",
+   "papers": [
+    {
+     "id": "1F",
+     "name": "Paper 1F",
+     "component": "P1F",
+     "tier": "Foundation",
+     "marks": 100,
+     "minutes": 120,
+     "date": "2024-05-17",
+     "qp": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/Mathematics-A/2016/Exam-materials/4ma1-1f-que-20240517.pdf",
+     "ms": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/Mathematics-A/2016/Exam-materials/4ma1-1f-rms-20240822.pdf",
+     "insert": null,
+     "report": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/Mathematics-A/2016/Exam-materials/4ma1-1f-pef-20240822.pdf"
+    },
+    {
+     "id": "2F",
+     "name": "Paper 2F",
+     "component": "P2F",
+     "tier": "Foundation",
+     "marks": 100,
+     "minutes": 120,
+     "date": "2024-06-04",
+     "qp": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/Mathematics-A/2016/Exam-materials/4ma1-2f-que-20240604.pdf",
+     "ms": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/Mathematics-A/2016/Exam-materials/4ma1-2f-rms-20240822.pdf",
+     "insert": null,
+     "report": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/Mathematics-A/2016/Exam-materials/4ma1-2f-pef-20240822.pdf"
+    }
+   ]
+  },
+  {
+   "id": "2023-11",
+   "name": "November 2023",
+   "public": true,
+   "releaseDate": null,
+   "boundaries": null,
+   "boundariesUrl": null,
+   "papers": [
+    {
+     "id": "1F",
+     "name": "Paper 1F",
+     "component": "P1F",
+     "tier": "Foundation",
+     "marks": 100,
+     "minutes": 120,
+     "date": "2023-11-09",
+     "qp": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/Mathematics-A/2016/Exam-materials/4ma1-1f-que-20231109.pdf",
+     "ms": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/Mathematics-A/2016/Exam-materials/4ma1-1f-rms-20240125.pdf",
+     "insert": null,
+     "report": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/Mathematics-A/2016/Exam-materials/4ma1-1f-pef-20240125.pdf"
+    }
+   ]
+  },
+  {
+   "id": "2023-06",
+   "name": "June 2023",
+   "public": true,
+   "releaseDate": null,
+   "boundaries": null,
+   "boundariesUrl": null,
+   "papers": [
+    {
+     "id": "2F",
+     "name": "Paper 2F",
+     "component": "P2F",
+     "tier": "Foundation",
+     "marks": 100,
+     "minutes": 120,
+     "date": "2023-06-08",
+     "qp": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/Mathematics-A/2016/Exam-materials/4ma1-2f-que-20230608.pdf",
+     "ms": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/Mathematics-A/2016/Exam-materials/4ma1-2f-rms-20230824.pdf",
+     "insert": null,
+     "report": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/Mathematics-A/2016/Exam-materials/4ma1-2f-pef-20230824.pdf"
+    }
+   ]
+  },
+  {
+   "id": "2021-06",
+   "name": "June 2021",
+   "public": true,
+   "releaseDate": null,
+   "boundaries": null,
+   "boundariesUrl": null,
+   "papers": [
+    {
+     "id": "1F",
+     "name": "Paper 1F",
+     "component": "P1F",
+     "tier": "Foundation",
+     "marks": 100,
+     "minutes": 120,
+     "date": "2021-04-28",
+     "qp": "https://qualifications.pearson.com/content/dam/pdf/International%20GCSE/Mathematics%20A/Exam-materials/4MA1_1F_que_20210428.pdf",
+     "ms": null,
+     "insert": null,
+     "report": null
+    },
+    {
+     "id": "2F",
+     "name": "Paper 2F",
+     "component": "P2F",
+     "tier": "Foundation",
+     "marks": 100,
+     "minutes": 120,
+     "date": "2021-04-30",
+     "qp": "https://qualifications.pearson.com/content/dam/pdf/International%20GCSE/Mathematics%20A/Exam-materials/4MA1_2F_que_20210430.pdf",
+     "ms": null,
+     "insert": null,
+     "report": null
+    }
+   ]
+  }
+ ]
+}

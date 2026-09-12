@@ -5,7 +5,7 @@
   "private": true,
   "scripts": {
     "build": "node build.js",
-    "test": "node tests/spec.test.js && node tests/kit.test.js && node tests/core.test.js && node tests/gen.test.js && node tests/builder.test.js && node tests/worker.test.js && npm run build && node tests/kits.test.js && node tests/app.test.js",
+    "test": "node tests/spec.test.js && node tests/kit.test.js && node tests/core.test.js && node tests/gen.test.js && node tests/papers.test.js && node tests/builder.test.js && node tests/worker.test.js && npm run build && node tests/kits.test.js && node tests/app.test.js",
     "serve": "npm run build && npx --yes serve dist",
     "proof": "node scripts/visual-proof.js",
     "course": "node scripts/course.js",

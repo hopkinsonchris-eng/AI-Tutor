@@ -91,3 +91,27 @@ Edexcel International GCSE German, topic area A: the checked kit lesson in Engli
 Edexcel International GCSE Mathematics A (Foundation), Integers: the checked kit lesson, one section per content statement, and its Formulae sheet against the paper’s Appendix 4
 
 ![15-igcse-maths-room](15-igcse-maths-room.png)
+
+## 16-exam-real-papers
+
+The Exam Hall for OCR A level Geography: every public series from OCR’s own site, June 2026 locked until its release date, each paper opening on ocr.org.uk with Open paper and Mark my answers, and the notice that nothing of the board’s is stored.
+
+![16-exam-real-papers](16-exam-real-papers.png)
+
+## 17-paper-assign
+
+Step 2: the paper’s questions read once from the paper itself with their marks and topics; the photographed page is tapped, then the questions it holds; confidence per question before any mark; a question left blank.
+
+![17-paper-assign](17-paper-assign.png)
+
+## 18-paper-marks
+
+Step 4: marks per mark point quoting the student’s own words, what was missing, where the checker differed from the student’s tick, an unreadable answer left unmarked with a type-in path, and the slip-first question before the examiner’s note.
+
+![18-paper-marks](18-paper-marks.png)
+
+## 19-paper-report
+
+The report: the score and grade on the series’ boundaries, topics ordered by marks lost × weight with each room’s move and an Open room button, the coach’s note, and what went into the rooms and the daily plan.
+
+![19-paper-report](19-paper-report.png)

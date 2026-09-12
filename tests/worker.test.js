@@ -4,7 +4,7 @@
    their imports satisfied from stubs (tests/_load.js). The deployed files are never touched. */
 const fs = require('fs'), path = require('path');
 const { loadModule, kv, r2, inlineStep } = require('./_load.js');
-const validator = require('../src/spec-validator.js'), families = require('../src/families.js'), kitValidator = require('../src/kit-validator.js');
+const validator = require('../src/spec-validator.js'), families = require('../src/families.js'), kitValidator = require('../src/kit-validator.js'), papersLib = require('../src/papers.js');
 const { sampleKit } = require('./_kit.js');
 const CATALOGUE = require('../data/catalogue.json');
 let pass = 0; const fails = [];
@@ -13,10 +13,12 @@ const ok = (label, cond, detail = '') => cond ? pass++ : fails.push(label + (det
 const builder = loadModule(path.join(__dirname, '..', 'worker', 'builder.js'), { '../src/spec-validator.js': validator, '../src/families.js': families });
 class WorkflowEntrypoint { constructor(ctx, env) { this.ctx = ctx; this.env = env; } }
 const depth = loadModule(path.join(__dirname, '..', 'worker', 'depth.js'), { '../src/kit-validator.js': kitValidator, '../src/families.js': families });
-const loaded = loadModule(path.join(__dirname, '..', 'worker', 'index.js'), { 'cloudflare:workers': { WorkflowEntrypoint }, './builder.js': builder.exports, './depth.js': depth.exports, '../data/catalogue.json': { default: CATALOGUE } });
+const papersMod = loadModule(path.join(__dirname, '..', 'worker', 'papers.js'), { 'cloudflare:workers': { WorkflowEntrypoint }, '../src/papers.js': papersLib });
+const loaded = loadModule(path.join(__dirname, '..', 'worker', 'index.js'), { 'cloudflare:workers': { WorkflowEntrypoint }, './builder.js': builder.exports, './depth.js': depth.exports, './papers.js': papersMod.exports, '../data/catalogue.json': { default: CATALOGUE } });
 const worker = loaded.exports.default;
 const sandbox = loaded.sandbox;
 builder.sandbox.__fetch = (...a) => sandbox.__fetch(...a);
+papersMod.sandbox.__fetch = (...a) => sandbox.__fetch(...a);
 
 let upstreamSeen = null;
 const req = (path, init = {}) => new Request('https://tutor.example.com' + path, init);
@@ -539,6 +541,245 @@ const baseEnv = () => ({ ANTHROPIC_API_KEY: 'sk-ant-test', ALLOWED_ORIGIN: 'http
     r = await worker.fetch(req('/videos', J('POST', { ...body, topic: 'C', topicName: 'C. Personal life and relationships' }, VST)), env);
     v = await r.json();
     ok('V5 a model failure answers an empty list with the error noted, never a 500 to the room', r.status === 200 && v.items.length === 0 && /529/.test(v.error));
+    sandbox.__fetch = saveFetch;
+  }
+
+  /* ================= real papers: attempts, pages, the question map, prepare, mark, the admin switch, no PDF bytes ================= */
+  {
+    const env = baseEnv(); env.ACCESS_TEAM_DOMAIN = TEAM; env.ACCESS_AUD = AUD;
+    const bootP = await (await worker.fetch(req('/admin/bootstrap', { method: 'POST', headers: await A() }), env)).json();
+    const admP = await (await worker.fetch(req('/auth/invite', J('POST', { token: bootP.invite.link.split('#invite=')[1], password: 'admin pass phrase' })), env)).json(); const ADMP = bearer(admP.token);
+    const student = async (u, n) => { const mk = await (await worker.fetch(req('/manage/users', J('POST', { username: u, name: n, daily: 200 }, ADMP)), env)).json(); const s = await (await worker.fetch(req('/auth/invite', J('POST', { token: mk.invite.link.split('#invite=')[1], password: u + ' pass phrase' })), env)).json(); return bearer(s.token); };
+    const SAM = await student('sam', 'Sam'), LENA = await student('lena', 'Lena');
+    const pending = [];
+    env.PAPER_MARKER = { created: [], async create({ id, params }) { this.created.push(params); pending.push(() => papersMod.exports.runPaperJob(params, env, inlineStep())); return { id }; } };
+    const runPending = async () => { while (pending.length) await pending.shift()(); };
+
+    /* the model, answered by prompt: a question map (bad first), mark points per question, a transcript per question, a mark (bad first) */
+    const QP = 'https://www.ocr.org.uk/Images/000001-question-paper-1.pdf', MS = 'https://www.ocr.org.uk/Images/000002-mark-scheme-1.pdf';
+    const spec = { id: 'OCR-H481', board: 'OCR', level: 'A level', subject: 'Geography', code: 'H481', markConventions: { summary: 'Points marking: one mark per valid point, with development.' }, topics: [{ id: '1.2', name: 'Earth’s life support systems', ideas: [{ code: '1.2.1' }, { code: '1.2.2' }] }, { id: '2.1', name: 'Changing spaces; making places', ideas: [{ code: '2.1.1' }] }] };
+    const qmapGood = { questions: [{ q: '1(a)', marks: 4, topic: '1.2', codes: ['1.2.1'], mode: 'points', command: 'Explain', choice: null }, { q: '1(b)', marks: 2, topic: '1.2', codes: ['1.2.2'], mode: 'points', command: 'State', choice: null }, { q: '2', marks: 4, topic: '2.1', codes: ['2.1.1'], mode: 'points', command: 'Describe', choice: null }] };
+    const qmapBad = { questions: [{ q: '1(a)', marks: 4, topic: '1.2', mode: 'points' }, { q: '2', marks: 2, topic: '2.1', mode: 'points' }] };   /* 6 of 10 marks */
+    let qmapQueue = [qmapBad, qmapGood];
+    const pointsFor = { '1(a)': [{ text: 'Names a store of carbon', max: 1, kind: 'B' }, { text: 'Explains a flow between two stores', max: 2, kind: 'A' }, { text: 'Gives a figure or rate', max: 1, kind: 'B' }], '1(b)': [{ text: 'States one cause', max: 1 }, { text: 'States a second cause', max: 1 }], '2': [{ text: 'Point one', max: 2 }, { text: 'Point two', max: 2 }] };
+    const T1 = 'Carbon is stored in the oceans. It moves from the atmosphere into the sea by dissolving, about 2 GtC a year.';
+    const transcriptFor = { '1(a)': { transcript: T1, legibility: 'ok', unsure: [], blank: false }, '1(b)': { transcript: '', legibility: 'ok', unsure: [], blank: true }, '2': { transcript: '', legibility: 'unreadable', unsure: [], blank: false } };
+    const badMark = { awarded: 3, max: 4, lines: [{ i: 1, awarded: 1, evidence: 'photosynthesis' }, { i: 2, awarded: 2, evidence: 'moves from the atmosphere into the sea by dissolving' }, { i: 3, awarded: 0, missing: 'no figure' }], failureMode: 'RECALL-GAP', note: 'A store and a flow; no figure.' };
+    const goodMark = { awarded: 3, max: 4, lines: [{ i: 1, awarded: 1, evidence: 'stored in the oceans' }, { i: 2, awarded: 2, evidence: 'moves from the atmosphere into the sea by dissolving' }, { i: 3, awarded: 0, missing: 'no figure given' }], failureMode: 'RECALL-GAP', note: 'You named a store and a flow with its mechanism; give a figure next time.', disagree: [3] };
+    const fullMark = { awarded: 4, max: 4, lines: [{ i: 1, awarded: 1, evidence: 'stored in the oceans' }, { i: 2, awarded: 2, evidence: 'moves from the atmosphere into the sea by dissolving' }, { i: 3, awarded: 1, evidence: '2 GtC a year' }], failureMode: 'NONE', note: 'Full marks.' };
+    let markQueue = { '1(a)': [badMark, goodMark] };
+    const modelSeen = []; let pdfFetches = 0;
+    const promptOf = body => body.messages[0].content.filter(c => c.type === 'text').map(c => c.text).join('\n');
+    const answerFor = body => {
+      const txt = promptOf(body); let m;
+      if (/List every question and every part/.test(txt)) return qmapQueue.length > 1 ? qmapQueue.shift() : qmapQueue[0];
+      if ((m = /Find question (\S+) \(/.exec(txt))) return { q: m[1], points: pointsFor[m[1]] };
+      if ((m = /answer to question (\S+) of an exam paper/.exec(txt))) return { q: m[1], ...transcriptFor[m[1]] };
+      if ((m = /marking question (\S+) \(/.exec(txt))) { const qq = markQueue[m[1]] || [{}]; return qq.length > 1 ? qq.shift() : qq[0]; }
+      return {};
+    };
+    const saveFetch = sandbox.__fetch;
+    sandbox.__fetch = async (url, init) => {
+      const u = String(url);
+      if (u.includes('api.anthropic.com')) { const body = JSON.parse(init.body); modelSeen.push({ ...body, key: init.headers['x-api-key'] }); return new Response(JSON.stringify({ id: 'msg_p', stop_reason: 'end_turn', content: [{ type: 'text', text: '```json\n' + JSON.stringify(answerFor(body)) + '\n```' }] }), { status: 200 }); }
+      if (/ocr\.org\.uk/.test(u)) { pdfFetches++; return new Response('%PDF-1.4 the paper', { status: 200, headers: { 'Content-Type': 'application/pdf' } }); }
+      return saveFetch(url, init);
+    };
+    const paperBody = { spec: 'OCR-H481', series: '2025-06', seriesName: 'June 2025', paper: 'P1', name: 'Paper 1', marks: 10, minutes: 90, board: 'OCR', level: 'A level', subject: 'Geography', code: 'H481', component: '01', qp: QP, ms: MS };
+
+    /* 1. creating an attempt */
+    r = await worker.fetch(req('/papers', J('POST', paperBody)), env);
+    ok('R1 papers need a session', r.status === 401);
+    r = await worker.fetch(req('/papers', J('POST', { ...paperBody, qp: 'https://evil.example/qp.pdf' }, SAM)), env);
+    ok('R1 a paper that is not on the board\'s own site is refused', r.status === 400 && /board's own site/.test((await r.json()).error));
+    r = await worker.fetch(req('/papers', J('POST', { ...paperBody, ms: 'http://www.ocr.org.uk/ms.pdf' }, SAM)), env);
+    ok('R1 a plain-http link is refused too', r.status === 400);
+    r = await worker.fetch(req('/papers', J('POST', { ...paperBody, marks: 0 }, SAM)), env);
+    ok('R1 marks must be 1 to 300', r.status === 400);
+    r = await worker.fetch(req('/papers/admin/boards', J('POST', { board: 'OCR', off: true }, SAM)), env);
+    ok('R9 a student cannot switch a board off', r.status === 403);
+    r = await worker.fetch(req('/papers/admin/boards', J('POST', { board: 'OCR', off: true }, ADMP)), env);
+    ok('R9 the admin switches a board off', r.status === 200 && (await r.json()).off.join() === 'OCR');
+    r = await worker.fetch(req('/papers', J('POST', paperBody, SAM)), env);
+    ok('R1 an attempt on a switched-off board is refused and says so', r.status === 409 && /OCR papers are switched off/.test((await r.json()).error));
+    r = await worker.fetch(req('/courses', { headers: SAM }), env);
+    ok('R9 GET /courses carries papersOff so the app can grey the button', (await r.json()).papersOff.join() === 'OCR');
+    r = await worker.fetch(req('/papers/admin/boards', J('POST', { board: 'ocr', off: false }, ADMP)), env);
+    r = await worker.fetch(req('/papers/admin/boards', { headers: ADMP }), env);
+    ok('R9 switched back on, case-insensitively', (await r.json()).off.length === 0);
+    r = await worker.fetch(req('/papers', J('POST', paperBody, SAM)), env);
+    let att = (await r.json()).attempt;
+    ok('R1 an attempt is created with its record', r.status === 200 && att.id && att.status === 'pages' && att.pages.length === 0 && att.qp === QP && att.job === null, JSON.stringify(att).slice(0, 200));
+    const AID = att.id;
+    r = await worker.fetch(req('/papers', { headers: SAM }), env);
+    let lst = await r.json();
+    ok('R1 the list shows the attempt as a summary', lst.attempts.length === 1 && lst.attempts[0].id === AID && lst.attempts[0].name === 'Paper 1' && lst.attempts[0].pages === undefined);
+    r = await worker.fetch(req('/papers/' + AID, { headers: LENA }), env);
+    ok('R1 another student cannot see it', r.status === 404);
+
+    /* 2. pages */
+    const jpeg = new Uint8Array(3000); jpeg[0] = 0xFF; jpeg[1] = 0xD8;
+    const upload = (auth, id, body, type = 'image/jpeg', name = 'p.jpg') => worker.fetch(req(`/papers/${id}/pages/upload`, { method: 'POST', headers: { ...auth, 'Content-Type': type, 'X-Page-Name': name }, body }), env);
+    r = await upload(SAM, AID, 'hello', 'application/pdf', 'x.pdf');
+    ok('R2 only JPEG, PNG and WebP pages are accepted — never a PDF', r.status === 415);
+    r = await upload(SAM, AID, new Uint8Array(8 * 1024 * 1024 + 1), 'image/png');
+    ok('R2 a page over 8 MB is refused', r.status === 413);
+    r = await upload(SAM, AID, jpeg); const p1 = (await r.json()).page;
+    r = await upload(SAM, AID, jpeg, 'image/png', 'two.png'); const p2 = (await r.json()).page;
+    r = await upload(SAM, AID, jpeg, 'image/webp', 'three.webp'); const p3 = (await r.json()).page;
+    ok('R2 pages land in R2 under the owner, numbered in order, with their type and size', p1.n === 1 && p2.n === 2 && p3.n === 3 && p1.key === `paper/sam/${AID}/${p1.id}.jpg` && p2.key.endsWith('.png') && p3.key.endsWith('.webp') && p1.size === 3000 && env.DESK._map.has(p1.key), JSON.stringify(p1));
+    ok('R2 page bytes count against the desk quota', (await env.USAGE.get('deskq:sam')) === '9000');
+    r = await worker.fetch(req(`/papers/${AID}/pages/${p1.id}`, { headers: SAM }), env);
+    ok('R2 the owner reads a page back', r.status === 200 && r.headers.get('Content-Type') === 'image/jpeg' && (await r.arrayBuffer()).byteLength === 3000);
+    r = await worker.fetch(req(`/papers/${AID}/pages/${p1.id}`, { headers: LENA }), env);
+    ok('R2 nobody else can', r.status === 404);
+    r = await worker.fetch(req(`/papers/${AID}/pages/${p3.id}`, J('PATCH', { thumb: 'data:image/jpeg;base64,AAAA', w: 1200, h: 1600, n: 1 }, SAM)), env);
+    ok('R2 a page takes a thumbnail and size and can be moved first', r.status === 200 && (await r.json()).page.n === 1);
+    r = await worker.fetch(req('/papers/' + AID, { headers: SAM }), env); att = (await r.json()).attempt;
+    ok('R2 the other pages renumber after the move', att.pages.map(p => p.id).join() === [p3.id, p1.id, p2.id].join() && att.pages.map(p => p.n).join() === '1,2,3' && att.pages[0].thumb === 'data:image/jpeg;base64,AAAA' && att.pages[0].w === 1200);
+    r = await worker.fetch(req(`/papers/${AID}/pages/${p3.id}`, { method: 'DELETE', headers: SAM }), env);
+    ok('R2 deleting a page removes its bytes from R2 and the quota', r.status === 200 && !env.DESK._map.has(p3.key) && (await env.USAGE.get('deskq:sam')) === '6000');
+    await env.USAGE.put('deskq:sam', String(250 * 1024 * 1024 - 100));
+    r = await upload(SAM, AID, jpeg);
+    ok('R2 the shared 250 MB quota refuses a page', r.status === 413 && /250 MB/.test((await r.json()).error));
+    await env.USAGE.put('deskq:sam', '6000');
+    const full = await env.USAGE.get(`paper:sam:${AID}`, 'json'); const realPages = full.pages;
+    full.pages = realPages.concat(Array.from({ length: 38 }, (_, i) => ({ id: 'fake' + i, n: 3 + i, key: `paper/sam/${AID}/fake${i}.jpg`, size: 1, type: 'image/jpeg', at: full.at, thumb: null, w: null, h: null })));
+    await env.USAGE.put(`paper:sam:${AID}`, JSON.stringify(full));
+    r = await upload(SAM, AID, jpeg);
+    ok('R2 the 41st page is refused', r.status === 409 && /40 pages/.test((await r.json()).error));
+    full.pages = realPages; await env.USAGE.put(`paper:sam:${AID}`, JSON.stringify(full));
+
+    /* 3. the question map: refused once, then stored and shared */
+    r = await worker.fetch(req(`/papers/${AID}/questions`, J('POST', {}, SAM)), env);
+    ok('R3 the question map needs the specification the first time', r.status === 400);
+    r = await worker.fetch(req(`/papers/${AID}/questions`, J('POST', { spec: { ...spec, id: 'AQA-7357' } }, SAM)), env);
+    ok('R3 a specification for another course is refused', r.status === 400);
+    r = await worker.fetch(req(`/papers/${AID}/questions`, J('POST', { spec }, SAM)), env);
+    let qm = await r.json();
+    ok('R3 a map whose marks do not add up is retried with the larger model; the good answer is stored', r.status === 200 && qm.questions && qm.questions.length === 3 && qm.questions[0].q === '1(a)' && modelSeen.length === 2 && modelSeen[0].model === 'claude-sonnet-5' && modelSeen[1].model === 'claude-opus-5' && /refused because: marks add up to 6, not 10/.test(promptOf(modelSeen[1])), JSON.stringify(qm));
+    ok('R3 the map request carries the question paper as a cached url document and the spec\'s topics, and nothing else', modelSeen[0].messages[0].content[0].type === 'document' && modelSeen[0].messages[0].content[0].source.type === 'url' && modelSeen[0].messages[0].content[0].source.url === QP && modelSeen[0].messages[0].content[0].cache_control.type === 'ephemeral' && modelSeen[0].max_tokens === 6000 && /1\.2 \| Earth/.test(promptOf(modelSeen[0])) && modelSeen[0].key === 'sk-ant-test');
+    const qmapKv = await env.USAGE.get('qmap:OCR-H481:2025-06:P1', 'json');
+    ok('R3 the map is stored once per paper in KV and on the attempt', qmapKv && qmapKv.questions.length === 3 && qmapKv.model === 'claude-opus-5' && (await env.USAGE.get(`paper:sam:${AID}`, 'json')).questions.length === 3);
+    r = await worker.fetch(req('/papers', J('POST', paperBody, LENA)), env); const LID = (await r.json()).attempt.id;
+    r = await worker.fetch(req(`/papers/${LID}/questions`, J('POST', { spec }, LENA)), env);
+    ok('R3 another student on the same paper gets the map from KV without a model call', r.status === 200 && (await r.json()).questions.length === 3 && modelSeen.length === 2);
+    /* 4. a map that stays invalid */
+    qmapQueue = [qmapBad];
+    r = await worker.fetch(req('/papers', J('POST', { ...paperBody, paper: 'P2', name: 'Paper 2' }, SAM)), env); const AID2 = (await r.json()).attempt.id;
+    r = await worker.fetch(req(`/papers/${AID2}/questions`, J('POST', { spec }, SAM)), env);
+    qm = await r.json();
+    ok('R4 a map that stays invalid after the retry answers the typed fallback with the reason', r.status === 200 && qm.questions === null && qm.fallback === 'typed' && /marks add up to 6, not 10/.test(qm.error) && modelSeen.length === 4 && !(await env.USAGE.get('qmap:OCR-H481:2025-06:P2')), JSON.stringify(qm));
+    r = await worker.fetch(req(`/papers/${AID2}/prepare`, { method: 'POST', headers: SAM }), env);
+    ok('R4 prepare needs a question map', r.status === 400);
+    r = await worker.fetch(req(`/papers/${AID2}`, J('PATCH', { questions: qmapBad.questions }, SAM)), env);
+    ok('R4 a typed list of questions is held to the same contract', r.status === 400 && /add up to 6/.test((await r.json()).error));
+    r = await worker.fetch(req(`/papers/${AID2}`, J('PATCH', { questions: qmapGood.questions }, SAM)), env);
+    ok('R4 a valid typed list is kept', r.status === 200 && (await r.json()).attempt.questions.length === 3);
+    qmapQueue = [qmapGood];
+
+    /* 5. prepare: transcripts and mark points */
+    r = await worker.fetch(req(`/papers/${AID}/prepare`, { method: 'POST', headers: SAM }), env);
+    ok('R5 prepare needs at least one question assigned to a page', r.status === 400);
+    r = await worker.fetch(req(`/papers/${AID}`, J('PATCH', { assign: { '1(a)': [p1.id], '1(b)': [p1.id, 'nope'], '2': [p2.id] }, confidence: { '1(a)': 'sure', '2': 'silly' }, ticks: { '1(a)': [true, true, false] }, status: 'assign' }, SAM)), env);
+    att = (await r.json()).attempt;
+    ok('R5 assignments, confidence and ticks merge into the record; unknown pages and values are dropped', r.status === 200 && att.assign['1(a)'].join() === p1.id && att.assign['1(b)'].join() === p1.id && att.confidence['1(a)'] === 'sure' && att.confidence['2'] === undefined && att.ticks['1(a)'].join() === 'true,true,false' && att.status === 'assign', JSON.stringify(att.assign));
+    r = await worker.fetch(req(`/papers/${AID}/mark`, { method: 'POST', headers: SAM }), env);
+    ok('R6 mark refuses while an assigned question has no transcript', r.status === 400 && /no transcript yet/.test((await r.json()).error));
+    const before = modelSeen.length;
+    r = await worker.fetch(req(`/papers/${AID}/prepare`, { method: 'POST', headers: SAM }), env);
+    let job = (await r.json()).job;
+    ok('R5 prepare starts the Workflow with one step per assigned question', r.status === 202 && job.stage === 'prepare' && job.status === 'running' && job.total === 3 && env.PAPER_MARKER.created.length === 1 && env.PAPER_MARKER.created[0].stage === 'prepare' && env.PAPER_MARKER.created[0].user === 'sam', JSON.stringify(job));
+    r = await worker.fetch(req(`/papers/${AID}/prepare`, { method: 'POST', headers: SAM }), env);
+    ok('R5 a second prepare while one runs is refused', r.status === 409);
+    await runPending();
+    r = await worker.fetch(req(`/papers/${AID}/status`, { headers: SAM }), env); let stt = await r.json();
+    ok('R5 the job finishes and the attempt is ready to check', stt.job.status === 'done' && stt.job.done === 3 && stt.status === 'check', JSON.stringify(stt));
+    r = await worker.fetch(req('/papers/' + AID, { headers: SAM }), env); att = (await r.json()).attempt;
+    ok('R5 each question\'s transcript is stored with its legibility, the unreadable one kept as such', att.transcripts['1(a)'].transcript === T1 && att.transcripts['1(a)'].legibility === 'ok' && att.transcripts['1(a)'].edited === false && att.transcripts['1(b)'].blank === true && att.transcripts['2'].legibility === 'unreadable', JSON.stringify(att.transcripts));
+    ok('R5 the mark points are on the attempt and shared in KV per paper and question', att.points['1(a)'].points.length === 3 && att.points['2'].points[0].max === 2 && (await env.USAGE.get('points:OCR-H481:2025-06:P1:1(a)', 'json')).points[0].text === 'Names a store of carbon');
+    const prepCalls = modelSeen.slice(before);
+    const transcribeCalls = prepCalls.filter(b => /Transcribe the answer/.test(promptOf(b))), pointCalls = prepCalls.filter(b => /Find question/.test(promptOf(b)));
+    ok('R5 three transcriptions with Haiku and three points readings with Sonnet, six calls in all', prepCalls.length === 6 && transcribeCalls.length === 3 && transcribeCalls.every(b => b.model === 'claude-haiku-4-5') && pointCalls.length === 3 && pointCalls.every(b => b.model === 'claude-sonnet-5'), prepCalls.map(b => b.model).join());
+    const tc = transcribeCalls[0].messages[0].content;
+    ok('R5 a transcription carries the page image as base64 after its page number, then the prompt', tc.length === 3 && tc[0].type === 'text' && tc[0].text === 'Page 1' && tc[1].type === 'image' && tc[1].source.type === 'base64' && tc[1].source.media_type === 'image/jpeg' && tc[1].source.data.startsWith('/9g') && tc[2].type === 'text', JSON.stringify(tc).slice(0, 200));
+    ok('R5 a points reading carries the mark scheme as a cached url document only', pointCalls[0].messages[0].content[0].type === 'document' && pointCalls[0].messages[0].content[0].source.url === MS && pointCalls[0].messages[0].content.length === 2);
+    /* points are shared: Lena's prepare on the same paper reads no scheme */
+    r = await upload(LENA, LID, jpeg); const lp = (await r.json()).page;
+    await worker.fetch(req(`/papers/${LID}`, J('PATCH', { assign: { '1(a)': [lp.id] } }, LENA)), env);
+    const beforeL = modelSeen.length;
+    r = await worker.fetch(req(`/papers/${LID}/prepare`, { method: 'POST', headers: LENA }), env);
+    await runPending();
+    const lenaCalls = modelSeen.slice(beforeL);
+    r = await worker.fetch(req('/papers/' + LID, { headers: LENA }), env); const latt = (await r.json()).attempt;
+    ok('R5 the points are cached per paper across students: Lena\'s prepare transcribes but reads no scheme', r.status === 200 && lenaCalls.length === 1 && lenaCalls[0].model === 'claude-haiku-4-5' && latt.points['1(a)'].points.length === 3 && latt.job.status === 'done', lenaCalls.map(b => b.model).join());
+    /* 6. mark */
+    const beforeM = modelSeen.length;
+    r = await worker.fetch(req(`/papers/${AID}/mark`, { method: 'POST', headers: SAM }), env);
+    job = (await r.json()).job;
+    ok('R6 mark starts the Workflow over every transcribed question', r.status === 202 && job.stage === 'mark' && job.total === 3);
+    await runPending();
+    r = await worker.fetch(req('/papers/' + AID, { headers: SAM }), env); att = (await r.json()).attempt;
+    const markCalls = modelSeen.slice(beforeM);
+    ok('R6 a mark whose evidence is not in the transcript is retried with the larger model and the second answer kept', markCalls.length === 2 && markCalls[0].model === 'claude-sonnet-5' && markCalls[1].model === 'claude-opus-5' && /refused because: line 1: evidence is not in the answer/.test(promptOf(markCalls[1])) && att.results['1(a)'].awarded === 3 && att.results['1(a)'].model === 'claude-opus-5' && att.results['1(a)'].lines.length === 3 && att.results['1(a)'].failureMode === 'RECALL-GAP' && att.results['1(a)'].disagree.join() === '3', JSON.stringify(att.results));
+    const mc = markCalls[0].messages[0].content;
+    ok('R6 the marking request carries the scheme as a url document, the page image and the prompt with the student\'s ticks and transcript', mc[0].type === 'document' && mc[0].source.url === MS && mc[1].text === 'Page 1' && mc[2].type === 'image' && /the student claims this/.test(mc[3].text) && /the student does not claim this/.test(mc[3].text) && mc[3].text.includes(T1) && mc.length === 4);
+    ok('R6 unreadable → awarded null; blank → 0 without a model call', att.results['2'].awarded === null && att.results['2'].legibility === 'unreadable' && att.results['1(b)'].awarded === 0 && att.results['1(b)'].attempted === false);
+    ok('R6 the attempt is marked with its score out of the paper\'s marks', att.status === 'marked' && att.score === 3 && att.total === 10 && att.job.status === 'done');
+    r = await worker.fetch(req(`/papers/${AID}/status`, { headers: SAM }), env); stt = await r.json();
+    ok('R6 the status route reports it', stt.status === 'marked' && stt.score === 3 && stt.total === 10 && stt.job.stage === 'mark');
+    r = await worker.fetch(req('/papers', { headers: SAM }), env); lst = await r.json();
+    ok('R6 and so does the list', lst.attempts.find(x => x.id === AID).score === 3 && lst.attempts.length === 2);
+
+    /* a question the student did not attempt: Lena marks with one call */
+    await worker.fetch(req(`/papers/${LID}`, J('PATCH', { attempted: { '1(b)': false, '2': true } }, LENA)), env);
+    r = await worker.fetch(req(`/papers/${LID}/mark`, { method: 'POST', headers: LENA }), env);
+    ok('R6 a question the student says they did not attempt needs no transcript and is marked without a call', r.status === 202 && (await r.json()).job.total === 2);
+    await runPending();
+    r = await worker.fetch(req('/papers/' + LID, { headers: LENA }), env); const lmarked = (await r.json()).attempt;
+    ok('R6 it scores 0 as unattempted; the transcribed one is marked; the paper is marked', lmarked.results['1(b)'].awarded === 0 && lmarked.results['1(b)'].attempted === false && lmarked.results['1(a)'].awarded === 3 && lmarked.results['2'] === undefined && lmarked.status === 'marked' && lmarked.score === 3 && modelSeen.filter(x => x.metadata.user_id === 'lena').length === 2, JSON.stringify(lmarked.results));
+
+    /* 7. usage counting */
+    const samCalls = modelSeen.filter(b => b.metadata && b.metadata.user_id === 'sam').length, lenaCalls2 = modelSeen.filter(b => b.metadata && b.metadata.user_id === 'lena').length;
+    const day = new Date().toISOString().slice(0, 10);
+    ok('R7 every model call — retries included — counts one against the caller\'s day', samCalls === 12 && (await env.USAGE.get(`usage:sam:${day}`)) === '12' && lenaCalls2 === 2 && (await env.USAGE.get(`usage:lena:${day}`)) === '2', `${samCalls} ${lenaCalls2} ${await env.USAGE.get(`usage:sam:${day}`)}`);
+    await env.USAGE.put('user:sam', JSON.stringify({ ...(await env.USAGE.get('user:sam', 'json')), daily: 12 }));
+    r = await worker.fetch(req(`/papers/${AID}/questions/1(a)/mark`, { method: 'POST', headers: SAM }), env);
+    ok('R7 at the cap a model route answers 429 with the proxy\'s message', r.status === 429 && /Sam's daily limit of 12 requests is used up/.test((await r.json()).error.message));
+    r = await worker.fetch(req(`/papers/${AID}/mark`, { method: 'POST', headers: SAM }), env);
+    ok('R7 a job can still be started at the cap', r.status === 202);
+    await runPending();
+    r = await worker.fetch(req(`/papers/${AID}/status`, { headers: SAM }), env); stt = await r.json();
+    ok('R7 but it stops at the cap and says so, rather than silently marking nothing', stt.job.status === 'failed' && /daily limit/.test(stt.job.message) && (await env.USAGE.get(`usage:sam:${day}`)) === '12', JSON.stringify(stt.job));
+    await env.USAGE.put('user:sam', JSON.stringify({ ...(await env.USAGE.get('user:sam', 'json')), daily: 200 }));
+
+    /* 10. one question again, after the student corrects the transcript */
+    r = await worker.fetch(req(`/papers/${AID}`, J('PATCH', { transcripts: { '1(a)': { transcript: T1 + ' The flux is 2 GtC a year.', legibility: 'ok' }, '9': { transcript: 'x', legibility: 'fine' } }, status: 'marked' }, SAM)), env);
+    att = (await r.json()).attempt;
+    ok('R10 the student\'s correction is kept and marked as edited; a bad legibility is ignored', att.transcripts['1(a)'].edited === true && /The flux is/.test(att.transcripts['1(a)'].transcript) && !att.transcripts['9']);
+    markQueue['1(a)'] = [fullMark];
+    r = await worker.fetch(req(`/papers/${AID}/questions/1(a)/mark`, { method: 'POST', headers: SAM }), env);
+    const rm = await r.json();
+    ok('R10 one question is re-marked inline with one model call and the score moves', r.status === 200 && rm.result.awarded === 4 && rm.score === 4 && rm.total === 10 && modelSeen[modelSeen.length - 1].model === 'claude-sonnet-5' && promptOf(modelSeen[modelSeen.length - 1]).includes('The flux is'), JSON.stringify(rm));
+    r = await worker.fetch(req(`/papers/${AID}/questions/7/mark`, { method: 'POST', headers: SAM }), env);
+    ok('R10 an unknown question is a 404', r.status === 404);
+    r = await worker.fetch(req(`/papers/${AID}/questions/1(a)/mark`, { method: 'POST', headers: LENA }), env);
+    ok('R10 and only the owner can ask', r.status === 404);
+    /* a second prepare never overwrites the student's own correction */
+    const beforeP2 = modelSeen.length;
+    await worker.fetch(req(`/papers/${AID}/prepare`, { method: 'POST', headers: SAM }), env); await runPending();
+    r = await worker.fetch(req('/papers/' + AID, { headers: SAM }), env); att = (await r.json()).attempt;
+    ok('R10 a re-run of prepare keeps an edited transcript and reads no scheme again', modelSeen.length - beforeP2 === 2 && /The flux is/.test(att.transcripts['1(a)'].transcript) && att.transcripts['1(a)'].edited === true, String(modelSeen.length - beforeP2));
+
+    /* 8. no PDF bytes, anywhere, ever */
+    const kvText = [...env.USAGE._map.values()].join('\n');
+    const r2Text = [...env.DESK._map.values()].map(v => new TextDecoder().decode(v.buf)).join('\n');
+    ok('R8 the paper and mark scheme were never fetched by the Worker', pdfFetches === 0);
+    ok('R8 no KV value and no R2 object contains PDF bytes', !kvText.includes('%PDF') && !r2Text.includes('%PDF'));
+    const docsOk = modelSeen.every(b => { const blocks = b.messages.flatMap(m => Array.isArray(m.content) ? m.content : []); const docs = blocks.filter(c => c.type === 'document'); return docs.every(c => c.source.type === 'url' && [QP, MS].includes(c.source.url) && Object.keys(c.source).join() === 'type,url') && !JSON.stringify(b).includes('%PDF') && !/application\/pdf/.test(JSON.stringify(b)); });
+    ok('R8 every model request carried the paper and the scheme only as url document sources', docsOk && modelSeen.length > 10);
+    r = await worker.fetch(req('/papers/' + AID, { method: 'DELETE', headers: SAM }), env);
+    ok('R2 deleting an attempt removes its pages and their bytes', r.status === 200 && !env.DESK._map.has(p1.key) && !env.DESK._map.has(p2.key) && (await env.USAGE.get('deskq:sam')) === '0' && !(await env.USAGE.get(`paper:sam:${AID}`)));
     sandbox.__fetch = saveFetch;
   }
 

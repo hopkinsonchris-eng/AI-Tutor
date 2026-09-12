@@ -1,0 +1,375 @@
+{
+ "spec": "EDX-9BS0",
+ "board": "Pearson Edexcel",
+ "code": "9BS0",
+ "checked": "2026-09-12",
+ "source": "https://qualifications.pearson.com/en/support/support-topics/exams/past-papers.html",
+ "series": [
+  {
+   "id": "2026-06",
+   "name": "June 2026",
+   "public": false,
+   "releaseDate": "2027-03-01",
+   "boundaries": null,
+   "boundariesUrl": null,
+   "papers": [
+    {
+     "id": "01",
+     "name": "Paper 1: Marketing, people and global businesses",
+     "component": "P1",
+     "tier": null,
+     "marks": 100,
+     "minutes": 120,
+     "date": null,
+     "qp": null,
+     "ms": null,
+     "insert": null,
+     "report": null
+    },
+    {
+     "id": "02",
+     "name": "Paper 2: Business activities, decisions and strategy",
+     "component": "P2",
+     "tier": null,
+     "marks": 100,
+     "minutes": 120,
+     "date": null,
+     "qp": null,
+     "ms": null,
+     "insert": null,
+     "report": null
+    },
+    {
+     "id": "03",
+     "name": "Paper 3: Investigating business in a competitive environment",
+     "component": "P3",
+     "tier": null,
+     "marks": 100,
+     "minutes": 120,
+     "date": null,
+     "qp": null,
+     "ms": null,
+     "insert": null,
+     "report": null
+    }
+   ]
+  },
+  {
+   "id": "2025-06",
+   "name": "June 2025",
+   "public": true,
+   "releaseDate": null,
+   "boundaries": null,
+   "boundariesUrl": "https://qualifications.pearson.com/content/dam/pdf/Support/Grade-boundaries/A-level/grade-boundaries-june-2025-gce.pdf",
+   "papers": [
+    {
+     "id": "01",
+     "name": "Paper 1: Marketing, people and global businesses",
+     "component": "P1",
+     "tier": null,
+     "marks": 100,
+     "minutes": 120,
+     "date": "2025-05-15",
+     "qp": "https://qualifications.pearson.com/content/dam/pdf/A-Level/Business/2015/Exam-materials/9bs0-01-que-20250515.pdf",
+     "ms": "https://qualifications.pearson.com/content/dam/pdf/A-Level/Business/2015/Exam-materials/9bs0-01-rms-20250814.pdf",
+     "insert": null,
+     "report": "https://qualifications.pearson.com/content/dam/pdf/A-Level/Business/2015/Exam-materials/9bs0-01-pef-20250814.pdf"
+    },
+    {
+     "id": "02",
+     "name": "Paper 2: Business activities, decisions and strategy",
+     "component": "P2",
+     "tier": null,
+     "marks": 100,
+     "minutes": 120,
+     "date": "2025-05-21",
+     "qp": "https://qualifications.pearson.com/content/dam/pdf/A-Level/Business/2015/Exam-materials/9bs0-02-que-20250521.pdf",
+     "ms": "https://qualifications.pearson.com/content/dam/pdf/A-Level/Business/2015/Exam-materials/9bs0-02-rms-20250814.pdf",
+     "insert": null,
+     "report": "https://qualifications.pearson.com/content/dam/pdf/A-Level/Business/2015/Exam-materials/9bs0-02-pef-20250814.pdf"
+    },
+    {
+     "id": "03",
+     "name": "Paper 3: Investigating business in a competitive environment",
+     "component": "P3",
+     "tier": null,
+     "marks": 100,
+     "minutes": 120,
+     "date": "2025-06-10",
+     "qp": "https://qualifications.pearson.com/content/dam/pdf/A-Level/Business/2015/Exam-materials/9bs0-03-que-20250610.pdf",
+     "ms": "https://qualifications.pearson.com/content/dam/pdf/A-Level/Business/2015/Exam-materials/9bs0-03-rms-20250814.pdf",
+     "insert": null,
+     "report": "https://qualifications.pearson.com/content/dam/pdf/A-Level/Business/2015/Exam-materials/9bs0-03-pef-20250814.pdf"
+    }
+   ]
+  },
+  {
+   "id": "2024-06",
+   "name": "June 2024",
+   "public": true,
+   "releaseDate": null,
+   "boundaries": null,
+   "boundariesUrl": "https://qualifications.pearson.com/content/dam/pdf/Support/Grade-boundaries/A-level/grade-boundaries-june-2024-gce.pdf",
+   "papers": [
+    {
+     "id": "01",
+     "name": "Paper 1: Marketing, people and global businesses",
+     "component": "P1",
+     "tier": null,
+     "marks": 100,
+     "minutes": 120,
+     "date": "2024-05-15",
+     "qp": "https://qualifications.pearson.com/content/dam/pdf/A-Level/Business/2015/Exam-materials/9bs0-01-que-20240515.pdf",
+     "ms": "https://qualifications.pearson.com/content/dam/pdf/A-Level/Business/2015/Exam-materials/9bs0-01-rms-20240815.pdf",
+     "insert": null,
+     "report": "https://qualifications.pearson.com/content/dam/pdf/A-Level/Business/2015/Exam-materials/9bs0-01-pef-20240815.pdf"
+    },
+    {
+     "id": "02",
+     "name": "Paper 2: Business activities, decisions and strategy",
+     "component": "P2",
+     "tier": null,
+     "marks": 100,
+     "minutes": 120,
+     "date": "2024-05-22",
+     "qp": "https://qualifications.pearson.com/content/dam/pdf/A-Level/Business/2015/Exam-materials/9bs0-02-que-20240522.pdf",
+     "ms": "https://qualifications.pearson.com/content/dam/pdf/A-Level/Business/2015/Exam-materials/9bs0-02-rms-20240815.pdf",
+     "insert": null,
+     "report": "https://qualifications.pearson.com/content/dam/pdf/A-Level/Business/2015/Exam-materials/9bs0-02-pef-20240815.pdf"
+    },
+    {
+     "id": "03",
+     "name": "Paper 3: Investigating business in a competitive environment",
+     "component": "P3",
+     "tier": null,
+     "marks": 100,
+     "minutes": 120,
+     "date": "2024-06-07",
+     "qp": "https://qualifications.pearson.com/content/dam/pdf/A-Level/Business/2015/Exam-materials/9bs0-03-que-20240607.pdf",
+     "ms": "https://qualifications.pearson.com/content/dam/pdf/A-Level/Business/2015/Exam-materials/9bs0-03-rms-20240815.pdf",
+     "insert": null,
+     "report": "https://qualifications.pearson.com/content/dam/pdf/A-Level/Business/2015/Exam-materials/9bs0-03-pef-20240815.pdf"
+    }
+   ]
+  },
+  {
+   "id": "2023-06",
+   "name": "June 2023",
+   "public": true,
+   "releaseDate": null,
+   "boundaries": null,
+   "boundariesUrl": null,
+   "papers": [
+    {
+     "id": "01",
+     "name": "Paper 1: Marketing, people and global businesses",
+     "component": "P1",
+     "tier": null,
+     "marks": 100,
+     "minutes": 120,
+     "date": "2023-05-24",
+     "qp": "https://qualifications.pearson.com/content/dam/pdf/A-Level/Business/2015/Exam-materials/9bs0-01-que-20230524.pdf",
+     "ms": "https://qualifications.pearson.com/content/dam/pdf/A-Level/Business/2015/Exam-materials/9bs0-01-rms-20230817.pdf",
+     "insert": null,
+     "report": "https://qualifications.pearson.com/content/dam/pdf/A-Level/Business/2015/Exam-materials/9bs0-01-pef-20230817.pdf"
+    },
+    {
+     "id": "02",
+     "name": "Paper 2: Business activities, decisions and strategy",
+     "component": "P2",
+     "tier": null,
+     "marks": 100,
+     "minutes": 120,
+     "date": "2023-06-08",
+     "qp": "https://qualifications.pearson.com/content/dam/pdf/A-Level/Business/2015/Exam-materials/9bs0-02-que-20230608.pdf",
+     "ms": "https://qualifications.pearson.com/content/dam/pdf/A-Level/Business/2015/Exam-materials/9bs0-02-rms-20230817.pdf",
+     "insert": null,
+     "report": "https://qualifications.pearson.com/content/dam/pdf/A-Level/Business/2015/Exam-materials/9bs0-02-pef-20230817.pdf"
+    },
+    {
+     "id": "03",
+     "name": "Paper 3: Investigating business in a competitive environment",
+     "component": "P3",
+     "tier": null,
+     "marks": 100,
+     "minutes": 120,
+     "date": "2023-06-15",
+     "qp": "https://qualifications.pearson.com/content/dam/pdf/A-Level/Business/2015/Exam-materials/9bs0-03-que-20230615.pdf",
+     "ms": "https://qualifications.pearson.com/content/dam/pdf/A-Level/Business/2015/Exam-materials/9bs0-03-rms-20230817.pdf",
+     "insert": null,
+     "report": "https://qualifications.pearson.com/content/dam/pdf/A-Level/Business/2015/Exam-materials/9bs0-03-pef-20230817.pdf"
+    }
+   ]
+  },
+  {
+   "id": "2022-06",
+   "name": "June 2022",
+   "public": true,
+   "releaseDate": null,
+   "boundaries": null,
+   "boundariesUrl": null,
+   "papers": [
+    {
+     "id": "01",
+     "name": "Paper 1: Marketing, people and global businesses",
+     "component": "P1",
+     "tier": null,
+     "marks": 100,
+     "minutes": 120,
+     "date": "2022-05-26",
+     "qp": "https://qualifications.pearson.com/content/dam/pdf/A-Level/Business/2015/Exam-materials/9bs0-01-que-20220526.pdf",
+     "ms": "https://qualifications.pearson.com/content/dam/pdf/A-Level/Business/2015/Exam-materials/9bs0-01-rms-20220818.pdf",
+     "insert": null,
+     "report": "https://qualifications.pearson.com/content/dam/pdf/A-Level/Business/2015/Exam-materials/9bs0-01-pef-20220818.pdf"
+    },
+    {
+     "id": "02",
+     "name": "Paper 2: Business activities, decisions and strategy",
+     "component": "P2",
+     "tier": null,
+     "marks": 100,
+     "minutes": 120,
+     "date": "2022-06-10",
+     "qp": "https://qualifications.pearson.com/content/dam/pdf/A-Level/Business/2015/Exam-materials/9bs0-02-que-20220610.pdf",
+     "ms": "https://qualifications.pearson.com/content/dam/pdf/A-Level/Business/2015/Exam-materials/9bs0-02-rms-20220818.pdf",
+     "insert": null,
+     "report": "https://qualifications.pearson.com/content/dam/pdf/A-Level/Business/2015/Exam-materials/9bs0-02-pef-20220818.pdf"
+    },
+    {
+     "id": "03",
+     "name": "Paper 3: Investigating business in a competitive environment",
+     "component": "P3",
+     "tier": null,
+     "marks": 100,
+     "minutes": 120,
+     "date": "2022-06-17",
+     "qp": "https://qualifications.pearson.com/content/dam/pdf/A-Level/Business/2015/Exam-materials/9bs0-03-que-20220617.pdf",
+     "ms": "https://qualifications.pearson.com/content/dam/pdf/A-Level/Business/2015/Exam-materials/9bs0-03-rms-20220818.pdf",
+     "insert": null,
+     "report": "https://qualifications.pearson.com/content/dam/pdf/A-Level/Business/2015/Exam-materials/9bs0-03-pef-20220818.pdf"
+    }
+   ]
+  },
+  {
+   "id": "2021-11",
+   "name": "November 2021",
+   "public": true,
+   "releaseDate": null,
+   "boundaries": null,
+   "boundariesUrl": null,
+   "papers": [
+    {
+     "id": "01",
+     "name": "Paper 1: Marketing, people and global businesses",
+     "component": "P1",
+     "tier": null,
+     "marks": 100,
+     "minutes": 120,
+     "date": "2021-10-08",
+     "qp": "https://qualifications.pearson.com/content/dam/pdf/A-Level/Business/2015/Exam-materials/9BS0_01_que_20211008.pdf",
+     "ms": null,
+     "insert": null,
+     "report": null
+    },
+    {
+     "id": "02",
+     "name": "Paper 2: Business activities, decisions and strategy",
+     "component": "P2",
+     "tier": null,
+     "marks": 100,
+     "minutes": 120,
+     "date": "2021-10-14",
+     "qp": "https://qualifications.pearson.com/content/dam/pdf/A-Level/Business/2015/Exam-materials/9BS0_02_que_20211014.pdf",
+     "ms": "https://qualifications.pearson.com/content/dam/pdf/A-Level/Business/2015/Exam-materials/9bs0-02-rms-20211216.pdf",
+     "insert": null,
+     "report": null
+    },
+    {
+     "id": "03",
+     "name": "Paper 3: Investigating business in a competitive environment",
+     "component": "P3",
+     "tier": null,
+     "marks": 100,
+     "minutes": 120,
+     "date": "2021-10-19",
+     "qp": "https://qualifications.pearson.com/content/dam/pdf/A-Level/Business/2015/Exam-materials/9BS0_03_que_20211019.pdf",
+     "ms": null,
+     "insert": null,
+     "report": null
+    }
+   ]
+  },
+  {
+   "id": "2020-11",
+   "name": "November 2020",
+   "public": true,
+   "releaseDate": null,
+   "boundaries": null,
+   "boundariesUrl": "https://qualifications.pearson.com/content/dam/pdf/Support/Grade-boundaries/A-level/grade-boundaries-october-2020-gce.pdf",
+   "papers": [
+    {
+     "id": "01",
+     "name": "Paper 1: Marketing, people and global businesses",
+     "component": "P1",
+     "tier": null,
+     "marks": 100,
+     "minutes": 120,
+     "date": "2020-10-09",
+     "qp": "https://qualifications.pearson.com/content/dam/pdf/A-Level/Business/2015/Exam-materials/9BS0_01_que_20201009.pdf",
+     "ms": null,
+     "insert": null,
+     "report": null
+    },
+    {
+     "id": "02",
+     "name": "Paper 2: Business activities, decisions and strategy",
+     "component": "P2",
+     "tier": null,
+     "marks": 100,
+     "minutes": 120,
+     "date": "2020-10-15",
+     "qp": "https://qualifications.pearson.com/content/dam/pdf/A-Level/Business/2015/Exam-materials/9BS0_02_que_20201015.pdf",
+     "ms": "https://qualifications.pearson.com/content/dam/pdf/A-Level/Business/2015/Exam-materials/9bs0-02-msc-20201217.pdf",
+     "insert": null,
+     "report": null
+    },
+    {
+     "id": "03",
+     "name": "Paper 3: Investigating business in a competitive environment",
+     "component": "P3",
+     "tier": null,
+     "marks": 100,
+     "minutes": 120,
+     "date": "2020-10-20",
+     "qp": "https://qualifications.pearson.com/content/dam/pdf/A-Level/Business/2015/Exam-materials/9BS0_03_que_20201020.pdf",
+     "ms": "https://qualifications.pearson.com/content/dam/pdf/A-Level/Business/2015/Exam-materials/9bs0-03-msc-20201217.pdf",
+     "insert": null,
+     "report": null
+    }
+   ]
+  },
+  {
+   "id": "2019-06",
+   "name": "June 2019",
+   "public": true,
+   "releaseDate": null,
+   "boundaries": null,
+   "boundariesUrl": null,
+   "papers": [
+    {
+     "id": "02",
+     "name": "Paper 2: Business activities, decisions and strategy",
+     "component": "P2",
+     "tier": null,
+     "marks": 100,
+     "minutes": 120,
+     "date": "2019-06-04",
+     "qp": "https://qualifications.pearson.com/content/dam/pdf/A-Level/Business/2015/Exam-materials/9BS0_02_que_20190604.pdf",
+     "ms": null,
+     "insert": null,
+     "report": "https://qualifications.pearson.com/content/dam/pdf/A-Level/Business/2015/Exam-materials/9bs0-02-pef-20190815.pdf"
+    }
+   ]
+  }
+ ]
+}

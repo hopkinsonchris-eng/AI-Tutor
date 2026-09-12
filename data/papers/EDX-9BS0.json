@@ -378,7 +378,7 @@
      "minutes": 120,
      "date": "2019-06-04",
      "qp": "https://qualifications.pearson.com/content/dam/pdf/A-Level/Business/2015/Exam-materials/9BS0_02_que_20190604.pdf",
-     "ms": null,
+     "ms": "https://qualifications.pearson.com/content/dam/pdf/A-Level/Business/2015/Exam-materials/9BS0_02_rms_20190815.pdf",
      "insert": null,
      "report": "https://qualifications.pearson.com/content/dam/pdf/A-Level/Business/2015/Exam-materials/9bs0-02-pef-20190815.pdf"
     },
@@ -391,7 +391,7 @@
      "minutes": 120,
      "date": "2019-06-08",
      "qp": "https://qualifications.pearson.com/content/dam/pdf/A-Level/Business/2015/Exam-materials/9BS0_03_que_20190608.pdf",
-     "ms": null,
+     "ms": "https://qualifications.pearson.com/content/dam/pdf/A-Level/Business/2015/Exam-materials/9BS0_03_rms_20190815.pdf",
      "insert": null,
      "report": null
     }

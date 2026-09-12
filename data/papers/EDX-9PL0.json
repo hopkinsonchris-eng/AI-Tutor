@@ -11,7 +11,7 @@
    "public": false,
    "releaseDate": "2027-03-01",
    "boundaries": null,
-   "boundariesUrl": null,
+   "boundariesUrl": "https://qualifications.pearson.com/content/dam/pdf/Support/Grade-boundaries/A-level/grade-boundaries-june-2026-gce.pdf",
    "papers": [
     {
      "id": "01",
@@ -30,19 +30,6 @@
      "id": "02",
      "name": "Paper 2: UK Government",
      "component": "C2",
-     "tier": null,
-     "marks": 84,
-     "minutes": 120,
-     "date": null,
-     "qp": null,
-     "ms": null,
-     "insert": null,
-     "report": null
-    },
-    {
-     "id": "03",
-     "name": "Paper 3: Comparative Politics",
-     "component": "C3",
      "tier": null,
      "marks": 84,
      "minutes": 120,
@@ -175,6 +162,32 @@
      "ms": "https://qualifications.pearson.com/content/dam/pdf/A-Level/Politics/2017/Exam-materials/9pl0-02-rms-20240815.pdf",
      "insert": null,
      "report": "https://qualifications.pearson.com/content/dam/pdf/A-Level/Politics/2017/Exam-materials/9pl0-02-pef-20240815.pdf"
+    },
+    {
+     "id": "3A",
+     "name": "Paper 3A: Comparative Politics – USA",
+     "component": "C3",
+     "tier": null,
+     "marks": 84,
+     "minutes": 120,
+     "date": "2024-06-15",
+     "qp": "https://qualifications.pearson.com/content/dam/pdf/A-Level/Politics/2017/Exam-materials/9pl0-3a-que-20240615.pdf",
+     "ms": "https://qualifications.pearson.com/content/dam/pdf/A-Level/Politics/2017/Exam-materials/9pl0-3a-rms-20240815.pdf",
+     "insert": null,
+     "report": "https://qualifications.pearson.com/content/dam/pdf/A-Level/Politics/2017/Exam-materials/9pl0-3a-pef-20240815.pdf"
+    },
+    {
+     "id": "3B",
+     "name": "Paper 3B: Comparative Politics – Global",
+     "component": "C3",
+     "tier": null,
+     "marks": 84,
+     "minutes": 120,
+     "date": "2024-06-15",
+     "qp": "https://qualifications.pearson.com/content/dam/pdf/A-Level/Politics/2017/Exam-materials/9pl0-3b-que-20240615.pdf",
+     "ms": "https://qualifications.pearson.com/content/dam/pdf/A-Level/Politics/2017/Exam-materials/9pl0-3b-rms-20240815.pdf",
+     "insert": null,
+     "report": "https://qualifications.pearson.com/content/dam/pdf/A-Level/Politics/2017/Exam-materials/9pl0-3b-pef-20240815.pdf"
     }
    ]
   },
@@ -184,7 +197,7 @@
    "public": true,
    "releaseDate": null,
    "boundaries": null,
-   "boundariesUrl": null,
+   "boundariesUrl": "https://qualifications.pearson.com/content/dam/pdf/Support/Grade-boundaries/A-level/2306-gce-subject-grade-boundaries.pdf",
    "papers": [
     {
      "id": "01",
@@ -211,6 +224,32 @@
      "ms": "https://qualifications.pearson.com/content/dam/pdf/A-Level/Politics/2017/Exam-materials/9pl0-02-rms-20230817.pdf",
      "insert": null,
      "report": "https://qualifications.pearson.com/content/dam/pdf/A-Level/Politics/2017/Exam-materials/9pl0-02-pef-20230817.pdf"
+    },
+    {
+     "id": "3A",
+     "name": "Paper 3A: Comparative Politics – USA",
+     "component": "C3",
+     "tier": null,
+     "marks": 84,
+     "minutes": 120,
+     "date": "2023-06-17",
+     "qp": "https://qualifications.pearson.com/content/dam/pdf/A-Level/Politics/2017/Exam-materials/9pl0-3a-que-20230617.pdf",
+     "ms": "https://qualifications.pearson.com/content/dam/pdf/A-Level/Politics/2017/Exam-materials/9pl0-3a-rms-20230817.pdf",
+     "insert": null,
+     "report": "https://qualifications.pearson.com/content/dam/pdf/A-Level/Politics/2017/Exam-materials/9pl0-3a-pef-20230817.pdf"
+    },
+    {
+     "id": "3B",
+     "name": "Paper 3B: Comparative Politics – Global",
+     "component": "C3",
+     "tier": null,
+     "marks": 84,
+     "minutes": 120,
+     "date": "2023-06-17",
+     "qp": "https://qualifications.pearson.com/content/dam/pdf/A-Level/Politics/2017/Exam-materials/9pl0-3b-que-20230617.pdf",
+     "ms": "https://qualifications.pearson.com/content/dam/pdf/A-Level/Politics/2017/Exam-materials/9pl0-3b-rms-20230817.pdf",
+     "insert": null,
+     "report": null
     }
    ]
   },
@@ -220,7 +259,7 @@
    "public": true,
    "releaseDate": null,
    "boundaries": null,
-   "boundariesUrl": null,
+   "boundariesUrl": "https://qualifications.pearson.com/content/dam/pdf/Support/Grade-boundaries/A-level/2206-gce-subject-grade-boundaries.pdf",
    "papers": [
     {
      "id": "01",

@@ -38,6 +38,32 @@
      "ms": null,
      "insert": null,
      "report": null
+    },
+    {
+     "id": "01R",
+     "name": "Paper 1R (regional): Non-fiction Texts and Transactional Writing",
+     "component": "C1",
+     "tier": null,
+     "marks": 90,
+     "minutes": 135,
+     "date": null,
+     "qp": null,
+     "ms": null,
+     "insert": null,
+     "report": null
+    },
+    {
+     "id": "02R",
+     "name": "Paper 2R (regional): Poetry and Prose Texts and Imaginative Writing",
+     "component": "C2",
+     "tier": null,
+     "marks": 60,
+     "minutes": 90,
+     "date": null,
+     "qp": null,
+     "ms": null,
+     "insert": null,
+     "report": null
     }
    ]
   },
@@ -74,6 +100,94 @@
      "ms": null,
      "insert": null,
      "report": null
+    },
+    {
+     "id": "01R",
+     "name": "Paper 1R (regional): Non-fiction Texts and Transactional Writing",
+     "component": "C1",
+     "tier": null,
+     "marks": 90,
+     "minutes": 135,
+     "date": null,
+     "qp": null,
+     "ms": null,
+     "insert": null,
+     "report": null
+    },
+    {
+     "id": "02R",
+     "name": "Paper 2R (regional): Poetry and Prose Texts and Imaginative Writing",
+     "component": "C2",
+     "tier": null,
+     "marks": 60,
+     "minutes": 90,
+     "date": null,
+     "qp": null,
+     "ms": null,
+     "insert": null,
+     "report": null
+    }
+   ]
+  },
+  {
+   "id": "2025-06",
+   "name": "June 2025",
+   "public": true,
+   "releaseDate": null,
+   "boundaries": null,
+   "boundariesUrl": "https://qualifications.pearson.com/content/dam/pdf/Support/Grade-boundaries/International-GCSE/grade-boundaries-june-2025-int-gcse.pdf",
+   "papers": [
+    {
+     "id": "01",
+     "name": "Paper 1: Non-fiction Texts and Transactional Writing",
+     "component": "C1",
+     "tier": null,
+     "marks": 90,
+     "minutes": 135,
+     "date": "2025-05-24",
+     "qp": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Language-A/2016/Exam-materials/4ea1-01-que-20250524.pdf",
+     "ms": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Language-A/2016/Exam-materials/4ea1-01-rms-20250821.pdf",
+     "insert": null,
+     "report": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Language-A/2016/Exam-materials/4ea1-01-pef-20250821.pdf"
+    },
+    {
+     "id": "02",
+     "name": "Paper 2: Poetry and Prose Texts and Imaginative Writing",
+     "component": "C2",
+     "tier": null,
+     "marks": 60,
+     "minutes": 90,
+     "date": "2025-06-07",
+     "qp": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Language-A/2016/Exam-materials/4ea1-02-que-20250607.pdf",
+     "ms": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Language-A/2016/Exam-materials/4ea1-02-rms-20250821.pdf",
+     "insert": null,
+     "report": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Language-A/2016/Exam-materials/4ea1-02-pef-20250821.pdf"
+    },
+    {
+     "id": "01R",
+     "name": "Paper 1R (regional): Non-fiction Texts and Transactional Writing",
+     "component": "C1",
+     "tier": null,
+     "marks": 90,
+     "minutes": 135,
+     "date": "2025-05-24",
+     "qp": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Language-A/2016/Exam-materials/4ea1-01r-que-20250524.pdf",
+     "ms": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Language-A/2016/Exam-materials/4ea1-01r-rms-20250821.pdf",
+     "insert": null,
+     "report": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Language-A/2016/Exam-materials/4ea1-01r-pef-20250821.pdf"
+    },
+    {
+     "id": "02R",
+     "name": "Paper 2R (regional): Poetry and Prose Texts and Imaginative Writing",
+     "component": "C2",
+     "tier": null,
+     "marks": 60,
+     "minutes": 90,
+     "date": "2025-06-07",
+     "qp": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Language-A/2016/Exam-materials/4ea1-02r-que-20250607.pdf",
+     "ms": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Language-A/2016/Exam-materials/4ea1-02r-rms-20250821.pdf",
+     "insert": null,
+     "report": "https://qualifications.pearson.com/content/dam/pdf/International-GCSE/English-Language-A/2016/Exam-materials/4ea1-02r-pef-20250821.pdf"
     }
    ]
   },
@@ -83,7 +197,7 @@
    "public": true,
    "releaseDate": null,
    "boundaries": null,
-   "boundariesUrl": null,
+   "boundariesUrl": "https://qualifications.pearson.com/content/dam/pdf/Support/Grade-boundaries/International-GCSE/grade-boundaries-november-2024-int-gcse.pdf",
    "papers": [
     {
      "id": "01",
@@ -119,7 +233,7 @@
    "public": true,
    "releaseDate": null,
    "boundaries": null,
-   "boundariesUrl": null,
+   "boundariesUrl": "https://qualifications.pearson.com/content/dam/pdf/Support/Grade-boundaries/International-GCSE/grade-boundaries-june-2024-int-gcse.pdf",
    "papers": [
     {
      "id": "01",
@@ -181,7 +295,7 @@
    "public": true,
    "releaseDate": null,
    "boundaries": null,
-   "boundariesUrl": null,
+   "boundariesUrl": "https://qualifications.pearson.com/content/dam/pdf/Support/Grade-boundaries/International-GCSE/2311-intgcse-9-1-subject-grade-boundaries.pdf",
    "papers": [
     {
      "id": "01",
@@ -217,7 +331,7 @@
    "public": true,
    "releaseDate": null,
    "boundaries": null,
-   "boundariesUrl": null,
+   "boundariesUrl": "https://qualifications.pearson.com/content/dam/pdf/Support/Grade-boundaries/International-GCSE/2306-intgcse-9-1-subject-grade-boundaries.pdf",
    "papers": [
     {
      "id": "02",

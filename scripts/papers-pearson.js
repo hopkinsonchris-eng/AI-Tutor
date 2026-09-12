@@ -267,6 +267,12 @@ function* days(from, to) {
 }
 const iso = (yyyymmdd) => `${yyyymmdd.slice(0, 4)}-${yyyymmdd.slice(4, 6)}-${yyyymmdd.slice(6, 8)}`;
 
+// Which form produced a cached url: folder AND file naming must match (the current and the
+// upper-case forms share a folder and differ only in the file name).
+function formOf(forms, url, paper) {
+  return forms.find((f) => url === BASE + f.dir + f.file(paper, 'que', url.match(/(\d{8})\.pdf$/)[1])) || null;
+}
+
 // Probe every date in a window for one form; returns the earliest hit url or null.
 async function findInWindow(dir, fileFn, paper, kind, dates) {
   const results = await Promise.all(dates.map(async (d) => ((await probe(BASE + dir + fileFn(paper, kind, d))) ? d : null)));
@@ -396,23 +402,33 @@ async function harvest(course) {
         });
       } else if (que) {
         // remember which form the cached hit used so sibling papers try it first
-        const f = forms.find((f) => que.startsWith(BASE + f.dir));
+        const f = formOf(forms, que, p.id);
         if (f) { preferred = f.id; report.forms[series.id] = f.id; }
       }
       if (!que) continue;
 
-      const form = forms.find((f) => que.startsWith(BASE + f.dir)) || forms[0];
+      // Mark scheme and examiner report live in the que's folder, but Pearson mixes namings
+      // within a series (9PL0_01_que_20190604.pdf sits beside 9pl0-3b-pef-20190815.pdf), so
+      // probe the que's own naming first and then the other naming in the same folder.
+      const form = formOf(forms, que, p.id) || forms[0];
+      const msForms = [form, ...forms.filter((f) => f.dir === form.dir && f.id !== form.id)];
       const date = iso(que.match(/(\d{8})\.pdf$/)[1]);
       // mark scheme: rms then msc, results-day window plus the exam day itself
       const msWindow = [...new Set([date.replace(/-/g, ''), ...msDates])];
       const ms = await lookup(cache, `${series.id}/${p.id}/ms`, async () => {
-        for (const kind of ['rms', 'msc']) {
-          const u = await findInWindow(form.dir, form.file, p.id, kind, msWindow);
+        for (const f of msForms) for (const kind of ['rms', 'msc']) {
+          const u = await findInWindow(f.dir, f.file, p.id, kind, msWindow);
           if (u) return u;
         }
         return null;
       });
-      const rep = await lookup(cache, `${series.id}/${p.id}/pef`, () => findInWindow(form.dir, form.file, p.id, 'pef', msWindow));
+      const rep = await lookup(cache, `${series.id}/${p.id}/pef`, async () => {
+        for (const f of msForms) {
+          const u = await findInWindow(f.dir, f.file, p.id, 'pef', msWindow);
+          if (u) return u;
+        }
+        return null;
+      });
       // listening audio: only a plain, deterministic URL counts; otherwise omitted
       let audio = null;
       if (p.audio) {

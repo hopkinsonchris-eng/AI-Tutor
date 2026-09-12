@@ -255,13 +255,12 @@ async function probe(url, wantType = 'application/pdf') {
   }
 }
 
-function* weekdays(from, to) {
+// Every calendar day in the window: Pearson's file dates are not always the sitting day
+// (4GN1 June 2024 papers are dated Saturday 11 May 2024), so weekends must be probed too.
+function* days(from, to) {
   const d = new Date(from + 'T00:00:00Z');
   const e = new Date(to + 'T00:00:00Z');
-  for (; d <= e; d.setUTCDate(d.getUTCDate() + 1)) {
-    if (d.getUTCDay() === 0 || d.getUTCDay() === 6) continue;
-    yield d.toISOString().slice(0, 10).replace(/-/g, '');
-  }
+  for (; d <= e; d.setUTCDate(d.getUTCDate() + 1)) yield d.toISOString().slice(0, 10).replace(/-/g, '');
 }
 const iso = (yyyymmdd) => `${yyyymmdd.slice(0, 4)}-${yyyymmdd.slice(4, 6)}-${yyyymmdd.slice(6, 8)}`;
 

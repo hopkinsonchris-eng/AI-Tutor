@@ -23,7 +23,7 @@ function questionMapPrompt(spec, paper) {
   return `You are reading the attached ${spec.board} ${spec.level} ${spec.subject} (${spec.code}) question paper: ${paper.name}, ${paper.seriesName || paper.series}, ${paper.marks} marks in total.
 List every question and every part that carries marks, in the order printed, as one entry per smallest marked part (1(a), 1(b)(i) and so on; write the id exactly as the paper does, without spaces).
 For each give: the marks printed for it; the ONE topic of the specification it mainly tests, chosen from the list below by its id; the key-idea codes it tests from that topic (up to three; only codes from the list); the marking mode — "points" for a mark-by-mark answer, "levels" for an extended answer marked in levels or bands; and the command word or question type in one or two words.
-If the paper offers a choice of questions, list all of them and give each alternative the same "choice" label (for example "A") so the app knows only one of them counts; otherwise "choice" is null.
+If the paper offers a choice of questions (answer one option from several), list every part of every option and label each part "choice": "<section>:<option>" — for example every part of Option A in Section A is "A:1", every part of Option B in Section A is "A:2" — so the app counts one option per section; parts with no choice have "choice": null.
 Do not copy any question text.
 TOPICS OF THE SPECIFICATION (id | name | codes):
 ${topicList(spec)}
@@ -40,9 +40,9 @@ function validateQuestionMap(spec, o, total) {
     if (!spec.topics.some(t => t.id === q.topic)) return `question ${q.q}: topic ${q.topic} is not in the specification`;
     if (!['points', 'levels'].includes(q.mode)) return `question ${q.q}: mode must be points or levels`;
     if (q.codes && !Array.isArray(q.codes)) return `question ${q.q}: codes must be a list`;
-    if (q.choice) choices[q.choice] = Math.max(choices[q.choice] || 0, q.marks); else sum += q.marks;
+    if (q.choice) { const [sec, alt] = String(q.choice).split(':'); const g = choices[sec] = choices[sec] || {}; g[alt || '1'] = (g[alt || '1'] || 0) + q.marks; } else sum += q.marks;
   }
-  for (const m of Object.values(choices)) sum += m;
+  for (const g of Object.values(choices)) sum += Math.max(...Object.values(g));
   if (total && (sum < total * 0.9 || sum > total * 1.1)) return `marks add up to ${sum}, not ${total}`;
   return null;
 }

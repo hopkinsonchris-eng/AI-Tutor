@@ -143,34 +143,50 @@ const server = http.createServer((req, res) => {
   await snap(page, '5-admin-courses', 'The course list: provenance, models, prompt version, judge, last monthly run, retract / check now');
   await page.context().close();
 
-  /* 6–9. the three panels (tooler criteria 1, 2, 13): wide, a room, tablet drawer, phone drawer — with the layout asserted, not just photographed */
-  page = await open('tok-matthew', { width: 1280, height: 860 }, '#rail-r .nudge');
-  await page.waitForFunction(() => /Matthew,/.test(document.querySelector('#rail-r').textContent), null, { timeout: 15000 });
-  let l = await box(page, '#rail-l'), c = await box(page, 'main.centre'), r = await box(page, '#rail-r');
-  must(l.x >= 0 && l.x + l.width <= c.x + 1 && c.x + c.width <= r.x + 1 && r.x + r.width <= 1281, `1280px: three columns side by side (rail ${Math.round(l.width)}, centre ${Math.round(c.width)}, rail ${Math.round(r.width)})`);
-  must(!(await page.locator('nav.bottom').isVisible()) && (await page.locator('nav.side').isVisible()), '1280px: the nav lives in the left rail, no bottom bar');
-  must((await page.locator('#rail-l .ccard').count()) === 5 && (await page.locator('#rail-l .tnode').count()) === 9, `left rail: five course cards and the nine geography rooms (eight content topics and the skills strand) as a tree (cards ${await page.locator('#rail-l .ccard').count()}, rooms ${await page.locator('#rail-l .tnode').count()}: ${(await page.locator('#rail-l').textContent()).slice(0,300)})`);
-  must(/Next step/.test(await page.locator('#rail-r').textContent()) && /Flash cards due/.test(await page.locator('#rail-r').textContent()) && (await page.locator('#rail-r .ring').count()) === 5, 'right rail on Today: next step, cards due, five progress rings');
+  /* 6–9. the campus (tooler criteria 1, 3, 4, 5, 6, 7, 9, 11, 13): campus home, corridor, classroom with the wall, phone */
+  page = await open('tok-matthew', { width: 1280, height: 900 }, '#v-campus .campus');
+  await page.waitForFunction(() => /Matthew,/.test(document.querySelector('#v-campus').textContent), null, { timeout: 15000 });
+  must((await page.locator('#v-campus .bldg[data-bldg]').count()) === 5 && (await page.locator('#v-campus [data-bldg-view="exam"]').count()) === 1 && (await page.locator('#v-campus [data-bldg-view="office"]').count()) === 1, 'campus: five subject buildings, the Exam Hall and the Office');
+  must((await page.locator('#qBar [data-course]').count()) === 5 && (await page.locator('#qBar [data-v="exam"]').count()) === 1 && (await page.locator('#qBar [data-v="office"]').count()) === 1 && !(await page.locator('nav.bottom').isVisible()), '1280px: the quick bar carries every course, the Exam Hall and the Office; no bottom bar');
+  must(/Now ·/.test(await page.locator('#v-campus .board').textContent()) && (await page.locator('#v-campus .act.go').count()) === 1 && /From Coach/.test(await page.locator('#v-campus .board').textContent()) && /Then today/.test(await page.locator('#v-campus .board').textContent()), 'the notice board: Now with Go, the coach’s note, the rest of today');
+  must((await page.locator('#v-campus .hint[data-hint="campus"]').count()) === 1, 'first visit: the campus hint is up');
   must(/day streak/.test(await page.locator('#status').textContent()) && (await page.locator('#status').isVisible()), 'status strip visible with the streak');
-  await snap(page, '6-wide-today', 'Wide screen: left rail (nav, quick-jump, course switcher, topic tree with status dots), centre (today’s session), right rail (tutor-written next step, cards due, progress rings, streak), status strip');
-  await page.click('#rail-r [data-cards]');
+  const doorFill = await page.locator('#v-campus .bldg[data-bldg="OCR-H481"] polygon[fill="#2B4C7E"]').count();
+  must(doorFill >= 1, 'the Geography building’s door wears Geography’s colour');
+  await snap(page, '6-campus', 'The campus: one building per subject with its colour on the door, lit windows for progress and a flag for what is due; the Exam Hall and the Office; the notice board says what to do now, with the coach’s note and the rest of the day; the quick bar under the date');
+  await page.click('#v-campus [data-cards]');
   await page.waitForSelector('#v-today .fc', { timeout: 5000 });
   await page.locator('#v-today .fc').scrollIntoViewIfNeeded();
   must((await page.locator('#v-today .fc.flipped').count()) === 0 && /Turn over/.test(await page.locator('#v-today .fc').textContent()), 'flash card review: an index card, question up');
   const band = await page.locator('#v-today .fc-front .fc-band').evaluate(e => getComputedStyle(e).backgroundColor);
-  const stripe = await page.locator('#rail-l .ccard .cmain').first().evaluate(e => getComputedStyle(e).boxShadow);
-  must(band === 'rgb(43, 76, 126)' && /rgb\(43, 76, 126\)/.test(stripe), `the card wears Geography's colour, the same as the course stripe in the rail (band ${band})`);
-  await snap(page, '20-flash-card-front', 'Flash card review: an index card in the subject’s colour, question up, matching the course’s colour stripe in the left rail');
+  const chip = await page.locator('#qBar [data-course="OCR-H481"] i').evaluate(e => getComputedStyle(e).borderColor);
+  must(band === 'rgb(43, 76, 126)' && /rgb\(43, 76, 126\)/.test(chip), `the card wears Geography's colour, the same as its chip on the quick bar (band ${band}, chip ${chip})`);
+  await snap(page, '20-flash-card-front', 'Flash card review: an index card in the subject’s colour, question up, matching the course’s chip on the quick bar');
   await page.click('#v-today .fc');
   await page.waitForSelector('#v-today .fc.flipped', { timeout: 5000 });
   await page.waitForTimeout(700);
   must((await page.locator('#v-today [data-cardres="1"]').count()) === 1 && (await page.locator('#v-today [data-cardres="0"]').count()) === 1, 'turned over: the answer face is up and Right / Wrong are offered');
   await snap(page, '21-flash-card-back', 'The same card turned over: the answer on the back, Right and Wrong to mark yourself');
   await page.click('#v-today [data-cardres="1"]');
-  await page.click('#rail-l [data-open="OCR-H481|1.2"]');
-  await page.waitForFunction(() => /This room/.test(document.querySelector('#rail-r').textContent), null, { timeout: 10000 });
-  must((await page.locator('#rail-l .tnode.cur').count()) === 1 && /Watch and read/.test(await page.locator('#rail-r').textContent()) && (await page.locator('#rail-r a.link').count()) >= 1, 'in a room: the tree marks where you are; the right rail shows this room, its cards, mistakes and links');
-  await snap(page, '7-wide-room', 'Inside a room: the tree marks the current topic; the right rail is contextual — state, key-idea codes, cards due here, your mistakes here, watch and read');
+  /* the corridor */
+  await page.click('#qBar [data-course="OCR-H481"]');
+  await page.waitForSelector('#v-rooms .door', { timeout: 10000 });
+  must((await page.locator('#v-rooms .door').count()) === 9 && (await page.locator('#v-rooms .sign').count()) >= 3 && (await page.locator('#v-rooms .door[data-s="Fluent"]').count()) >= 1 && (await page.locator('#v-rooms .hint[data-hint="corridor"]').count()) === 1, 'the corridor: nine doors under their component signs, state strips, the corridor hint');
+  must(/Jump to a topic/.test(await page.locator('#wall').textContent()) && /In this building/.test(await page.locator('#wall').textContent()), 'the wall beside the corridor: jump box, what is due in this building');
+  const chipNow = await page.locator('#qBar [data-course="OCR-H481"]').getAttribute('class');
+  must(!/ghost/.test(chipNow), 'walking into the building turns its chip on the quick bar solid');
+  await page.fill('#jump', 'stationary');
+  await page.waitForSelector('#jumpOut .tnode', { timeout: 5000 });
+  must(/Mathematics/.test(await page.locator('#jumpOut').textContent()), 'quick-jump finds a maths topic by a key-idea word');
+  await page.fill('#jump', '');
+  await snap(page, '7-corridor', 'Inside a building: one door per topic under its component sign, a state strip on each door, what is due behind it; the wall says what is due in this building and has the jump box');
+  /* the classroom */
+  await page.click('#v-rooms [data-open="OCR-H481|1.2"]');
+  await page.waitForFunction(() => /This room/.test(document.querySelector('#wall').textContent), null, { timeout: 10000 });
+  must((await page.locator('#v-rooms #backRooms').count()) === 1 && (await page.locator('#v-rooms .doorstep').count()) >= 1 && /Watch and read/.test(await page.locator('#wall').textContent()) && (await page.locator('#wall a.link').count()) >= 1 && (await page.locator('#v-rooms .hint[data-hint="room"]').count()) === 1, 'in a room: Corridor button, neighbouring doors, the wall shows this room, its cards, mistakes and links, and the room hint');
+  let c = await box(page, 'main.centre'), w = await box(page, '#wall');
+  must(c.x + c.width <= w.x + 1 && w.x + w.width <= 1281, `1280px room: centre and wall side by side (centre ${Math.round(c.width)}, wall ${Math.round(w.width)})`);
+  await snap(page, '8-classroom-wall', 'A classroom: breadcrumb, Corridor button and neighbouring doors above the desk, the wall beside it with this room, cards due, mistakes, watch and read');
   await page.click('#v-rooms .stations [data-station="cards"]');
   await page.waitForSelector('#v-rooms .fc-deck .fc.mini', { timeout: 5000 });
   must((await page.locator('#v-rooms .fc-deck .fc.mini').count()) >= 3, 'the room’s deck is a grid of mini index cards');
@@ -178,53 +194,40 @@ const server = http.createServer((req, res) => {
   await page.waitForSelector('#v-rooms .fc-deck .fc.mini.flipped', { timeout: 5000 });
   await page.waitForTimeout(700);
   await snap(page, '22-room-deck', 'The room’s flash-card deck: mini index cards in the subject’s colour, one turned over');
-  await page.fill('#jump', 'stationary');
-  await page.waitForSelector('#jumpOut .tnode', { timeout: 5000 });
-  must(/Mathematics/.test(await page.locator('#jumpOut').textContent()), 'quick-jump finds a maths topic by a key-idea word');
+  /* back out, and the hints do not return */
+  await page.click('#backRooms'); await page.waitForSelector('#v-rooms .door', { timeout: 5000 });
+  await page.click('#backCampus'); await page.waitForSelector('#v-campus .campus', { timeout: 5000 });
+  must((await page.locator('#v-campus .hint').count()) === 0 && (await page.locator('#v-rooms .hint').count()) === 0, 'walking back out: the hints have gone and do not return');
   await page.context().close();
 
-  /* iPad landscape: a room with eight station tabs must not push the centre under the right rail */
-  page = await open('tok-matthew', { width: 1180, height: 820 }, '#rail-l .ccard');
-  await page.click('#rail-l [data-course="EDX-9MA0"]'); await page.waitForSelector('#rail-l [data-open="EDX-9MA0|P2"]');
-  await page.click('#rail-l [data-open="EDX-9MA0|P2"]'); await page.waitForSelector('[data-station="formulae"]'); await page.click('[data-station="formulae"]');
-  c = await box(page, 'main.centre'); r = await box(page, '#rail-r'); const pnl = await box(page, '#v-rooms .panel');
-  must(c.x + c.width <= r.x + 1 && pnl.x + pnl.width <= r.x - 8 && Math.abs((pnl.x - c.x) - ((c.x + c.width) - (pnl.x + pnl.width))) <= 2, `1180px room: the panel stays centred in its column (centre ${Math.round(c.x)}–${Math.round(c.x + c.width)}, panel ${Math.round(pnl.x)}–${Math.round(pnl.x + pnl.width)}, right rail from ${Math.round(r.x)})`);
-  must(/data-act="signout"/.test(await page.locator('#rail-l').innerHTML()) && /data-act="courses"/.test(await page.locator('#rail-l').innerHTML()), 'left rail: Add or change courses and Sign out present');
-  await snap(page, '10-ipad-room', 'iPad landscape inside a maths room: the station tabs scroll within the panel, the panel stays centred, and the rail ends with Add or change courses and Sign out');
+  /* iPad landscape: a room with eight station tabs beside the wall */
+  page = await open('tok-matthew', { width: 1180, height: 820 }, '#qBar .qchip');
+  await page.click('#qBar [data-course="EDX-9MA0"]'); await page.waitForSelector('#v-rooms [data-open="EDX-9MA0|P2"]');
+  await page.click('#v-rooms [data-open="EDX-9MA0|P2"]'); await page.waitForSelector('[data-station="formulae"]'); await page.click('[data-station="formulae"]');
+  c = await box(page, 'main.centre'); w = await box(page, '#wall'); const pnl = await box(page, '#v-rooms .panel');
+  must(c.x + c.width <= w.x + 1 && pnl.x + pnl.width <= w.x - 8, `1180px room: the panel stays inside its column beside the wall (centre ${Math.round(c.x)}–${Math.round(c.x + c.width)}, panel ${Math.round(pnl.x)}–${Math.round(pnl.x + pnl.width)}, wall from ${Math.round(w.x)})`);
+  await page.click('#qBar [data-v="office"]'); await page.waitForSelector('#v-office [data-act="courses"]');
+  must(/data-act="signout"|id="signOut"/.test(await page.locator('#v-office').innerHTML()) && (await page.locator('#v-office .ccard').count()) === 5, 'the Office: Add or change courses, the account with Sign out, the five courses with pins');
+  await snap(page, '10-office', 'The Office: courses with pins and progress, Add or change courses, the account');
   await page.context().close();
 
-  page = await open('tok-matthew', { width: 900, height: 1100 }, '#rail-l .ccard');
-  l = await box(page, '#rail-l'); r = await box(page, '#rail-r');
-  must(l.x >= 0 && l.width > 200 && r.x >= 899, '900px: left rail in the page, right rail off-screen until asked');
-  await page.click('[data-drawer="r"]');
-  await page.waitForFunction(() => { const b = document.querySelector('#rail-r').getBoundingClientRect(); return b.right <= window.innerWidth + 1 && b.left < window.innerWidth - 100; }, null, { timeout: 5000 });
-  r = await box(page, '#rail-r'); must(r.x + r.width <= 901 && r.x < 899, '900px: the right rail slides in as a drawer');
-  await snap(page, '8-tablet-drawer', 'iPad width: the left rail is part of the page; the right rail opens as a drawer from the header button');
-  await page.keyboard.press('Escape');
-  await page.waitForFunction(() => document.querySelector('#rail-r').getBoundingClientRect().left >= 899, null, { timeout: 5000 });
-  must(true, '900px: Escape closes the drawer');
-  await page.context().close();
-
-  page = await open('tok-matthew', { width: 390, height: 844 }, '#status');
-  l = await box(page, '#rail-l'); r = await box(page, '#rail-r');
-  must(l.x + l.width <= 1 && r.x >= 389, '390px: both rails off-screen, the centre has the whole width');
-  must((await page.locator('nav.bottom').isVisible()) && (await page.locator('#status').isVisible()), '390px: bottom nav and status strip visible');
-  const sb = await box(page, '#status'), nb = await box(page, 'nav.bottom');
-  must(sb.y + sb.height <= nb.y + 1, `390px: the status strip sits above the bottom nav (strip ends ${Math.round(sb.y + sb.height)}, nav starts ${Math.round(nb.y)})`);
-  await page.click('[data-drawer="l"]');
-  await page.waitForFunction(() => document.querySelector('#rail-l').getBoundingClientRect().left >= -1, null, { timeout: 5000 }); await page.waitForTimeout(300);
-  l = await box(page, '#rail-l'); must(l.x >= -1 && l.width < 390, '390px: the left drawer opens from the edge button');
-  await snap(page, '9-phone-drawer', 'Phone: the course and topic drawer over the session, bottom nav and status strip kept');
-  await page.click('#scrim', { position: { x: 380, y: 400 } });
-  await page.waitForFunction(() => document.querySelector('#rail-l').getBoundingClientRect().left < -1, null, { timeout: 5000 });
-  must(true, '390px: tapping outside closes the drawer');
+  /* phone: the campus stacks, the bottom bar carries Campus, Exam Hall, Progress, Office */
+  page = await open('tok-matthew', { width: 390, height: 844 }, '#v-campus .campus');
+  must((await page.locator('nav.bottom').isVisible()) && (await page.locator('nav.bottom button').count()) === 4 && (await page.locator('#status').isVisible()), '390px: bottom nav of four and the status strip visible');
+  const sw = await page.evaluate(() => document.documentElement.scrollWidth);
+  must(sw <= 390, `390px: nothing scrolls sideways (page width ${sw})`);
+  const art = await box(page, '#v-campus .campusart'), bd = await box(page, '#v-campus .board');
+  must(bd.y >= art.y + art.height - 1, '390px: the notice board stacks under the drawing');
+  await snap(page, '9-phone-campus', 'Phone: the campus and the notice board stack, the quick bar scrolls sideways, the bottom bar carries Campus, Exam Hall, Progress, Office');
+  await page.click('nav.bottom button[data-v="exam"]'); await page.waitForSelector('#v-exam .panel', { timeout: 5000 });
+  must(!(await page.locator('#v-campus').isVisible()) && (await page.locator('#v-exam').isVisible()), '390px: the bottom bar reaches the Exam Hall');
   await page.context().close();
 
   /* 11. a room with a written and checked kit (tooler course depth, criterion 5) */
-  page = await open('tok-matthew', { width: 1280, height: 900 }, '#rail-l .ccard');
-  await page.click('#rail-l [data-course="AQA-7402"]'); await page.waitForSelector('#rail-l [data-open="AQA-7402|3.1"]');
-  must((await page.locator('#rail-l .pen').count()) === biology.topics.length - 1, 'tree: every biology room without a kit yet carries the being-written mark');
-  await page.click('#rail-l [data-open="AQA-7402|3.1"]');
+  page = await open('tok-matthew', { width: 1280, height: 900 }, '#qBar .qchip');
+  await page.click('#qBar [data-course="AQA-7402"]'); await page.waitForSelector('#v-rooms [data-open="AQA-7402|3.1"]');
+  must((await page.locator('#v-rooms .pen').count()) === biology.topics.length - 1, 'corridor: every biology room without a kit yet carries the being-written mark');
+  await page.click('#v-rooms [data-open="AQA-7402|3.1"]');
   await page.waitForFunction(() => /Written and checked/.test(document.querySelector('#v-rooms').textContent), null, { timeout: 10000 });
   must(/Key facts & links/.test(await page.locator('.stations').textContent()) && /Required practical 1/.test(await page.locator('#v-rooms').textContent()) && (await page.locator('#v-rooms [data-lxrev]').count()) === 4, 'room: kit lesson with worked examples, the practical method sheet and the Key facts tab');
   await snap(page, '11-room-with-kit', 'A built course’s room after depth: the checked lesson with one section per key idea, faded worked examples, the required-practical method sheet, and the provenance line');
@@ -234,10 +237,10 @@ const server = http.createServer((req, res) => {
   await page.context().close();
 
   /* 12. the maths course after its rebuild: a room with a checked kit keeps the course’s verified links and official booklet */
-  page = await open('tok-matthew', { width: 1280, height: 900 }, '#rail-l .ccard');
-  await page.click('#rail-l [data-course="EDX-9MA0"]'); await page.waitForSelector('#rail-l [data-open="EDX-9MA0|P2"]');
-  must((await page.locator('#rail-l .pen').count()) === 0, 'tree: every maths room has its kit, no being-written marks');
-  await page.click('#rail-l [data-open="EDX-9MA0|P2"]');
+  page = await open('tok-matthew', { width: 1280, height: 900 }, '#qBar .qchip');
+  await page.click('#qBar [data-course="EDX-9MA0"]'); await page.waitForSelector('#v-rooms [data-open="EDX-9MA0|P2"]');
+  must((await page.locator('#v-rooms .pen').count()) === 0, 'corridor: every maths room has its kit, no being-written marks');
+  await page.click('#v-rooms [data-open="EDX-9MA0|P2"]');
   await page.waitForFunction(() => /Written and checked/.test(document.querySelector('#v-rooms').textContent), null, { timeout: 10000 });
   must(/Formulae & links/.test(await page.locator('.stations').textContent()) && /class="cite"[^>]*>2\.1</.test(await page.locator('#v-rooms').innerHTML()) && (await page.locator('#v-rooms [data-lxrev]').count()) >= 4 && /Formulae sheet/.test(await page.locator('#v-rooms').textContent()), 'maths room: the checked kit lesson cites the document’s codes, has faded worked examples and a Formulae sheet, and the tab reads Formulae & links');
   await snap(page, '12-maths-room-with-kit', 'Edexcel A level Maths after the rebuild: the checked kit lesson for Algebra and functions, one section per content statement (2.1–2.11), faded worked examples with cues, and the provenance line');
@@ -248,26 +251,26 @@ const server = http.createServer((req, res) => {
   await page.context().close();
 
   /* 14. the International GCSE courses: German and Foundation Maths rooms with their checked kits */
-  page = await open('tok-matthew', { width: 1280, height: 900 }, '#rail-l .ccard');
-  await page.click('#rail-l [data-course="EDX-4GN1"]'); await page.waitForSelector('#rail-l [data-open="EDX-4GN1|A"]');
-  must((await page.locator('#rail-l .pen').count()) === 0, 'tree: every German room has its kit');
-  await page.click('#rail-l [data-open="EDX-4GN1|A"]');
+  page = await open('tok-matthew', { width: 1280, height: 900 }, '#qBar .qchip');
+  await page.click('#qBar [data-course="EDX-4GN1"]'); await page.waitForSelector('#v-rooms [data-open="EDX-4GN1|A"]');
+  must((await page.locator('#v-rooms .pen').count()) === 0, 'corridor: every German room has its kit');
+  await page.click('#v-rooms [data-open="EDX-4GN1|A"]');
   await page.waitForFunction(() => /Written and checked/.test(document.querySelector('#v-rooms').textContent), null, { timeout: 10000 });
   must(/[äöüß]/.test(await page.locator('#v-rooms').textContent()) && (await page.locator('#v-rooms [data-lxrev]').count()) >= 4, 'German room: the checked kit lesson carries real umlauts and faded worked examples');
-  await page.waitForFunction(() => /describing your house and home/.test(document.querySelector('#rail-r').textContent), null, { timeout: 10000 });
-  must((await page.locator('#rail-r .vid').count()) === 2 && !/youtube\.com\/results/.test(await page.locator('#rail-r').innerHTML()) && (await page.locator('#rail-r [data-pinvideo]').count()) === 2, 'German room rail: two found-and-checked videos with Pin buttons, no bare YouTube search link');
+  await page.waitForFunction(() => /describing your house and home/.test(document.querySelector('#wall').textContent), null, { timeout: 10000 });
+  must((await page.locator('#wall .vid').count()) === 2 && !/youtube\.com\/results/.test(await page.locator('#wall').innerHTML()) && (await page.locator('#wall [data-pinvideo]').count()) === 2, 'German room rail: two found-and-checked videos with Pin buttons, no bare YouTube search link');
   await snap(page, '14-igcse-german-room', 'Edexcel International GCSE German, topic area A: the checked kit lesson in English with every German example, vocabulary fields from the document’s own list and faded worked examples');
-  await page.click('#rail-l [data-course="EDX-4MA1"]'); await page.waitForSelector('#rail-l [data-open="EDX-4MA1|1.1"]');
-  must((await page.locator('#rail-l .pen').count()) === 0, 'tree: every Foundation Maths room has its kit');
-  await page.click('#rail-l [data-open="EDX-4MA1|1.1"]');
+  await page.click('#qBar [data-course="EDX-4MA1"]'); await page.waitForSelector('#v-rooms [data-open="EDX-4MA1|1.1"]');
+  must((await page.locator('#v-rooms .pen').count()) === 0, 'corridor: every Foundation Maths room has its kit');
+  await page.click('#v-rooms [data-open="EDX-4MA1|1.1"]');
   await page.waitForFunction(() => /Written and checked/.test(document.querySelector('#v-rooms').textContent), null, { timeout: 10000 });
   must(/Formulae & links/.test(await page.locator('.stations').textContent()) && /Formulae sheet/.test(await page.locator('#v-rooms').textContent()), 'Foundation Maths room: the checked kit has a Formulae sheet and the Formulae & links tab');
   await snap(page, '15-igcse-maths-room', 'Edexcel International GCSE Mathematics A (Foundation), Integers: the checked kit lesson, one section per content statement, and its Formulae sheet against the paper’s Appendix 4');
   await page.context().close();
 
   /* ---- real papers: pick a real OCR paper, photograph a page, assign, confirm, marks with slip-first, report ---- */
-  page = await open('tok-matthew', { width: 1280, height: 900 }, '#rail-l .ccard');
-  await page.click('nav.side button[data-v="exam"]'); await page.waitForSelector('.pser', { timeout: 15000 });
+  page = await open('tok-matthew', { width: 1280, height: 900 }, '#qBar .qchip');
+  await page.click('#qBar [data-v="exam"]'); await page.waitForSelector('.pser', { timeout: 15000 });
   must((await page.locator('.pser').count()) >= 3 && (await page.locator('.pser.locked[disabled]').count()) >= 1 && /Locked until/.test(await page.locator('.pser.locked').first().textContent()), 'exam: the board’s series from the index, the newest locked with its release date');
   must(/^https:\/\/www\.ocr\.org\.uk\//.test(await page.locator('.prow a.act').first().getAttribute('href')) && (await page.locator('[data-pmark]').count()) >= 1 && /stay on OCR’s website/.test(await page.locator('#v-exam').textContent()), 'exam: papers open on the board’s own site and can be marked');
   await snap(page, '16-exam-real-papers', 'The Exam Hall for OCR A level Geography: every public series from OCR’s own site, June 2026 locked until its release date, each paper opening on ocr.org.uk with Open paper and Mark my answers, and the notice that nothing of the board’s is stored.');

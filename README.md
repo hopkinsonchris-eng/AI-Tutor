@@ -227,6 +227,12 @@ Sonnet 5 at API rates ($2/$10 per million tokens in/out): coach turn well under 
 
 **The skill.** `.claude/skills/course-builder/` is the same procedure for a person: identify the document, choose the family, outline, topics, validate, judge, ship — and how to run the monthly pass by hand.
 
+## Finding your way: the campus
+
+After sign-in the student lands on the **campus**: an axonometric ink drawing with one building per subject in their portfolio (a different shape each, the subject's colour on the door), the **Exam Hall** and the **Office**. Windows light up with progress; one flag per building says what needs attention (red: a re-test or an overdue review; amber: cards or a review due today; blue: a new lesson today). The drawing is tinted by the time of day. Beside it the **notice board** names the one thing to do now with a Go button that lands on the right desk, the coach's note, the rest of today, and **Ask the caretaker** — a question over the student's own map answered in one line with a door to open (`src/gen.js` `caretakerPrompt`, small model, under the daily cap).
+
+A building opens its **corridor**: one door per topic under its component sign, a state strip on each door and a note saying what is due. A door opens the classroom: the desk and its stations as before, with the **wall** beside it (this room, cards due, the desktop, mistakes, watch and read). The **quick bar** under the date jumps to any subject's corridor from anywhere; a chip is dashed until that corridor has been walked once. The Office holds courses (with pins), the account and, for the admin, the Admin desk. Three hints appear once each — campus, corridor, classroom — and are remembered with the student's progress. The renderer is `src/campus.js` (`campusSvg(model)`), tested on its own in `tests/campus.test.js`.
+
 ## Extending
 
 **A new subject or board:** a student's Add for a course that is not mapped never starts a build; it sends a request to the Admin tab's review queue (a red count on the Admin tab), and only the admin presses *Build it now*, which spends the API. Once published the student adds it. To hand-write one instead (or to give a built course the depth of the built-in four), follow the course-builder skill: `src/specs/<board>-<code>.js` exporting a spec object, required in `build.js`, passing `npm test`. Hand-written and Worker-built courses are the same shape.

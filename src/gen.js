@@ -119,5 +119,28 @@ function validateMarking(topic, o, marks) {
   return null;
 }
 
+/* The caretaker answers "where do I…" over the student's own map: every room with its state, what is due, recent mistakes.
+   One line back, plus the door to open. Small model, small call. */
+function caretakerPrompt(state, specs, today, question) {
+  const rooms = [];
+  for (const sub of state.setup.subjects) { const sp = specs[sub.specId]; if (!sp) continue;
+    for (const [id, n] of Object.entries(state.nodes)) { if (n.spec !== sp.id) continue; const t = sp.topics.find(x => x.id === n.topic); if (!t) continue; rooms.push(`${id} | ${sp.subject} (${sp.board} ${sp.code}) | ${t.id} ${t.name} | ${n.state}`); } }
+  const dueCards = Object.values(state.cards || {}).filter(c => !c.due || c.due <= today);
+  const byRoom = {}; for (const c of dueCards) byRoom[c.node] = (byRoom[c.node] || 0) + 1;
+  const errs = (state.errors || []).slice(0, 10).map(e => `${e.date} ${e.node} ${e.mode}: ${String(e.ref || '').slice(0, 80)}`);
+  const retests = (state.errors || []).filter(e => e.paper && e.retestDue && e.retestDue <= today && !e.resolved && !e.relearn).map(e => e.node);
+  return `You are the caretaker of a student's study campus. Answer the student's question using ONLY the map below, in one plain sentence (at most 30 words), and name the one door to open. No lists, no exclamation marks, no praise.
+Rooms (id | subject | topic | how well known):
+${rooms.slice(0, 160).join('\n')}
+Flash cards due today by room: ${Object.entries(byRoom).map(([k, v]) => `${k}:${v}`).join(', ') || 'none'}
+Re-tests due: ${retests.join(', ') || 'none'}
+Recent mistakes: ${errs.join('; ') || 'none'}
+Other places: exam = the Exam Hall (real past papers, re-tests, grade boundaries); prog = Progress (effort, error log, weekly report); office = the Office (courses, account); today = the full plan for today.
+Stations inside a room: lesson, cards (flash cards), practise, essay, exit (exit ticket), desktop.
+Question: ${JSON.stringify(String(question).slice(0, 200))}
+Reply with JSON only: {"text": "<one sentence>", "room": "<room id from the map or null>", "station": "<station or null>", "view": "<exam|prog|office|today or null>"}. If the question is not about studying here, say so in the sentence and set room and view to null.`;
+}
+function validateCaretaker(o) { if (!o || typeof o !== 'object') return 'no answer'; if (typeof o.text !== 'string' || !o.text.trim()) return 'no text'; if (o.text.split(/\s+/).length > 45) return 'too long'; if (o.room != null && typeof o.room !== 'string') return 'bad room'; if (o.view != null && !['exam', 'prog', 'office', 'today'].includes(o.view)) return 'bad view'; return null; }
+
 if (typeof module !== 'undefined') module.exports = { topicOf, ideaCodes, specBlock, lessonPrompt, cardsPrompt, transcribePrompt, cardsFromNotesPrompt, questionsPrompt, essayQuestionPrompt, markEssayPrompt, coachPrompt,
-  validCodes, validateLesson, validateCards, validateQuestions, validateEssayQ, validateMarking, weeklyNotePrompt };
+  validCodes, validateLesson, validateCards, validateQuestions, validateEssayQ, validateMarking, weeklyNotePrompt, caretakerPrompt, validateCaretaker };

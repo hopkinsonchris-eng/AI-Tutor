@@ -15,27 +15,25 @@
 </style>
 </head>
 <body>
-<header><div class="banner"><div class="wrap bbar"><button class="brand" id="brand" title="Study Platform"><span class="bmark" aria-hidden="true"></span>Study Platform</button><div class="bwhere" id="bWhere"></div><div class="bwho" id="bWho"></div></div></div><div class="wrap hbar"><button class="edge" data-drawer="l" aria-label="Courses and topics" title="Courses and topics">▤</button><div class="hmid"><div class="hdate" id="hDate">—</div><div class="hphase" id="hPhase">Loading…</div></div><div class="gradechip" id="hGrade"></div><button class="edge" data-drawer="r" aria-label="Now: next step, cards, resources" title="Now">◧</button></div></header>
+<header><div class="banner"><div class="wrap bbar"><button class="brand" id="brand" title="Study Platform"><span class="bmark" aria-hidden="true"></span>Study Platform</button><div class="bwhere" id="bWhere"></div><div class="bwho" id="bWho"></div></div></div><div class="wrap hbar"><div class="hmid"><div class="hdate" id="hDate">—</div><div class="hphase" id="hPhase">Loading…</div></div><div class="gradechip" id="hGrade"></div></div><div class="wrap qbar" id="qBar"></div></header>
 <div class="shell" id="shell">
- <aside class="rail rail-l hide" id="rail-l" aria-label="Courses and topics" aria-expanded="false"></aside>
  <main class="centre">
-  <section id="v-login" class="hide"></section><section id="v-setup" class="hide"></section><section id="v-today"></section><section id="v-rooms" class="hide"></section><section id="v-exam" class="hide"></section><section id="v-prog" class="hide"></section><section id="v-admin" class="hide"></section>
+  <section id="v-login" class="hide"></section><section id="v-setup" class="hide"></section><section id="v-campus"></section><section id="v-today" class="hide"></section><section id="v-rooms" class="hide"></section><section id="v-exam" class="hide"></section><section id="v-prog" class="hide"></section><section id="v-office" class="hide"></section><section id="v-admin" class="hide"></section>
   <div class="status" id="status"></div>
  </main>
- <aside class="rail rail-r hide" id="rail-r" aria-label="Now" aria-expanded="false"></aside>
+ <aside class="wall hide" id="wall" aria-label="On the wall"></aside>
 </div>
-<div class="scrim" id="scrim"></div>
 <nav class="bottom">
- <button data-v="today" aria-selected="true"><span class="ic">◉</span>Today</button>
- <button data-v="rooms" aria-selected="false"><span class="ic">▦</span>Rooms</button>
- <button data-v="exam" aria-selected="false"><span class="ic">◫</span>Exam</button>
+ <button data-v="campus" aria-selected="true"><span class="ic">⌂</span>Campus</button>
+ <button data-v="exam" aria-selected="false"><span class="ic">◫</span>Exam Hall</button>
  <button data-v="prog" aria-selected="false"><span class="ic">◔</span>Progress</button>
- <button data-v="admin" aria-selected="false" class="navAdmin hide"><span class="ic">⚙</span>Admin</button>
+ <button data-v="office" aria-selected="false"><span class="ic">⚙</span>Office</button>
 </nav>
 <script>
 /*__CORE__*/
 /*__GEN__*/
 /*__PAPERS__*/
+/*__CAMPUS__*/
 /*__SPECS__*/
 /*__AUTHORED__*/
 /*__KITS__*/
@@ -210,22 +208,22 @@ function setupValid(){const st=UI.setup;if(!st.student||!st.subjects.length)retu
 
 /* ============ HEADER / TODAY ============ */
 /* the banner: where the student is in the app, and who is signed in */
-function whereAmI(){if(AUTH_MODE&&!AUTH.user)return [['Sign in']];if(!S)return [[isAdmin()&&view==='admin'?'Admin':'Set up your courses']];
+function whereAmI(){if(AUTH_MODE&&!AUTH.user)return [['Sign in']];if(!S)return view==='admin'&&isAdmin()?[['Office'],['Admin',true]]:[['Set up your courses',true]];
   const sp=(()=>{try{return activeSpec();}catch(e){return null;}})();const subj=sp?`${sp.subject}`:'';
-  if(view==='rooms'){if(UI.room){const {spec,topic}=nodeTopic(UI.room);const st=UI.station&&UI.station!=='lesson'?UI.station==='cards'?'Flash cards':UI.station==='practise'?'Practise':UI.station==='essay'?(spec.essaySubject?'Essay':'Exam question'):UI.station==='mark'?'Mark':UI.station==='exit'?'Exit ticket':UI.station==='planner'?'Planner':UI.station==='desktop'?'Desktop':UI.station==='coach'?coachName():UI.station==='formulae'?'Key facts':'':'';return [['Rooms'],[spec.subject],[topic.name,true],...(st?[[st]]:[])];}return [['Rooms'],...(subj?[[subj,true]]:[])];}
-  if(view==='exam')return [['Exam'],...(subj?[[subj,true]]:[])];if(view==='prog')return [['Progress',true]];if(view==='admin')return [['Admin',true]];return [['Today',true]];}
-function renderWhere(){const w=document.getElementById('bWhere'),who=document.getElementById('bWho');if(!w||!who)return;
+  if(view==='rooms'){if(UI.room){const {spec,topic}=nodeTopic(UI.room);const st=UI.station&&UI.station!=='lesson'?UI.station==='cards'?'Flash cards':UI.station==='practise'?'Practise':UI.station==='essay'?(spec.essaySubject?'Essay':'Exam question'):UI.station==='mark'?'Mark':UI.station==='exit'?'Exit ticket':UI.station==='planner'?'Planner':UI.station==='desktop'?'Desktop':UI.station==='coach'?coachName():UI.station==='formulae'?'Key facts':'':'';return [['Campus'],[spec.subject],[topic.name,true],...(st?[[st]]:[])];}return [['Campus'],...(subj?[[subj,true]]:[])];}
+  if(view==='exam')return [['Campus'],['Exam Hall',!subj],...(subj?[[subj,true]]:[])];if(view==='prog')return [['Campus'],['Progress',true]];if(view==='office')return [['Campus'],['Office',true]];if(view==='admin')return [['Campus'],['Office'],['Admin',true]];if(view==='today')return [['Campus'],['Full plan',true]];return [['Campus',true]];}
+function renderWhere(){try{document.body.classList.toggle('view-campus',view==='campus');}catch(e){}const w=document.getElementById('bWhere'),who=document.getElementById('bWho');if(!w||!who)return;
   w.innerHTML=whereAmI().map(([t,b])=>b?`<b>${esc(t)}</b>`:`<span>${esc(t)}</span>`).join('<i class="sep">›</i>');
   const name=AUTH.user?String(AUTH.user.name||AUTH.user.username||''):S&&S.setup&&S.setup.student?String(S.setup.student):'';
   who.innerHTML=name?`<span class="av" aria-hidden="true">${esc(name.trim().slice(0,1).toUpperCase())}</span><span class="nm">${esc(name)}${isAdmin()?' <small>admin</small>':''}</span>`:'';}
-function renderHeader(){renderWhere();const p=phaseFor(TODAY);document.getElementById('hDate').textContent=new Date(TODAY).toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long'});
+function renderHeader(){renderWhere();renderQuickBar();const p=phaseFor(TODAY);document.getElementById('hDate').textContent=new Date(TODAY).toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long'});
   document.getElementById('hPhase').textContent=(storeMode==='memory'?'⚠ not saving · ':'')+(p?`${p.label} · ${p.kind==='HOLIDAY'?'holiday pace':p.kind==='EXAM'?'exam term':'term pace'}`:'Outside the plan')+(S?` · ${S.setup.subjects.length} subject${S.setup.subjects.length>1?'s':''}`:'');
   const g=document.getElementById('hGrade');if(!S){g.innerHTML='';return;}
   g.innerHTML=S.setup.subjects.map(sub=>{const sp=specById(sub.specId);const p=predictSubject(S,sp,sub.options);return `<b style="font-size:16px;display:inline;margin-right:6px">${esc(p.grade)}</b>`;}).join('')+`<span>predicted</span>`;}
 function renderToday(){const el=document.getElementById('v-today');if(!S)return;const s=buildSession(S,SPECS,TODAY);const done=S.doneToday[TODAY]||[];
   if(!s.phase){el.innerHTML='<div class="panel"><h2>Nothing scheduled</h2></div>';return;}
   const total=s.steps.reduce((a,b)=>a+b.minutes,0);const due=dueCards(S,TODAY);
-  el.innerHTML=`<div class="panel"><h2>Today\u2019s session</h2><p class="sub">${Math.round(total/60*10)/10} hours across your subjects · ${done.length} of ${s.steps.length} done</p>
+  el.innerHTML=`<div class="panel"><button class="open" data-v="campus">← Campus</button><h2 style="margin-top:8px">Today\u2019s session</h2><p class="sub">${Math.round(total/60*10)/10} hours across your subjects · ${done.length} of ${s.steps.length} done</p>
    ${s.decayed&&s.decayed.length?`<div class="remedy">Dropped back after eight weeks untouched: ${s.decayed.map(id=>nodeTopic(id).topic.name).join(', ')}. First job today.</div>`:''}
    <ol class="steps">${s.steps.map((x,i)=>`<li class="${done.includes(i)?'done':''}"><button class="tick" data-step="${i}" aria-label="Mark step ${i+1} done"></button><div class="sbody"><div class="stitle"><span>${esc(x.title)}</span><span class="smins">${x.minutes} min</span></div><div class="sdetail">${esc(x.detail)}</div>
      ${x.kind==='cards'&&due.length?`<button class="open" data-cards="1">Review ${due.length} cards →</button>`:''}${x.kind==='retest'?`<button class="open" data-retest="1">Start the re-test →</button>`:x.nodes.length?`<button class="open" data-open="${esc(x.nodes[0])}" data-st="${x.kind==='new'?'lesson':x.kind==='essay'?'essay':'practise'}">Open room →</button>`:''}</div></li>`).join('')}</ol>
@@ -236,19 +234,71 @@ function renderCards(due){if(!due.length){UI.cards=null;return '<div class="good
    ${flashCardHtml(c,'card')}
    ${UI.revealed['card']?`<div class="row"><button class="act ghost small" data-cardres="1" data-card="${esc(id)}">Right</button><button class="act danger small" data-cardres="0" data-card="${esc(id)}">Wrong</button></div>`:`<button class="act" data-reveal="card">Turn the card over</button>`}</div>`;}
 
+/* ============ THE CAMPUS: one building per subject, the Exam Hall, the Office; a notice board that names the next thing to do ============ */
+function subjectFlag(state,specId){const set=new Set(Object.keys(state.nodes).filter(id=>state.nodes[id].spec===specId));if(!set.size)return null;
+  if(retestQueue(state,TODAY).some(e=>set.has(e.node)))return 'red';
+  const interval={Learning:3,Fluent:10,Secure:28};const due=dueForReview(state,TODAY).filter(id=>set.has(id));
+  if(due.some(id=>{const n=state.nodes[id];return n.lastPractised&&days(n.lastPractised,TODAY)>interval[n.state];}))return 'red';
+  if(due.length||dueCards(state,TODAY).some(c=>set.has(c.node)))return 'amber';
+  const sess=buildSession(state,SPECS,TODAY);const done=state.doneToday[TODAY]||[];if(sess.steps.some((x,i)=>x.kind==='new'&&!done.includes(i)&&(x.nodes||[]).some(n=>set.has(n))))return 'blue';return null;}
+function campusModel(){const subs=S.setup.subjects.map(sub=>{const sp=specById(sub.specId);if(!sp)return null;const p=predictSubject(S,sp,sub.options);return {id:sp.id,name:sp.subject,short:shortName(sp),sub:`${sp.board} ${sp.code} · ${p.pct}%`,colour:subjectColour(sp.id),pct:p.pct/100,marker:subjectFlag(S,sp.id),summary:`${p.pct}%, predicted ${p.grade}`};}).filter(Boolean);
+  const rq=retestQueue(S,TODAY).length;return {subjects:subs,exam:{marker:rq?'red':null,sub:rq?`${rq} re-test${rq===1?'':'s'} due`:'papers · re-tests'},office:{marker:isAdmin()&&ADMIN_TODO?'amber':null},admin:isAdmin(),hour:new Date().getHours()};}
+/* a hint shows once, in the view it belongs to, and is remembered with the student's progress; it stays up until they move on */
+function hintHtml(key,n,text,onView){if(view!==onView)return '';S.hints=S.hints||{};UI.hintLive=UI.hintLive||{};if(S.hints[key]&&!UI.hintLive[key])return '';if(!S.hints[key]){S.hints[key]=true;UI.hintLive[key]=true;save();}
+  return `<div class="hint" data-hint="${esc(key)}" role="status">${esc(text)}<small>${n} of 3 · shown once</small><button class="hintx" data-hint-done="${esc(key)}" aria-label="Got it">✕</button></div>`;}
+function askOutHtml(){const a=UI.ask;if(!a)return '';if(a.busy)return '<p class="fine">Asking…</p>';if(a.err)return `<p class="fine err">${esc(a.err)}</p>`;if(!a.ans)return '';
+  return `<div class="answer">${esc(a.ans.text)} ${a.ans.room&&S.nodes[a.ans.room]?`<button class="open" data-open="${esc(a.ans.room)}" data-st="${esc(a.ans.station||'lesson')}">Open →</button>`:a.ans.view?`<button class="open" data-v="${esc(a.ans.view)}">Open →</button>`:''}</div>`;}
+async function askCaretaker(q){q=String(q||'').trim();if(!q||!S)return;UI.ask={q,busy:true};renderCampus();
+  try{const txt=await callClaude([{type:'text',text:caretakerPrompt(S,SPECS,TODAY,q)}],250,0,'claude-haiku-4-5');let o=null;try{o=JSON.parse(txt);}catch(e){}
+    const bad=validateCaretaker(o);if(bad)throw new Error('The caretaker could not answer that — try asking another way.');
+    UI.ask={q,ans:{text:o.text.trim().slice(0,240),room:o.room&&S.nodes[o.room]?o.room:null,station:NUDGE_STATIONS.includes(o.station)?o.station:'lesson',view:['exam','prog','office','today'].includes(o.view)?o.view:null}};}
+  catch(e){UI.ask={q,err:e.message||'The caretaker could not answer that — try again.'};}
+  renderCampus();}
+function renderCampus(){const el=document.getElementById('v-campus');if(!el||!S)return;const m=campusModel();const s=buildSession(S,SPECS,TODAY);const done=S.doneToday[TODAY]||[];const due=dueCards(S,TODAY);
+  const idx=s.phase?s.steps.findIndex((x,i)=>!done.includes(i)):-1;const now=idx>=0?s.steps[idx]:null;
+  const goAttr=x=>x.kind==='cards'?'data-cards="1"':x.kind==='retest'?'data-retest="1"':x.nodes&&x.nodes.length?`data-open="${esc(x.nodes[0])}" data-st="${x.kind==='new'?'lesson':x.kind==='essay'?'essay':'practise'}"`:'data-v="today"';
+  const where=x=>{if(x.kind==='cards')return `${due.length} cards`;if(x.kind==='retest')return 'the re-test';if(!x.nodes||!x.nodes.length)return 'the full plan';const {spec,topic}=nodeTopic(x.nodes[0]);return `${shortName(spec)}, ${topicCode(topic)?topicCode(topic)+' ':''}${topic.name}`;};
+  const N=nudgeStale()?null:S.nudge;const total=s.phase?s.steps.reduce((a,b)=>a+b.minutes,0):0;
+  el.innerHTML=`<div class="campuswrap">${hintHtml('campus',1,'Your campus. Each building is one of your subjects; the notice board says what to do now.','campus')}
+   <div class="campusgrid"><div class="campusart">${campusSvg(m)}<div class="legend campuskey"><span><i class="fl" style="background:var(--red)"></i>overdue or re-test</span><span><i class="fl" style="background:var(--amber)"></i>due today</span><span><i class="fl" style="background:var(--blue)"></i>new lesson</span><span><i class="fl lit"></i>lit windows: rooms you know</span></div></div>
+   <div class="board" id="board"><div class="bhead"><span>Notice board</span><span>🔥 ${streakDays(S,TODAY)} day streak</span></div>
+    ${!s.phase?'<div class="note now"><b>Nothing scheduled</b> — outside the plan.</div>':now?`<div class="note now"><small class="nlabel">Now · ${now.minutes} min</small><b>${esc(now.title)}</b> — ${esc(now.detail)}<div><button class="act go" ${goAttr(now)}>Go → ${esc(where(now))}</button></div></div>`:'<div class="note now"><b>Session complete.</b> Every step done today.</div>'}
+    <div class="note coach nudge"><small class="nlabel">From ${esc(coachName())}</small><p>${N?esc(N.text):UI.nudgeBusy?'Working out the best thing to do first…':'Working it out…'}</p><div class="row">${N&&N.node&&S.nodes[N.node]?`<button class="act small" data-open="${esc(N.node)}" data-st="${esc(N.station||'lesson')}">Open room →</button>`:N&&N.station==='cards'&&due.length?`<button class="act small" data-cards="1">Review cards →</button>`:''}<button class="act ghost small" data-nudge-refresh="1" ${UI.nudgeBusy?'disabled':''}>Another suggestion</button></div>${N&&N.ai?'<small class="fine">Written by the tutor from your own progress and mistakes.</small>':''}</div>
+    ${s.phase?`<div class="note"><small class="nlabel">Then today · ${Math.round(total/60*10)/10} hours · ${done.length} of ${s.steps.length} done</small><ol class="then">${s.steps.map((x,i)=>i===idx?'':`<li class="${done.includes(i)?'done':''}">${esc(x.title)} · ${x.minutes} min</li>`).join('')}</ol></div>`:''}
+    <div class="bchips"><button class="chip" data-v="prog">◔ Progress</button><button class="chip" data-v="today">☰ Full plan</button></div>
+    <div class="ask"><label for="askIn">Ask the caretaker</label><div class="row"><input id="askIn" placeholder="Where do I revise coasts?" value="${esc(UI.ask&&UI.ask.q||'')}" autocomplete="off"><button class="act small" id="askGo" ${UI.ask&&UI.ask.busy?'disabled':''}>Ask</button></div><div id="askOut">${askOutHtml()}</div></div>
+   </div></div></div>`;
+  if(view==='campus'&&nudgeStale()&&!UI.nudgeBusy)requestNudge(false);}
+/* ============ THE OFFICE: courses, the account, the records; the admin's desk for Chris ============ */
+function renderOffice(){const el=document.getElementById('v-office');if(!el)return;
+  if(!S){el.innerHTML=`<div class="panel"><h2>Office</h2><p class="sub">No courses yet.</p>${isAdmin()?'<button class="act" data-v="admin">Admin →</button>':''}</div>`;return;}
+  const cards=courseOrder().map(sub=>{const c=specById(sub.specId);if(!c)return '';const p=predictSubject(S,c,sub.options);const pin=!!(S.pinned&&S.pinned[c.id]);return `<div class="ccard" style="--sc:${subjectColour(c.id)}"><button class="cmain" data-course="${esc(c.id)}"><b>${esc(c.subject)}</b><small>${esc(c.board)} ${esc(c.code)}</small><span class="cg">${esc(p.grade)}</span></button><div class="bar mini"><i style="width:${p.pct}%"></i></div><button class="pin" data-pin="${esc(c.id)}" aria-pressed="${pin}" title="${pin?'Unpin':'Pin to the top'}">${pin?'★':'☆'}</button></div>`;}).join('');
+  el.innerHTML=`<div class="panel"><h2>Office</h2><p class="sub">Your courses, your account and the records.</p><div class="bchips"><button class="chip" data-v="prog">◔ Progress</button><button class="chip" data-v="today">☰ Full plan</button>${isAdmin()?`<button class="chip" data-v="admin">⚙ Admin${ADMIN_TODO?`<span class="nbadge">${ADMIN_TODO}</span>`:''}</button>`:''}</div></div>
+   <div class="panel"><h2>Courses</h2><p class="sub">Pinned courses come first on the quick bar. Tap a course to walk into its building.</p>${cards}<button class="act ghost small" data-act="courses">＋ Add or change courses</button></div>
+   ${AUTH_MODE?accountPanel():legacyTutorPanels()}`;}
+
 /* ============ ROOMS ============ */
 function renderRooms(){const el=document.getElementById('v-rooms');if(!S)return;renderWhere();if(UI.room)return renderRoom(el);
-  const subs=S.setup.subjects;if(!UI.subject)UI.subject=subs[0].specId;const sp=specById(UI.subject);const opts=subjectOptions(sp.id);
-  const nodes=Object.entries(S.nodes).filter(([,n])=>n.spec===sp.id);
-  el.innerHTML=`<div class="panel"><div class="chips">${subs.map(x=>`<button class="chip" data-subject="${x.specId}" aria-selected="${UI.subject===x.specId}">${esc(specById(x.specId).subject)}</button>`).join('')}</div>
-   <h2>${esc(sp.subject)} <span class="sub" style="display:inline">· ${esc(sp.board)} ${esc(sp.code)}</span></h2><p class="sub">${nodes.length} rooms. ${sp.components.map(c=>`${c.name} ${c.weight}%`).join(' · ')}</p>
-   <div class="tgrid">${nodes.map(([id,n])=>{const t=sp.topics.find(x=>x.id===n.topic);const c=sp.components.find(x=>x.id===t.component);return `<button class="tcell" data-s="${n.state}" data-open="${esc(id)}" data-st="lesson"><b>${esc(c.name)}</b><span>${esc(t.name)}</span><i>${n.state} · ${t.ideas.length} key ideas</i></button>`;}).join('')}</div></div>`;renderRails();}
+  const subs=S.setup.subjects;if(!UI.subject||!subs.some(x=>x.specId===UI.subject))UI.subject=subs[0].specId;renderCorridor(el,specById(UI.subject));renderRails();}
+/* ============ THE CORRIDOR: one door per room, grouped by component; the strip is the state, the note is what is due ============ */
+function roomOrder(spec){return spec.topics.map(t=>spec.id+'|'+t.id).filter(id=>S.nodes[id]);}
+function shortName(sp){const {subject}=splitSubject(sp.subject);const dup=S.setup.subjects.filter(x=>{const c=specById(x.specId);return c&&splitSubject(c.subject).subject===subject;}).length>1;return dup?`${subject} · ${sp.code}`:subject;}
+function renderCorridor(el,sp){const due=new Set(dueForReview(S,TODAY));const rq=new Set(retestQueue(S,TODAY).map(e=>e.node));const cardsBy={};for(const c of dueCards(S,TODAY))cardsBy[c.node]=(cardsBy[c.node]||0)+1;const sess=buildSession(S,SPECS,TODAY);const done=S.doneToday[TODAY]||[];const newToday=new Set(sess.steps.filter((x,i)=>x.kind==='new'&&!done.includes(i)).flatMap(x=>x.nodes||[]));
+  const nodes=Object.entries(S.nodes).filter(([,n])=>n.spec===sp.id);const p=predictSubject(S,sp,subjectOptions(sp.id));
+  const door=([id,n])=>{const t=sp.topics.find(x=>x.id===n.topic);const ki=kitInfo(sp.id,t.id);const notes=[];if(rq.has(id))notes.push('re-test due');if(cardsBy[id])notes.push(`${cardsBy[id]} card${cardsBy[id]===1?'':'s'} due`);if(due.has(id))notes.push('review due');if(newToday.has(id))notes.push('new today');
+    return `<button class="door" data-open="${esc(id)}" data-st="lesson" data-s="${n.state}"><i class="strip"></i><span class="plate"><b>${topicCode(t)?`<small>${esc(topicCode(t))}</small> `:''}${esc(t.name)}${ki&&!ki.at?'<i class="pen" title="Being written">✎</i>':''}</b><small>${n.state==='Unassessed'?'Not started':n.state}${notes.length?' · '+notes.join(' · '):''}</small></span></button>`;};
+  const comps=sp.components.map(c=>{const mine=nodes.filter(([,n])=>{const t=sp.topics.find(x=>x.id===n.topic);return t&&t.component===c.id;});if(!mine.length)return '';return `<div class="sign">${esc(c.name)} · ${c.weight}%</div>${mine.map(door).join('')}`;}).join('');
+  el.innerHTML=`<div class="corrhead"><button class="act ghost small" id="backCampus">← Campus</button><div class="subjplate" style="--sc:${subjectColour(sp.id)}">${esc(sp.subject)} · ${esc(sp.board)} ${esc(sp.code)} · predicted <b>${esc(p.grade)}</b> · ${p.pct}%</div></div>
+   ${hintHtml('corridor',2,'Every door is a topic. The colour strip is how well you know it; the note on the door says what is due.','rooms')}
+   <div class="corridor">${comps}</div><p class="fine corrfoot">${nodes.length} rooms, one per topic. ${sp.components.map(c=>`${c.name} ${c.weight}%`).join(' · ')}</p>`;
+  if(view==='rooms'){S.visited=S.visited||{};if(!S.visited[sp.id]){S.visited[sp.id]=true;save();renderQuickBar();}}}
 function renderRoom(el){const {spec,topic,n}=nodeTopic(UI.room);const st=UI.station;const AU=authoredFor(spec.id,topic.id);const factsLabel=AU&&AU.kit&&AU.kit.family!=='quantitative'?'Key facts & links':'Formulae & links';const tabs=[['lesson','Lesson'],...(AU?[['formulae',factsLabel]]:[]),['cards','Flash cards'],['practise','Practise'],['essay',spec.essaySubject?'Essay':'Exam question'],['mark','Mark'],['exit','Exit ticket'],['planner','Planner'],['desktop','Desktop'],['coach',coachName()]];let body='';
   if(st==='formulae'&&AU)body=stFormulae(AU,spec,topic);
   const ki=!AU?kitInfo(spec.id,topic.id):null;const kitNote=AU&&AU.kit?`<div class="prov">Written and checked ${esc(new Date(AU.kit.built.at).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}))}</div>`:ki?(ki.failed?'<div class="note">This room’s written lesson, question bank and cards could not be checked well enough to publish, and Chris has been told. Everything below still works — it is written for you as you go.</div>':!ki.at?'<div class="note">This room’s lesson, question bank and cards are being written and checked — a few minutes. Everything below works meanwhile.</div>':''):'';
   if(st==='mark')body=stMark(spec,topic);if(st==='desktop')body=stDesktop(spec,topic);if(st==='planner')body=stPlanner(spec,topic,n);
   if(st==='lesson')body=stLesson(spec,topic);if(st==='cards')body=stCards(spec,topic);if(st==='practise')body=stPractise(spec,topic,n);if(st==='essay')body=stEssay(spec,topic);if(st==='exit')body=stExit(spec,topic,n);if(st==='coach')body=stCoach(spec,topic);
-  el.innerHTML=`<div class="panel"><button class="open" id="backRooms">← ${esc(spec.subject)} rooms</button><h2 style="margin-top:8px">${esc(topic.name)}</h2><p class="sub">${esc(spec.board)} ${esc(spec.code)}${topicCode(topic)?` · ${esc(topicCode(topic))}`:''} · ${n.state}${n.lastPractised?` · last worked ${n.lastPractised}`:''}</p>${kitNote}${DESK_ON?deskHtml(spec,topic,n,AU,factsLabel):''}
+  const sib=roomOrder(spec);const at=sib.indexOf(UI.room);const prev=at>0?sib[at-1]:null,next=at>=0&&at<sib.length-1?sib[at+1]:null;const dname=id=>{const {topic:t}=nodeTopic(id);return (topicCode(t)?topicCode(t)+' ':'')+t.name;};
+  el.innerHTML=`<div class="panel"><div class="roomnav"><button class="open" id="backRooms">← Corridor</button><span class="doorsteps">${prev?`<button class="doorstep" data-open="${esc(prev)}" data-st="lesson">◀ ${esc(dname(prev))}</button>`:''}${next?`<button class="doorstep" data-open="${esc(next)}" data-st="lesson">${esc(dname(next))} ▶</button>`:''}</span></div>${hintHtml('room',3,'Your desk. Everything for this topic lives here. The corridor is one step back; the campus is two.','rooms')}<h2 style="margin-top:8px">${esc(topic.name)}</h2><p class="sub">${esc(spec.board)} ${esc(spec.code)}${topicCode(topic)?` · ${esc(topicCode(topic))}`:''} · ${n.state}${n.lastPractised?` · last worked ${n.lastPractised}`:''}</p>${kitNote}${DESK_ON?deskHtml(spec,topic,n,AU,factsLabel):''}
    <div class="stations">${tabs.map(([k,l])=>`<button data-station="${k}" aria-selected="${st===k}">${esc(l)}</button>`).join('')}</div>${UI.busy?`<div class="note">${esc(UI.busy)} This is generated from the specification and checked before it\u2019s shown — about 20 seconds.</div>`:''}${UI.err?`<div class="remedy">${esc(UI.err)} <button class="act small ghost" id="retryGen">Try again</button></div>`:''}${body}</div>`;deskBind(el);renderRails();}
 function openStation(st,fromDesk){deskStopPlayers();UI.station=st;UI.revealed={};UI.err='';renderRooms();if(fromDesk){const strip=document.querySelector('.stations');if(strip&&strip.getBoundingClientRect&&typeof window.scrollTo==='function'){const top=strip.getBoundingClientRect().top+(window.scrollY||0)-8;try{window.scrollTo({top,behavior:'smooth'});}catch(e){window.scrollTo(0,top);}}}}
 function deskBind(el){if(!el.querySelectorAll)return;for(const g of el.querySelectorAll('.desk .dobj'))g.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();openStation(g.dataset.station,true);});}
@@ -484,7 +534,6 @@ function renderProg(){const el=document.getElementById('v-prog');if(!S)return;co
    <div class="panel"><h2>Effort</h2><div class="cal">${days12.map(c=>`<i class="${c}"></i>`).join('')}</div><p class="sub" style="margin-top:10px">${(S.hours||0).toFixed(1)} hours logged in this platform.</p></div>
    <div class="panel"><h2>This week, for Chris</h2><pre class="report" id="repText">${esc(rep.text)}</pre><button class="act ghost" id="repCopy">Copy report</button></div>
    <div class="panel"><h2>Error log</h2>${dom?`<div class="remedy"><b>Your pattern: ${esc(dom)}</b> (${modes[dom]} of ${S.errors.length})<br>${esc(REMEDY[dom]||'')}</div>`:''}${S.errors.slice(0,15).map(e=>`<div class="entry"><div class="emeta"><span class="tag">${esc(e.mode)}</span><span>${esc(nodeTopic(e.node).spec.subject)}</span><span>${esc(e.date)}</span></div><div>${esc(e.ref||'')}</div><div style="color:var(--pencil);font-size:13.5px">${esc(e.fix||'')}</div></div>`).join('')||'<p class="empty">Nothing logged yet.</p>'}</div>
-   ${AUTH_MODE?accountPanel():legacyTutorPanels()}
    <div class="panel"><h2>Back up and restore</h2><p class="sub">${AUTH_MODE?'Saved to the tutor as you go, and cached on this device. This is a copy you can keep yourself.':storeMode==='cloud'?'Saved to your Claude account.':storeMode==='local'?'Saved on this device only.':'Not being saved where this is open.'}</p><button class="act ghost" id="bkCopy">Copy backup</button><label>Restore</label><textarea id="bkIn" style="min-height:60px"></textarea><button class="act danger" id="bkRestore">Restore (replaces current progress)</button><div id="bkMsg"></div><button class="act ghost" id="suEdit" style="margin-top:18px">Add or change subjects</button><button class="act danger" id="reset">Start again from scratch</button></div>`;}
 
 function renderLogin(msg){const el=document.getElementById('v-login');el.innerHTML=`<div class="panel" style="max-width:420px;margin:40px auto"><h2>Sign in</h2><p class="sub">Your study platform. Use the username and password you chose from your invite.</p>
@@ -530,40 +579,35 @@ function renderAdminList(d){document.getElementById('adList').innerHTML=`<h2>Acc
 function inviteCard(inv,u){const link=inv.link;const body=`Hi ${u.name},\n\nHere is your login for the study platform. Open this link and choose a password:\n\n${link}\n\nYour username is ${u.username}. The link works until ${inv.expires}.\n\nChris`;const mail='mailto:?subject='+encodeURIComponent('Your study platform login')+'&body='+encodeURIComponent(body);
   return `<div class="good"><b>${esc(u.name)}</b> — username <b>${esc(u.username)}</b><br><span class="mono" style="word-break:break-all;font-size:13px">${esc(link)}</span><div class="row" style="margin-top:8px"><button class="act ghost small" data-copy-link="${esc(link)}">Copy link</button><a class="act ghost small" style="text-align:center;text-decoration:none;display:block" href="${mail}">Email invite</a></div><p class="sub" style="margin-top:6px">Works until ${esc(inv.expires)}, once.</p></div>`;}
 function isAdmin(){return !!(AUTH.user&&AUTH.user.role==='admin');}
-function landing(){return isAdmin()&&!S?'admin':'today';}
+function landing(){return isAdmin()&&!S?'admin':'campus';}
 function showSection(id){document.querySelectorAll('main>section').forEach(x=>x.classList.toggle('hide',x.id!==id));}
 function renderAll(){renderHeader();document.querySelectorAll('.navAdmin').forEach(x=>x.classList.toggle('hide',!isAdmin()));if(isAdmin())loadAdminTodo();
   if(AUTH_MODE&&!AUTH.user){showSection('v-login');renderLogin();renderRails();return;}
   if(!S&&isAdmin()&&view==='admin'){showSection('v-admin');renderAdmin();renderRails();return;}
-  if(!S){document.querySelectorAll('main>section').forEach(s=>s.classList.toggle('hide',s.id!=='v-setup'));renderSetup();renderRails();return;}renderToday();renderRooms();renderExam();renderProg();if(view==='admin')renderAdmin();document.querySelectorAll('main>section').forEach(s=>s.classList.toggle('hide',s.id!=='v-'+view));renderRails();}
-function go(v){view=v;renderWhere();document.querySelectorAll('nav button').forEach(x=>x.setAttribute('aria-selected',String(x.dataset.v===v)));document.querySelectorAll('main>section').forEach(s=>s.classList.toggle('hide',s.id!=='v-'+v));window.scrollTo(0,0);renderRails();}
+  if(!S){document.querySelectorAll('main>section').forEach(s=>s.classList.toggle('hide',s.id!=='v-setup'));renderSetup();renderRails();return;}renderCampus();renderToday();renderRooms();renderExam();renderProg();renderOffice();if(view==='admin')renderAdmin();document.querySelectorAll('main>section').forEach(s=>s.classList.toggle('hide',s.id!=='v-'+view));renderRails();}
+function go(v){view=v;UI.hintLive={};renderWhere();renderQuickBar();document.querySelectorAll('nav button').forEach(x=>x.setAttribute('aria-selected',String(x.dataset.v===v)));document.querySelectorAll('main>section').forEach(s=>s.classList.toggle('hide',s.id!=='v-'+v));window.scrollTo(0,0);renderRails();}
 /* When a room's kit has been refined since its cards were added, bring the deck's copies up to date: same front, new back and open flag. */
 function refreshKitCards(room){const nd=S.nodes[room];const AU=authoredFor(nd.spec,nd.topic);if(!AU||!AU.cards||!(S.kitCards||{})[room])return false;let changed=false;const byFront=new Map(AU.cards.map(c=>[c.front,c]));
   for(const c of Object.values(S.cards)){if(c.node!==room)continue;const k=byFront.get(c.front);if(!k)continue;if(c.back!==k.back||!!c.open!==!!k.open){c.back=k.back;c.open=!!k.open;changed=true;}}return changed;}
-function openRoom(id,st){deskStopPlayers();UI.desk.room=null;UI.room=id;UI.subject=S.nodes[id].spec;UI.station=st||'lesson';UI.revealed={};UI.practice=null;UI.apr=null;UI.useGenerated=false;UI.exit=null;UI.err='';if(UI.drawer)setDrawer(null);go('rooms');renderRooms();const nd=S.nodes[id];ensureKit(nd.spec,nd.topic).then(ch=>{if(refreshKitCards(id)||ch){save();if(UI.room===id)renderRooms();}});if(DESK_ON&&AUTH_MODE&&AUTH.user){const D=UI.desk;D.items=null;D.err='';D.unavailable=false;D.stage=null;D.playing={};D.filter='all';D.q='';loadDesk(id);}if(DESK_ON)ensureCoachNote(id);}
+function openRoom(id,st){deskStopPlayers();UI.desk.room=null;UI.room=id;UI.subject=S.nodes[id].spec;UI.station=st||'lesson';UI.revealed={};UI.practice=null;UI.apr=null;UI.useGenerated=false;UI.exit=null;UI.err='';go('rooms');renderRooms();const nd=S.nodes[id];ensureKit(nd.spec,nd.topic).then(ch=>{if(refreshKitCards(id)||ch){save();if(UI.room===id)renderRooms();}});if(DESK_ON&&AUTH_MODE&&AUTH.user){const D=UI.desk;D.items=null;D.err='';D.unavailable=false;D.stage=null;D.playing={};D.filter='all';D.q='';loadDesk(id);}if(DESK_ON)ensureCoachNote(id);}
 async function fileToImg(file){const data=await new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result.split(',')[1]);r.onerror=()=>rej(new Error('read failed'));r.readAsDataURL(file);});return{data,media:file.type||'image/jpeg'};}
 
 /* ============ THE RAILS: left = where you are, right = what now, strip = how it's going ============ */
-const NAV=[['today','◉','Today'],['rooms','▦','Rooms'],['exam','◫','Exam'],['prog','◔','Progress'],['admin','⚙','Admin']];
 let ADMIN_TODO=null;/* how many things wait in the admin's review queue; null until fetched */
-function navHtml(cls){return `<nav class="${cls}">${NAV.filter(([v])=>v!=='admin'||isAdmin()).map(([v,ic,l])=>`<button data-v="${v}" aria-selected="${view===v}"${v==='admin'?' class="navAdmin"':''}><span class="ic">${ic}</span>${l}${v==='admin'&&ADMIN_TODO?`<span class="nbadge">${ADMIN_TODO}</span>`:''}</button>`).join('')}</nav>`;}
-function setAdminTodo(n){ADMIN_TODO=n;try{document.querySelectorAll('nav.bottom button[data-v="admin"]').forEach(b=>{const old=b.querySelector('.nbadge');if(old)old.remove();if(n){const sp=document.createElement('span');sp.className='nbadge';sp.textContent=String(n);b.appendChild(sp);}});}catch(e){}}
+function setAdminTodo(n){ADMIN_TODO=n;renderQuickBar();try{document.querySelectorAll('nav.bottom button[data-v="office"]').forEach(b=>{const old=b.querySelector('.nbadge');if(old)old.remove();if(n){const sp=document.createElement('span');sp.className='nbadge';sp.textContent=String(n);b.appendChild(sp);}});}catch(e){}}
 async function loadAdminTodo(){if(!isAdmin()||ADMIN_TODO!==null)return;ADMIN_TODO=0;try{const r=await api('/manage/reviews');setAdminTodo(r.items.length);renderRails();}catch(e){}}
-function railView(){return !!S&&['today','rooms','exam','prog'].includes(view);}
-function setDrawer(which){UI.drawer=which||null;for(const [k,id] of [['l','rail-l'],['r','rail-r']]){const el=document.getElementById(id);if(!el)continue;const open=UI.drawer===k;el.classList.toggle('open',open);el.setAttribute('aria-expanded',String(open));}const sc=document.getElementById('scrim');if(sc)sc.classList.toggle('show',!!UI.drawer);}
-function renderRails(){const on=railView();try{if(document.body&&document.body.classList)document.body.classList.toggle('three',on);}catch(e){}
-  const L=document.getElementById('rail-l'),R=document.getElementById('rail-r');if(!L||!R)return;
-  if(!on){L.innerHTML='';R.innerHTML='';L.classList.add('hide');R.classList.add('hide');if(UI.drawer)setDrawer(null);renderStatus();return;}
-  L.classList.remove('hide');R.classList.remove('hide');renderRailL(L);renderRailR(R);renderStatus();
-  if(view==='today'&&nudgeStale()&&!UI.nudgeBusy)requestNudge(false);}
+function wallView(){return !!S&&['rooms','exam','prog'].includes(view);}
+function statusView(){return !!S&&['campus','today','rooms','exam','prog','office'].includes(view);}
+/* the wall beside the centre: what the right rail used to carry — this room, this building, the board's conventions, the pattern */
+function renderRails(){const on=wallView();try{if(document.body&&document.body.classList)document.body.classList.toggle('wall-on',on);}catch(e){}
+  const R=document.getElementById('wall');if(!R)return;
+  if(!on){R.innerHTML='';R.classList.add('hide');renderStatus();return;}
+  R.classList.remove('hide');renderWall(R);renderStatus();}
+/* the quick bar under the date: every course (dashed until its corridor has been walked once), the Exam Hall, the Office */
+function renderQuickBar(){const q=document.getElementById('qBar');if(!q)return;if(!S||(AUTH_MODE&&!AUTH.user)){q.innerHTML='';q.classList.add('hide');return;}q.classList.remove('hide');const vis=S.visited||{};
+  q.innerHTML=`<span class="qlabel">Go to</span>${courseOrder().map(sub=>{const c=specById(sub.specId);if(!c)return '';const v=!!vis[c.id];return `<button class="chip qchip${v?'':' ghost'}" data-course="${esc(c.id)}" aria-current="${UI.subject===c.id&&view==='rooms'}" style="--sc:${subjectColour(c.id)}" title="${v?'':'Not visited yet — '}${esc(c.subject)}"><i></i>${esc(shortName(c))}</button>`;}).join('')}<button class="chip qchip" data-v="exam" aria-current="${view==='exam'}">◫ Exam Hall</button><button class="chip qchip" data-v="office" aria-current="${view==='office'||view==='admin'}">⌂ Office${isAdmin()&&ADMIN_TODO?`<span class="nbadge">${ADMIN_TODO}</span>`:''}</button>`;}
 function courseOrder(){const pinned=S.pinned||{};return S.setup.subjects.slice().sort((a,b)=>(pinned[b.specId]?1:0)-(pinned[a.specId]?1:0));}
 function activeSpec(){return specById((UI.subject&&S.setup.subjects.some(x=>x.specId===UI.subject))?UI.subject:S.setup.subjects[0].specId);}
-function renderRailL(L){const sp=activeSpec();const due=new Set(dueForReview(S,TODAY));
-  const cards=courseOrder().map(sub=>{const c=specById(sub.specId);const p=predictSubject(S,c,sub.options);const pin=!!(S.pinned&&S.pinned[c.id]);return `<div class="ccard${c.id===sp.id?' on':''}" style="--sc:${subjectColour(c.id)}"><button class="cmain" data-course="${esc(c.id)}"><b>${esc(c.subject)}</b><small>${esc(c.board)} ${esc(c.code)}</small><span class="cg">${esc(p.grade)}</span></button><div class="bar mini"><i style="width:${p.pct}%"></i></div><button class="pin" data-pin="${esc(c.id)}" aria-pressed="${pin}" title="${pin?'Unpin':'Pin to the top'}">${pin?'★':'☆'}</button></div>`;}).join('');
-  const nodes=Object.entries(S.nodes).filter(([,n])=>n.spec===sp.id);
-  const tree=sp.components.map(c=>{const mine=nodes.filter(([,n])=>{const t=sp.topics.find(x=>x.id===n.topic);return t&&t.component===c.id;});if(!mine.length)return '';return `<div class="comp"><div class="cname">${esc(c.name)} · ${c.weight}%</div>${mine.map(([id,n])=>{const t=sp.topics.find(x=>x.id===n.topic);const ki=kitInfo(sp.id,t.id);return `<button class="tnode${UI.room===id?' cur':''}" data-open="${esc(id)}" data-st="lesson"><i class="dot" data-s="${n.state}"${due.has(id)?' data-due="1"':''}></i><span>${topicCode(t)?`<small>${esc(topicCode(t))}</small> `:''}${esc(t.name)}${ki&&!ki.at?'<i class="pen" title="Being written">✎</i>':''}</span></button>`;}).join('')}</div>`;}).join('');
-  L.innerHTML=`${navHtml('side')}<div class="rblock"><input id="jump" placeholder="Jump to a topic or code…" autocomplete="off" value="${esc(UI.jumpQ||'')}"><div id="jumpOut">${jumpHtml()}</div></div><div class="rblock"><h4>Courses</h4>${cards}</div><div class="rblock"><h4>Where you are · ${esc(sp.subject)}</h4><div class="tree">${tree}</div><div class="legend" style="margin-top:10px"><span><i class="dot" data-s="Unassessed"></i>New</span><span><i class="dot" data-s="Learning"></i>Learning</span><span><i class="dot" data-s="Fluent"></i>Fluent</span><span><i class="dot" data-s="Secure"></i>Secure</span><span><i class="dot" data-due="1"></i>Due</span></div></div>
-   <div class="rblock account"><button class="act ghost small" data-act="courses">＋ Add or change courses</button>${AUTH_MODE?`<p class="fine">Signed in as <b>${esc((AUTH.user&&AUTH.user.name)||'')}</b>${isAdmin()?' (admin)':''}</p><button class="act ghost small" data-act="signout">Sign out</button>`:''}</div>`;}
 function jumpMatches(q){q=String(q||'').trim().toLowerCase();if(q.length<2)return [];const first=[],later=[];
   for(const sub of S.setup.subjects){const sp=specById(sub.specId);if(!sp)continue;for(const [id,n] of Object.entries(S.nodes)){if(n.spec!==sp.id)continue;const t=sp.topics.find(x=>x.id===n.topic);if(!t)continue;
     if(t.name.toLowerCase().includes(q)||String(t.id).toLowerCase().includes(q))first.push({id,sp,t,hit:null});
@@ -587,8 +631,8 @@ function linkHtml(l){return `<a class="link" href="${esc(l.url)}" target="_blank
 function resourcesFor(spec,topic){const AU=authoredFor(spec.id,topic.id);const out=[];if(AU&&AU.sources){for(const x of (AU.sources.tl||[]))out.push({t:'TLMaths — '+x.t,url:x.url,kind:'video',why:'Spec-ordered videos, hand-checked'});if(AU.sources.es)out.push({t:'ExamSolutions tutorials',url:AU.sources.es,kind:'video',why:'Find '+((AU.room&&AU.room.name)||topic.name)});}
   return out.concat(topicLinks(spec,topic));}
 function streakLine(){const n=streakDays(S,TODAY);const mins=Math.round((S.dayHours[TODAY]||0)*60);return `<b>${n}</b> day streak · ${mins} min today`;}
-function renderRailR(R){const due=dueCards(S,TODAY);let html='';
-  if(view==='today'){const N=nudgeStale()?null:S.nudge;
+function renderWall(R){const due=dueCards(S,TODAY);let html='';
+  if(false){const N=nudgeStale()?null:S.nudge;
     html+=`<div class="rblock nudge"><h4>Next step</h4><p>${N?esc(N.text):UI.nudgeBusy?'Working out the best thing to do first…':'Working it out…'}</p><div class="row">${N&&N.node&&S.nodes[N.node]?`<button class="act small" data-open="${esc(N.node)}" data-st="${esc(N.station||'lesson')}">Open room →</button>`:N&&N.station==='cards'&&due.length?`<button class="act small" data-cards="1">Review cards →</button>`:''}<button class="act ghost small" data-nudge-refresh="1" ${UI.nudgeBusy?'disabled':''}>Another suggestion</button></div>${N&&N.ai?'<small class="fine">Written by the tutor from your own progress and mistakes.</small>':''}</div>`;
     html+=`<div class="rblock"><h4>Flash cards due</h4><div class="bigrow"><b class="big">${due.length}</b>${due.length?`<button class="act small" data-cards="1">Review now →</button>`:'<span class="fine">All clear for today</span>'}</div></div>`;
     html+=`<div class="rblock"><h4>Progress</h4>${S.setup.subjects.map(sub=>{const sp=specById(sub.specId);const p=predictSubject(S,sp,sub.options);return ringHtml(p.pct,p.grade,sp.subject);}).join('')}</div>`;
@@ -599,7 +643,9 @@ function renderRailR(R){const due=dueCards(S,TODAY);let html='';
     html+=deskRoomRailHtml();
     html+=`<div class="rblock"><h4>Your mistakes here</h4>${errs.length?errs.map(e=>`<div class="entry"><div class="emeta"><span class="tag">${esc(e.mode)}</span>${e.paper?`<span class="tag paper">real paper</span>`:''}<span>${esc(e.date)}</span></div><div>${esc(e.ref||'')}</div>${e.paper?`<div class="fine">${e.resolved?'Cleared by two clean re-tests.':e.relearn?'Three re-tests missed — back to the lesson.':e.retestDue?`Re-test ${esc(fmtDate(e.retestDue))}${e.passes?' for the second pass':''}.`:''}</div>`:''}</div>`).join(''):'<p class="fine">None logged in this room.</p>'}</div>`;
     html+=`<div class="rblock"><h4>Watch and read</h4>${videosHtml()}${resourcesFor(spec,topic).map(linkHtml).join('')}</div>`;}
-  else if(view==='rooms'){const sp=activeSpec();const ns=Object.entries(S.nodes).filter(([,n])=>n.spec===sp.id);const by={};for(const [,n] of ns)by[n.state]=(by[n.state]||0)+1;const next=ns.find(([,n])=>n.state==='Unassessed');const nt=next&&sp.topics.find(t=>t.id===next[1].topic);
+  else if(view==='rooms'){const sp=activeSpec();const ns=Object.entries(S.nodes).filter(([,n])=>n.spec===sp.id);const by={};for(const [,n] of ns)by[n.state]=(by[n.state]||0)+1;const next=ns.find(([,n])=>n.state==='Unassessed');const nt=next&&sp.topics.find(t=>t.id===next[1].topic);const here=new Set(ns.map(([id])=>id));const dueHere=due.filter(c=>here.has(c.node)).length;const rqHere=retestQueue(S,TODAY).filter(e=>here.has(e.node)).length;
+    html+=`<div class="rblock"><h4>Jump to a topic or code</h4><input id="jump" placeholder="e.g. “carbon” or 1.2.3" autocomplete="off" value="${esc(UI.jumpQ||'')}"><div id="jumpOut">${jumpHtml()}</div></div>`;
+    html+=`<div class="rblock"><h4>In this building</h4><div class="bigrow"><b class="big">${dueHere}</b><span class="fine">flash cards due${rqHere?` · ${rqHere} re-test${rqHere===1?'':'s'} pending`:''}</span>${dueHere?`<button class="act small" data-cards="1">Review →</button>`:''}</div></div>`;
     html+=`<div class="rblock"><h4>${esc(sp.subject)} · ${esc(sp.board)} ${esc(sp.code)}</h4>${sp.components.map(c=>`<div class="mstone"><span>${esc(c.name)}</span><b>${c.weight}%</b></div>`).join('')}</div><div class="rblock"><h4>Rooms</h4>${['Secure','Fluent','Learning','Unassessed'].map(st=>`<div class="mstone"><span><i class="dot" data-s="${st}" style="display:inline-block;vertical-align:middle;margin:0 6px 2px 0"></i>${st==='Unassessed'?'Not started':st}</span><b>${by[st]||0}</b></div>`).join('')}${nt?`<button class="act small" data-open="${esc(next[0])}" data-st="lesson">Start ${esc(nt.name)} →</button>`:'<p class="fine">Every room started.</p>'}</div>`;html+=deskCourseRailHtml(sp);}
   else if(view==='exam'){const sp=activeSpec();const mc=sp.markConventions||{};
     html+=`<div class="rblock"><h4>Command words · ${esc(sp.board)}</h4>${(mc.commandWords||[]).map(c=>`<div class="cw"><b>${esc(c.word)}</b>${esc(c.means)}</div>`).join('')}</div>`;
@@ -608,19 +654,19 @@ function renderRailR(R){const due=dueCards(S,TODAY);let html='';
   else if(view==='prog'){const modes={};for(const e of S.errors)modes[e.mode]=(modes[e.mode]||0)+1;const dom=Object.keys(modes).sort((a,b)=>modes[b]-modes[a])[0];const rep=weeklyReport(S,SPECS,TODAY);
     html+=`<div class="rblock"><h4>Your pattern</h4>${dom?`<p><span class="tag">${esc(dom)}</span> ${modes[dom]} of ${S.errors.length} errors</p><p class="fine">${esc(REMEDY[dom]||'')}</p>`:'<p class="fine">No errors logged yet — that changes as soon as you practise.</p>'}</div><div class="rblock"><h4>This week</h4><p>${rep.hours.toFixed(1)} hours · ${rep.errors} error${rep.errors===1?'':'s'} · ${rep.essays} essay${rep.essays===1?'':'s'} marked</p></div><div class="rblock"><h4>Streak</h4><p>${streakLine()}</p></div>`;}
   R.innerHTML=html;}
-function renderStatus(){const el=document.getElementById('status');if(!el)return;if(!railView()){el.innerHTML='';return;}const due=dueCards(S,TODAY).length;const n=streakDays(S,TODAY);const mins=Math.round((S.dayHours[TODAY]||0)*60);
+function renderStatus(){const el=document.getElementById('status');if(!el)return;try{document.body.classList.toggle('status-on',statusView());}catch(e){}if(!statusView()){el.innerHTML='';return;}const due=dueCards(S,TODAY).length;const n=streakDays(S,TODAY);const mins=Math.round((S.dayHours[TODAY]||0)*60);
   const sync=storeMode==='memory'?'<span class="err" style="margin:0">Not saving</span>':AUTH_MODE?(syncState.busy||syncState.pending?'Saving…':syncState.err?`<span class="err" style="margin:0">Not saved — ${esc(syncState.err)}</span>`:syncState.at?`Saved ${esc(new Date(syncState.at).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}))}`:'Saved on this device'):(storeMode==='cloud'?'Saved to your Claude account':'Saved on this device');
   el.innerHTML=`<span>🔥 ${n} day streak</span><span>${mins} min today</span><span>${due} flash cards due</span><span class="sync">${sync}</span>`;}
 /* The next-step nudge: one small tutor call a day, cached in state; a deterministic sentence when the tutor cannot be asked. */
 function courseKey(){return S&&S.setup?S.setup.subjects.map(x=>x.specId).sort().join(","):"";}
 function nudgeStale(){return !(S&&S.nudge&&S.nudge.date===TODAY&&S.nudge.courses===courseKey());}
-async function requestNudge(force){if(!S||UI.nudgeBusy)return;if(!force&&!nudgeStale())return;UI.nudgeBusy=true;renderRails();
+async function requestNudge(force){if(!S||UI.nudgeBusy)return;if(!force&&!nudgeStale())return;UI.nudgeBusy=true;renderCampus();
   try{const txt=await callClaude([{type:'text',text:nudgePrompt(S,SPECS,TODAY)}],300,0);let o=null;try{o=JSON.parse(txt);}catch(e){}
     if(!S)return;if(!o||typeof o.text!=='string'||!o.text.trim())throw new Error('no usable suggestion');
     S.nudge={date:TODAY,courses:courseKey(),text:o.text.trim().slice(0,240),node:o.node&&S.nodes[o.node]?o.node:null,station:NUDGE_STATIONS.includes(o.station)?o.station:'lesson',ai:true};}
   catch(e){if(!S){UI.nudgeBusy=false;return;}const f=nudgeFallback(S,SPECS,TODAY);S.nudge={date:TODAY,courses:courseKey(),text:f.text,node:f.node,station:f.station,ai:false};}
   finally{UI.nudgeBusy=false;}
-  if(!S)return;await save();renderRails();}
+  if(!S)return;await save();renderCampus();renderRails();}
 
 /* ============ THE COACH'S WEEKLY POST-IT — one small call per room per week, only when there is something to read ============ */
 function roomLog(room){const n=S.nodes[room];const recent=x=>x.node===room&&days(x.date,TODAY)<=30;const pr=S.practice.filter(p=>recent(p)&&p.kind!=='mark');const mk=S.practice.filter(p=>recent(p)&&p.kind==='mark');const es=S.essays.filter(recent).slice(-3);const er=S.errors.filter(recent).slice(0,5);
@@ -876,7 +922,7 @@ document.addEventListener('input',e=>{const t=e.target;if(t&&t.id==='dkSearch'&&
 document.addEventListener('pointerdown',e=>{const h=e.target&&e.target.closest&&e.target.closest('[data-dkhandle]');if(!h||!UI.desk.stage)return;e.preventDefault&&e.preventDefault();UI.desk.drag=+h.dataset.dkhandle;try{h.setPointerCapture&&h.setPointerCapture(e.pointerId);}catch(x){}});
 document.addEventListener('pointermove',e=>{if(UI.desk.drag==null||!UI.desk.stage)return;const st=document.getElementById('dkStage');if(!st||!st.getBoundingClientRect)return;const r=st.getBoundingClientRect();const S0=UI.desk.stage;const x=Math.max(0,Math.min(S0.w,(e.clientX-r.left)/r.width*S0.w)),y=Math.max(0,Math.min(S0.h,(e.clientY-r.top)/r.height*S0.h));S0.corners[UI.desk.drag]=[x,y];deskStageUpdate();});
 document.addEventListener('pointerup',()=>{UI.desk.drag=null;});
-document.addEventListener('keydown',e=>{if(e.key==='Escape'&&UI.drawer){setDrawer(null);return;}const ko=(e.key==='Enter'||e.key===' ')&&e.target&&e.target.closest&&e.target.closest('[data-station]');if(ko&&ko.tagName!=='BUTTON'&&UI.room){e.preventDefault&&e.preventDefault();openStation(ko.dataset.station,true);return;}if(e.key==='Enter'&&e.target&&e.target.id==='jump'&&S){e.preventDefault&&e.preventDefault();const m=jumpMatches(UI.jumpQ);if(m.length){UI.jumpQ='';openRoom(m[0].id,'lesson');}}});
+document.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target&&e.target.id==='askIn'&&S){e.preventDefault&&e.preventDefault();askCaretaker(e.target.value);return;}const ko=(e.key==='Enter'||e.key===' ')&&e.target&&e.target.closest&&e.target.closest('[data-station]');if(ko&&ko.tagName!=='BUTTON'&&UI.room){e.preventDefault&&e.preventDefault();openStation(ko.dataset.station,true);return;}if(e.key==='Enter'&&e.target&&e.target.id==='jump'&&S){e.preventDefault&&e.preventDefault();const m=jumpMatches(UI.jumpQ);if(m.length){UI.jumpQ='';openRoom(m[0].id,'lesson');}}});
 document.addEventListener('change',async e=>{const t=e.target;
   if(t.dataset&&t.dataset.su){const id=t.dataset.su;if(t.checked)pushSubject(id);else UI.setup.subjects=UI.setup.subjects.filter(x=>x.specId!==id);UI.setup.student=document.getElementById('suName').value;renderSetup();return;}
   if(t.id==='crsSubject'){UI.setup.pickSubject=t.value;UI.setup.pickBoard=null;UI.setup.student=document.getElementById('suName').value;renderSetup();return;}
@@ -893,10 +939,8 @@ document.addEventListener('change',async e=>{const t=e.target;
   if(t.id==='esPhoto'){const files=[...(t.files||[])];const E=UI.essay;E.photos=E.photos||[];for(const f of files){try{E.photos.push(await fileToImg(f));}catch(e){}}renderRooms();return;}
   if(t.id==='mkPhoto'){const files=[...(t.files||[])];const M=UI.mark;for(const f of files){try{M.photos.push(await fileToImg(f));}catch(e){}}renderRooms();return;}});
 document.addEventListener('click',async e=>{let t=e.target;
-  if(t.id==='brand'||(t.closest&&t.closest('#brand'))){if(!S)return;UI.room=null;if(UI.drawer)setDrawer(null);go('today');renderToday();return;}
-  const nb=t.closest('button[data-v]');if(nb){if(nb.dataset.v==='admin'){if(!isAdmin())return;go('admin');renderAdmin();return;}if(!S)return;go(nb.dataset.v);return;}
-  const dr=t.closest('[data-drawer]');if(dr){setDrawer(UI.drawer===dr.dataset.drawer?null:dr.dataset.drawer);return;}
-  if(t.id==='scrim'){setDrawer(null);return;}
+  if(t.id==='brand'||(t.closest&&t.closest('#brand'))){if(!S)return;UI.room=null;go('campus');renderCampus();return;}
+  const nb=t.closest('button[data-v]');if(nb){const v=nb.dataset.v;if(v==='admin'){if(!isAdmin())return;go('admin');renderAdmin();return;}if(v==='office'&&!S){go('office');renderOffice();return;}if(!S)return;go(v);if(v==='campus')renderCampus();if(v==='office')renderOffice();if(v==='today')renderToday();return;}
   if(t.id==='suGo'){UI.setup.subjects=UI.setup.subjects.filter(x=>SPECS[x.specId]);UI.setup.student=document.getElementById('suName').value.trim();UI.setup.examYear=+document.getElementById('suYear').value;UI.setup.coachName=String(document.getElementById('suCoach').value||'').trim().slice(0,24)||'Coach';const bad=setupValid();if(bad){document.getElementById('suErr').innerHTML=`<p class="err">${esc(bad)}</p>`;return;}
     if(S)mergeSetup(JSON.parse(JSON.stringify(UI.setup)));else{S=newState(UI.setup,SPECS);S.created=TODAY;if(!AUTH_MODE&&PENDING_ROUTE){S.tutor=PENDING_ROUTE;PENDING_ROUTE=null;}}presetBoundaries();UI.subject=S.setup.subjects[0].specId;UI.room=null;await mirrorMaths();await save();go('today');renderAll();return;}
   if(t.dataset&&t.dataset.level){if(t.disabled||!(Object.values(SPECS).some(sp=>sp.level===t.dataset.level)||COURSES.catalogue.some(q=>q.level===t.dataset.level)))return;UI.setup.level=t.dataset.level;UI.setup.pickSubject=null;UI.setup.pickBoard=null;UI.setup.student=document.getElementById('suName').value;renderSetup();return;}
@@ -937,8 +981,13 @@ document.addEventListener('click',async e=>{let t=e.target;
     try{const r=await api('/manage/courses/'+encodeURIComponent(id)+'/links',{method:'POST',body:{hubs}});if(out)out.innerHTML=`<div class="good">Saved ${r.hubs.length} link${r.hubs.length===1?'':'s'}. Students see them in every room of this course.</div>`;await loadCourses();}catch(e){if(out)out.innerHTML=`<p class="err">${esc(e.message)}</p>`;}return;}
   if(t.id==='suEdit'){await loadCourses();UI.setup=JSON.parse(JSON.stringify(S.setup));document.querySelectorAll('main>section').forEach(x=>x.classList.toggle('hide',x.id!=='v-setup'));renderSetup();return;}
   if(!S)return;
-  const pn=t.closest('[data-pin]');if(pn){S.pinned=S.pinned||{};if(S.pinned[pn.dataset.pin])delete S.pinned[pn.dataset.pin];else S.pinned[pn.dataset.pin]=true;await save();renderRails();return;}
-  const cc=t.closest('[data-course]');if(cc){UI.subject=cc.dataset.course;UI.room=null;if(UI.drawer)setDrawer(null);if(view!=='exam')go('rooms');renderRooms();renderExam();return;}
+  const pn=t.closest('[data-pin]');if(pn){S.pinned=S.pinned||{};if(S.pinned[pn.dataset.pin])delete S.pinned[pn.dataset.pin];else S.pinned[pn.dataset.pin]=true;await save();renderOffice();renderQuickBar();return;}
+  const bl=t.closest('[data-bldg]');if(bl){UI.subject=bl.dataset.bldg;UI.room=null;go('rooms');renderRooms();return;}
+  const bv=t.closest('[data-bldg-view]');if(bv){go(bv.dataset.bldgView);if(bv.dataset.bldgView==='office')renderOffice();return;}
+  if(t.closest('[data-hint-done]')){UI.hintLive={};renderAll();return;}
+  if(t.id==='backCampus'){UI.room=null;go('campus');renderCampus();return;}
+  if(t.id==='askGo'){await askCaretaker(document.getElementById('askIn').value);return;}
+  const cc=t.closest('[data-course]');if(cc){UI.subject=cc.dataset.course;UI.room=null;if(view!=='exam')go('rooms');renderRooms();renderExam();return;}
   if(t.closest('[data-nudge-refresh]')){await requestNudge(true);return;}
   const tick=t.closest('.tick');if(tick){const i=+tick.dataset.step;const arr=S.doneToday[TODAY]||(S.doneToday[TODAY]=[]);const sess=buildSession(S,SPECS,TODAY);const at=arr.indexOf(i);if(at>=0){arr.splice(at,1);addHours(-sess.steps[i].minutes/60);}else{arr.push(i);addHours(sess.steps[i].minutes/60);}await save();renderHeader();renderToday();if(view==='rooms'&&UI.room)renderRooms();return;}
   const op=t.closest('[data-open]');if(op){openRoom(op.dataset.open,op.dataset.st);return;}

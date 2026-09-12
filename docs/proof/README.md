@@ -32,15 +32,15 @@ The course list: provenance, models, prompt version, judge, last monthly run, re
 
 ![5-admin-courses](5-admin-courses.png)
 
-## 6-wide-today
+## 6-campus
 
-Wide screen: left rail (nav, quick-jump, course switcher, topic tree with status dots), centre (today’s session), right rail (tutor-written next step, cards due, progress rings, streak), status strip
+The campus: one building per subject with its colour on the door, lit windows for progress and a flag for what is due; the Exam Hall and the Office; the notice board says what to do now, with the coach’s note and the rest of the day; the quick bar under the date
 
-![6-wide-today](6-wide-today.png)
+![6-campus](6-campus.png)
 
 ## 20-flash-card-front
 
-Flash card review: an index card in the subject’s colour, question up, matching the course’s colour stripe in the left rail
+Flash card review: an index card in the subject’s colour, question up, matching the course’s chip on the quick bar
 
 ![20-flash-card-front](20-flash-card-front.png)
 
@@ -50,11 +50,17 @@ The same card turned over: the answer on the back, Right and Wrong to mark yours
 
 ![21-flash-card-back](21-flash-card-back.png)
 
-## 7-wide-room
+## 7-corridor
 
-Inside a room: the tree marks the current topic; the right rail is contextual — state, key-idea codes, cards due here, your mistakes here, watch and read
+Inside a building: one door per topic under its component sign, a state strip on each door, what is due behind it; the wall says what is due in this building and has the jump box
 
-![7-wide-room](7-wide-room.png)
+![7-corridor](7-corridor.png)
+
+## 8-classroom-wall
+
+A classroom: breadcrumb, Corridor button and neighbouring doors above the desk, the wall beside it with this room, cards due, mistakes, watch and read
+
+![8-classroom-wall](8-classroom-wall.png)
 
 ## 22-room-deck
 
@@ -62,23 +68,17 @@ The room’s flash-card deck: mini index cards in the subject’s colour, one tu
 
 ![22-room-deck](22-room-deck.png)
 
-## 10-ipad-room
+## 10-office
 
-iPad landscape inside a maths room: the station tabs scroll within the panel, the panel stays centred, and the rail ends with Add or change courses and Sign out
+The Office: courses with pins and progress, Add or change courses, the account
 
-![10-ipad-room](10-ipad-room.png)
+![10-office](10-office.png)
 
-## 8-tablet-drawer
+## 9-phone-campus
 
-iPad width: the left rail is part of the page; the right rail opens as a drawer from the header button
+Phone: the campus and the notice board stack, the quick bar scrolls sideways, the bottom bar carries Campus, Exam Hall, Progress, Office
 
-![8-tablet-drawer](8-tablet-drawer.png)
-
-## 9-phone-drawer
-
-Phone: the course and topic drawer over the session, bottom nav and status strip kept
-
-![9-phone-drawer](9-phone-drawer.png)
+![9-phone-campus](9-phone-campus.png)
 
 ## 11-room-with-kit
 

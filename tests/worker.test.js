@@ -182,7 +182,7 @@ const baseEnv = () => ({ ANTHROPIC_API_KEY: 'sk-ant-test', ALLOWED_ORIGIN: 'http
     await env.USAGE.put('desk:matthew:OCR-H481|1.2', JSON.stringify(idx));
     r = await worker.fetch(req('/desk/OCR-H481%7C1.2', J('POST', { kind: 'note', text: 'one more' }, STU)), env);
     ok('D8 the 201st item in a room is refused with a readable message', r.status === 409 && /200 items/.test((await r.json()).error));
-    idx.items = idx.items.filter(x => !String(x.id).startsWith('f')); await env.USAGE.put('desk:matthew:OCR-H481|1.2', JSON.stringify(idx));
+    idx.items = idx.items.filter(x => !(/^f\d+$/.test(String(x.id)) && x.kind === 'note' && x.text === 'n')); await env.USAGE.put('desk:matthew:OCR-H481|1.2', JSON.stringify(idx));
     r = await worker.fetch(req('/desk/OCR-H481%7C1.2/' + photo.id, { method: 'DELETE', headers: STU }), env);
     ok('D2 deleting a photo removes the item, the file and its bytes from the quota', r.status === 200 && !env.DESK._map.has(photo.key) && (await env.USAGE.get('deskq:matthew')) === '0');
     r = await worker.fetch(req('/desk/all', { headers: STU }), env);
@@ -478,7 +478,7 @@ const baseEnv = () => ({ ANTHROPIC_API_KEY: 'sk-ant-test', ALLOWED_ORIGIN: 'http
   {
     const saveFetch = sandbox.__fetch; let ytHits = 0, modelHits = 0, oembedHits = 0, promptsSeen = [];
     const page = (vids) => `<html><script>var ytInitialData = ${JSON.stringify({ contents: { list: vids.map(v => ({ videoRenderer: { videoId: v.id, title: { runs: [{ text: v.title }] }, ownerText: { runs: [{ text: v.ch }] }, lengthText: { simpleText: v.len }, viewCountText: { simpleText: '1,234 views' }, publishedTimeText: { simpleText: '2 years ago' } } })) } })};</script></html>`;
-    const hits = [{ id: 'abc123def45', title: 'GCSE German: talking about your home', ch: 'German with Anna', len: '9:12' }, { id: 'vlog1234567', title: 'my gcse results vlog', ch: 'Maria', len: '7:10' }, { id: 'gone1234567', title: 'GCSE German: my town', ch: 'Deutsch Lernen', len: '11:00' }];
+    const hits = [{ id: 'abc123def45', title: 'GCSE German: talking about your home', ch: 'German with Anna', len: '9:12' }, { id: 'vlog1234567', title: 'my gcse results vlog', ch: 'Maria', len: '7:10' }, { id: 'gone1234567', title: 'GCSE German: my town', ch: 'Deutsch Lernen', len: '11:00' }, { id: 'short123456', title: 'GCSE German house words in a minute', ch: 'Quick German', len: '1:24' }];
     sandbox.__fetch = async (url, init) => {
       const u = String(url);
       if (u.startsWith('https://www.youtube.com/results')) { ytHits++; return new Response(page(hits), { status: 200, headers: { 'Content-Type': 'text/html' } }); }
@@ -504,6 +504,7 @@ const baseEnv = () => ({ ANTHROPIC_API_KEY: 'sk-ant-test', ALLOWED_ORIGIN: 'http
     ok('V2 each listed video carries the confirmed title and channel, its length, a reason and a thumbnail', v.items[0].title === 'GCSE German: talking about your home (full lesson)' && v.items[0].channel === 'German with Anna' && v.items[0].length === '9:12' && /rooms/.test(v.items[0].why) && /i\.ytimg\.com\/vi\/abc123def45/.test(v.items[0].image));
     ok('V2 three model-written searches were run, two model calls made, only picked ids checked with oEmbed', ytHits === 3 && modelHits === 2 && oembedHits === 2 && v.queries.length === 3, `${ytHits} ${modelHits} ${oembedHits}`);
     ok('V2 the picking prompt names the course, the topic, its key ideas and the candidates, and allows an empty answer', /4GN1/.test(promptsSeen[1]) && /Home and abroad/.test(promptsSeen[1]) && /Town and region/.test(promptsSeen[1]) && /abc123def45 \| GCSE German: talking about your home \| German with Anna \| 9:12/.test(promptsSeen[1]) && /empty list/.test(promptsSeen[1]));
+    ok('V2 a clip under two minutes never reaches the picking step', !/short123456/.test(promptsSeen[1]) && /vlog1234567/.test(promptsSeen[1]));
     r = await worker.fetch(req('/videos', J('POST', body, VST)), env);
     v = await r.json();
     ok('V3 the second request for the room is served from KV without searching again', v.items.length === 1 && ytHits === 3 && modelHits === 2 && (await env.USAGE.get('videos2:EDX-4GN1:A', 'json')).items.length === 1);

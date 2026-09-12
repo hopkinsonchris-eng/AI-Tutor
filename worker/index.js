@@ -232,8 +232,10 @@ function parseYoutubeResults(html) {
     if (o.videoRenderer && o.videoRenderer.videoId) { const v = o.videoRenderer; out.push({ id: String(v.videoId), title: runs(v.title).slice(0, 160), channel: runs(v.ownerText || v.longBylineText).slice(0, 80), length: runs(v.lengthText), views: runs(v.viewCountText), published: runs(v.publishedTimeText) }); return; }
     for (const k of Object.keys(o)) walk(o[k]); };
   walk(data);
-  return out.filter(v => /^[A-Za-z0-9_-]{6,20}$/.test(v.id) && v.title);
+  return out.filter(v => /^[A-Za-z0-9_-]{6,20}$/.test(v.id) && v.title && lengthSeconds(v.length) >= 120);
 }
+/* "1:24" → 84, "1:02:10" → 3730; an unknown length passes (0 means unknown, so it is treated as long enough). */
+function lengthSeconds(t) { const p = String(t || '').split(':').map(x => parseInt(x, 10)); if (!p.length || p.some(isNaN)) return 1e9; return p.reduce((a, x) => a * 60 + x, 0); }
 async function oembed(id) {
   try {
     const res = await fetch('https://www.youtube.com/oembed?url=' + encodeURIComponent('https://www.youtube.com/watch?v=' + id) + '&format=json', { headers: { 'Accept': 'application/json' } });

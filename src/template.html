@@ -185,7 +185,7 @@ async function pollBuild(id){if(!UI.build||UI.build.id!==id)return;
     renderSetup();}
   catch(e){UI.build.status='failed';UI.build.message=e.message;renderSetup();}}
 function presetBoundaries(){for(const sub of S.setup.subjects){const A=AUTHORED[sub.specId];if(A&&A.boundaries&&!S.boundaries[sub.specId]){const b=A.boundaries.overall[0];const total=300;S.boundaries[sub.specId]={};for(const g of ['A*','A','B','C','D','E'])S.boundaries[sub.specId][g]=Math.round(b[g]/total*100);}}}
-function mergeSetup(newSetup){const fresh=newState(newSetup,SPECS);for(const [id,n] of Object.entries(fresh.nodes)){if(S.nodes[id])fresh.nodes[id]=S.nodes[id];}S.nodes=fresh.nodes;S.setup=newSetup;
+function mergeSetup(newSetup){const fresh=newState(newSetup,SPECS);for(const [id,n] of Object.entries(fresh.nodes)){if(S.nodes[id])fresh.nodes[id]=S.nodes[id];}S.nodes=fresh.nodes;S.setup=newSetup;delete S.nudge;
   for(const k of ['errors','essays','practice','transitions'])S[k]=S[k].filter(x=>!x.node||S.nodes[x.node]);for(const k of Object.keys(S.cards))if(!S.nodes[S.cards[k].node])delete S.cards[k];for(const k of Object.keys(S.coachNotes||{}))if(!S.nodes[k])delete S.coachNotes[k];}
 function setupValid(){const st=UI.setup;if(!st.student||!st.subjects.length)return 'Enter a name and choose at least one subject.';for(const sub of st.subjects){const sp=specById(sub.specId);for(const o of sp.options){const v=sub.options[o.id];const n=Array.isArray(v)?v.length:(v?1:0);if(n!==o.choose)return `${sp.subject}: choose exactly ${o.choose} for ${o.label}.`;}}return null;}
 
@@ -420,7 +420,7 @@ function resourcesFor(spec,topic){const AU=authoredFor(spec.id,topic.id);const o
   return out.concat(topicLinks(spec,topic));}
 function streakLine(){const n=streakDays(S,TODAY);const mins=Math.round((S.dayHours[TODAY]||0)*60);return `<b>${n}</b> day streak · ${mins} min today`;}
 function renderRailR(R){const due=dueCards(S,TODAY);let html='';
-  if(view==='today'){const N=S.nudge&&S.nudge.date===TODAY?S.nudge:null;
+  if(view==='today'){const N=nudgeStale()?null:S.nudge;
     html+=`<div class="rblock nudge"><h4>Next step</h4><p>${N?esc(N.text):UI.nudgeBusy?'Working out the best thing to do first…':'Working it out…'}</p><div class="row">${N&&N.node&&S.nodes[N.node]?`<button class="act small" data-open="${esc(N.node)}" data-st="${esc(N.station||'lesson')}">Open room →</button>`:N&&N.station==='cards'&&due.length?`<button class="act small" data-cards="1">Review cards →</button>`:''}<button class="act ghost small" data-nudge-refresh="1" ${UI.nudgeBusy?'disabled':''}>Another suggestion</button></div>${N&&N.ai?'<small class="fine">Written by the tutor from your own progress and mistakes.</small>':''}</div>`;
     html+=`<div class="rblock"><h4>Flash cards due</h4><div class="bigrow"><b class="big">${due.length}</b>${due.length?`<button class="act small" data-cards="1">Review now →</button>`:'<span class="fine">All clear for today</span>'}</div></div>`;
     html+=`<div class="rblock"><h4>Progress</h4>${S.setup.subjects.map(sub=>{const sp=specById(sub.specId);const p=predictSubject(S,sp,sub.options);return ringHtml(p.pct,p.grade,sp.subject);}).join('')}</div>`;
@@ -444,12 +444,13 @@ function renderStatus(){const el=document.getElementById('status');if(!el)return
   const sync=storeMode==='memory'?'<span class="err" style="margin:0">Not saving</span>':AUTH_MODE?(syncState.busy||syncState.pending?'Saving…':syncState.err?`<span class="err" style="margin:0">Not saved — ${esc(syncState.err)}</span>`:syncState.at?`Saved ${esc(new Date(syncState.at).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}))}`:'Saved on this device'):(storeMode==='cloud'?'Saved to your Claude account':'Saved on this device');
   el.innerHTML=`<span>🔥 ${n} day streak</span><span>${mins} min today</span><span>${due} flash cards due</span><span class="sync">${sync}</span>`;}
 /* The next-step nudge: one small tutor call a day, cached in state; a deterministic sentence when the tutor cannot be asked. */
-function nudgeStale(){return !(S&&S.nudge&&S.nudge.date===TODAY);}
+function courseKey(){return S&&S.setup?S.setup.subjects.map(x=>x.specId).sort().join(","):"";}
+function nudgeStale(){return !(S&&S.nudge&&S.nudge.date===TODAY&&S.nudge.courses===courseKey());}
 async function requestNudge(force){if(!S||UI.nudgeBusy)return;if(!force&&!nudgeStale())return;UI.nudgeBusy=true;renderRails();
   try{const txt=await callClaude([{type:'text',text:nudgePrompt(S,SPECS,TODAY)}],300,0);let o=null;try{o=JSON.parse(txt);}catch(e){}
     if(!S)return;if(!o||typeof o.text!=='string'||!o.text.trim())throw new Error('no usable suggestion');
-    S.nudge={date:TODAY,text:o.text.trim().slice(0,240),node:o.node&&S.nodes[o.node]?o.node:null,station:NUDGE_STATIONS.includes(o.station)?o.station:'lesson',ai:true};}
-  catch(e){if(!S){UI.nudgeBusy=false;return;}const f=nudgeFallback(S,SPECS,TODAY);S.nudge={date:TODAY,text:f.text,node:f.node,station:f.station,ai:false};}
+    S.nudge={date:TODAY,courses:courseKey(),text:o.text.trim().slice(0,240),node:o.node&&S.nodes[o.node]?o.node:null,station:NUDGE_STATIONS.includes(o.station)?o.station:'lesson',ai:true};}
+  catch(e){if(!S){UI.nudgeBusy=false;return;}const f=nudgeFallback(S,SPECS,TODAY);S.nudge={date:TODAY,courses:courseKey(),text:f.text,node:f.node,station:f.station,ai:false};}
   finally{UI.nudgeBusy=false;}
   if(!S)return;await save();renderRails();}
 
@@ -479,7 +480,7 @@ function mmss(sec){sec=Math.floor(sec||0);return `${Math.floor(sec/60)}:${String
 function deskHtml(spec,topic,n,AU,factsLabel){const room=UI.room,st=n.state,items=deskItems(),CN=coachName();
   const deck=Object.values(S.cards).filter(c=>c.node===room);const due=deck.filter(c=>!c.due||c.due<=TODAY).length;const kitCards=AU&&AU.cards&&AU.cards.length&&!(S.kitCards||{})[room]?AU.cards.length:0;
   const dte=daysToExam(S.setup,TODAY);const sess=buildSession(S,SPECS,TODAY);const steps=sess.steps||[];const mins=steps.reduce((a,b)=>a+b.minutes,0);const phase=phaseFor(TODAY);
-  const N=S.nudge&&S.nudge.date===TODAY?S.nudge:null;const mine=items.find(x=>x.kind==='note');const photo=items.find(x=>x.kind==='photo'&&x.thumb)||items.find(x=>x.kind==='photo');const photos=items.filter(x=>x.kind==='photo').length;const video=items.find(x=>x.kind==='video');
+  const N=nudgeStale()?null:S.nudge;const mine=items.find(x=>x.kind==='note');const photo=items.find(x=>x.kind==='photo'&&x.thumb)||items.find(x=>x.kind==='photo');const photos=items.filter(x=>x.kind==='photo').length;const video=items.find(x=>x.kind==='video');
   const piles=pileCounts(AU?AU.room.questions:[],S.practice,room);const essays=S.essays.filter(e=>e.node===room);const lastE=essays[essays.length-1];const marked=S.practice.filter(p=>p.node===room&&p.kind==='mark').length;const cnt=deskCount();
   const cnote=(S.coachNotes||{})[room];const noteBusy=UI.noteBusy&&UI.noteBusy[room];const L=roomLog(room);
   const dateStr=new Date(TODAY).toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long'});
@@ -709,7 +710,7 @@ document.addEventListener('pointermove',e=>{if(UI.desk.drag==null||!UI.desk.stag
 document.addEventListener('pointerup',()=>{UI.desk.drag=null;});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&UI.drawer){setDrawer(null);return;}const ko=(e.key==='Enter'||e.key===' ')&&e.target&&e.target.closest&&e.target.closest('[data-station]');if(ko&&ko.tagName!=='BUTTON'&&UI.room){e.preventDefault&&e.preventDefault();openStation(ko.dataset.station,true);return;}if(e.key==='Enter'&&e.target&&e.target.id==='jump'&&S){e.preventDefault&&e.preventDefault();const m=jumpMatches(UI.jumpQ);if(m.length){UI.jumpQ='';openRoom(m[0].id,'lesson');}}});
 document.addEventListener('change',async e=>{const t=e.target;
-  if(t.dataset&&t.dataset.su){const id=t.dataset.su;if(t.checked)UI.setup.subjects.push({specId:id,options:{}});else UI.setup.subjects=UI.setup.subjects.filter(x=>x.specId!==id);UI.setup.student=document.getElementById('suName').value;renderSetup();return;}
+  if(t.dataset&&t.dataset.su){const id=t.dataset.su;if(t.checked)pushSubject(id);else UI.setup.subjects=UI.setup.subjects.filter(x=>x.specId!==id);UI.setup.student=document.getElementById('suName').value;renderSetup();return;}
   if(t.id==='crsSubject'){UI.setup.pickSubject=t.value;UI.setup.pickBoard=null;UI.setup.student=document.getElementById('suName').value;renderSetup();return;}
   if(t.id==='crsBoard'){UI.setup.pickBoard=t.value;return;}
   if(t.dataset&&t.dataset.opt){const [sid,oid,f]=t.dataset.opt.split('|');const sub=UI.setup.subjects.find(x=>x.specId===sid);const o=specById(sid).options.find(x=>x.id===oid);if(o.choose>1){const arr=sub.options[oid]||[];sub.options[oid]=t.checked?[...new Set([...arr,f])]:arr.filter(x=>x!==f);}else sub.options[oid]=f;return;}
@@ -722,7 +723,7 @@ document.addEventListener('click',async e=>{let t=e.target;
   if(t.id==='scrim'){setDrawer(null);return;}
   if(t.id==='suGo'){UI.setup.subjects=UI.setup.subjects.filter(x=>SPECS[x.specId]);UI.setup.student=document.getElementById('suName').value.trim();UI.setup.examYear=+document.getElementById('suYear').value;UI.setup.coachName=String(document.getElementById('suCoach').value||'').trim().slice(0,24)||'Coach';const bad=setupValid();if(bad){document.getElementById('suErr').innerHTML=`<p class="err">${esc(bad)}</p>`;return;}
     if(S)mergeSetup(JSON.parse(JSON.stringify(UI.setup)));else{S=newState(UI.setup,SPECS);S.created=TODAY;if(!AUTH_MODE&&PENDING_ROUTE){S.tutor=PENDING_ROUTE;PENDING_ROUTE=null;}}presetBoundaries();UI.subject=S.setup.subjects[0].specId;UI.room=null;await mirrorMaths();await save();go('today');renderAll();return;}
-  if(t.dataset&&t.dataset.level){if(t.disabled||!(Object.values(SPECS).some(sp=>sp.level===t.dataset.level)||COURSES.catalogue.some(q=>q.level===t.dataset.level)))return;UI.setup.level=t.dataset.level;UI.setup.pickSubject=null;UI.setup.pickBoard=null;UI.setup.subjects=UI.setup.subjects.filter(x=>specById(x.specId).level===t.dataset.level);UI.setup.student=document.getElementById('suName').value;renderSetup();return;}
+  if(t.dataset&&t.dataset.level){if(t.disabled||!(Object.values(SPECS).some(sp=>sp.level===t.dataset.level)||COURSES.catalogue.some(q=>q.level===t.dataset.level)))return;UI.setup.level=t.dataset.level;UI.setup.pickSubject=null;UI.setup.pickBoard=null;UI.setup.student=document.getElementById('suName').value;renderSetup();return;}
   if(t.id==='crsAdd'){UI.setup.student=document.getElementById('suName').value;const subject=document.getElementById('crsSubject').value,boardId=document.getElementById('crsBoard').value;UI.setup.pickSubject=subject;UI.setup.pickBoard=boardId;await addCourse(UI.setup.level,subject,boardId);return;}
   if(t.id==='buildDismiss'){UI.build=null;renderSetup();return;}
   if(t.id==='suCancel'){go('today');renderAll();return;}

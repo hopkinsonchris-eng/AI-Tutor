@@ -37,6 +37,12 @@ const hol=C.buildSession(s2,SPECS,'2026-10-26');ok('S2 holiday new step is 60 mi
 const busId=C.nodeId('EDX-9BS0','1.1');s2.nodes[busId].state='Fluent';s2.nodes[busId].lastPractised='2026-10-01';
 const hol2=C.buildSession(s2,SPECS,'2026-10-27');ok('S3 holiday adds a timed essay from a fluent essay-subject topic',hol2.steps.some(x=>x.kind==='essay'&&x.nodes[0]===busId));
 ok('S4 review step appears for a stale fluent node',hol2.steps.some(x=>x.kind==='review'&&x.nodes[0]===busId));
+/* several courses share each day: new topics come from more than one subject, and the lead subject rotates */
+const s4=C.newState(setup,SPECS);const t1=C.buildSession(s4,SPECS,'2026-09-15'),t2=C.buildSession(s4,SPECS,'2026-09-16'),h1=C.buildSession(s4,SPECS,'2026-10-26');
+const subjOf=st=>s4.nodes[st.nodes[0]].spec;const news=st=>st.steps.filter(x=>x.kind==='new');
+ok('S6 a term day with nothing due opens new topics in two different subjects',news(t1).length===2&&subjOf(news(t1)[0])!==subjOf(news(t1)[1]),JSON.stringify(news(t1).map(subjOf)));
+ok('S6 the lead subject rotates from one day to the next while priorities tie',subjOf(news(t1)[0])!==subjOf(news(t2)[0]),subjOf(news(t1)[0])+' / '+subjOf(news(t2)[0]));
+ok('S6 a holiday day opens new topics in all three subjects',news(h1).length===3&&new Set(news(h1).map(subjOf)).size===3);
 const prio=C.subjectPriority(s2,SPECS,'2026-10-27');ok('S5 priority ranks all three subjects',prio.length===3&&prio[0].score>=prio[2].score);
 /* prediction */
 const p0=C.predictSubject(s2,SPEC_H481,setup.subjects[0].options);ok('P1 fresh geography predicts U with estimated bounds',p0.grade==='U'&&p0.estimatedBounds);

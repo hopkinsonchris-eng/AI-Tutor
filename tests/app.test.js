@@ -254,7 +254,7 @@ const click=async s=>L.click({target:T(s)});const change=async s=>L.change({targ
  /* the tablet */
  ok('X5 the tablet shows the last pinned video with its resume time',/data-station="desktop" aria-label="Videos: resume A video at 5:12"/.test(svg())&&/i\.ytimg\.com\/vi\/dQw4w9WgXcQ\/hqdefault\.jpg/.test(svg())&&/Videos · resume 5:12/.test(svg()));
  /* the post-its */
- G.S.nudge={date:G.TODAY,text:'Matthew, plan and mark one 33-marker before the cards.',node:'OCR-H481|1.2',station:'essay',ai:true};$('dkNote').value='Ask Mr Hall about throughflow vs interflow.';G.UI.station='desktop';G.renderRooms();await click({id:'dkAddNote'});await sleep(20);G.UI.station='lesson';G.renderRooms();
+ G.S.nudge={date:G.TODAY,courses:G.courseKey(),text:'Matthew, plan and mark one 33-marker before the cards.',node:'OCR-H481|1.2',station:'essay',ai:true};$('dkNote').value='Ask Mr Hall about throughflow vs interflow.';G.UI.station='desktop';G.renderRooms();await click({id:'dkAddNote'});await sleep(20);G.UI.station='lesson';G.renderRooms();
  ok('X6 the yellow post-it carries the nudge, the pink one the latest note, the blue one today’s numbers',/data-postit="next"[\s\S]*?plan and/.test(svg())&&/data-postit="mine"[\s\S]*?Ask Mr Hall/.test(svg())&&/data-postit="today"[\s\S]*?cards due/.test(svg())&&/Exam in \d+ days/.test(svg()));
  ok('X6 the yellow post-it opens the nudge’s station, the green one the desktop',/data-station="essay" aria-label="Next step: Matthew, plan and mark one/.test(svg())&&/data-station="desktop" aria-label="Your note: Ask Mr Hall/.test(svg()));
  /* the plant */
@@ -318,6 +318,16 @@ const click=async s=>L.click({target:T(s)});const change=async s=>L.change({targ
  // remove a subject: nodes and dependent records go
  await click({id:'suEdit'});await change({dataset:{su:'EDX-9BS0'},checked:false});await click({id:'suGo'});
  ok('B1 removing a subject removes its rooms',!Object.keys(G.S.nodes).some(k=>k.startsWith('EDX-9BS0')));
+ // the level buttons only filter the picker: switching to GCSE to add a GCSE course must not drop the A level ones already chosen
+ await click({id:'suEdit'});const chosenBefore=G.UI.setup.subjects.map(x=>x.specId).sort().join();await click({dataset:{level:'GCSE'}});
+ ok('B8 switching the level filter keeps every chosen course',G.UI.setup.subjects.map(x=>x.specId).sort().join()===chosenBefore&&/data-su="OCR-H481" checked/.test(reg['v-setup'].innerHTML),G.UI.setup.subjects.map(x=>x.specId).join());
+ await click({dataset:{level:'A level'}});await click({id:'suCancel'});
+ // a cached next step is for a set of courses: change the courses and it is stale
+ G.S.nudge={date:G.TODAY,courses:G.courseKey(),text:'old',node:null,station:'lesson',ai:true};ok('B8 the nudge is fresh for today and these courses',!G.nudgeStale());
+ await click({id:'suEdit'});await change({dataset:{su:'EDX-9BS0'},checked:true});await click({id:'suGo'});
+ ok('B8 changing the courses drops the cached next step so it is worked out again',G.nudgeStale()&&!G.S.nudge);
+ await click({id:'suEdit'});await change({dataset:{su:'EDX-9BS0'},checked:false});await click({id:'suGo'});
+
  // mark station
  reply=f=>{const p=f.body.messages[0].content[0].text;if(/senior examiner/.test(p))return{content:[{type:'text',text:JSON.stringify({transcription:'dy/dx = 3x^2 - 12x',level:2,maxLevel:3,mark:3,max:4,byAO:[{ao:'AO1',comment:'method shown'}],strengths:['s'],weaknesses:['w'],feedback:'f',failureMode:'EXAM-TECHNIQUE',fix:'write y-values',followUp:'u',codes:['P7.3']})}]};return{content:[{type:'text',text:'OK'}]};};
  G.openRoom('EDX-9MA0|P7','mark');ok('B3 mark station present with photo + marks',/Photograph the question and your answer/.test(reg['v-rooms'].innerHTML)&&/id="mkMarks"/.test(reg['v-rooms'].innerHTML));

@@ -138,13 +138,18 @@ function buildSession(state, specs, today) {
     const n = state.nodes[d]; const spec = specs[n.spec]; const topic = spec.topics.find(t => t.id === n.topic);
     steps.push({ kind: 'review', title: `Review: ${spec.subject} \u2014 ${topic.name}`, minutes: n.state === 'Learning' ? 25 : 15, detail: `${n.state}. Short questions and one case-study recall, then log.`, nodes: [d] });
   }
-  if (holiday || due.length === 0) {
-    const top = prio.find(p => Object.values(state.nodes).some(n => n.spec === p.spec && n.state === 'Unassessed'));
-    if (top) {
-      const [id, n] = Object.entries(state.nodes).find(([, n]) => n.spec === top.spec && n.state === 'Unassessed');
-      const spec = specs[n.spec]; const topic = spec.topics.find(t => t.id === n.topic);
-      steps.push({ kind: 'new', title: `New: ${spec.subject} \u2014 ${topic.name}`, minutes: holiday ? 60 : 40, detail: holiday ? 'Lesson, then case-study cards, then the exit ticket.' : 'Term-time: lesson only today; cards and exit ticket next session.', nodes: [id] });
-    }
+  /* New topics come from several courses, not the same one every day: subjects with untouched topics are taken in
+     priority order, equal-priority subjects rotating with the date, up to three a day in the holidays and two in
+     term (one when reviews are already due), one topic each. */
+  const fresh = prio.filter(p => Object.values(state.nodes).some(n => n.spec === p.spec && n.state === 'Unassessed'));
+  const groups = []; for (const p of fresh) { const g = groups[groups.length - 1]; if (g && g[0].score - p.score < 0.05) g.push(p); else groups.push([p]); }
+  const rot = Math.max(0, days('2026-01-01', today));
+  const ordered = groups.flatMap(g => { const k = rot % g.length; return g.slice(k).concat(g.slice(0, k)); });
+  const wantNew = holiday ? 3 : (due.length === 0 ? 2 : 1);
+  for (const top of ordered.slice(0, wantNew)) {
+    const [id, n] = Object.entries(state.nodes).find(([, n]) => n.spec === top.spec && n.state === 'Unassessed');
+    const spec = specs[n.spec]; const topic = spec.topics.find(t => t.id === n.topic);
+    steps.push({ kind: 'new', title: `New: ${spec.subject} \u2014 ${topic.name}`, minutes: holiday ? 60 : 40, detail: holiday ? 'Lesson, then case-study cards, then the exit ticket.' : 'Term-time: lesson only today; cards and exit ticket next session.', nodes: [id] });
   }
   const essayCandidates = Object.entries(state.nodes).filter(([, n]) => ['Fluent', 'Secure'].includes(n.state) && specs[n.spec].essaySubject);
   if (essayCandidates.length && (holiday || new Date(today).getDay() === 6)) {

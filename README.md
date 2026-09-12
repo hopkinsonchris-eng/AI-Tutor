@@ -46,8 +46,10 @@ the right rail is a drawer; on a phone both are drawers behind the two buttons i
 - **Right rail — what now.** It changes with the view. *Today*: the next step (one sentence the tutor
   writes from the student's own errors and mastery, once a day, with a deterministic fallback), cards
   due, a progress ring per course, the streak. *In a room*: state, key-idea codes, cards due here, the
-  mistakes logged here, and *Watch and read* — the course's checked hub pages, the topic's own links,
-  and searches that always exist. *Rooms grid*: papers and weights, rooms by state, the next room to
+  mistakes logged here, and *Watch and read* — real videos for this topic (the Worker searches YouTube
+  with model-written queries, a model keeps only the ones that teach the topic at this level, each is
+  checked to exist, and the list is cached per room; a room where nothing passes lists none), then the
+  course's checked hub pages, the topic's own links and a Bitesize search. *Rooms grid*: papers and weights, rooms by state, the next room to
   start. *Exam*: the board's command words, essay shapes and assessment objectives. *Progress*: the
   error pattern and remedy, this week, the streak.
 - **Status strip.** Streak, minutes today, cards due, and whether progress is saved.

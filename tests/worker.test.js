@@ -474,7 +474,56 @@ const baseEnv = () => ({ ANTHROPIC_API_KEY: 'sk-ant-test', ALLOWED_ORIGIN: 'http
     ok('C17 only the course whose document changed since it was built gets a proposal', props.length === 1 && props[0] === 'AQA-8300', JSON.stringify(props));
   }
 
+  /* ---------- videos for a room: searched, chosen by a model, verified, cached ---------- */
+  {
+    const saveFetch = sandbox.__fetch; let ytHits = 0, modelHits = 0, oembedHits = 0, promptsSeen = [];
+    const page = (vids) => `<html><script>var ytInitialData = ${JSON.stringify({ contents: { list: vids.map(v => ({ videoRenderer: { videoId: v.id, title: { runs: [{ text: v.title }] }, ownerText: { runs: [{ text: v.ch }] }, lengthText: { simpleText: v.len }, viewCountText: { simpleText: '1,234 views' }, publishedTimeText: { simpleText: '2 years ago' } } })) } })};</script></html>`;
+    const hits = [{ id: 'abc123def45', title: 'GCSE German: talking about your home', ch: 'German with Anna', len: '9:12' }, { id: 'vlog1234567', title: 'my gcse results vlog', ch: 'Maria', len: '7:10' }, { id: 'gone1234567', title: 'GCSE German: my town', ch: 'Deutsch Lernen', len: '11:00' }];
+    sandbox.__fetch = async (url, init) => {
+      const u = String(url);
+      if (u.startsWith('https://www.youtube.com/results')) { ytHits++; return new Response(page(hits), { status: 200, headers: { 'Content-Type': 'text/html' } }); }
+      if (u.startsWith('https://www.youtube.com/oembed')) { oembedHits++; return /abc123def45/.test(u) ? new Response(JSON.stringify({ title: 'GCSE German: talking about your home (full lesson)', author_name: 'German with Anna' })) : new Response('Bad Request', { status: 400 }); }
+      if (u.includes('api.anthropic.com')) { modelHits++; const body = JSON.parse(init.body); promptsSeen.push(body.messages[0].content); const isQueries = /queries/.test(JSON.stringify(body.output_config));
+        const text = isQueries ? JSON.stringify({ queries: ['GCSE German home and abroad', 'GCSE German describing your house', 'German house vocabulary'] }) : JSON.stringify({ picks: [{ id: 'abc123def45', why: 'Covers rooms, furniture and describing where you live.' }, { id: 'gone1234567', why: 'Covers your town.' }, { id: 'zzzz', why: 'bad id' }] });
+        return new Response(JSON.stringify({ id: 'msg_v', content: [{ type: 'text', text }] }), { status: 200 }); }
+      return saveFetch(url, init);
+    };
+    const env = baseEnv(); env.ACCESS_TEAM_DOMAIN = TEAM; env.ACCESS_AUD = AUD;
+    const bootV = await (await worker.fetch(req('/admin/bootstrap', { method: 'POST', headers: await A() }), env)).json();
+    const admV = await (await worker.fetch(req('/auth/invite', J('POST', { token: bootV.invite.link.split('#invite=')[1], password: 'admin pass phrase' })), env)).json(); const ADMV = bearer(admV.token);
+    const mkV = await (await worker.fetch(req('/manage/users', J('POST', { username: 'vicky', name: 'Vicky', daily: 200 }, ADMV)), env)).json();
+    const vs = await (await worker.fetch(req('/auth/invite', J('POST', { token: mkV.invite.link.split('#invite=')[1], password: 'vicky pass phrase' })), env)).json(); const VST = bearer(vs.token);
+    const body = { spec: 'EDX-4GN1', topic: 'A', board: 'Pearson Edexcel', level: 'GCSE', subject: 'German (International GCSE)', code: '4GN1', topicName: 'A. Home and abroad', ideas: ['A1 House and home', 'A2 Town and region'] };
+    r = await worker.fetch(req('/videos', J('POST', body)), env);
+    ok('V1 videos need a session', r.status === 401);
+    r = await worker.fetch(req('/videos', J('POST', { spec: 'EDX-4GN1' }, VST)), env);
+    ok('V1 videos need the room’s context', r.status === 400);
+    r = await worker.fetch(req('/videos', J('POST', body, VST)), env);
+    let v = await r.json();
+    ok('V2 the rail gets only videos the model chose AND YouTube confirmed: the vlog is not picked, the picked video that no longer exists is dropped', r.status === 200 && v.items.length === 1 && v.items[0].id === 'abc123def45' && v.items[0].url === 'https://www.youtube.com/watch?v=abc123def45', JSON.stringify(v));
+    ok('V2 each listed video carries the confirmed title and channel, its length, a reason and a thumbnail', v.items[0].title === 'GCSE German: talking about your home (full lesson)' && v.items[0].channel === 'German with Anna' && v.items[0].length === '9:12' && /rooms/.test(v.items[0].why) && /i\.ytimg\.com\/vi\/abc123def45/.test(v.items[0].image));
+    ok('V2 three model-written searches were run, two model calls made, only picked ids checked with oEmbed', ytHits === 3 && modelHits === 2 && oembedHits === 2 && v.queries.length === 3, `${ytHits} ${modelHits} ${oembedHits}`);
+    ok('V2 the picking prompt names the course, the topic, its key ideas and the candidates, and allows an empty answer', /4GN1/.test(promptsSeen[1]) && /Home and abroad/.test(promptsSeen[1]) && /Town and region/.test(promptsSeen[1]) && /abc123def45 \| GCSE German: talking about your home \| German with Anna \| 9:12/.test(promptsSeen[1]) && /empty list/.test(promptsSeen[1]));
+    r = await worker.fetch(req('/videos', J('POST', body, VST)), env);
+    v = await r.json();
+    ok('V3 the second request for the room is served from KV without searching again', v.items.length === 1 && ytHits === 3 && modelHits === 2 && (await env.USAGE.get('videos:EDX-4GN1:A', 'json')).items.length === 1);
+    r = await worker.fetch(req('/videos', J('POST', { ...body, refresh: true }, VST)), env);
+    ok('V3 a student cannot force a fresh search', ytHits === 3);
+    r = await worker.fetch(req('/videos', J('POST', { ...body, refresh: true }, ADMV)), env);
+    ok('V3 an admin can ask for a fresh search', ytHits === 6 && (await r.json()).items.length === 1);
+    sandbox.__fetch = async (url, init) => { const u = String(url); if (u.startsWith('https://www.youtube.com/results')) return new Response('<html>nothing here</html>'); if (u.includes('api.anthropic.com')) return new Response(JSON.stringify({ content: [{ type: 'text', text: JSON.stringify({ queries: ['x y z w'] }) }] })); return saveFetch(url, init); };
+    r = await worker.fetch(req('/videos', J('POST', { ...body, topic: 'B', topicName: 'B. Education and employment' }, VST)), env);
+    v = await r.json();
+    ok('V4 when the search page yields nothing the room lists no videos rather than a guess', r.status === 200 && v.items.length === 0 && !v.error);
+    sandbox.__fetch = async (url, init) => { if (String(url).includes('api.anthropic.com')) return new Response('overloaded', { status: 529 }); return saveFetch(url, init); };
+    r = await worker.fetch(req('/videos', J('POST', { ...body, topic: 'C', topicName: 'C. Personal life and relationships' }, VST)), env);
+    v = await r.json();
+    ok('V5 a model failure answers an empty list with the error noted, never a 500 to the room', r.status === 200 && v.items.length === 0 && /529/.test(v.error));
+    sandbox.__fetch = saveFetch;
+  }
+
   console.log('PASSED: ' + pass);
+
   console.log('-'.repeat(50));
   if (fails.length) { console.log('FAILED:'); fails.forEach(f => console.log('  ' + f)); process.exit(1); }
   console.log('RESULT: ALL GREEN');

@@ -64,6 +64,7 @@ const server = http.createServer((req, res) => {
   let raw = ''; req.on('data', c => raw += c); req.on('end', () => {
     const body = raw ? JSON.parse(raw) : {};
     if (p === '/auth/me') return me ? send(200, { user: me }) : send(401, { error: 'not signed in' });
+    if (p === '/videos' && m === 'POST') return send(200, body.spec === 'EDX-4GN1' && body.topic === 'A' ? { items: [{ id: 'abc123def45', url: 'https://www.youtube.com/watch?v=abc123def45', title: 'GCSE German: describing your house and home', channel: 'German with Anna', length: '9:12', why: 'Covers rooms, furniture and describing where you live.', image: '' }, { id: 'def456ghi78', url: 'https://www.youtube.com/watch?v=def456ghi78', title: 'GCSE German: my town and region', channel: 'Deutsch für Alle', length: '11:40', why: 'Covers your town, the countryside and giving directions.', image: '' }], at: '2026-09-12T08:00:00Z' } : { items: [], at: '2026-09-12T08:00:00Z' });
     if (p === '/' && m === 'POST') return send(200, { id: 'msg_1', content: [{ type: 'text', text: JSON.stringify(nudge) }] });
     if (p === '/progress') return m === 'GET' ? (tok === 'tok-matthew' ? send(200, { updatedAt: new Date().toISOString(), device: 'an iPad', state: progress }) : send(404, { error: 'nothing saved yet' })) : send(200, { ok: true, updatedAt: new Date().toISOString() });
     if (p === '/courses') return send(200, { catalogue: CATALOGUE, courses: states, building: build && build.status === 'building' ? { [build.id]: build } : {}, depth: { 'AQA-7402': depthRec } });
@@ -129,7 +130,7 @@ const server = http.createServer((req, res) => {
   await snap(page, '6-wide-today', 'Wide screen: left rail (nav, quick-jump, course switcher, topic tree with status dots), centre (today’s session), right rail (tutor-written next step, cards due, progress rings, streak), status strip');
   await page.click('#rail-l [data-open="OCR-H481|1.2"]');
   await page.waitForFunction(() => /This room/.test(document.querySelector('#rail-r').textContent), null, { timeout: 10000 });
-  must((await page.locator('#rail-l .tnode.cur').count()) === 1 && /Watch and read/.test(await page.locator('#rail-r').textContent()) && (await page.locator('#rail-r a.link').count()) >= 2, 'in a room: the tree marks where you are; the right rail shows this room, its cards, mistakes and links');
+  must((await page.locator('#rail-l .tnode.cur').count()) === 1 && /Watch and read/.test(await page.locator('#rail-r').textContent()) && (await page.locator('#rail-r a.link').count()) >= 1, 'in a room: the tree marks where you are; the right rail shows this room, its cards, mistakes and links');
   await snap(page, '7-wide-room', 'Inside a room: the tree marks the current topic; the right rail is contextual — state, key-idea codes, cards due here, your mistakes here, watch and read');
   await page.fill('#jump', 'stationary');
   await page.waitForSelector('#jumpOut .tnode', { timeout: 5000 });
@@ -207,6 +208,8 @@ const server = http.createServer((req, res) => {
   await page.click('#rail-l [data-open="EDX-4GN1|A"]');
   await page.waitForFunction(() => /Written and checked/.test(document.querySelector('#v-rooms').textContent), null, { timeout: 10000 });
   must(/[äöüß]/.test(await page.locator('#v-rooms').textContent()) && (await page.locator('#v-rooms [data-lxrev]').count()) >= 4, 'German room: the checked kit lesson carries real umlauts and faded worked examples');
+  await page.waitForFunction(() => /describing your house and home/.test(document.querySelector('#rail-r').textContent), null, { timeout: 10000 });
+  must((await page.locator('#rail-r .vid').count()) === 2 && !/youtube\.com\/results/.test(await page.locator('#rail-r').innerHTML()) && (await page.locator('#rail-r [data-pinvideo]').count()) === 2, 'German room rail: two found-and-checked videos with Pin buttons, no bare YouTube search link');
   await snap(page, '14-igcse-german-room', 'Edexcel International GCSE German, topic area A: the checked kit lesson in English with every German example, vocabulary fields from the document’s own list and faded worked examples');
   await page.click('#rail-l [data-course="EDX-4MA1"]'); await page.waitForSelector('#rail-l [data-open="EDX-4MA1|1.1"]');
   must((await page.locator('#rail-l .pen').count()) === 0, 'tree: every Foundation Maths room has its kit');

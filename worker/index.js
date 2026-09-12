@@ -12,6 +12,7 @@
  *   POST /auth/invite         {token, password}          -> {token, user}   (sets the password, signs in)
  *   POST /auth/password       bearer {current, next}
  *   GET  /progress            bearer                     -> {updatedAt, device, state}
+ *   POST /videos              bearer {spec, topic, board, level, subject, code, topicName, ideas} -> {items:[{id, url, title, channel, length, why, image}], at}
  *   PUT  /progress            bearer {device, state}
  *   GET  /desk/all            bearer                     -> {rooms:{<room>:{count, latest:[…]}}, used, quota}
  *   GET  /desk/unfurl?url=    bearer                     -> {title, image, site}   (http(s) only, no private addresses)
@@ -41,6 +42,7 @@
  *   desk:<username>:<room> {items:[{id, kind, at, title, text, url, site, image, video, pos, key, name, size, type, w, h, thumb, cards}]}
  *   deskq:<username>     bytes of files stored in R2 (quota)
  *   unfurl:<sha>         a link's title and preview image, cached a week
+ *   videos:<spec>:<topic> the room's verified YouTube videos, cached 60 days (7 when none were found)
  *   usage:<username>:<day>, fail:<ip>:<day>, fail:user:<username>:<day>
  *
  * Variables and secrets:
@@ -82,6 +84,7 @@ export default {
       if (p === '/admin' || p.startsWith('/admin/')) return recovery(request, env, url);
       if (p.startsWith('/auth/')) return auth(request, env, url, cors);
       if (p === '/progress') return progress(request, env, cors);
+      if (p === '/videos' && request.method === 'POST') return roomVideos(request, env, cors);
       if (p === '/desk' || p.startsWith('/desk/')) return desk(request, env, url, cors);
       if (p === '/courses' || p.startsWith('/courses/')) return courses(request, env, url, cors);
       if (p.startsWith('/manage/courses') || p.startsWith('/manage/reviews') || p === '/manage/catalogue') return manageCourses(request, env, url, cors);
@@ -110,6 +113,104 @@ export default {
     await env.USAGE.put('review:last-run', JSON.stringify({ at: new Date().toISOString(), cron: controller && controller.cron, courses: started }));
   },
 };
+
+/* ---------- videos for a room ----------
+   A YouTube search link finds nothing specific, so the rail lists real videos instead: a model writes the searches a
+   student would type, the Worker reads YouTube's own results page for each, a model keeps only the videos that teach
+   this topic at this level, and every one it keeps is checked against YouTube's oEmbed endpoint before it is listed.
+   Nothing is shown for a room where nothing passes. One search per room, then cached; an admin may ask for a fresh one. */
+const VIDEO_TTL = 60 * 86400, VIDEO_NONE_TTL = 7 * 86400, VIDEO_FAIL_TTL = 3600, VIDEO_MODEL = 'claude-sonnet-5', VIDEO_MAX = 4;
+async function roomVideos(request, env, cors) {
+  const s = await sessionUser(request, env);
+  if (!s) return json({ error: 'not signed in' }, 401, cors);
+  let b; try { b = await request.json(); } catch (e) { return json({ error: 'a JSON body is required' }, 400, cors); }
+  const str = (v, n) => String(v == null ? '' : v).replace(/\s+/g, ' ').trim().slice(0, n);
+  const ctx = { spec: str(b.spec, 40), topic: str(b.topic, 60), board: str(b.board, 40), level: str(b.level, 20), subject: str(b.subject, 100), code: str(b.code, 20), topicName: str(b.topicName, 160),
+    ideas: (Array.isArray(b.ideas) ? b.ideas : []).slice(0, 12).map(x => str(x, 160)).filter(Boolean) };
+  if (!ctx.spec || !ctx.topic || !ctx.subject || !ctx.topicName) return json({ error: 'spec, topic, subject and topicName are required' }, 400, cors);
+  if (!/^[A-Za-z0-9._-]+$/.test(ctx.spec) || /\s/.test(ctx.topic)) return json({ error: 'spec and topic must be ids' }, 400, cors);
+  const ck = `videos:${ctx.spec}:${ctx.topic}`;
+  const cached = await env.USAGE.get(ck, 'json');
+  if (cached && !(b.refresh === true && s.user.role === 'admin')) return json(cached, 200, cors);
+  if (!env.ANTHROPIC_API_KEY) return json({ items: [], at: now(), error: 'no model key' }, 200, cors);
+  let out;
+  try { out = await findVideos(env, ctx); }
+  catch (e) { out = { items: [], at: now(), error: String(e && e.message || e).slice(0, 200) }; }
+  await env.USAGE.put(ck, JSON.stringify(out), { expirationTtl: out.error ? VIDEO_FAIL_TTL : out.items.length ? VIDEO_TTL : VIDEO_NONE_TTL });
+  return json(out, 200, cors);
+}
+async function findVideos(env, ctx) {
+  const at = now();
+  const queries = await videoQueries(env, ctx);
+  const pool = new Map();
+  for (const q of queries) for (const v of await youtubeSearch(q)) if (!pool.has(v.id)) pool.set(v.id, v);
+  const cands = [...pool.values()].slice(0, 48);
+  if (!cands.length) return { items: [], at, queries };
+  const picks = await videoPicks(env, ctx, cands);
+  const items = [];
+  for (const p of picks) {
+    const c = pool.get(p.id); if (!c) continue;
+    const o = await oembed(p.id); if (!o) continue;
+    items.push({ id: p.id, url: `https://www.youtube.com/watch?v=${p.id}`, title: o.title || c.title, channel: o.author || c.channel, length: c.length, views: c.views, why: p.why, image: `https://i.ytimg.com/vi/${p.id}/hqdefault.jpg` });
+    if (items.length >= VIDEO_MAX) break;
+  }
+  return { items, at, queries };
+}
+function videoContext(ctx) {
+  return `Course: ${ctx.board} ${ctx.code} ${ctx.level} ${ctx.subject}.\nTopic: ${ctx.topicName}.\nKey ideas: ${ctx.ideas.length ? ctx.ideas.join('; ') : 'not listed'}.`;
+}
+async function videoQueries(env, ctx) {
+  const prompt = `${videoContext(ctx)}\n\nWrite three YouTube search queries a UK student would type to find a lesson video that teaches this topic for this exact qualification and level. Each query is 4 to 9 words, plain words, no quotes or operators. The first names the level and subject and the topic as students say it; the second names the level, subject and the most examinable key idea; the third is a plainer phrasing of the topic. Never mention another board or another subject.`;
+  const r = await askJson(env, prompt, { type: 'object', properties: { queries: { type: 'array', items: { type: 'string' } } }, required: ['queries'], additionalProperties: false }, 400);
+  const qs = (Array.isArray(r.queries) ? r.queries : []).map(q => String(q || '').replace(/["']/g, '').trim()).filter(q => q.length > 3).slice(0, 3);
+  return qs.length ? qs : [`${ctx.level} ${ctx.subject} ${ctx.topicName}`];
+}
+async function videoPicks(env, ctx, cands) {
+  const lines = cands.map(c => `${c.id} | ${c.title} | ${c.channel} | ${c.length || '?'} | ${c.views || '?'} | ${c.published || '?'}`).join('\n');
+  const prompt = `${videoContext(ctx)}\n\nThese are YouTube search results, one per line: id | title | channel | length | views | published.\n${lines}\n\nChoose up to ${VIDEO_MAX} videos that plainly TEACH this topic's content at this level — a lesson, explanation or walkthrough a student can learn the key ideas from. Judge from the title and channel only. Reject anything that is about a different subject, a different topic, a different qualification or country, exam-technique tips, study vlogs, motivation, adverts, full-paper walkthroughs, shorts under 2 minutes, and anything you are not sure teaches this topic. Prefer channels that teach UK ${ctx.level} courses, and videos between 3 and 40 minutes. Order the best first. If nothing qualifies, return an empty list — an empty list is the right answer whenever you are unsure. For each pick give why in at most 12 words, addressed to the student, saying what it covers.`;
+  const r = await askJson(env, prompt, { type: 'object', properties: { picks: { type: 'array', items: { type: 'object', properties: { id: { type: 'string' }, why: { type: 'string' } }, required: ['id', 'why'], additionalProperties: false } } }, required: ['picks'], additionalProperties: false }, 800);
+  const seen = new Set();
+  return (Array.isArray(r.picks) ? r.picks : []).filter(p => p && /^[A-Za-z0-9_-]{6,20}$/.test(String(p.id)) && !seen.has(p.id) && seen.add(p.id)).map(p => ({ id: String(p.id), why: String(p.why || '').replace(/\s+/g, ' ').trim().slice(0, 120) })).slice(0, VIDEO_MAX + 2);
+}
+async function askJson(env, prompt, schema, maxTokens) {
+  const body = { model: VIDEO_MODEL, max_tokens: maxTokens, messages: [{ role: 'user', content: prompt }], output_config: { format: { type: 'json_schema', schema } } };
+  const res = await fetch('https://api.anthropic.com/v1/messages', { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-api-key': env.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01' }, body: JSON.stringify(body) });
+  const text = await res.text();
+  if (!res.ok) throw new Error(`Anthropic ${res.status}: ${text.slice(0, 200)}`);
+  const data = JSON.parse(text);
+  return JSON.parse((data.content || []).filter(c => c.type === 'text').map(c => c.text).join('') || '{}');
+}
+/* YouTube's results page carries its data as JSON in a script; each hit is a videoRenderer. Fails soft: no page, no hits. */
+async function youtubeSearch(q) {
+  const ctrl = typeof AbortController !== 'undefined' ? new AbortController() : null; const timer = ctrl && setTimeout(() => ctrl.abort(), 8000);
+  let html = '';
+  try {
+    const res = await fetch('https://www.youtube.com/results?search_query=' + encodeURIComponent(q) + '&hl=en&gl=GB', { signal: ctrl ? ctrl.signal : undefined,
+      headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36', 'Accept-Language': 'en-GB,en;q=0.9', 'Accept': 'text/html', 'Cookie': 'CONSENT=YES+cb; SOCS=CAI' } });
+    if (res.ok) html = await res.text();
+  } catch (e) { html = ''; }
+  if (timer) clearTimeout(timer);
+  return parseYoutubeResults(html);
+}
+function parseYoutubeResults(html) {
+  const i = html.indexOf('ytInitialData = '); if (i < 0) return [];
+  const j = html.indexOf('</script>', i); if (j < 0) return [];
+  let data; try { data = JSON.parse(html.slice(i + 16, j).trim().replace(/;$/, '')); } catch (e) { return []; }
+  const out = [], runs = x => (x && (x.simpleText || (x.runs || []).map(r => r.text).join(''))) || '';
+  const walk = o => { if (!o || typeof o !== 'object') return; if (Array.isArray(o)) { for (const x of o) walk(x); return; }
+    if (o.videoRenderer && o.videoRenderer.videoId) { const v = o.videoRenderer; out.push({ id: String(v.videoId), title: runs(v.title).slice(0, 160), channel: runs(v.ownerText || v.longBylineText).slice(0, 80), length: runs(v.lengthText), views: runs(v.viewCountText), published: runs(v.publishedTimeText) }); return; }
+    for (const k of Object.keys(o)) walk(o[k]); };
+  walk(data);
+  return out.filter(v => /^[A-Za-z0-9_-]{6,20}$/.test(v.id) && v.title);
+}
+async function oembed(id) {
+  try {
+    const res = await fetch('https://www.youtube.com/oembed?url=' + encodeURIComponent('https://www.youtube.com/watch?v=' + id) + '&format=json', { headers: { 'Accept': 'application/json' } });
+    if (!res.ok) return null;
+    const o = await res.json();
+    return o && o.title ? { title: String(o.title).slice(0, 160), author: String(o.author_name || '').slice(0, 80) } : null;
+  } catch (e) { return null; }
+}
 
 /* ---------- durable execution: the Workflow classes wrap the pipeline ---------- */
 

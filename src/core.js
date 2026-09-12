@@ -255,13 +255,12 @@ ${cand.map(nodeLine).join('\n') || 'none'}
 
 Reply with ONLY this JSON and nothing else: {"text": "<the sentence>", "node": "<one id from the list, or null>", "station": "<one of lesson, cards, practise, essay, exit>"}`;
 }
-/* Where to look things up for a topic: the topic's own links, the course's checked hub pages, then searches that always exist. */
+/* Where to look things up for a topic: the topic's own links, the course's checked hub pages, then a Bitesize search.
+   Videos are not a search link: the Worker finds, checks and lists real ones for the room (see the rail). */
 function topicLinks(spec, topic) {
   const out = [];
   for (const l of (topic && topic.links) || []) if (l && l.url) out.push({ t: l.t, url: l.url, kind: l.kind || 'notes', why: 'Chosen for this topic' });
   for (const h of (spec.resources && spec.resources.hubs) || []) if (h && h.url) out.push({ t: h.name, url: h.url, kind: h.kind || 'notes', why: `${spec.board} ${spec.code} hub page` });
-  const q = `${spec.board} ${spec.level} ${spec.subject} ${topic.name}`;
-  out.push({ t: `Videos: ${topic.name}`, url: 'https://www.youtube.com/results?search_query=' + encodeURIComponent(q), kind: 'video', why: 'YouTube search for this topic' });
   out.push({ t: `BBC Bitesize: ${topic.name}`, url: 'https://www.bbc.co.uk/bitesize/search?q=' + encodeURIComponent(`${spec.subject} ${topic.name}`), kind: 'notes', why: 'Bitesize search' });
   return out;
 }

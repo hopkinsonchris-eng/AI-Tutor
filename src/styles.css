@@ -72,6 +72,10 @@ nav button .ic{font-size:17px;line-height:1}nav button[aria-selected="true"]{col
 .link{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:11px 0;border-top:1px solid var(--rule);font-size:14.5px;text-decoration:none;color:var(--ink)}
 .link:first-child{border-top:none}.link .lgo{color:var(--blue);font-weight:600;font-size:13px;white-space:nowrap}
 .link small{display:block;color:var(--pencil);font-size:12.5px}
+.vid{display:flex;gap:10px;align-items:flex-start;padding:9px 0;border-top:1px solid var(--rule);font-size:13.5px}.vid:first-child{border-top:none}
+.vthumb{position:relative;flex:0 0 76px;width:76px;height:43px;border-radius:4px;overflow:hidden;background:var(--rule)}.vthumb img{width:100%;height:100%;object-fit:cover;display:block}.vthumb i{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#fff;font-style:normal;font-size:16px;text-shadow:0 1px 3px rgba(0,0,0,.6)}
+.vbody{flex:1;min-width:0}.vbody a{color:var(--ink);text-decoration:none}.vbody b{display:block;font-weight:600;line-height:1.3}.vbody small{display:block;color:var(--pencil);font-size:12px;margin-top:2px}.vbody .vwhy{color:var(--ink);opacity:.8}
+.vpin{display:inline-block;margin:6px 0 0;white-space:nowrap}.vpin.on{font-size:12px;color:var(--pencil)}
 .stepline{padding:10px 0 10px 14px;border-left:2.5px solid var(--rule);font-size:14.5px;margin-left:4px}
 .stepline.hid{color:transparent;text-shadow:0 0 12px rgba(0,0,0,.55);user-select:none}
 .qcard{border:1px solid var(--rule);border-radius:3px;padding:14px;margin-top:12px;background:#fff}

@@ -826,6 +826,34 @@ const baseEnv = () => ({ ANTHROPIC_API_KEY: 'sk-ant-test', ALLOWED_ORIGIN: 'http
     sandbox.__fetch = saveFetch;
   }
 
+  /* ---- dictation fallback: audio in, text out, one call against the daily cap ---- */
+  { const env = baseEnv(); const tok = 'speechtoken_0123456789abcdefghijkl'; const todayKey = new Date().toISOString().slice(0, 10);
+    await env.USAGE.put('user:sam', JSON.stringify({ username: 'sam', name: 'Sam', role: 'student', daily: 2, created: todayKey, disabled: false }));
+    await env.USAGE.put('session:' + tok, JSON.stringify({ username: 'sam', created: new Date().toISOString() }));
+    const audio = (bytes, type = 'audio/webm', extra = {}) => req('/speech', { method: 'POST', headers: { 'Content-Type': type, ...extra }, body: bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes) });
+    let r = await worker.fetch(audio([1, 2, 3]), env);
+    ok('SP1 dictation needs a session', r.status === 401);
+    r = await worker.fetch(audio([1, 2, 3], 'audio/webm', bearer(tok)), env);
+    ok('SP2 without the AI binding it says the fallback is not set up, and nothing is counted', r.status === 503 && /not set up/.test((await r.json()).error) && (await env.USAGE.get(`usage:sam:${todayKey}`)) === null);
+    let seen = null; env.AI = { async run(model, input) { seen = { model, input }; return { text: 'the carbon cycle has four stores' }; } };
+    r = await worker.fetch(req('/speech', { method: 'POST', headers: { 'Content-Type': 'text/plain', ...bearer(tok) }, body: 'hello' }), env);
+    ok('SP3 only audio bodies are accepted', r.status === 415 && seen === null);
+    r = await worker.fetch(audio([1, 2, 3, 4], 'audio/webm;codecs=opus', bearer(tok)), env);
+    const j = await r.json();
+    ok('SP4 the audio goes to Whisper on Workers AI as base64, English, with voice-activity filtering, and the text comes back', r.status === 200 && j.text === 'the carbon cycle has four stores' && seen.model === '@cf/openai/whisper-large-v3-turbo' && seen.input.audio === 'AQIDBA==' && seen.input.language === 'en' && seen.input.vad_filter === true, JSON.stringify(seen));
+    ok('SP5 each transcription counts one against the daily cap', (await env.USAGE.get(`usage:sam:${todayKey}`)) === '1');
+    r = await worker.fetch(audio(new Uint8Array(4 * 1024 * 1024 + 1), 'audio/mp4', bearer(tok)), env);
+    ok('SP6 recordings over 4 MB are refused before any model call', r.status === 413 && (await env.USAGE.get(`usage:sam:${todayKey}`)) === '1');
+    await worker.fetch(audio([1], 'audio/ogg', bearer(tok)), env);
+    r = await worker.fetch(audio([1], 'audio/ogg', bearer(tok)), env);
+    ok('SP7 past the cap the route answers 429 like the proxy', r.status === 429);
+    env.AI = { async run() { throw new Error('model offline'); } }; await env.USAGE.put(`usage:sam:${todayKey}`, '0');
+    r = await worker.fetch(audio([1], 'audio/ogg', bearer(tok)), env);
+    ok('SP8 a model failure is a clear 502, not a crash', r.status === 502 && /could not transcribe/i.test((await r.json()).error));
+    r = await worker.fetch(req('/speech', { method: 'OPTIONS' }), env);
+    ok('SP9 the preflight for an audio post is allowed', r.status === 204 && /Content-Type/.test(r.headers.get('Access-Control-Allow-Headers')));
+  }
+
   console.log('PASSED: ' + pass);
 
   console.log('-'.repeat(50));

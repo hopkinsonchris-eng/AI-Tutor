@@ -118,4 +118,31 @@ ok('U2 the room with the paper mistakes is reviewed first, and the step says why
 ok('U3 a mistake older than thirty days or already cleared no longer pulls',(()=>{su.errors[0].resolved=true;su.errors[1].date='2026-07-01';return C.errorUrgency(su,b,T).urgency===0;})());
 }
 
+/* ---- support: the profile, sentences for the reader, the prompter, time, chunking, usage ---- */
+{ const sup=C.normaliseSupport(undefined);
+ ok('S1 a missing support profile normalises to every aid off, reader speed 1, prompter at 5 minutes, chunk level 2, no extra time',sup.reader===false&&sup.readerRate===1&&sup.lineFocus===0&&sup.spacing===false&&sup.readCoach===false&&sup.dictate===false&&sup.prompter===false&&sup.prompterMinutes===5&&sup.chunk===false&&sup.chunkLevel===2&&sup.calm===false&&sup.literal===false&&sup.timer===false&&sup.extra===0&&sup.breaks===false,JSON.stringify(sup));
+ const p=C.normaliseSupport({reader:true,readerRate:9,lineFocus:4,prompterMinutes:1,chunkLevel:7,extra:30,calm:'yes'});
+ ok('S1 a partial profile keeps what it has and clamps the rest to the allowed values',p.reader===true&&p.readerRate===1.4&&p.lineFocus===0&&p.prompterMinutes===5&&p.chunkLevel===2&&p.extra===0&&p.calm===true&&p.literal===false,JSON.stringify(p));
+ ok('S1 speed clamps low too, and every allowed value survives',C.normaliseSupport({readerRate:0.2}).readerRate===0.7&&C.normaliseSupport({readerRate:1.2}).readerRate===1.2&&C.normaliseSupport({lineFocus:3}).lineFocus===3&&C.normaliseSupport({lineFocus:5}).lineFocus===5&&C.normaliseSupport({prompterMinutes:8}).prompterMinutes===8&&C.normaliseSupport({chunkLevel:3}).chunkLevel===3&&C.normaliseSupport({extra:50}).extra===50);
+ const sent=C.splitSentences('The mean is 2.5 km. Is that right? Yes! See 1.2.3 and e.g. Fig. 2 now.');
+ ok('S2 sentences split on full stops, question and exclamation marks, not on decimals, codes or abbreviations',JSON.stringify(sent)===JSON.stringify(['The mean is 2.5 km.','Is that right?','Yes!','See 1.2.3 and e.g. Fig. 2 now.']),JSON.stringify(sent));
+ ok('S2 empty text gives no sentences; a line without a stop is one sentence',C.splitSentences('   ').length===0&&JSON.stringify(C.splitSentences('Carbon stores'))===JSON.stringify(['Carbon stores']));
+ const scene={view:'rooms',subject:'Geography',topic:'Coasts',station:'practise',item:{kind:'question',n:2,of:4}};
+ const lines=[0,1,2,3,4,5].map(i=>C.prompterLine('Matthew',scene,i,5));
+ ok('S3 the prompter uses the student’s name or the question number, rotates, and never offers content',lines.every(l=>/Matthew|question 2/.test(l))&&new Set(lines).size>=3&&lines.every(l=>!/answer|hint|because|should|try/i.test(l)),lines.join(' | '));
+ const l1=C.prompterLine('Matthew',{view:'rooms',subject:'Geography',topic:'Coasts',station:'lesson'},1,5);
+ ok('S3 outside a question it still names the student and the place',/Matthew/.test(l1)&&/lesson/.test(l1),l1);
+ ok('S4 extra time: 25% on 90 minutes is 113, 50% on 30 is 45, none leaves it alone',C.timerMinutes(90,25)===113&&C.timerMinutes(30,50)===45&&C.timerMinutes(30,0)===30&&C.timerMinutes(30)===30);
+ ok('S4 a question’s minutes follow the paper’s pace, or 1.2 a mark without a paper, never under 1',C.marksToMinutes(6,90,66)===8&&C.marksToMinutes(10)===12&&C.marksToMinutes(1,90,66)===1&&C.marksToMinutes(0)===1);
+ const step={kind:'review',title:'Review: Geography — Coasts',minutes:15,nodes:['OCR-H481|1.2']};
+ const f1=C.chunkFallback(step,1),f2=C.chunkFallback(step,2),f3=C.chunkFallback(step,3);
+ ok('S5 the fallback breakdown has 3–4 steps at level 1, 5–7 at level 2, 8–12 at level 3',f1.length>=3&&f1.length<=4&&f2.length>=5&&f2.length<=7&&f3.length>=8&&f3.length<=12,[f1.length,f2.length,f3.length].join());
+ ok('S5 every step is a short phrase with whole minutes, and the minutes add up to the step’s',[f1,f2,f3].every(f=>f.every(x=>x.text.split(/\s+/).length<=14&&Number.isInteger(x.minutes)&&x.minutes>=1)&&f.reduce((a,b)=>a+b.minutes,0)===15),JSON.stringify(f3));
+ ok('S5 cards, essays and re-tests get their own sequences',/card/i.test(C.chunkFallback({kind:'cards',title:'Recall cards',minutes:10},2)[0].text)&&/question|command/i.test(C.chunkFallback({kind:'essay',title:'Essay',minutes:40},2).map(x=>x.text).join(' '))&&/re-test|question/i.test(C.chunkFallback({kind:'retest',title:'Re-test',minutes:15},1).map(x=>x.text).join(' ')));
+ const log={supportLog:{'2026-09-12':{reader:7.5,dictations:2,prompts:3,breaks:1},'2026-09-08':{reader:4.5,dictations:1,prompts:1,breaks:1},'2026-08-01':{reader:99,dictations:9,prompts:9,breaks:9}}};
+ ok('S6 the support usage line sums the last seven days only',C.supportUsageLine(log,'2026-09-12')==='Support this week: reader 12 min · dictated 3 times · 4 prompts · 2 rest breaks',C.supportUsageLine(log,'2026-09-12'));
+ ok('S6 singulars are right, and nothing used means nothing said',C.supportUsageLine({supportLog:{'2026-09-12':{dictations:1,prompts:1,breaks:1}}},'2026-09-12')==='Support this week: dictated once · 1 prompt · 1 rest break'&&C.supportUsageLine({supportLog:{}},'2026-09-12')===''&&C.supportUsageLine({},'2026-09-12')==='');
+ ok('S7 the nudge prompt takes an extra block for the register',/LITERAL RULES HERE/.test(C.nudgePrompt(s,SPECS,'2026-09-12','LITERAL RULES HERE'))&&!/LITERAL RULES HERE/.test(C.nudgePrompt(s,SPECS,'2026-09-12')));
+}
+
 console.log(`PASSED: ${pass}`);fails.forEach(f=>console.log('FAILED: '+f));console.log('-'.repeat(50));console.log(fails.length?`RESULT: ${fails.length} FAILURE(S)`:'RESULT: ALL GREEN');process.exit(fails.length?1:0);

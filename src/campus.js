@@ -166,7 +166,7 @@
     const minY = -110, maxY = Math.max(...corners.map(c => c[1])) + 40;
     const hour = model.hour == null ? 12 : model.hour; const dusk = hour < 7 || hour >= 19; const evening = !dusk && (hour >= 16);
     const plot = [pt(gx0, gy0, 0), pt(gx1, gy0, 0), pt(gx1, gy1, 0), pt(gx0, gy1, 0)].join(' ');
-    const wash = dusk ? `<polygon points="${plot}" fill="#2B4C7E" opacity=".08" pointer-events="none"/>` : evening ? `<polygon points="${plot}" fill="#A8761B" opacity=".06" pointer-events="none"/>` : '';
+    const wash = model.calm ? '' : dusk ? `<polygon points="${plot}" fill="#2B4C7E" opacity=".08" pointer-events="none"/>` : evening ? `<polygon points="${plot}" fill="#A8761B" opacity=".06" pointer-events="none"/>` : '';
     return `<svg class="campus" viewBox="${minX} ${minY} ${maxX - minX} ${maxY - minY}" role="group" aria-label="Your campus" font-family="Instrument Sans, ui-sans-serif, system-ui, sans-serif">${ground}${pathMain}${paths}${all}${labels.join('')}${gate}${wash}</svg>`;
   }
 

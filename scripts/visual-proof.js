@@ -87,7 +87,11 @@ const server = http.createServer((req, res) => {
     if (p === '/auth/me') return me ? send(200, { user: me }) : send(401, { error: 'not signed in' });
     if (p === '/papers' || p.startsWith('/papers/')) { const r = papersStub(p, m, req, body); if (r) return send(r.status, r.body); }
     if (p === '/videos' && m === 'POST') return send(200, body.spec === 'EDX-4GN1' && body.topic === 'A' ? { items: [{ id: 'abc123def45', url: 'https://www.youtube.com/watch?v=abc123def45', title: 'GCSE German: describing your house and home', channel: 'German with Anna', length: '9:12', why: 'Covers rooms, furniture and describing where you live.', image: '' }, { id: 'def456ghi78', url: 'https://www.youtube.com/watch?v=def456ghi78', title: 'GCSE German: my town and region', channel: 'Deutsch für Alle', length: '11:40', why: 'Covers your town, the countryside and giving directions.', image: '' }], at: '2026-09-12T08:00:00Z' } : { items: [], at: '2026-09-12T08:00:00Z' });
-    if (p === '/' && m === 'POST') return send(200, { id: 'msg_1', content: [{ type: 'text', text: JSON.stringify(nudge) }] });
+    if (p === '/' && m === 'POST') { /* the AI proxy: the nudge by default; the floating coach and the chunker get their own replies */
+      const q = String(body && body.messages && body.messages[0] && body.messages[0].content && body.messages[0].content[0] && body.messages[0].content[0].text || ''); let out = nudge;
+      if (/WHAT YOU CAN SEE NOW/.test(q)) out = { text: 'Which store does the question start from, Matthew? Name it, then say where that carbon goes next.', open: null, view: null };
+      else if (/Break this study step/.test(q)) { const mm = +(q.match(/add up to (\d+) minutes/) || [])[1] || 10; const texts = ['Open the flash cards', 'Turn the first card over', 'Say the answer out loud first', 'Mark it Right or Wrong honestly', 'Keep going to the last card']; const base = Math.floor(mm / 5); const rem = mm - base * 5; out = { steps: texts.map((text, i) => ({ text, minutes: Math.max(1, base + (i < rem ? 1 : 0)) })) }; }
+      return send(200, { id: 'msg_1', content: [{ type: 'text', text: JSON.stringify(out) }] }); }
     if (p === '/progress') return m === 'GET' ? (tok === 'tok-matthew' ? send(200, { updatedAt: new Date().toISOString(), device: 'an iPad', state: progress }) : send(404, { error: 'nothing saved yet' })) : send(200, { ok: true, updatedAt: new Date().toISOString() });
     if (p === '/courses/build') builds++;
     if (p === '/courses') return send(200, { catalogue: CATALOGUE, courses: states, building: build && build.status === 'building' ? { [build.id]: build } : {}, depth: { 'AQA-7402': depthRec } });
@@ -290,6 +294,61 @@ const server = http.createServer((req, res) => {
   await page.waitForSelector('#pfFinish:not([disabled])'); await page.click('#pfFinish'); await page.waitForFunction(() => /Where the marks went/.test(document.querySelector('#v-exam').textContent), null, { timeout: 15000 });
   must(/8 \/ 66/.test(await page.locator('#v-exam').textContent()) && (await page.locator('.ptopic [data-open]').count()) >= 3 && /Re-test on/.test(await page.locator('#v-exam').textContent()), 'report: score, topics with room moves and Open room, re-test date');
   await snap(page, '19-paper-report', 'The report: the score and grade on the series’ boundaries, topics ordered by marks lost × weight with each room’s move and an Open room button, the coach’s note, and what went into the rooms and the daily plan.');
+  await page.context().close();
+
+
+  /* ---- 23–28. support (tooler: the floating coach, the reader, calm mode, the Support panel, the phone sheet with the timer, the prompter) ---- */
+  const fakeSpeech = () => { const fake = { speaking: false, paused: false, pending: false, getVoices() { return [{ name: 'Daniel', lang: 'en-GB', default: true, localService: true, voiceURI: 'Daniel' }]; }, speak(u) { fake.speaking = true; setTimeout(() => { if (u.onstart) u.onstart({}); }, 30); setTimeout(() => { fake.speaking = false; if (u.onend) u.onend({}); }, 6000); }, cancel() { fake.speaking = false; }, pause() { fake.paused = true; }, resume() { fake.paused = false; }, addEventListener() {} }; try { Object.defineProperty(window, 'speechSynthesis', { value: fake, configurable: true }); } catch (e) {} window.SpeechSynthesisUtterance = function (t) { this.text = t; this.rate = 1; this.lang = 'en-GB'; }; };
+  const openSup = async (token, viewport, ready) => { const ctx = await browser.newContext({ viewport, deviceScaleFactor: 2 }); await ctx.addInitScript(t => { try { localStorage.setItem('platform:session', t); } catch (e) {} }, token); await ctx.addInitScript(fakeSpeech); const page = await ctx.newPage(); await page.goto(ORIGIN + '/'); await page.waitForSelector(ready, { timeout: 20000 }); return page; };
+  page = await openSup('tok-matthew', { width: 1280, height: 900 }, '#qBar .qchip');
+  await page.click('#qBar [data-course="OCR-H481"]'); await page.waitForSelector('#v-rooms [data-open="OCR-H481|1.2"]');
+  await page.click('#v-rooms [data-open="OCR-H481|1.2"]'); await page.waitForSelector('[data-station="practise"]');
+  await page.click('[data-station="practise"]'); await page.waitForFunction(() => /Question 1 of/.test(document.querySelector('#v-rooms').textContent), null, { timeout: 10000 });
+  must((await page.locator('#coachFab').isVisible()) && /Coach/.test(await page.locator('#coachFab').textContent()), 'the coach button floats on the page');
+  await page.click('#coachFab'); await page.waitForSelector('#coachPanel .csees');
+  must(/Geography · 1\.2 .* · Practise · question 1 of 4/.test(await page.locator('#coachPanel .csees').textContent()), 'the panel says what the coach can see: the room, the station and the question on screen');
+  must((await page.locator('#coachPanel [data-chip]').count()) >= 2 && /command word/i.test(await page.locator('#coachPanel .cchips').textContent()), 'the chips fit a question: decode the command word, the smallest next step');
+  await page.fill('#coachIn', 'I’m stuck on this one'); await page.click('#coachGo');
+  await page.waitForSelector('#coachPanel .msg.c', { timeout: 15000 });
+  must(/Which store/.test(await page.locator('#coachPanel .msg.c').last().textContent()), 'the coach answered about the question on screen');
+  await page.waitForTimeout(600); await page.evaluate(() => { const q = document.querySelector('#v-rooms .qcard'); if (q) q.scrollIntoView({ block: 'start', behavior: 'instant' }); }); await page.waitForTimeout(500);
+  await snap(page, '23-coach-floating', 'The coach floats beside every page: opened from the button at the bottom right, it says what it can see (the room, the station, the question on screen) and answers about that question; the chips fit the scene');
+  /* the reader with line focus and spacing */
+  await page.click('#coachClose');
+  await page.evaluate(() => { S.setup.support.reader = true; S.setup.support.lineFocus = 3; S.setup.support.spacing = true; applySupport(); renderAll(); });
+  await page.click('[data-station="lesson"]'); await page.waitForSelector('#reader #rdPage', { timeout: 5000 }); await page.waitForTimeout(250);
+  must((await page.locator('#v-rooms .rdb').count()) >= 3, 'every block of the lesson has a 🔊');
+  await page.click('#rdPage'); await page.waitForSelector('.rd-cur', { timeout: 5000 }); await page.waitForTimeout(200);
+  must((await page.locator('#rdmask').isVisible()) && /Stop/.test(await page.locator('#reader').textContent()) && (await page.locator('body.rd-space').count()) === 1, 'reading: the current block is highlighted, the line-focus window is up, spacing is wider');
+  await page.locator('.rd-cur').scrollIntoViewIfNeeded(); await page.waitForTimeout(150);
+  await snap(page, '24-reader-line-focus', 'The reader: Read this page under the header, a 🔊 on every block, the block being read highlighted with its current sentence, a three-line focus window dimming the rest, and wider spacing');
+  /* calm mode on the campus */
+  await page.evaluate(() => { readerStop(); S.setup.support.reader = false; S.setup.support.spacing = false; S.setup.support.calm = true; applySupport(); UI.room = null; go('campus'); renderCampus(); });
+  await page.waitForSelector('#v-campus .campus');
+  must((await page.locator('body.calm').count()) === 1 && (await page.locator('#v-campus .campus polygon[pointer-events="none"]').count()) === 0, 'calm mode: the body class is set and the campus has no time-of-day wash');
+  await snap(page, '25-calm-campus', 'Calm mode: no animation or movement anywhere, a plain background instead of the grid, no shadows or pulses, and the campus drawn without its time-of-day tint');
+  /* the Support panel */
+  await page.evaluate(() => { S.setup.support.calm = false; applySupport(); });
+  await page.click('#qBar [data-v="office"]'); await page.waitForSelector('#supportPanel');
+  must((await page.locator('#supportPanel input[type="checkbox"]').count()) >= 10 && (await page.locator('#supportPanel select').count()) >= 4 && /JCQ/.test(await page.locator('#supportPanel').textContent()), 'the Support panel: every aid a real switch with a plain explanation, and the JCQ arrangements named');
+  await page.evaluate(() => { document.querySelector('#supportPanel').scrollIntoView({ block: 'start' }); }); await page.waitForTimeout(150);
+  await snap(page, '26-support-office', 'The Office’s Support panel: reader, speed, line focus, spacing, coach speaks; dictation and where the audio goes; the prompter and its interval; break steps down and how small; calm mode; plain literal language; the visible timer, extra time and rest breaks');
+  await page.context().close();
+  /* phone: the timer from Go, the coach as a bottom sheet with its mic, then the prompter */
+  page = await openSup('tok-matthew', { width: 390, height: 844 }, '#v-campus .campus');
+  await page.evaluate(() => { S.setup.support.timer = true; S.setup.support.extra = 25; S.setup.support.breaks = true; S.setup.support.dictate = true; applySupport(); });
+  await page.click('#v-campus .act.go'); await page.waitForSelector('#timer .tleft', { timeout: 10000 });
+  await page.evaluate(() => openRoom('OCR-H481|1.2', 'practise')); await page.waitForFunction(() => /Question 1 of/.test(document.querySelector('#v-rooms').textContent), null, { timeout: 10000 });
+  await page.click('#coachFab'); await page.waitForSelector('#coachPanel .csees'); await page.waitForTimeout(200);
+  const pb = await box(page, '#coachPanel'); const tb = await box(page, '#timer');
+  must(pb.y + pb.height >= 844 - 2 && pb.width >= 380 && tb.y + tb.height <= pb.y + 2 && /incl\. 25% extra/.test(await page.locator('#timer').textContent()), `phone: the coach is a bottom sheet (${Math.round(pb.y)}…${Math.round(pb.y + pb.height)}) and the timer ring sits above it with 25% extra time`);
+  must((await page.locator('#coachPanel [data-mic="coachIn"]').count()) === 1, 'the mic sits beside the coach box');
+  await snap(page, '27-phone-coach', 'Phone: Go started the step’s timer (25% extra time applied, Break stops the clock); the coach opens as a bottom sheet that says what it sees, with the mic beside its box');
+  await page.click('#coachClose');
+  await page.evaluate(() => { S.setup.support.prompter = true; S.setup.support.prompterMinutes = 3; applySupport(); UI.lastActive = Date.now() - 4 * 60000; UI.lastPrompt = 0; prompterTick(); });
+  await page.waitForSelector('#prompt .pline', { timeout: 5000 }); await page.waitForTimeout(450);
+  must(/Matthew/.test(await page.locator('#prompt').textContent()) && (await page.locator('#promptOk').count()) === 1 && (await page.locator('#promptBreak').count()) === 1, 'the prompter: one line with the student’s name, I’m here and Break');
+  await snap(page, '28-prompter', 'The prompter after three quiet minutes at the desk: one line, the student’s name or “back to question 1”, never the content, with I’m here and a five-minute Break that stops the clock');
   await page.context().close();
 
   await browser.close(); server.close();

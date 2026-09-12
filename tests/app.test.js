@@ -139,7 +139,7 @@ const click=async s=>L.click({target:T(s)});const change=async s=>L.change({targ
  /* exam hall + boundaries */
  G.go('exam');await click({dataset:{subject:'OCR-H481'}});$('rpComp').value='C1';$('rpScore').value='50';$('rpTotal').value='66';$('rpSeries').value='June 2024';await click({id:'rpSave'});
  ok('A10 paper saved and prediction uses it',G.S.papers.length===1&&G.predictSubject(G.S,G.SPECS['OCR-H481'],G.S.setup.subjects[0].options).papersUsed===1);
- ok('A10 command words shown for the board',/Evaluate/.test(reg['v-exam'].innerHTML)&&/Construct arguments and draw conclusions/.test(reg['v-exam'].innerHTML));
+ ok('A10 the Exam centre no longer repeats the command words — they live in the right rail only',!/Command words for this board/.test(reg['v-exam'].innerHTML)&&!/Construct arguments and draw conclusions/.test(reg['v-exam'].innerHTML)&&/Exam Hall/.test(reg['v-exam'].innerHTML));
  /* progress + report */
  G.renderProg();ok('A11 progress per subject, report, error log',(reg['v-prog'].innerHTML.match(/<h2>(Geography|Business|Politics)/g)||[]).length===3&&/Week to/.test(reg['v-prog'].innerHTML)&&/EVALUATION/.test(reg['v-prog'].innerHTML));
  ok('A12 persistence round trip',JSON.parse(store['platform:state:v1:matthew']).essays.length===1&&Object.keys(JSON.parse(store['platform:state:v1:matthew']).cards).length===10);

@@ -69,7 +69,7 @@ kit.extras = [{ kind: 'practical', title: 'Required practical 1: microscopy — 
 const depthRec = { status: 'building', total: biology.topics.length, done: { '3.1': kit.built.at }, failed: ['3.3'] };
 const nudge = { text: 'Matthew, your last two Geography essays lost the judgement marks: plan and mark one more 33-marker in Earth’s life support systems before the maths cards.', node: 'OCR-H481|1.2', station: 'essay' };
 const users = { 'tok-matthew': { username: 'matthew', name: 'Matthew', role: 'student', daily: 200 }, 'tok-student': { username: 'matthew', name: 'Matthew', role: 'student', daily: 200 }, 'tok-admin': { username: 'chris', name: 'Chris', role: 'admin', daily: 2000 } };
-let build = null; const states = { 'OCR-H432': { status: 'retracted' } };
+let build = null; const states = { 'OCR-H432': { status: 'retracted' } }; const requests = []; let builds = 0;
 const stages = ['Finding the official specification…', 'Reading the specification document…', 'Mapping topic 1 of 9…', 'Mapping topic 2 of 9…', 'Mapping topic 3 of 9…', 'Mapping topic 4 of 9…', 'Mapping topic 5 of 9…', 'Mapping topic 6 of 9…', 'Mapping topic 7 of 9…', 'Mapping topic 8 of 9…', 'Mapping topic 9 of 9…', 'Checking the whole map…', 'Judging the map against the document…'];
 const meta = { id: 'AQA-7402', level: 'A level', subject: 'Biology', board: 'AQA', code: '7402', family: 'science', status: 'published', source: { url: 'https://filestore.aqa.org.uk/resources/biology/specifications/AQA-7402-SP-2015.PDF', etag: '"5f2a-6132b0c7a1d80"', lastModified: 'Wed, 03 Sep 2025 09:12:44 GMT', length: 1849302, checkedAt: '2026-09-10T12:04:31Z' }, built: { at: '2026-09-10T12:04:31Z', models: ['claude-opus-5', 'claude-sonnet-5', 'claude-opus-5'], promptVersion: '2026-09-10.1', ideas: 18 }, judge: { score: 0.91 } };
 const proposal = { kind: 'proposal', id: 'AQA-7402', subject: 'Biology', board: 'AQA', code: '7402', level: 'A level', createdAt: '2026-10-01T06:02:10Z', breaking: true, oldVersion: 'Specification 7402, version 1.4 (September 2019)', newVersion: 'Specification 7402, version 1.5 (June 2026)', docChanges: ['Version 1.5 clarifies the required practical apparatus list for RP7 and RP9.', 'Section 3.8.4 (gene technologies) is reworded; no change to assessed content.'], changes: [{ kind: 'topic-removed', topic: 'RP', detail: 'Required practicals 1–12 (now listed under each topic)', breaking: true }, { kind: 'idea-changed', topic: '3.8', detail: '8.1', breaking: false }, { kind: 'idea-added', topic: '3.3', detail: '3.3 RP7 apparatus', breaking: false }, { kind: 'version', topic: null, detail: 'v1.4 → v1.5', breaking: false }] };
@@ -89,15 +89,17 @@ const server = http.createServer((req, res) => {
     if (p === '/videos' && m === 'POST') return send(200, body.spec === 'EDX-4GN1' && body.topic === 'A' ? { items: [{ id: 'abc123def45', url: 'https://www.youtube.com/watch?v=abc123def45', title: 'GCSE German: describing your house and home', channel: 'German with Anna', length: '9:12', why: 'Covers rooms, furniture and describing where you live.', image: '' }, { id: 'def456ghi78', url: 'https://www.youtube.com/watch?v=def456ghi78', title: 'GCSE German: my town and region', channel: 'Deutsch für Alle', length: '11:40', why: 'Covers your town, the countryside and giving directions.', image: '' }], at: '2026-09-12T08:00:00Z' } : { items: [], at: '2026-09-12T08:00:00Z' });
     if (p === '/' && m === 'POST') return send(200, { id: 'msg_1', content: [{ type: 'text', text: JSON.stringify(nudge) }] });
     if (p === '/progress') return m === 'GET' ? (tok === 'tok-matthew' ? send(200, { updatedAt: new Date().toISOString(), device: 'an iPad', state: progress }) : send(404, { error: 'nothing saved yet' })) : send(200, { ok: true, updatedAt: new Date().toISOString() });
+    if (p === '/courses/build') builds++;
     if (p === '/courses') return send(200, { catalogue: CATALOGUE, courses: states, building: build && build.status === 'building' ? { [build.id]: build } : {}, depth: { 'AQA-7402': depthRec } });
     if (/^\/courses\/AQA-7402\/kit\/3\.1$/.test(p)) return send(200, { kit });
     if (/^\/courses\/[^/]+\/kit\//.test(p)) return send(404, { error: 'no kit for that room yet' });
+    if (p === '/courses/request') { if (states['AQA-7402'] && states['AQA-7402'].status === 'published') return send(200, { status: 'published', id: 'AQA-7402' }); requests.push(body); states['AQA-7402'] = { status: 'published' }; /* Chris maps it straight away in this scenario */ return send(202, { status: 'requested', id: 'AQA-7402', count: 1, message: 'Sent to Chris. Biology (AQA) will be mapped for you, and you can add it once it is ready.' }); }
     if (p === '/courses/build') { if (states['AQA-7402'] && states['AQA-7402'].status === 'published') return send(200, { status: 'published', id: 'AQA-7402' }); build = { id: 'AQA-7402', status: 'building', stage: 'Finding the specification', done: 0, total: 13, message: stages[0] }; return send(202, { status: 'building', id: 'AQA-7402', joined: false, build }); }
     if (/^\/courses\/[^/]+\/status$/.test(p)) { if (build && build.status === 'building') { build.done = Math.min(build.done + 1, build.total); build.message = stages[build.done] || 'Judging the map against the document…'; build.stage = build.done < 2 ? 'Reading the specification' : build.done < 11 ? 'Mapping topics' : 'Judging against the document'; if (build.done >= build.total) { build.status = 'published'; build.message = 'Published — judged 91% faithful to the document.'; states['AQA-7402'] = { status: 'published' }; } } return send(200, { id: 'AQA-7402', status: build ? build.status : 'none', build, meta: build && build.status === 'published' ? meta : null }); }
     if (/^\/courses\/[^/]+\/spec$/.test(p)) return (tok === 'tok-matthew' || (states['AQA-7402'] && states['AQA-7402'].status === 'published')) ? send(200, { spec: biology, meta }) : send(404, { error: 'not published' });
     if (p === '/manage/users') return send(200, { users: [users['tok-admin'], { ...users['tok-student'], created: '2026-09-10', hasPassword: true, today: 14, lastSeen: '2026-09-10T11:40:00Z', device: 'an iPad' }], site: ORIGIN });
     if (p === '/manage/courses') return send(200, { courses: [{ ...meta, depth: { ...depthRec, failed: [{ topic: '3.3', problems: ['question 7: the answer key gives 0.25 mm but the solution works to 0.025 mm', 'lesson.idea[2]: contradicts the specification on the direction of water movement'] }], calls: 27, promptVersion: '2026-09-10.1' }, build: { status: 'published', done: 13, total: 13 }, proposal: { createdAt: proposal.createdAt, breaking: true, count: 4 }, pending: true }], lastRun: { at: '2026-10-01T06:00:00Z', courses: ['AQA-7402'] }, catalogueExtra: [] });
-    if (p === '/manage/reviews') return send(200, { items: [proposal, { kind: 'needs-link', id: 'OCR-H420', subject: 'Biology', board: 'OCR', code: 'H420', level: 'A level', requestedBy: 'kitty', error: 'the located URL is not on OCR\'s domain', updatedAt: '2026-09-10T13:10:00Z' }] });
+    if (p === '/manage/reviews') return send(200, { items: [{ kind: 'request', id: 'AQA-8300', subject: 'Mathematics', board: 'AQA', code: '8300', level: 'GCSE', requestedBy: 'Kitty', count: 1, updatedAt: '2026-09-12T09:05:00Z', inCatalogue: true, building: false }, proposal, { kind: 'needs-link', id: 'OCR-H420', subject: 'Biology', board: 'OCR', code: 'H420', level: 'A level', requestedBy: 'kitty', error: 'the located URL is not on OCR\'s domain', updatedAt: '2026-09-10T13:10:00Z' }] });
     return send(404, { error: 'not found' });
   });
 });
@@ -116,14 +118,15 @@ const server = http.createServer((req, res) => {
   let page = await open('tok-student', { width: 1180, height: 900 });
   await page.selectOption('#crsSubject', 'Biology');
   await page.waitForSelector('#crsBoard');
-  await snap(page, '1-setup-dropdowns', 'Level → Subject → Board; AQA Biology is "not mapped yet, builds on request"');
+  await snap(page, '1-setup-dropdowns', 'Level → Subject → Board; AQA Biology is "not mapped yet, ask Chris"');
 
-  /* 2. Add → the build with its progress bar */
+  /* 2. Add → no build; a message goes to Chris */
   await page.click('#crsAdd');
-  await page.waitForSelector('.bar', { timeout: 10000 });
-  await page.waitForTimeout(7500);   // two polls at the app's 3-second interval
-  await page.waitForFunction(() => /Mapping topic/.test(document.body.innerHTML), null, { timeout: 15000 });
-  await snap(page, '2-build-progress', 'The build in progress: stage text and step count come from the Worker');
+  await page.waitForSelector('#buildBox [data-build-status="requested"]', { timeout: 10000 });
+  must(requests.length === 1 && requests[0].code === '7402' && builds === 0 && /Sent to Chris/.test(await page.locator('#buildBox').textContent()), 'Add for an unmapped course sends Chris a request and starts no build');
+  await snap(page, '2-course-requested', 'Add for an unmapped course: no build starts; the student is told Chris has been sent a message');
+  await page.click('#buildDismiss');
+  await page.click('#crsAdd');   // Chris has mapped it by now in this scenario
 
   /* 3. published → added, with provenance */
   await page.waitForFunction(() => /data-su="AQA-7402" checked/.test(document.body.innerHTML), null, { timeout: 60000 });

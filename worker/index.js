@@ -5,6 +5,8 @@
  * session token, and everything else — the AI proxy, progress, the admin API —
  * is keyed to that session. The Anthropic API key never leaves this Worker.
  *
+ *   POST /courses/request      bearer {level, subject, board, code} -> {status: requested|published|building|review}; never starts a build
+ *   POST /courses/build        bearer, ADMIN ONLY — starts a build (spends the API); students get 403
  *   POST /auth/login          {username, password}      -> {token, user}
  *   POST /auth/logout         bearer
  *   GET  /auth/me             bearer                     -> {user}
@@ -59,6 +61,7 @@
  *   points:<spec>:<series>:<paper>:<q>    one question's paraphrased mark points, shared by every student
  *   papers:off             ["AQA", …] boards whose papers the admin has switched off
  *   usage:<username>:<day>, fail:<ip>:<day>, fail:user:<username>:<day>
+ *   request:<courseId>   {id, level, subject, board, code, by:[{username,name,at}], count, updatedAt, inCatalogue}  a student's ask, until published or dismissed
  * R2 (DESK bucket): desk/<username>/<room>/<id>.<ext> the desktop's files; paper/<username>/<id>/<pageId>.<ext> paper photographs
  *   (both count against deskq:<username>)
  *
@@ -348,6 +351,31 @@ async function courses(request, env, url, cors) {
     return json({ kit }, 200, cors);
   }
 
+  /* A student's Add for a course that is not mapped: no build starts. The request is recorded for the admin's
+     review queue and the student is told Chris has been sent a message. Published, building and review states
+     are reported as they are, so a student joins an admin-started build's progress without starting one. */
+  if (p === '/courses/request' && request.method === 'POST') {
+    const body = await readJson(request);
+    const level = String(body.level || '').trim(), subject = String(body.subject || '').trim(), board = String(body.board || '').trim(), code = String(body.code || '').trim();
+    if (!level || !subject || !board) return json({ error: 'level, subject and board are required' }, 400, cors);
+    const entries = await catalogueEntries(env);
+    const q = entries.find(x => x.level === level && x.subject.toLowerCase() === subject.toLowerCase() && x.board.toLowerCase() === board.toLowerCase() && (!code || x.code.toUpperCase() === code.toUpperCase()));
+    const id = q ? q.id : specIdFor(board, code || subject.replace(/[^A-Za-z0-9]+/g, '-'));
+    if (q) {
+      const st = await courseState(env, id);
+      if (st.status === 'published') return json({ status: 'published', id, meta: publicMeta(st.meta) }, 200, cors);
+      if (st.status === 'retracted') return json({ error: 'This course has been withdrawn by Chris.' }, 409, cors);
+      if (st.status === 'review') return json({ status: 'review', id, build: publicBuild(st.build), message: 'Built, and being checked by Chris before it goes live.' }, 202, cors);
+      if (st.status === 'building') return json({ status: 'building', id, build: publicBuild(st.build), joined: true }, 202, cors);
+    }
+    const now = new Date().toISOString(), key = `request:${id}`;
+    const rec = (await env.USAGE.get(key, 'json')) || { id, level, subject: q ? q.subject : subject, board: q ? q.board : board, code: q ? q.code : code, first: now, by: [] };
+    if (!rec.by.some(x => x.username === s.user.username)) rec.by.push({ username: s.user.username, name: s.user.name, at: now });
+    rec.count = (rec.count || 0) + 1; rec.updatedAt = now; rec.inCatalogue = !!q;
+    await env.USAGE.put(key, JSON.stringify(rec));
+    return json({ status: 'requested', id, count: rec.count, message: `Sent to Chris. ${rec.subject} (${rec.board}) will be mapped for you, and you can add it once it is ready.` }, 202, cors);
+  }
+
   if (p === '/courses/build' && request.method === 'POST') {
     const body = await readJson(request);
     const level = String(body.level || '').trim(), subject = String(body.subject || '').trim(), board = String(body.board || '').trim(), code = String(body.code || '').trim();
@@ -360,6 +388,8 @@ async function courses(request, env, url, cors) {
     if (st.status === 'retracted') return json({ error: 'This course has been withdrawn by Chris.' }, 409, cors);
     if (st.status === 'review') return json({ status: 'review', id, build: publicBuild(st.build), message: 'Built, and being checked by Chris before it goes live.' }, 202, cors);
     if (st.status === 'building') return json({ status: 'building', id, build: publicBuild(st.build), joined: true }, 202, cors);
+    /* Only the admin starts a build: mapping a course spends the API. Students ask through /courses/request. */
+    if (s.user.role !== 'admin') return json({ error: 'Courses are mapped by Chris. Press Add to send him a request.' }, 403, cors);
     if (!env.COURSE_BUILDER) return json({ error: 'the course builder is not configured on this Worker' }, 503, cors);
     const params = { level: q.level, subject: q.subject, board: q.board, code: q.code, specUrl: q.specUrl || null, requestedBy: s.user.username };
     const instanceId = `${id}-${Date.now()}`;
@@ -417,6 +447,13 @@ async function manageCourses(request, env, url, cors) {
     }
     const builds = await env.USAGE.list({ prefix: 'build:' });
     for (const e of builds.keys) { const b = await env.USAGE.get(e.name, 'json'); if (b && (b.status === 'needs-link' || b.status === 'failed')) items.push({ kind: b.status, id: b.id, subject: b.subject, board: b.board, level: b.level, code: b.code, error: b.error, requestedBy: b.requestedBy, updatedAt: b.updatedAt }); }
+    const reqs = await env.USAGE.list({ prefix: 'request:' });
+    for (const e of reqs.keys) {
+      const r = await env.USAGE.get(e.name, 'json'); if (!r) continue;
+      const st = await courseState(env, r.id);
+      if (st.status === 'published') { await env.USAGE.delete(e.name); continue; }
+      items.push({ kind: 'request', id: r.id, subject: r.subject, board: r.board, level: r.level, code: r.code, requestedBy: (r.by || []).map(x => x.name || x.username).join(', '), count: r.count || 1, updatedAt: r.updatedAt, inCatalogue: !!r.inCatalogue, building: st.status === 'building' || st.status === 'review' });
+    }
     return json({ items }, 200, cors);
   }
 
@@ -509,6 +546,8 @@ async function manageCourses(request, env, url, cors) {
     const meta = await env.USAGE.get(`spec-meta:${id}`, 'json');
     const proposal = await env.USAGE.get(`proposal:${id}`, 'json');
     const draft = await env.USAGE.get(`spec-draft:${id}`, 'json');
+    const requested = await env.USAGE.get(`request:${id}`, 'json');
+    if (action === 'dismiss' && requested) { await env.USAGE.delete(`request:${id}`); if (!meta || (!proposal && meta.status !== 'review')) return json({ ok: true, dismissed: 'request' }, 200, cors); }
     if (!meta || (!proposal && meta.status !== 'review')) return json({ error: 'nothing to review for that course' }, 404, cors);
     if (action === 'approve') {
       if (!draft) return json({ error: 'the draft is missing' }, 409, cors);

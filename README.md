@@ -229,7 +229,7 @@ Sonnet 5 at API rates ($2/$10 per million tokens in/out): coach turn well under 
 
 ## Extending
 
-**A new subject or board:** usually nothing — a student adds it and the Worker builds it. To hand-write one instead (or to give a built course the depth of the built-in four), follow the course-builder skill: `src/specs/<board>-<code>.js` exporting a spec object, required in `build.js`, passing `npm test`. Hand-written and Worker-built courses are the same shape.
+**A new subject or board:** a student's Add for a course that is not mapped never starts a build; it sends a request to the Admin tab's review queue (a red count on the Admin tab), and only the admin presses *Build it now*, which spends the API. Once published the student adds it. To hand-write one instead (or to give a built course the depth of the built-in four), follow the course-builder skill: `src/specs/<board>-<code>.js` exporting a spec object, required in `build.js`, passing `npm test`. Hand-written and Worker-built courses are the same shape.
 
 **Hand-authored extras for a subject:** `src/authored/index.js` can register, under a spec id, verified links per topic (`sources`), official documents (`official`), grade boundaries and a lost-mark dojo; the app adds them to that course’s rooms. It can also hold whole authored rooms, but a checked kit in `src/kits/` always takes precedence over them, so the kit pipeline is the way to give a course depth.
 

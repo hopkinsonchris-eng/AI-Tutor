@@ -4,15 +4,15 @@ Screenshots from `npm run proof`: the built app in Chromium against a stub of th
 
 ## 1-setup-dropdowns
 
-Level → Subject → Board; AQA Biology is "not mapped yet, builds on request"
+Level → Subject → Board; AQA Biology is "not mapped yet, ask Chris"
 
 ![1-setup-dropdowns](1-setup-dropdowns.png)
 
-## 2-build-progress
+## 2-course-requested
 
-The build in progress: stage text and step count come from the Worker
+Add for an unmapped course: no build starts; the student is told Chris has been sent a message
 
-![2-build-progress](2-build-progress.png)
+![2-course-requested](2-course-requested.png)
 
 ## 3-course-added
 

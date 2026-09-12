@@ -306,8 +306,30 @@ const baseEnv = () => ({ ANTHROPIC_API_KEY: 'sk-ant-test', ALLOWED_ORIGIN: 'http
     ok('C2 an unknown qualification is refused with a pointer to the admin', r.status === 404 && /catalogue/.test((await r.json()).error));
 
     r = await worker.fetch(req('/courses/build', J('POST', { level: 'A level', subject: 'Mathematics', board: 'AQA' }, STU2)), e);
+    ok('C3 a student cannot start a build: 403 and no Workflow instance', r.status === 403 && /Chris/.test((await r.json()).error) && e.COURSE_BUILDER.created.length === 0);
+    r = await worker.fetch(req('/courses/request', J('POST', { level: 'A level', subject: 'Mathematics', board: 'AQA' }, STU2)), e);
     let b = await r.json();
-    ok('C3 a student\'s Add starts one build and gets a progress record', r.status === 202 && b.status === 'building' && b.joined === false && e.COURSE_BUILDER.created.length === 1 && /^AQA-7357-\d+$/.test(e.COURSE_BUILDER.created[0]) && b.build.total === 4, JSON.stringify(b));
+    ok('C3 a student\'s Add sends a request instead: recorded, no build', r.status === 202 && b.status === 'requested' && b.id === 'AQA-7357' && /Sent to Chris/.test(b.message) && e.COURSE_BUILDER.created.length === 0);
+    r = await worker.fetch(req('/courses/request', J('POST', { level: 'A level', subject: 'Mathematics', board: 'AQA' }, STU2)), e);
+    ok('C3 asking twice counts twice on the same request', (await r.json()).count === 2);
+    r = await worker.fetch(req('/manage/reviews', { headers: ADM2 }), e);
+    let rq = (await r.json()).items.find(i => i.kind === 'request');
+    ok('C3 the admin\'s review queue shows who asked, how often, and that it is in the catalogue', rq && rq.id === 'AQA-7357' && rq.count === 2 && rq.inCatalogue === true && /Kitty/.test(rq.requestedBy) && rq.building === false, JSON.stringify(rq));
+    r = await worker.fetch(req('/courses/request', J('POST', { level: 'A level', subject: 'Astrology', board: 'AQA' }, STU2)), e);
+    ok('C3 a request for something not in the catalogue is still recorded, flagged as such', r.status === 202 && (await r.json()).status === 'requested');
+    r = await worker.fetch(req('/manage/reviews', { headers: ADM2 }), e);
+    ok('C3 and shows in the queue as not in the catalogue', (await r.json()).items.some(i => i.kind === 'request' && i.subject === 'Astrology' && i.inCatalogue === false));
+    r = await worker.fetch(req('/manage/reviews/' + (await (await worker.fetch(req('/manage/reviews', { headers: ADM2 }), e)).json()).items.find(i => i.kind === 'request' && i.subject === 'Astrology').id + '/dismiss', { method: 'POST', headers: ADM2 }), e);
+    ok('C3 the admin can dismiss a request', r.status === 200 && !(await (await worker.fetch(req('/manage/reviews', { headers: ADM2 }), e)).json()).items.some(i => i.kind === 'request' && i.subject === 'Astrology'));
+    r = await worker.fetch(req('/courses/build', J('POST', { level: 'A level', subject: 'Mathematics', board: 'AQA' }, ADM2)), e);
+    b = await r.json();
+    ok('C3 the admin\'s Build starts one build and gets a progress record', r.status === 202 && b.status === 'building' && b.joined === false && e.COURSE_BUILDER.created.length === 1 && /^AQA-7357-\d+$/.test(e.COURSE_BUILDER.created[0]) && b.build.total === 4, JSON.stringify(b));
+    r = await worker.fetch(req('/courses/request', J('POST', { level: 'A level', subject: 'Mathematics', board: 'AQA' }, STU2)), e);
+    b = await r.json();
+    ok('C3 a student asking while it builds joins the progress, no second instance', r.status === 202 && b.status === 'building' && b.joined === true && e.COURSE_BUILDER.created.length === 1);
+    r = await worker.fetch(req('/manage/reviews', { headers: ADM2 }), e);
+    rq = (await r.json()).items.find(i => i.kind === 'request' && i.id === 'AQA-7357');
+    ok('C3 the queue marks the request as being built', rq && rq.building === true);
     r = await worker.fetch(req('/courses/build', J('POST', { level: 'A level', subject: 'mathematics', board: 'aqa', code: '7357' }, ADM2)), e);
     b = await r.json();
     ok('C4 a second Add for the same course joins the running build — no second instance (criterion 3)', r.status === 202 && b.joined === true && e.COURSE_BUILDER.created.length === 1);
@@ -323,8 +345,10 @@ const baseEnv = () => ({ ANTHROPIC_API_KEY: 'sk-ant-test', ALLOWED_ORIGIN: 'http
     r = await worker.fetch(req('/courses/AQA-7357/spec', { headers: STU2 }), e);
     const got = await r.json();
     ok('C5 a student can read the published spec and it passes the contract', r.status === 200 && validator.validateSpec(got.spec).ok && got.spec.id === 'AQA-7357');
-    r = await worker.fetch(req('/courses/build', J('POST', { level: 'A level', subject: 'Mathematics', board: 'AQA' }, STU2)), e);
+    r = await worker.fetch(req('/courses/request', J('POST', { level: 'A level', subject: 'Mathematics', board: 'AQA' }, STU2)), e);
     ok('C6 Add for a published course returns it at once, no build (criterion 1)', r.status === 200 && (await r.json()).status === 'published' && e.COURSE_BUILDER.created.length === 1);
+    r = await worker.fetch(req('/manage/reviews', { headers: ADM2 }), e);
+    ok('C6 the request leaves the queue once the course is published', !(await r.json()).items.some(i => i.kind === 'request' && i.id === 'AQA-7357'));
     r = await worker.fetch(req('/courses', { headers: STU2 }), e);
     cat = await r.json();
     ok('C6 the catalogue now shows the course as published', cat.courses['AQA-7357'] && cat.courses['AQA-7357'].status === 'published');
@@ -388,7 +412,7 @@ const baseEnv = () => ({ ANTHROPIC_API_KEY: 'sk-ant-test', ALLOWED_ORIGIN: 'http
     ok('C8 admin retracts', r.status === 200 && (await r.json()).meta.status === 'retracted');
     r = await worker.fetch(req('/courses/AQA-7357/spec', { headers: STU2 }), e);
     ok('C8 a retracted course cannot be fetched by a new student', r.status === 404);
-    r = await worker.fetch(req('/courses/build', J('POST', { level: 'A level', subject: 'Mathematics', board: 'AQA' }, STU2)), e);
+    r = await worker.fetch(req('/courses/request', J('POST', { level: 'A level', subject: 'Mathematics', board: 'AQA' }, STU2)), e);
     ok('C8 and cannot be added', r.status === 409 && /withdrawn/.test((await r.json()).error));
     r = await worker.fetch(req('/manage/courses/AQA-7357/restore', { method: 'POST', headers: ADM2 }), e);
     r = await worker.fetch(req('/courses/AQA-7357/spec', { headers: STU2 }), e);
@@ -396,7 +420,7 @@ const baseEnv = () => ({ ANTHROPIC_API_KEY: 'sk-ant-test', ALLOWED_ORIGIN: 'http
 
     /* the review queue: a doubtful build (criterion 5), approve as admin override */
     judgeScore = 0.6;
-    r = await worker.fetch(req('/courses/build', J('POST', { level: 'GCSE', subject: 'Mathematics', board: 'AQA' }, STU2)), e);
+    r = await worker.fetch(req('/courses/build', J('POST', { level: 'GCSE', subject: 'Mathematics', board: 'AQA' }, ADM2)), e);
     ok('C9 a GCSE course builds through the same route', r.status === 202);
     await runPending();
     r = await worker.fetch(req('/courses/AQA-8300/status', { headers: STU2 }), e);
@@ -444,24 +468,28 @@ const baseEnv = () => ({ ANTHROPIC_API_KEY: 'sk-ant-test', ALLOWED_ORIGIN: 'http
     /* catalogue additions and the needs-link path (criterion 10) */
     r = await worker.fetch(req('/manage/catalogue', J('POST', { level: 'A level', subject: 'Astrology', board: 'AQA', code: '9999' }, ADM2)), e);
     ok('C14 admin adds a qualification without a link', r.status === 200);
-    r = await worker.fetch(req('/courses/build', J('POST', { level: 'A level', subject: 'Astrology', board: 'AQA' }, STU2)), e);
-    ok('C14 a student can now request it', r.status === 202);
+    r = await worker.fetch(req('/courses/request', J('POST', { level: 'A level', subject: 'Astrology', board: 'AQA' }, STU2)), e);
+    ok('C14 a student can now request it, and it is recorded as in the catalogue', r.status === 202 && (await r.json()).status === 'requested');
+    r = await worker.fetch(req('/manage/reviews', { headers: ADM2 }), e);
+    ok('C14 the queue offers it as buildable', (await r.json()).items.some(i => i.kind === 'request' && i.id === 'AQA-9999' && i.inCatalogue === true));
+    r = await worker.fetch(req('/courses/build', J('POST', { level: 'A level', subject: 'Astrology', board: 'AQA' }, ADM2)), e);
+    ok('C14 the admin builds it', r.status === 202);
     await runPending();
     r = await worker.fetch(req('/courses/AQA-9999/status', { headers: STU2 }), e);
     ok('C14 with no link and a located URL off the board\'s domain, it needs a link', (await r.json()).status === 'needs-link');
     r = await worker.fetch(req('/manage/reviews', { headers: ADM2 }), e);
     ok('C14 which the review queue shows', (await r.json()).items.some(i => i.kind === 'needs-link' && i.id === 'AQA-9999'));
     r = await worker.fetch(req('/manage/catalogue', J('POST', { level: 'A level', subject: 'Astrology', board: 'AQA', code: '9999', specUrl: 'https://filestore.aqa.org.uk/resources/astrology/AQA-9999-SP.PDF' }, ADM2)), e);
-    r = await worker.fetch(req('/courses/build', J('POST', { level: 'A level', subject: 'Astrology', board: 'AQA' }, STU2)), e);
+    r = await worker.fetch(req('/courses/build', J('POST', { level: 'A level', subject: 'Astrology', board: 'AQA' }, ADM2)), e);
     await runPending();
     r = await worker.fetch(req('/courses/AQA-9999/status', { headers: STU2 }), e);
-    ok('C15 with a link added, the same request builds and publishes', (await r.json()).status === 'published');
+    ok('C15 with a link added, the admin\'s build publishes', (await r.json()).status === 'published');
     r = await worker.fetch(req('/manage/catalogue', J('POST', { level: 'Degree', subject: 'X', board: 'AQA', code: '1' }, ADM2)), e);
     ok('C15 a bad level is refused', r.status === 400);
 
     /* a dead build does not block a new one */
     await e.USAGE.put('build:OCR-H432', JSON.stringify({ id: 'OCR-H432', status: 'building', updatedAt: new Date(Date.now() - 40 * 60 * 1000).toISOString(), done: 1, total: 4 }));
-    r = await worker.fetch(req('/courses/build', J('POST', { level: 'A level', subject: 'Chemistry', board: 'OCR' }, STU2)), e);
+    r = await worker.fetch(req('/courses/build', J('POST', { level: 'A level', subject: 'Chemistry', board: 'OCR' }, ADM2)), e);
     ok('C16 a build record with no progress for 30 minutes is treated as dead and a new build starts', r.status === 202 && (await r.json()).joined === false);
 
     /* the cron (criterion 8) */

@@ -42,7 +42,7 @@
  *   desk:<username>:<room> {items:[{id, kind, at, title, text, url, site, image, video, pos, key, name, size, type, w, h, thumb, cards}]}
  *   deskq:<username>     bytes of files stored in R2 (quota)
  *   unfurl:<sha>         a link's title and preview image, cached a week
- *   videos:<spec>:<topic> the room's verified YouTube videos, cached 60 days (7 when none were found)
+ *   videos2:<spec>:<topic> the room's verified YouTube videos, cached 60 days (7 when none were found)
  *   usage:<username>:<day>, fail:<ip>:<day>, fail:user:<username>:<day>
  *
  * Variables and secrets:
@@ -129,7 +129,7 @@ async function roomVideos(request, env, cors) {
     ideas: (Array.isArray(b.ideas) ? b.ideas : []).slice(0, 12).map(x => str(x, 160)).filter(Boolean) };
   if (!ctx.spec || !ctx.topic || !ctx.subject || !ctx.topicName) return json({ error: 'spec, topic, subject and topicName are required' }, 400, cors);
   if (!/^[A-Za-z0-9._-]+$/.test(ctx.spec) || /\s/.test(ctx.topic)) return json({ error: 'spec and topic must be ids' }, 400, cors);
-  const ck = `videos:${ctx.spec}:${ctx.topic}`;
+  const ck = `videos2:${ctx.spec}:${ctx.topic}`;
   const cached = await env.USAGE.get(ck, 'json');
   if (cached && !(b.refresh === true && s.user.role === 'admin')) return json(cached, 200, cors);
   if (!env.ANTHROPIC_API_KEY) return json({ items: [], at: now(), error: 'no model key' }, 200, cors);
@@ -144,19 +144,26 @@ async function findVideos(env, ctx) {
   const queries = await videoQueries(env, ctx);
   const pool = new Map();
   for (const q of queries) for (const v of await youtubeSearch(q)) if (!pool.has(v.id)) pool.set(v.id, v);
-  let via = 'page';
-  if (!pool.size) { via = 'search'; for (const v of await youtubeViaSearch(env, ctx)) if (!pool.has(v.id)) pool.set(v.id, v); }
-  const cands = [...pool.values()].slice(0, 48);
-  if (!cands.length) return { items: [], at, queries, found: 0, via };
+  let via = 'page', cands = [...pool.values()].slice(0, 48);
+  let items = cands.length ? await chooseVideos(env, ctx, cands) : [];
+  if (!items.length) { /* the page gave nothing usable: let the model's own web search over youtube.com try */
+    via = 'search'; const found = await youtubeViaSearch(env, ctx);
+    if (found.length) { cands = found; items = await chooseVideos(env, ctx, cands); } else if (!cands.length) cands = [];
+  }
+  return { items, at, queries, found: cands.length, via };
+}
+/* The picking step, then the existence check: a video is listed only if the model chose it AND YouTube still serves it. */
+async function chooseVideos(env, ctx, cands) {
+  const byId = new Map(cands.map(c => [c.id, c]));
   const picks = await videoPicks(env, ctx, cands);
   const items = [];
   for (const p of picks) {
-    const c = pool.get(p.id); if (!c) continue;
+    const c = byId.get(p.id); if (!c) continue;
     const o = await oembed(p.id); if (!o) continue;
     items.push({ id: p.id, url: `https://www.youtube.com/watch?v=${p.id}`, title: o.title || c.title, channel: o.author || c.channel, length: c.length, views: c.views, why: p.why, image: `https://i.ytimg.com/vi/${p.id}/hqdefault.jpg` });
     if (items.length >= VIDEO_MAX) break;
   }
-  return { items, at, queries, found: cands.length, via };
+  return items;
 }
 /* When YouTube's page cannot be read from here, the model's own web search over youtube.com finds candidates instead;
    each is read back from oEmbed before the picking step so the choice is made on real titles and channels. */

@@ -506,7 +506,7 @@ const baseEnv = () => ({ ANTHROPIC_API_KEY: 'sk-ant-test', ALLOWED_ORIGIN: 'http
     ok('V2 the picking prompt names the course, the topic, its key ideas and the candidates, and allows an empty answer', /4GN1/.test(promptsSeen[1]) && /Home and abroad/.test(promptsSeen[1]) && /Town and region/.test(promptsSeen[1]) && /abc123def45 \| GCSE German: talking about your home \| German with Anna \| 9:12/.test(promptsSeen[1]) && /empty list/.test(promptsSeen[1]));
     r = await worker.fetch(req('/videos', J('POST', body, VST)), env);
     v = await r.json();
-    ok('V3 the second request for the room is served from KV without searching again', v.items.length === 1 && ytHits === 3 && modelHits === 2 && (await env.USAGE.get('videos:EDX-4GN1:A', 'json')).items.length === 1);
+    ok('V3 the second request for the room is served from KV without searching again', v.items.length === 1 && ytHits === 3 && modelHits === 2 && (await env.USAGE.get('videos2:EDX-4GN1:A', 'json')).items.length === 1);
     r = await worker.fetch(req('/videos', J('POST', { ...body, refresh: true }, VST)), env);
     ok('V3 a student cannot force a fresh search', ytHits === 3);
     r = await worker.fetch(req('/videos', J('POST', { ...body, refresh: true }, ADMV)), env);
@@ -525,6 +525,15 @@ const baseEnv = () => ({ ANTHROPIC_API_KEY: 'sk-ant-test', ALLOWED_ORIGIN: 'http
     r = await worker.fetch(req('/videos', J('POST', { ...body, topic: 'D', topicName: 'D. Holidays' }, VST)), env);
     v = await r.json();
     ok('V4 when YouTube’s page cannot be read, candidates come from the model’s web search, read back from oEmbed, and still go through the picking and checking steps', r.status === 200 && v.via === 'search' && v.found === 1 && searchCalls === 1 && v.items.length === 1 && v.items[0].id === 'srch1234567' && v.items[0].channel === 'Frau Schmidt teaches' && /Ferien/.test(v.items[0].title), JSON.stringify(v));
+    /* the page reads fine but the model rejects everything on it: the web search gets its turn */
+    let pickCalls = 0; const fetchD = sandbox.__fetch;
+    sandbox.__fetch = async (url, init) => { const u = String(url);
+      if (u.startsWith('https://www.youtube.com/results')) return new Response(page(hits), { status: 200, headers: { 'Content-Type': 'text/html' } });
+      if (u.includes('api.anthropic.com')) { const b = JSON.parse(init.body); if (!b.tools && /picks/.test(JSON.stringify(b.output_config))) { pickCalls++; if (pickCalls === 1) return new Response(JSON.stringify({ content: [{ type: 'text', text: JSON.stringify({ picks: [] }) }] })); } }
+      return fetchD(url, init); };
+    r = await worker.fetch(req('/videos', J('POST', { ...body, topic: 'E', topicName: 'E. Holidays abroad' }, VST)), env);
+    v = await r.json();
+    ok('V4 when the page’s candidates are all rejected, the web search’s candidates are tried and the result says so', r.status === 200 && v.via === 'search' && pickCalls === 2 && v.items.length === 1 && v.items[0].id === 'srch1234567', JSON.stringify(v));
     sandbox.__fetch = async (url, init) => { if (String(url).includes('api.anthropic.com')) return new Response('overloaded', { status: 529 }); return saveFetch(url, init); };
     r = await worker.fetch(req('/videos', J('POST', { ...body, topic: 'C', topicName: 'C. Personal life and relationships' }, VST)), env);
     v = await r.json();

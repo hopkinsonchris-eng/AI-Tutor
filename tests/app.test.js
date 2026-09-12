@@ -117,11 +117,15 @@ const click=async s=>L.click({target:T(s)});const change=async s=>L.change({targ
  ok('A1 state persisted',!!store['platform:state:v1:matthew']);
  /* today */
  ok('A2 today lists steps across subjects with open buttons',/Today/.test(reg['v-today'].innerHTML)&&/data-open=/.test(reg['v-today'].innerHTML));
+ ok('B1 banner: the wordmark is there, the place is Today and the signed-in student is named',/Today/.test(reg['bWhere'].innerHTML)&&/<b>Today<\/b>/.test(reg['bWhere'].innerHTML)&&/class="av"[^>]*>M</.test(reg['bWho'].innerHTML)&&/Matthew/.test(reg['bWho'].innerHTML)&&!/admin/.test(reg['bWho'].innerHTML),reg['bWhere'].innerHTML+' | '+reg['bWho'].innerHTML);
  /* rooms: subject chips and topic grid */
  G.renderRooms();ok('A3 rooms grid shows 9 geography rooms',(reg['v-rooms'].innerHTML.match(/class="tcell"/g)||[]).length===9);
  await click({dataset:{subject:'EDX-9PL0'}});ok('A3 switching subject shows 18 politics rooms',(reg['v-rooms'].innerHTML.match(/class="tcell"/g)||[]).length===18);
  /* lesson generation with validation + retry */
  const geoRoom='OCR-H481|1.2';G.openRoom(geoRoom,'lesson');
+ ok('B2 banner follows the student into a room: Rooms › Geography › topic',/Rooms.*Geography.*<b>[^<]+<\/b>/.test(reg['bWhere'].innerHTML)&&!/Today/.test(reg['bWhere'].innerHTML),reg['bWhere'].innerHTML);
+ G.UI.station='cards';G.renderRooms();ok('B3 banner names the station once it is not the lesson',/Flash cards/.test(reg['bWhere'].innerHTML),reg['bWhere'].innerHTML);
+ await click({id:'brand'});ok('B4 the wordmark goes home to Today',G.view==='today'&&/<b>Today<\/b>/.test(reg['bWhere'].innerHTML)&&G.UI.room===null);G.openRoom(geoRoom,'lesson');
  const topic=G.SPECS['OCR-H481'].topics.find(t=>t.id==='1.2');let calls=0;
  reply=f=>{calls++;const p=f.body.messages[0].content[0].text;if(/previous attempt was rejected/.test(p)||calls>1)return{content:[{type:'text',text:JSON.stringify({why:'w'.repeat(220),sections:topic.ideas.map(i=>({code:i.code,heading:'H',text:'t'.repeat(450)})),examTips:['a','b','c'],checks:[{q:'Q1',a:'A1',code:'1.a'},{q:'Q2',a:'A2',code:'1.b'},{q:'Q3',a:'A3',code:'2.a'},{q:'Q4',a:'A4',code:'3.a'}]})}]};return{content:[{type:'text',text:JSON.stringify({why:'short',sections:[]})}]};};
  await click({dataset:{genkind:'lesson'}});await sleep(50);

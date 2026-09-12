@@ -6,7 +6,18 @@ body{font-family:'Instrument Sans',ui-sans-serif,system-ui,-apple-system,'Segoe 
  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:26px 26px;background-position:-1px -1px;padding-bottom:78px}
 .wrap{max-width:600px;margin:0 auto;padding:0 16px}
 header{position:sticky;top:0;z-index:20;background:var(--paper);border-bottom:1px solid var(--rule)}
-.hbar{display:flex;align-items:center;justify-content:space-between;padding:12px 0 10px;gap:10px}
+.banner{background:var(--ink);color:#fff}
+.bbar{display:flex;align-items:center;gap:14px;min-height:46px}
+.brand{display:flex;align-items:center;gap:9px;background:none;border:0;padding:0;margin:0;font:inherit;font-weight:700;font-size:16px;letter-spacing:.01em;color:#fff;white-space:nowrap;cursor:pointer}
+.bmark{width:20px;height:20px;border:1.5px solid #fff;border-radius:3px;position:relative;background-image:linear-gradient(rgba(255,255,255,.5) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.5) 1px,transparent 1px);background-size:6px 6px;background-position:-1px -1px}
+.bmark::after{content:'';position:absolute;right:3px;bottom:3px;width:6px;height:6px;background:#5FB37E;border-radius:1px}
+.bwhere{flex:1;min-width:0;font-size:13.5px;color:rgba(255,255,255,.72);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;border-left:1px solid rgba(255,255,255,.28);padding-left:14px;line-height:1.3}
+.bwhere b{color:#fff;font-weight:600}.bwhere .sep{font-style:normal;margin:0 7px;color:rgba(255,255,255,.45)}
+.bwho{display:flex;align-items:center;gap:8px;font-size:13.5px;font-weight:600;color:#fff;white-space:nowrap}
+.bwho .av{width:26px;height:26px;border-radius:50%;background:var(--paper);color:var(--ink);font-size:12.5px;font-weight:700;display:flex;align-items:center;justify-content:center;flex:none}
+.bwho small{font-weight:500;font-size:11px;color:rgba(255,255,255,.7);border:1px solid rgba(255,255,255,.4);border-radius:2px;padding:0 4px;margin-left:4px;vertical-align:middle}
+@media (max-width:460px){.bwho .nm{display:none}.bwhere{padding-left:10px}.bwhere .sep{margin:0 5px}}
+.hbar{display:flex;align-items:center;justify-content:space-between;padding:12px 16px 10px;gap:10px}
 .hdate{font-weight:600;font-size:15px}.hphase{font-size:12.5px;color:var(--pencil)}
 .gradechip{border:1.5px solid var(--ink);border-radius:3px;padding:4px 10px;text-align:center;line-height:1.15}
 .gradechip b{font-size:20px;display:block}.gradechip span{font-size:10.5px;color:var(--pencil)}

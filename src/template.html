@@ -15,7 +15,7 @@
 </style>
 </head>
 <body>
-<header><div class="wrap hbar"><button class="edge" data-drawer="l" aria-label="Courses and topics" title="Courses and topics">▤</button><div class="hmid"><div class="hdate" id="hDate">—</div><div class="hphase" id="hPhase">Loading…</div></div><div class="gradechip" id="hGrade"></div><button class="edge" data-drawer="r" aria-label="Now: next step, cards, resources" title="Now">◧</button></div></header>
+<header><div class="banner"><div class="wrap bbar"><button class="brand" id="brand" title="Study Platform"><span class="bmark" aria-hidden="true"></span>Study Platform</button><div class="bwhere" id="bWhere"></div><div class="bwho" id="bWho"></div></div></div><div class="wrap hbar"><button class="edge" data-drawer="l" aria-label="Courses and topics" title="Courses and topics">▤</button><div class="hmid"><div class="hdate" id="hDate">—</div><div class="hphase" id="hPhase">Loading…</div></div><div class="gradechip" id="hGrade"></div><button class="edge" data-drawer="r" aria-label="Now: next step, cards, resources" title="Now">◧</button></div></header>
 <div class="shell" id="shell">
  <aside class="rail rail-l hide" id="rail-l" aria-label="Courses and topics" aria-expanded="false"></aside>
  <main class="centre">
@@ -199,7 +199,16 @@ function mergeSetup(newSetup){const fresh=newState(newSetup,SPECS);for(const [id
 function setupValid(){const st=UI.setup;if(!st.student||!st.subjects.length)return 'Enter a name and choose at least one subject.';for(const sub of st.subjects){const sp=specById(sub.specId);for(const o of sp.options){const v=sub.options[o.id];const n=Array.isArray(v)?v.length:(v?1:0);if(n!==o.choose)return `${sp.subject}: choose exactly ${o.choose} for ${o.label}.`;}}return null;}
 
 /* ============ HEADER / TODAY ============ */
-function renderHeader(){const p=phaseFor(TODAY);document.getElementById('hDate').textContent=new Date(TODAY).toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long'});
+/* the banner: where the student is in the app, and who is signed in */
+function whereAmI(){if(AUTH_MODE&&!AUTH.user)return [['Sign in']];if(!S)return [[isAdmin()&&view==='admin'?'Admin':'Set up your courses']];
+  const sp=(()=>{try{return activeSpec();}catch(e){return null;}})();const subj=sp?`${sp.subject}`:'';
+  if(view==='rooms'){if(UI.room){const {spec,topic}=nodeTopic(UI.room);const st=UI.station&&UI.station!=='lesson'?UI.station==='cards'?'Flash cards':UI.station==='practise'?'Practise':UI.station==='essay'?(spec.essaySubject?'Essay':'Exam question'):UI.station==='mark'?'Mark':UI.station==='exit'?'Exit ticket':UI.station==='planner'?'Planner':UI.station==='desktop'?'Desktop':UI.station==='coach'?coachName():UI.station==='formulae'?'Key facts':'':'';return [['Rooms'],[spec.subject],[topic.name,true],...(st?[[st]]:[])];}return [['Rooms'],...(subj?[[subj,true]]:[])];}
+  if(view==='exam')return [['Exam'],...(subj?[[subj,true]]:[])];if(view==='prog')return [['Progress',true]];if(view==='admin')return [['Admin',true]];return [['Today',true]];}
+function renderWhere(){const w=document.getElementById('bWhere'),who=document.getElementById('bWho');if(!w||!who)return;
+  w.innerHTML=whereAmI().map(([t,b])=>b?`<b>${esc(t)}</b>`:`<span>${esc(t)}</span>`).join('<i class="sep">›</i>');
+  const name=AUTH.user?String(AUTH.user.name||AUTH.user.username||''):S&&S.setup&&S.setup.student?String(S.setup.student):'';
+  who.innerHTML=name?`<span class="av" aria-hidden="true">${esc(name.trim().slice(0,1).toUpperCase())}</span><span class="nm">${esc(name)}${isAdmin()?' <small>admin</small>':''}</span>`:'';}
+function renderHeader(){renderWhere();const p=phaseFor(TODAY);document.getElementById('hDate').textContent=new Date(TODAY).toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long'});
   document.getElementById('hPhase').textContent=(storeMode==='memory'?'⚠ not saving · ':'')+(p?`${p.label} · ${p.kind==='HOLIDAY'?'holiday pace':p.kind==='EXAM'?'exam term':'term pace'}`:'Outside the plan')+(S?` · ${S.setup.subjects.length} subject${S.setup.subjects.length>1?'s':''}`:'');
   const g=document.getElementById('hGrade');if(!S){g.innerHTML='';return;}
   g.innerHTML=S.setup.subjects.map(sub=>{const sp=specById(sub.specId);const p=predictSubject(S,sp,sub.options);return `<b style="font-size:16px;display:inline;margin-right:6px">${esc(p.grade)}</b>`;}).join('')+`<span>predicted</span>`;}
@@ -218,7 +227,7 @@ function renderCards(due){if(!due.length){UI.cards=null;return '<div class="good
    ${UI.revealed['card']?`<div class="row"><button class="act ghost small" data-cardres="1" data-card="${esc(id)}">Right</button><button class="act danger small" data-cardres="0" data-card="${esc(id)}">Wrong</button></div>`:`<button class="act" data-reveal="card">Show answer</button>`}</div>`;}
 
 /* ============ ROOMS ============ */
-function renderRooms(){const el=document.getElementById('v-rooms');if(!S)return;if(UI.room)return renderRoom(el);
+function renderRooms(){const el=document.getElementById('v-rooms');if(!S)return;renderWhere();if(UI.room)return renderRoom(el);
   const subs=S.setup.subjects;if(!UI.subject)UI.subject=subs[0].specId;const sp=specById(UI.subject);const opts=subjectOptions(sp.id);
   const nodes=Object.entries(S.nodes).filter(([,n])=>n.spec===sp.id);
   el.innerHTML=`<div class="panel"><div class="chips">${subs.map(x=>`<button class="chip" data-subject="${x.specId}" aria-selected="${UI.subject===x.specId}">${esc(specById(x.specId).subject)}</button>`).join('')}</div>
@@ -515,7 +524,7 @@ function renderAll(){renderHeader();document.querySelectorAll('.navAdmin').forEa
   if(AUTH_MODE&&!AUTH.user){showSection('v-login');renderLogin();renderRails();return;}
   if(!S&&isAdmin()&&view==='admin'){showSection('v-admin');renderAdmin();renderRails();return;}
   if(!S){document.querySelectorAll('main>section').forEach(s=>s.classList.toggle('hide',s.id!=='v-setup'));renderSetup();renderRails();return;}renderToday();renderRooms();renderExam();renderProg();if(view==='admin')renderAdmin();document.querySelectorAll('main>section').forEach(s=>s.classList.toggle('hide',s.id!=='v-'+view));renderRails();}
-function go(v){view=v;document.querySelectorAll('nav button').forEach(x=>x.setAttribute('aria-selected',String(x.dataset.v===v)));document.querySelectorAll('main>section').forEach(s=>s.classList.toggle('hide',s.id!=='v-'+v));window.scrollTo(0,0);renderRails();}
+function go(v){view=v;renderWhere();document.querySelectorAll('nav button').forEach(x=>x.setAttribute('aria-selected',String(x.dataset.v===v)));document.querySelectorAll('main>section').forEach(s=>s.classList.toggle('hide',s.id!=='v-'+v));window.scrollTo(0,0);renderRails();}
 /* When a room's kit has been refined since its cards were added, bring the deck's copies up to date: same front, new back and open flag. */
 function refreshKitCards(room){const nd=S.nodes[room];const AU=authoredFor(nd.spec,nd.topic);if(!AU||!AU.cards||!(S.kitCards||{})[room])return false;let changed=false;const byFront=new Map(AU.cards.map(c=>[c.front,c]));
   for(const c of Object.values(S.cards)){if(c.node!==room)continue;const k=byFront.get(c.front);if(!k)continue;if(c.back!==k.back||!!c.open!==!!k.open){c.back=k.back;c.open=!!k.open;changed=true;}}return changed;}
@@ -869,6 +878,7 @@ document.addEventListener('change',async e=>{const t=e.target;
   if(t.id==='esPhoto'){const files=[...(t.files||[])];const E=UI.essay;E.photos=E.photos||[];for(const f of files){try{E.photos.push(await fileToImg(f));}catch(e){}}renderRooms();return;}
   if(t.id==='mkPhoto'){const files=[...(t.files||[])];const M=UI.mark;for(const f of files){try{M.photos.push(await fileToImg(f));}catch(e){}}renderRooms();return;}});
 document.addEventListener('click',async e=>{let t=e.target;
+  if(t.id==='brand'||(t.closest&&t.closest('#brand'))){if(!S)return;UI.room=null;if(UI.drawer)setDrawer(null);go('today');renderToday();return;}
   const nb=t.closest('button[data-v]');if(nb){if(nb.dataset.v==='admin'){if(!isAdmin())return;go('admin');renderAdmin();return;}if(!S)return;go(nb.dataset.v);return;}
   const dr=t.closest('[data-drawer]');if(dr){setDrawer(UI.drawer===dr.dataset.drawer?null:dr.dataset.drawer);return;}
   if(t.id==='scrim'){setDrawer(null);return;}

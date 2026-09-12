@@ -38,11 +38,29 @@ Wide screen: left rail (nav, quick-jump, course switcher, topic tree with status
 
 ![6-wide-today](6-wide-today.png)
 
+## 20-flash-card-front
+
+Flash card review: an index card in the subject’s colour, question up, matching the course’s colour stripe in the left rail
+
+![20-flash-card-front](20-flash-card-front.png)
+
+## 21-flash-card-back
+
+The same card turned over: the answer on the back, Right and Wrong to mark yourself
+
+![21-flash-card-back](21-flash-card-back.png)
+
 ## 7-wide-room
 
 Inside a room: the tree marks the current topic; the right rail is contextual — state, key-idea codes, cards due here, your mistakes here, watch and read
 
 ![7-wide-room](7-wide-room.png)
+
+## 22-room-deck
+
+The room’s flash-card deck: mini index cards in the subject’s colour, one turned over
+
+![22-room-deck](22-room-deck.png)
 
 ## 10-ipad-room
 

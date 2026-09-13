@@ -166,9 +166,11 @@ async function callClaude(parts,max=1500,retries=6,model='claude-sonnet-5'){let 
   const text=(data.content||[]).filter(c=>c.type==='text').map(c=>c.text).join('').replace(/```json|```/g,'').trim();if(!text){lastErr='empty reply';continue;}return text;}
   throw new Error(lastErr||'unknown');}
 /* Generate JSON, validate against the spec, retry once with the validator's complaint. */
-async function generate(prompt,validator,max=2500){let txt=await callClaude([{type:'text',text:prompt}],max);let obj=null;try{obj=JSON.parse(txt);}catch(e){}
+/* the model's JSON, even when it arrives inside fences or with a sentence around it */
+function parseModelJson(txt){let t=String(txt||'').trim();try{return JSON.parse(t);}catch(e){}t=t.replace(/^```(?:json)?\s*/i,'').replace(/\s*```$/,'');try{return JSON.parse(t);}catch(e){}const a=t.indexOf('{'),b=t.lastIndexOf('}');if(a>=0&&b>a){try{return JSON.parse(t.slice(a,b+1));}catch(e){}}return null;}
+async function generate(prompt,validator,max=2500){let txt=await callClaude([{type:'text',text:prompt}],max);let obj=parseModelJson(txt);
   let why=obj?validator(obj):'not JSON';
-  if(why){txt=await callClaude([{type:'text',text:prompt+`\n\nYour previous attempt was rejected: ${why}. Fix that and respond again with ONLY the JSON.`}],max);try{obj=JSON.parse(txt);}catch(e){obj=null;}why=obj?validator(obj):'not JSON';}
+  if(why){txt=await callClaude([{type:'text',text:prompt+`\n\nYour previous attempt was rejected: ${why}. Fix that and respond again with ONLY the JSON.`}],max);obj=parseModelJson(txt);why=obj?validator(obj):'not JSON';}
   if(why)throw new Error('generated content failed validation: '+why);return obj;}
 async function ensure(kind,id,builder,validator,max){S.generated[id]=S.generated[id]||{};if(S.generated[id][kind])return S.generated[id][kind];UI.busy=`Preparing ${kind}…`;renderRooms();
   try{const o=await generate(builder(),validator,max);S.generated[id][kind]=o;UI.err='';await save();return o;}catch(e){UI.err=e.message;return null;}finally{UI.busy='';}}

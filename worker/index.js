@@ -759,6 +759,9 @@ async function proxy(request, env, cors) {
   if (!body || !Array.isArray(body.messages)) return json(apiError('invalid_request_error', 'messages required'), 400, cors);
   if (!MODELS.includes(body.model)) body.model = MODELS[0];
   body.max_tokens = Math.min(body.max_tokens || 1000, 4000);
+  /* Sonnet 5 thinks by default and the thinking counts against max_tokens: a 2,000-token lesson or question was
+     arriving cut off mid-JSON. The app's calls are content generation, where thinking off is as good and cheaper. */
+  if (body.thinking === undefined) body.thinking = { type: 'disabled' };
   body.stream = false;
   body.metadata = { user_id: user.username };
 

@@ -147,6 +147,10 @@ const click=async s=>L.click({target:T(s)});const change=async s=>L.change({targ
  await click({dataset:{cards:'1'}});ok('A6 card review shown',/Recall · 10 due/.test(reg['v-today'].innerHTML));
  const cid=Object.keys(G.S.cards)[0];await click({dataset:{reveal:'card'}});await click({dataset:{cardres:'0',card:cid}});ok('A6 wrong card reset and logged',G.S.cards[cid].ease===1&&G.S.errors[0].mode==='RECALL-GAP');
  await click({dataset:{reveal:'card'}});const c2=Object.keys(G.S.cards)[1];await click({dataset:{cardres:'1',card:c2}});ok('A6 right card doubles',G.S.cards[c2].ease===2);
+ /* the model's JSON survives fences and a sentence either side of it */
+ reply=()=>({content:[{type:'text',text:'Here is the set you asked for:\n```json\n{"cards":[{"front":"F","back":"B","code":"1.a"}]}\n```\nHope that helps.'}]});
+ {const o=await G.generate('p',o=>Array.isArray(o.cards)?'':'no cards',100);ok('A6a JSON wrapped in prose and fences is still parsed',o&&o.cards&&o.cards[0].front==='F',JSON.stringify(o));
+  ok('A6a parseModelJson gives up on prose with no object',G.parseModelJson('no braces here')===null&&G.parseModelJson('{"a":1}').a===1);}
  const first=G.S.setup.subjects[0].specId;(()=>{G.UI.cards=true;G.UI.revealed.card=false;G.renderToday();const V=reg['v-today'].innerHTML;const geo=G.subjectColour('OCR-H481');
   ok('F1 the review card is an index card in its subject\u2019s colour, question up',/class="fc" data-flip="card" style="--sc:#[0-9A-F]{6}"/.test(V)&&V.includes('style="--sc:'+geo+'"')&&/fc-front/.test(V)&&/fc-back/.test(V)&&!/class="fc flipped"/.test(V)&&!/data-cardres/.test(V),V.slice(0,300));
   ok('F1b subject colours follow the portfolio order and differ between subjects',G.subjectColour(first)==='#2B4C7E'&&G.subjectColour(G.S.setup.subjects[1].specId)==='#2E6B4E'&&G.subjectColour(first)!==G.subjectColour(G.S.setup.subjects[1].specId));})();

@@ -120,6 +120,10 @@ const baseEnv = () => ({ ANTHROPIC_API_KEY: 'sk-ant-test', ALLOWED_ORIGIN: 'http
   ok('W17 an unknown model falls back to Sonnet 5', upstreamSeen.body.model === 'claude-sonnet-5');
   ok('W17 the API key is added server-side', upstreamSeen.headers['x-api-key'] === 'sk-ant-test');
   ok('W17 the request is tagged with the username', upstreamSeen.body.metadata.user_id === 'matthew');
+  ok('W17 thinking is off unless the caller asks, so the answer gets the whole token budget', upstreamSeen.body.thinking && upstreamSeen.body.thinking.type === 'disabled', JSON.stringify(upstreamSeen.body.thinking));
+  upstreamSeen = null;
+  r = await worker.fetch(req('/', J('POST', { messages: [{ role: 'user', content: 'hi' }], thinking: { type: 'adaptive' } }, STU)), env);
+  ok('W17 a caller that asks for thinking keeps it', r.status === 200 && upstreamSeen.body.thinking.type === 'adaptive', JSON.stringify(upstreamSeen.body.thinking));
   r = await worker.fetch(req('/v1/messages', J('POST', { messages: [{}] }, STU)), env);
   ok('W17 /v1/messages is accepted too', r.status === 200);
 
@@ -206,7 +210,7 @@ const baseEnv = () => ({ ANTHROPIC_API_KEY: 'sk-ant-test', ALLOWED_ORIGIN: 'http
   r = await worker.fetch(req('/manage/users', { headers: ADM }), env);
   const listed = await r.json();
   const mRow = listed.users.find(u => u.username === 'matthew');
-  ok('W23 admin lists users with usage, password state and last device', listed.users.length === 2 && mRow.today === 2 && mRow.hasPassword && mRow.device === 'an iPad' && listed.users[0].role === 'admin', JSON.stringify(listed));
+  ok('W23 admin lists users with usage, password state and last device', listed.users.length === 2 && mRow.today === 3 && mRow.hasPassword && mRow.device === 'an iPad' && listed.users[0].role === 'admin', JSON.stringify(listed));
 
   r = await worker.fetch(req('/manage/users/matthew', J('PATCH', { disabled: true }, ADM)), env);
   ok('W24 admin can turn a student off', (await r.json()).user.disabled === true);
@@ -806,6 +810,7 @@ const baseEnv = () => ({ ANTHROPIC_API_KEY: 'sk-ant-test', ALLOWED_ORIGIN: 'http
     ok('R8 no KV value and no R2 object contains PDF bytes', !kvText.includes('%PDF') && !r2Text.includes('%PDF'));
     const docsOk = modelSeen.every(b => { const blocks = b.messages.flatMap(m => Array.isArray(m.content) ? m.content : []); const docs = blocks.filter(c => c.type === 'document'); return docs.every(c => c.source.type === 'url' && [QP, MS].includes(c.source.url) && Object.keys(c.source).join() === 'type,url') && !JSON.stringify(b).includes('%PDF') && !/application\/pdf/.test(JSON.stringify(b)); });
     ok('R8 every model request carried the paper and the scheme only as url document sources', docsOk && modelSeen.length > 10);
+    ok('R8 every marking and mapping request ran with thinking off, so the JSON is never cut short', modelSeen.every(b => b.thinking && b.thinking.type === 'disabled'));
     r = await worker.fetch(req('/papers/' + AID, { method: 'DELETE', headers: SAM }), env);
     ok('R2 deleting an attempt removes its pages and their bytes', r.status === 200 && !env.DESK._map.has(p1.key) && !env.DESK._map.has(p2.key) && (await env.USAGE.get('deskq:sam')) === '0' && !(await env.USAGE.get(`paper:sam:${AID}`)));
     /* 11. a step whose model call throws mid-job: the job carries on, that question is recorded as unreadable with the error, nothing is marked failed */

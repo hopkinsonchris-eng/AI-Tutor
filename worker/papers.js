@@ -346,7 +346,7 @@ async function ask(env, username, model, maxTokens, content) {
   const used = parseInt((await env.USAGE.get(uk)) || '0', 10);
   if (used >= daily) throw new CapError(`${user.name}'s daily limit of ${daily} requests is used up — resets at midnight UTC`);
   await env.USAGE.put(uk, String(used + 1), { expirationTtl: 100 * 86400 });
-  const body = { model, max_tokens: maxTokens, messages: [{ role: 'user', content }], metadata: { user_id: username } };
+  const body = { model, max_tokens: maxTokens, thinking: { type: 'disabled' }, messages: [{ role: 'user', content }], metadata: { user_id: username } };
   const res = await fetch('https://api.anthropic.com/v1/messages', { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-api-key': env.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01' }, body: JSON.stringify(body) });
   const txt = await res.text();
   if (!res.ok) throw new Error(`Anthropic ${res.status}: ${txt.slice(0, 200)}`);

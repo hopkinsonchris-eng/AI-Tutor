@@ -118,7 +118,7 @@ export default {
       if (p === '/courses' || p.startsWith('/courses/')) return courses(request, env, url, cors);
       if (p.startsWith('/manage/courses') || p.startsWith('/manage/reviews') || p === '/manage/catalogue') return manageCourses(request, env, url, cors);
       if (p.startsWith('/manage/')) return manage(request, env, url, cors);
-      if (request.method === 'GET') return json({ ok: true, service: 'tutor-proxy' }, 200, cors);
+      if (request.method === 'GET') return json({ ok: true, service: 'tutor-proxy', build: 'reads-2' }, 200, cors);
       if (p === '/speech' && request.method === 'POST') return speech(request, env, cors);
       if (p === '/tts' && request.method === 'POST') return tts(request, env, cors);
       if (request.method === 'POST' && (p === '/' || p === '/v1/messages')) return proxy(request, env, cors);
@@ -215,20 +215,25 @@ async function findReads(env, ctx) {
 }
 /* the search: the model's web search, fenced to the room's trusted sites; one page per line */
 async function readsViaSearch(env, ctx, sites) {
-  const allowed = [...new Set(sites.flatMap(s => [s.host, 'www.' + s.host]))];
+  let allowed = [...new Set(sites.map(s => s.host))];
   const prompt = `${videoContext(ctx)}\n\nUsing web search over the allowed sites only, find up to 8 pages that TEACH this topic at this level for this qualification: revision notes, worked examples, practice questions with answers, or the board's own resource page for this course. Never a home page, a search page, a login page or a shop. Answer with one page per line and nothing else, in the form:\nhttps://... | title | notes or practice or official`;
-  const body = { model: VIDEO_MODEL, max_tokens: 3000, tools: [{ type: 'web_search_20260209', name: 'web_search', max_uses: 5, allowed_domains: allowed }], messages: [{ role: 'user', content: prompt }] };
   const headers = { 'Content-Type': 'application/json', 'x-api-key': env.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01' };
-  let data, turns = 0;
-  while (turns++ < 4) {
+  let data, turns = 0, dropped = 0;
+  const body = { model: VIDEO_MODEL, max_tokens: 3000, tools: [{ type: 'web_search_20260209', name: 'web_search', max_uses: 5, allowed_domains: allowed }], messages: [{ role: 'user', content: prompt }] };
+  while (turns++ < 6) {
     const res = await fetch('https://api.anthropic.com/v1/messages', { method: 'POST', headers, body: JSON.stringify(body) });
     const text = await res.text();
-    if (!res.ok) throw new Error(`Anthropic ${res.status}: ${text.slice(0, 200)}`);
+    if (!res.ok) {
+      /* the search tool cannot reach some sites at all; it names them — drop them from the fence and search the rest */
+      const m = res.status === 400 && /not accessible/i.test(text) ? [...text.matchAll(/'([a-z0-9.-]+\.[a-z]{2,})'/gi)].map(x => x[1].toLowerCase()) : [];
+      if (m.length && dropped < 2) { dropped++; allowed = allowed.filter(h => !m.some(d => h === d || h.endsWith('.' + d) || d.endsWith('.' + h))); if (!allowed.length) return ''; body.tools[0].allowed_domains = allowed; continue; }
+      throw new Error(`Anthropic ${res.status}: ${text.slice(0, 200)}`);
+    }
     data = JSON.parse(text);
     if (data.stop_reason !== 'pause_turn') break;
     body.messages.push({ role: 'assistant', content: data.content });
   }
-  return (data.content || []).filter(c => c.type === 'text').map(c => c.text).join('\n');
+  return (data && data.content || []).filter(c => c.type === 'text').map(c => c.text).join('\n');
 }
 /* a page is listed only if it loads like a browser sees it, as HTML, at an address still on the list, and does not say it is gone */
 async function verifyPage(url, sites) {

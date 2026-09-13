@@ -5,7 +5,6 @@ export const READ_SITES = [
   { host: 'physicsandmathstutor.com', name: 'PMT', free: 'free', fam: ['all'] },
   { host: 'senecalearning.com', name: 'Seneca', free: 'freemium', fam: ['all'] },
   { host: 'savemyexams.com', name: 'Save My Exams', free: 'freemium', fam: ['all'] },
-  { host: 'bbc.co.uk', name: 'BBC Bitesize', free: 'free', fam: ['all'] },
   { host: 'corbettmaths.com', name: 'Corbettmaths', free: 'free', fam: ['maths'] },
   { host: 'mathsgenie.co.uk', name: 'Maths Genie', free: 'free', fam: ['maths'] },
   { host: 'drfrost.org', name: 'Dr Frost', free: 'free', fam: ['maths'] },

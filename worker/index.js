@@ -6,6 +6,7 @@
  * is keyed to that session. The Anthropic API key never leaves this Worker.
  *
  *   POST /tts                 bearer {text, voice: athena|helios} -> audio/mpeg; R2 cache tts/aura-1/<voice>/<sha256>.mp3; one cap request per 1,000 fresh characters
+ *   POST /reads               bearer room context -> {items:[{url,title,site,kind,free,why}]}; pages from trusted UK sites, each fetched and checked; cached 60 days per room
  *   POST /courses/request      bearer {level, subject, board, code} -> {status: requested|published|building|review}; never starts a build
  *   POST /courses/build        bearer, ADMIN ONLY — starts a build (spends the API); students get 403
  *   POST /auth/login          {username, password}      -> {token, user}
@@ -77,6 +78,7 @@
  */
 
 import { WorkflowEntrypoint } from 'cloudflare:workers';
+import { sitesFor, readCandidates, siteFor, pageTitle, looksDead, matchPicks } from './reads.js';
 import { runBuild, runReview, anthropicAI, headOf, specIdFor } from './builder.js';
 import { runDepth, kitAI } from './depth.js';
 import { papers, PaperMarker } from './papers.js';
@@ -110,6 +112,7 @@ export default {
       if (p.startsWith('/auth/')) return auth(request, env, url, cors);
       if (p === '/progress') return progress(request, env, cors);
       if (p === '/videos' && request.method === 'POST') return roomVideos(request, env, cors);
+      if (p === '/reads' && request.method === 'POST') return roomReads(request, env, cors);
       if (p === '/desk' || p.startsWith('/desk/')) return desk(request, env, url, cors);
       if (p === '/papers' || p.startsWith('/papers/')) return papers(request, env, url, cors);
       if (p === '/courses' || p.startsWith('/courses/')) return courses(request, env, url, cors);
@@ -179,6 +182,73 @@ async function findVideos(env, ctx) {
     if (found.length) { cands = found; items = await chooseVideos(env, ctx, cands); } else if (!cands.length) cands = [];
   }
   return { items, at, queries, found: cands.length, via };
+}
+/* ---- pages to read for a room: the model searches only the trusted sites, every page is fetched and must be a real page on the list, the model picks a few with a reason ---- */
+const READ_TTL = 60 * 86400, READ_NONE_TTL = 7 * 86400, READ_FAIL_TTL = 3600, READ_MAX = 4, READ_UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36 StudyPlatform-link-check';
+async function roomReads(request, env, cors) {
+  const s = await sessionUser(request, env);
+  if (!s) return json({ error: 'not signed in' }, 401, cors);
+  let b; try { b = await request.json(); } catch (e) { return json({ error: 'a JSON body is required' }, 400, cors); }
+  const str = (v, n) => String(v == null ? '' : v).replace(/\s+/g, ' ').trim().slice(0, n);
+  const ctx = { spec: str(b.spec, 40), topic: str(b.topic, 60), board: str(b.board, 40), level: str(b.level, 20), subject: str(b.subject, 100), code: str(b.code, 20), topicName: str(b.topicName, 160),
+    ideas: (Array.isArray(b.ideas) ? b.ideas : []).slice(0, 12).map(x => str(x, 160)).filter(Boolean) };
+  if (!ctx.spec || !ctx.topic || !ctx.subject || !ctx.topicName) return json({ error: 'spec, topic, subject and topicName are required' }, 400, cors);
+  if (!/^[A-Za-z0-9._-]+$/.test(ctx.spec) || /\s/.test(ctx.topic)) return json({ error: 'spec and topic must be ids' }, 400, cors);
+  const ck = `reads1:${ctx.spec}:${ctx.topic}`;
+  const cached = await env.USAGE.get(ck, 'json');
+  if (cached && !(b.refresh === true && s.user.role === 'admin')) return json(cached, 200, cors);
+  if (!env.ANTHROPIC_API_KEY) return json({ items: [], at: now(), error: 'no model key' }, 200, cors);
+  let out;
+  try { out = await findReads(env, ctx); }
+  catch (e) { out = { items: [], at: now(), error: String(e && e.message || e).slice(0, 200) }; }
+  await env.USAGE.put(ck, JSON.stringify(out), { expirationTtl: out.error ? READ_FAIL_TTL : out.items.length ? READ_TTL : READ_NONE_TTL });
+  return json(out, 200, cors);
+}
+async function findReads(env, ctx) {
+  const at = now(); const sites = sitesFor(ctx);
+  const said = await readsViaSearch(env, ctx, sites);
+  const cands = readCandidates(said, sites);
+  const verified = [];
+  for (const c of cands) { const v = await verifyPage(c.url, sites); if (v) verified.push({ ...c, url: v.url, title: v.title || c.title || c.site }); }
+  const items = verified.length ? matchPicks(await readPicks(env, ctx, verified), verified, READ_MAX) : [];
+  return { items, at, found: verified.length, via: 'search' };
+}
+/* the search: the model's web search, fenced to the room's trusted sites; one page per line */
+async function readsViaSearch(env, ctx, sites) {
+  const allowed = [...new Set(sites.flatMap(s => [s.host, 'www.' + s.host]))];
+  const prompt = `${videoContext(ctx)}\n\nUsing web search over the allowed sites only, find up to 8 pages that TEACH this topic at this level for this qualification: revision notes, worked examples, practice questions with answers, or the board's own resource page for this course. Never a home page, a search page, a login page or a shop. Answer with one page per line and nothing else, in the form:\nhttps://... | title | notes or practice or official`;
+  const body = { model: VIDEO_MODEL, max_tokens: 3000, tools: [{ type: 'web_search_20260209', name: 'web_search', max_uses: 5, allowed_domains: allowed }], messages: [{ role: 'user', content: prompt }] };
+  const headers = { 'Content-Type': 'application/json', 'x-api-key': env.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01' };
+  let data, turns = 0;
+  while (turns++ < 4) {
+    const res = await fetch('https://api.anthropic.com/v1/messages', { method: 'POST', headers, body: JSON.stringify(body) });
+    const text = await res.text();
+    if (!res.ok) throw new Error(`Anthropic ${res.status}: ${text.slice(0, 200)}`);
+    data = JSON.parse(text);
+    if (data.stop_reason !== 'pause_turn') break;
+    body.messages.push({ role: 'assistant', content: data.content });
+  }
+  return (data.content || []).filter(c => c.type === 'text').map(c => c.text).join('\n');
+}
+/* a page is listed only if it loads like a browser sees it, as HTML, at an address still on the list, and does not say it is gone */
+async function verifyPage(url, sites) {
+  const ctrl = typeof AbortController !== 'undefined' ? new AbortController() : null; const timer = ctrl && setTimeout(() => ctrl.abort(), 8000);
+  try {
+    const res = await fetch(url, { redirect: 'follow', signal: ctrl ? ctrl.signal : undefined, headers: { 'User-Agent': READ_UA, 'Accept': 'text/html', 'Accept-Language': 'en-GB,en;q=0.9' } });
+    if (!res.ok) return null;
+    if (!/text\/html/i.test(res.headers.get('content-type') || '')) return null;
+    const finalUrl = res.url || url; if (!siteFor(finalUrl, sites)) return null;
+    const html = (await res.text()).slice(0, 65536); const title = pageTitle(html);
+    if (looksDead(title)) return null;
+    return { url: finalUrl, title };
+  } catch (e) { return null; }
+  finally { if (timer) clearTimeout(timer); }
+}
+async function readPicks(env, ctx, verified) {
+  const lines = verified.map(v => `${v.url} | ${v.title} | ${v.site} | ${v.kind} | ${v.free}`).join('\n');
+  const prompt = `${videoContext(ctx)}\n\nThese pages exist and are on trusted sites, one per line: url | title | site | kind | free or freemium.\n${lines}\n\nChoose up to ${READ_MAX} that plainly teach or practise THIS topic at this level — pages a student can learn the key ideas from or test themselves on. Judge from the url, title and site. Reject a page about a different topic, a different qualification or level, a home or index page, or anything you are not sure teaches this topic. Prefer a mix: notes, practice and the board's own page when each is there, free before freemium. Order the best first. If nothing qualifies, return an empty list. For each pick give why in at most 12 words, addressed to the student, saying what the page gives them.`;
+  const r = await askJson(env, prompt, { type: 'object', properties: { picks: { type: 'array', items: { type: 'object', properties: { url: { type: 'string' }, why: { type: 'string' } }, required: ['url', 'why'], additionalProperties: false } } }, required: ['picks'], additionalProperties: false }, 800);
+  return Array.isArray(r.picks) ? r.picks : [];
 }
 /* The picking step, then the existence check: a video is listed only if the model chose it AND YouTube still serves it. */
 async function chooseVideos(env, ctx, cands) {

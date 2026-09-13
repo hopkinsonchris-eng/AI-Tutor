@@ -14,7 +14,8 @@ const builder = loadModule(path.join(__dirname, '..', 'worker', 'builder.js'), {
 class WorkflowEntrypoint { constructor(ctx, env) { this.ctx = ctx; this.env = env; } }
 const depth = loadModule(path.join(__dirname, '..', 'worker', 'depth.js'), { '../src/kit-validator.js': kitValidator, '../src/families.js': families });
 const papersMod = loadModule(path.join(__dirname, '..', 'worker', 'papers.js'), { 'cloudflare:workers': { WorkflowEntrypoint }, '../src/papers.js': papersLib });
-const loaded = loadModule(path.join(__dirname, '..', 'worker', 'index.js'), { 'cloudflare:workers': { WorkflowEntrypoint }, './builder.js': builder.exports, './depth.js': depth.exports, './papers.js': papersMod.exports, '../data/catalogue.json': { default: CATALOGUE } });
+const readsMod = loadModule(path.join(__dirname, '..', 'worker', 'reads.js'), {});
+const loaded = loadModule(path.join(__dirname, '..', 'worker', 'index.js'), { 'cloudflare:workers': { WorkflowEntrypoint }, './builder.js': builder.exports, './depth.js': depth.exports, './papers.js': papersMod.exports, './reads.js': readsMod.exports, '../data/catalogue.json': { default: CATALOGUE } });
 const worker = loaded.exports.default;
 const sandbox = loaded.sandbox;
 builder.sandbox.__fetch = (...a) => sandbox.__fetch(...a);
@@ -573,6 +574,53 @@ const baseEnv = () => ({ ANTHROPIC_API_KEY: 'sk-ant-test', ALLOWED_ORIGIN: 'http
     r = await worker.fetch(req('/videos', J('POST', { ...body, topic: 'C', topicName: 'C. Personal life and relationships' }, VST)), env);
     v = await r.json();
     ok('V5 a model failure answers an empty list with the error noted, never a 500 to the room', r.status === 200 && v.items.length === 0 && /529/.test(v.error));
+    /* ---------- pages to read: trusted sites, verified pages, a model's pick ---------- */
+    {const RD = readsMod.exports;
+     const geo = { spec: 'OCR-H481', topic: '1.2', board: 'OCR', level: 'A level', subject: 'Geography', code: 'H481', topicName: 'Coastal landscapes', ideas: ['1.1 Coasts as systems', '1.2 Landforms of erosion'] };
+     const sitesG = RD.sitesFor(geo);
+     ok('RD0 the trusted list for a geography course is the shared sites, Internet Geography and OCR, and never a maths or chemistry site', sitesG.some(s => s.host === 'internetgeography.net') && sitesG.some(s => s.host === 'ocr.org.uk' && s.official) && sitesG.some(s => s.host === 'physicsandmathstutor.com') && !sitesG.some(s => /corbett|chemguide/.test(s.host)), sitesG.map(s => s.host).join());
+     ok('RD0 families: maths gets Corbettmaths and its board, science gets Chemguide, German gets DW, politics gets Parliament', RD.sitesFor({ subject: 'Mathematics', board: 'Pearson Edexcel' }).some(s => s.host === 'corbettmaths.com') && RD.sitesFor({ subject: 'Mathematics', board: 'Pearson Edexcel' }).some(s => s.host === 'qualifications.pearson.com') && RD.sitesFor({ subject: 'Combined Science', board: 'AQA' }).some(s => s.host === 'chemguide.co.uk') && RD.sitesFor({ subject: 'German (International GCSE)', board: 'Pearson Edexcel' }).some(s => s.host === 'learngerman.dw.com') && RD.sitesFor({ subject: 'Politics', board: 'Pearson Edexcel' }).some(s => s.host === 'learning.parliament.uk'));
+     const cands = RD.readCandidates('https://www.physicsandmathstutor.com/geography-revision/a-level-ocr/coastal-landscapes/ | Coastal landscapes notes | notes\nhttps://www.internetgeography.net/topics/coastal-landforms/?utm_source=x#top | Coastal landforms | notes\nhttps://www.internetgeography.net/topics/coastal-landforms/ | dup | notes\nhttps://evil.example.com/coasts | Not on the list | notes\nhttp://www.ocr.org.uk/qualifications/as-and-a-level/geography-h081-h481-from-2016/ | plain http | official\nhttps://www.ocr.org.uk/qualifications/as-and-a-level/geography-h081-h481-from-2016/assessment/ | OCR H481 assessment | official', sitesG);
+     ok('RD0 candidates: https only, on the list only, tracking and fragments stripped, duplicates once, kind and site and free filled in', cands.length === 3 && cands[0].site === 'PMT' && cands[0].free === 'free' && cands[0].kind === 'notes' && cands[1].url === 'https://www.internetgeography.net/topics/coastal-landforms/' && cands[2].site === 'OCR' && cands[2].kind === 'official' && !cands.some(c => /evil|^http:/.test(c.url)), JSON.stringify(cands));
+     ok('RD0 a page title is read from the head and a page that says it is gone is spotted', RD.pageTitle('<html><head><title>  Coastal landscapes &amp; landforms — PMT </title></head>') === 'Coastal landscapes & landforms — PMT' && RD.looksDead('Page not found | PMT') && !RD.looksDead('Coastal landforms'));
+     ok('RD0 picks are matched back to verified pages only, at most four, each with a why', (() => { const v = [{ url: 'https://a.example/1', title: 'a' }, { url: 'https://a.example/2', title: 'b' }]; const m = RD.matchPicks([{ url: 'https://a.example/2#x', why: 'Two.' }, { url: 'https://a.example/9', why: 'Made up.' }, { url: 'https://a.example/1', why: '  One  page ' }], v); return m.length === 2 && m[0].url === 'https://a.example/2' && m[0].why === 'Two.' && m[1].why === 'One page'; })());
+     let searchSeen = null, pickSeen = null, pageHits = [];
+     const fetchR = sandbox.__fetch;
+     sandbox.__fetch = async (url, init) => { const u = String(url);
+       if (u.includes('api.anthropic.com')) { const b = JSON.parse(init.body);
+         if (b.tools) { searchSeen = b; return new Response(JSON.stringify({ stop_reason: 'end_turn', content: [{ type: 'text', text: 'https://www.physicsandmathstutor.com/geography-revision/a-level-ocr/coastal-landscapes/ | Coastal landscapes | notes\nhttps://www.internetgeography.net/topics/coastal-landforms/ | Coastal landforms | notes\nhttps://www.ocr.org.uk/qualifications/as-and-a-level/geography-h081-h481-from-2016/assessment/ | OCR assessment | official\nhttps://www.physicsandmathstutor.com/gone/ | Gone page | notes\nhttps://www.senecalearning.com/redirects-away/ | Seneca | notes\nhttps://evil.example.com/coasts | off list | notes' }] })); }
+         pickSeen = b; return new Response(JSON.stringify({ content: [{ type: 'text', text: JSON.stringify({ picks: [{ url: 'https://www.physicsandmathstutor.com/geography-revision/a-level-ocr/coastal-landscapes/', why: 'Every landform in the spec, with diagrams.' }, { url: 'https://www.ocr.org.uk/qualifications/as-and-a-level/geography-h081-h481-from-2016/assessment/', why: 'Past papers and mark schemes for Paper 1.' }, { url: 'https://evil.example.com/coasts', why: 'never listed' }] }) }] })); }
+       if (/physicsandmathstutor\.com\/geography-revision/.test(u)) { pageHits.push(u); return new Response('<html><head><title>Coastal Landscapes | OCR A Level Geography — PMT</title></head><body>notes</body></html>', { status: 200, headers: { 'Content-Type': 'text/html; charset=utf-8' } }); }
+       if (/internetgeography\.net/.test(u)) { pageHits.push(u); return new Response('<html><head><title>Coastal landforms - Internet Geography</title></head>', { status: 200, headers: { 'Content-Type': 'text/html' } }); }
+       if (/ocr\.org\.uk/.test(u)) { pageHits.push(u); return new Response('<html><head><title>Assessment - OCR</title></head>', { status: 200, headers: { 'Content-Type': 'text/html' } }); }
+       if (/physicsandmathstutor\.com\/gone/.test(u)) { pageHits.push(u); return new Response('<html><head><title>Page not found</title></head>', { status: 404, headers: { 'Content-Type': 'text/html' } }); }
+       if (/senecalearning\.com\/redirects-away/.test(u)) { pageHits.push(u); const r = new Response('<html><head><title>Elsewhere</title></head>', { status: 200, headers: { 'Content-Type': 'text/html' } }); Object.defineProperty(r, 'url', { value: 'https://tracker.example.net/landing' }); return r; }
+       return fetchR(url, init); };
+     r = await worker.fetch(req('/reads', J('POST', geo)), env);
+     ok('RD1 reads need a session', r.status === 401);
+     r = await worker.fetch(req('/reads', J('POST', { spec: 'OCR-H481' }, VST)), env);
+     ok('RD1 reads need the room’s context', r.status === 400);
+     r = await worker.fetch(req('/reads', J('POST', geo, VST)), env);
+     let rd = await r.json();
+     ok('RD2 the search is fenced to the room’s trusted sites plus its board and names the course and topic', searchSeen && searchSeen.tools[0].allowed_domains.includes('internetgeography.net') && searchSeen.tools[0].allowed_domains.includes('ocr.org.uk') && !searchSeen.tools[0].allowed_domains.includes('corbettmaths.com') && searchSeen.tools[0].max_uses <= 5 && /H481/.test(searchSeen.messages[0].content) && /Coastal landscapes/.test(searchSeen.messages[0].content), JSON.stringify(searchSeen && searchSeen.tools));
+     ok('RD2 a candidate off the list is never fetched', !pageHits.some(u => /evil/.test(u)));
+     ok('RD3 the 404 page and the page that redirects off the list are dropped; the picking prompt lists only the three survivors', pickSeen && !/gone/.test(pickSeen.messages[0].content) && !/redirects-away/.test(pickSeen.messages[0].content) && /coastal-landscapes/.test(pickSeen.messages[0].content) && /internetgeography/.test(pickSeen.messages[0].content) && /empty list/.test(pickSeen.messages[0].content), pickSeen && pickSeen.messages[0].content.slice(0, 600));
+     ok('RD3 the items are the model’s picks that exist, with the page’s own title, the site, kind, free and why; the off-list pick is not among them', r.status === 200 && rd.items.length === 2 && rd.items[0].url === 'https://www.physicsandmathstutor.com/geography-revision/a-level-ocr/coastal-landscapes/' && rd.items[0].title === 'Coastal Landscapes | OCR A Level Geography — PMT' && rd.items[0].site === 'PMT' && rd.items[0].kind === 'notes' && rd.items[0].free === 'free' && /diagrams/.test(rd.items[0].why) && rd.items[1].site === 'OCR' && rd.items[1].kind === 'official' && rd.found === 3 && rd.via === 'search', JSON.stringify(rd));
+     const hitsBefore = pageHits.length;
+     r = await worker.fetch(req('/reads', J('POST', geo, VST)), env); rd = await r.json();
+     ok('RD5 the second request is served from KV without fetching anything', rd.items.length === 2 && pageHits.length === hitsBefore && (await env.USAGE.get('reads1:OCR-H481:1.2', 'json')).items.length === 2);
+     r = await worker.fetch(req('/reads', J('POST', { ...geo, refresh: true }, VST)), env);
+     ok('RD5 a student cannot force a fresh search', pageHits.length === hitsBefore);
+     r = await worker.fetch(req('/reads', J('POST', { ...geo, refresh: true }, ADMV)), env);
+     ok('RD5 an admin can', pageHits.length > hitsBefore && (await r.json()).items.length === 2);
+     const fetchP = sandbox.__fetch;
+     sandbox.__fetch = async (url, init) => { const u = String(url); if (u.includes('api.anthropic.com')) { const b = JSON.parse(init.body); if (!b.tools) return new Response(JSON.stringify({ content: [{ type: 'text', text: JSON.stringify({ picks: [] }) }] })); } return fetchP(url, init); };
+     r = await worker.fetch(req('/reads', J('POST', { ...geo, topic: '2.1', topicName: 'Changing spaces; making places' }, VST)), env); rd = await r.json();
+     ok('RD4 when the model picks nothing the room gets an empty list, no error, and the pages it saw are counted', r.status === 200 && rd.items.length === 0 && !rd.error && rd.found === 3 && rd.via === 'search', JSON.stringify(rd));
+     sandbox.__fetch = async (url, init) => { if (String(url).includes('api.anthropic.com')) return new Response('overloaded', { status: 529 }); return fetchR(url, init); };
+     r = await worker.fetch(req('/reads', J('POST', { ...geo, topic: '3.1', topicName: 'Climate change' }, VST)), env); rd = await r.json();
+     ok('RD6 a model failure answers an empty list with the error noted, never a 500 to the room', r.status === 200 && rd.items.length === 0 && /529/.test(rd.error));
+     sandbox.__fetch = fetchR;}
     sandbox.__fetch = saveFetch;
   }
 

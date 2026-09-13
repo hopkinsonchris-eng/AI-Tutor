@@ -145,4 +145,9 @@ ok('U3 a mistake older than thirty days or already cleared no longer pulls',(()=
  ok('S7 the nudge prompt takes an extra block for the register',/LITERAL RULES HERE/.test(C.nudgePrompt(s,SPECS,'2026-09-12','LITERAL RULES HERE'))&&!/LITERAL RULES HERE/.test(C.nudgePrompt(s,SPECS,'2026-09-12')));
 }
 
+/* the tutor voice: a profile field that only takes the two British voices, and the spoken form of a sentence */
+{ ok('TV1 the tutor voice is off by default and only Athena or Helios can be chosen',C.normaliseSupport(undefined).tutorVoice===''&&C.normaliseSupport({tutorVoice:'athena'}).tutorVoice==='athena'&&C.normaliseSupport({tutorVoice:'helios'}).tutorVoice==='helios'&&C.normaliseSupport({tutorVoice:'zeus'}).tutorVoice===''&&C.normaliseSupport({tutorVoice:3}).tutorVoice==='');
+  ok('TV1 the two voices are listed with plain labels',C.TUTOR_VOICES.length===2&&C.TUTOR_VOICES[0][0]==='athena'&&/British/.test(C.TUTOR_VOICES[0][1])&&C.TUTOR_VOICES[1][0]==='helios');
+  ok('TV2 the spoken form only swaps symbols a voice would mangle, and leaves everything else exactly as written',C.speakable('Speed = distance ÷ time, so 3 × 4 → 12 at ≥ 20 °C.')==='Speed = distance divided by time, so 3 times 4 gives 12 at at least 20 degrees C.'&&C.speakable('Section 3.1.2 covers H2O and 45%.')==='Section 3.1.2 covers H2O and 45%.'&&C.speakable('  spaced   out ')==='spaced out'&&C.speakable('a ≤ b')==='a at most b');
+}
 console.log(`PASSED: ${pass}`);fails.forEach(f=>console.log('FAILED: '+f));console.log('-'.repeat(50));console.log(fails.length?`RESULT: ${fails.length} FAILURE(S)`:'RESULT: ALL GREEN');process.exit(fails.length?1:0);

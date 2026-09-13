@@ -371,7 +371,8 @@ function gradeFromBoundaries(score, boundaries) {
 }
 
 /* ---------- Support: the profile, the reader's sentences, the prompter, time, chunking, usage ---------- */
-const SUPPORT_DEFAULTS = { reader: false, readerRate: 1, lineFocus: 0, spacing: false, readCoach: false, voice: '', dictate: false, prompter: false, prompterMinutes: 5, chunk: false, chunkLevel: 2, calm: false, literal: false, timer: false, extra: 0, breaks: false };
+const TUTOR_VOICES = [['athena', 'Athena — British, female'], ['helios', 'Helios — British, male']];
+const SUPPORT_DEFAULTS = { reader: false, readerRate: 1, lineFocus: 0, spacing: false, readCoach: false, voice: '', tutorVoice: '', dictate: false, prompter: false, prompterMinutes: 5, chunk: false, chunkLevel: 2, calm: false, literal: false, timer: false, extra: 0, breaks: false };
 function normaliseSupport(s) {
   const o = Object.assign({}, SUPPORT_DEFAULTS);
   if (!s || typeof s !== 'object') return o;
@@ -382,8 +383,12 @@ function normaliseSupport(s) {
   const cl = parseInt(s.chunkLevel, 10); o.chunkLevel = [1, 2, 3].includes(cl) ? cl : 2;
   const ex = parseInt(s.extra, 10); o.extra = [0, 25, 50].includes(ex) ? ex : 0;
   if (typeof s.voice === 'string') o.voice = s.voice.slice(0, 80);
+  o.tutorVoice = TUTOR_VOICES.some(([v]) => v === s.tutorVoice) ? s.tutorVoice : '';
   return o;
 }
+/* The spoken form of a sentence for the tutor voice: only symbols a voice would mangle are swapped; every word stays as written (a reader reads what is on the page). */
+const SPEAK_SYMBOLS = [[/\s*×\s*/g, ' times '], [/\s*÷\s*/g, ' divided by '], [/\s*→\s*/g, ' gives '], [/\s*≥\s*/g, ' at least '], [/\s*≤\s*/g, ' at most '], [/\s*°\s*/g, ' degrees ']];
+function speakable(text) { let t = String(text || ''); for (const [re, w] of SPEAK_SYMBOLS) t = t.replace(re, w); return t.replace(/\s+/g, ' ').trim(); }
 /* Sentences for the reader: split on . ? ! followed by a space and a capital, digit or quote; never inside decimals, codes or common abbreviations. */
 const ABBREV = /(?:\b(?:e\.g|i\.e|etc|cf|vs|Fig|Figs|No|Nos|Dr|Mr|Mrs|Ms|Prof|St|Ch|Eq|approx|p|pp|c|Jan|Feb|Mar|Apr|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec)|\b[A-Z])\.$/;
 function splitSentences(text) {
@@ -445,4 +450,4 @@ function supportUsageLine(state, today) {
   return parts.length ? 'Support this week: ' + parts.join(' · ') : '';
 }
 if (typeof module !== 'undefined') module.exports = { DAY, STATES, FAILURE_MODES, REMEDY, BLOCKS, phaseFor, days, iso, resolveTopics, nodeId, newState, topicWeights, deskResurface, daysToExam, pileCounts,
-  recordResult, recordWrong, applyDecay, dueForReview, scheduleCard, dueCards, subjectPriority, buildSession, topicForCode, questionTopic, paperTopics, paperPriority, applyPaper, retestQueue, recordRetest, gradeFromBoundaries, RETEST_CAP, errorUrgency, MASTERY_FACTOR, DEFAULT_BOUNDS, gradeFor, predictSubject, weeklyReport, streakDays, nudgeFallback, nudgePrompt, topicLinks, SUPPORT_DEFAULTS, normaliseSupport, splitSentences, prompterLine, timerMinutes, marksToMinutes, chunkFallback, supportUsageLine };
+  recordResult, recordWrong, applyDecay, dueForReview, scheduleCard, dueCards, subjectPriority, buildSession, topicForCode, questionTopic, paperTopics, paperPriority, applyPaper, retestQueue, recordRetest, gradeFromBoundaries, RETEST_CAP, errorUrgency, MASTERY_FACTOR, DEFAULT_BOUNDS, gradeFor, predictSubject, weeklyReport, streakDays, nudgeFallback, nudgePrompt, topicLinks, SUPPORT_DEFAULTS, normaliseSupport, splitSentences, prompterLine, timerMinutes, marksToMinutes, chunkFallback, supportUsageLine, TUTOR_VOICES, speakable };

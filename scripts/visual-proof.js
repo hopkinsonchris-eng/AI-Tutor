@@ -86,6 +86,7 @@ const server = http.createServer((req, res) => {
     let body = {}; try { body = raw && /json/.test(req.headers['content-type'] || '') ? JSON.parse(raw) : {}; } catch (e) { body = {}; }
     if (p === '/auth/me') return me ? send(200, { user: me }) : send(401, { error: 'not signed in' });
     if (p === '/papers' || p.startsWith('/papers/')) { const r = papersStub(p, m, req, body); if (r) return send(r.status, r.body); }
+    if (p === '/tts' && m === 'POST') return send(503, { error: 'The tutor voice is not set up on the tutor service (no AI binding). The device voice still works.' });
     if (p === '/videos' && m === 'POST') return send(200, body.spec === 'EDX-4GN1' && body.topic === 'A' ? { items: [{ id: 'abc123def45', url: 'https://www.youtube.com/watch?v=abc123def45', title: 'GCSE German: describing your house and home', channel: 'German with Anna', length: '9:12', why: 'Covers rooms, furniture and describing where you live.', image: '' }, { id: 'def456ghi78', url: 'https://www.youtube.com/watch?v=def456ghi78', title: 'GCSE German: my town and region', channel: 'Deutsch für Alle', length: '11:40', why: 'Covers your town, the countryside and giving directions.', image: '' }], at: '2026-09-12T08:00:00Z' } : { items: [], at: '2026-09-12T08:00:00Z' });
     if (p === '/' && m === 'POST') { /* the AI proxy: the nudge by default; the floating coach and the chunker get their own replies */
       const q = String(body && body.messages && body.messages[0] && body.messages[0].content && body.messages[0].content[0] && body.messages[0].content[0].text || ''); let out = nudge;
@@ -309,7 +310,7 @@ const server = http.createServer((req, res) => {
   must(/Geography · 1\.2 .* · Practise · question 1 of 4/.test(await page.locator('#coachPanel .csees').textContent()), 'the panel says what the coach can see: the room, the station and the question on screen');
   must((await page.locator('#coachPanel [data-chip]').count()) >= 2 && /command word/i.test(await page.locator('#coachPanel .cchips').textContent()), 'the chips fit a question: decode the command word, the smallest next step');
   await page.fill('#coachIn', 'I’m stuck on this one'); await page.click('#coachGo');
-  await page.waitForSelector('#coachPanel .msg.c', { timeout: 15000 });
+  await page.waitForFunction(() => /Which store/.test(document.querySelector('#coachPanel').textContent), null, { timeout: 20000 });
   must(/Which store/.test(await page.locator('#coachPanel .msg.c').last().textContent()), 'the coach answered about the question on screen');
   await page.waitForTimeout(600); await page.evaluate(() => { const q = document.querySelector('#v-rooms .qcard'); if (q) q.scrollIntoView({ block: 'start', behavior: 'instant' }); }); await page.waitForTimeout(500);
   await snap(page, '23-coach-floating', 'The coach floats beside every page: opened from the button at the bottom right, it says what it can see (the room, the station, the question on screen) and answers about that question; the chips fit the scene');
@@ -330,9 +331,18 @@ const server = http.createServer((req, res) => {
   /* the Support panel */
   await page.evaluate(() => { S.setup.support.calm = false; applySupport(); });
   await page.click('#qBar [data-v="office"]'); await page.waitForSelector('#supportPanel');
+  must((await page.locator('#supportPanel [data-sup="tutorVoice"] option').count()) === 3 && /Athena/.test(await page.locator('#supportPanel').textContent()) && /Helios/.test(await page.locator('#supportPanel').textContent()) && /thousand new characters/.test(await page.locator('#supportPanel').textContent()), 'the Support panel offers the tutor voice: Off, Athena, Helios, with the cost in plain words');
   must((await page.locator('#supportPanel input[type="checkbox"]').count()) >= 10 && (await page.locator('#supportPanel select').count()) >= 4 && /JCQ/.test(await page.locator('#supportPanel').textContent()), 'the Support panel: every aid a real switch with a plain explanation, and the JCQ arrangements named');
   await page.evaluate(() => { document.querySelector('#supportPanel').scrollIntoView({ block: 'start' }); }); await page.waitForTimeout(150);
   await snap(page, '26-support-office', 'The Office’s Support panel: reader, speed, line focus, spacing, coach speaks; dictation and where the audio goes; the prompter and its interval; break steps down and how small; calm mode; plain literal language; the visible timer, extra time and rest breaks');
+  await page.evaluate(() => { S.setup.support.reader = true; applySupport(); renderAll(); }); await page.waitForSelector('#reader #rdPage');
+  await page.selectOption('#supportPanel [data-sup="tutorVoice"]', 'athena'); await page.waitForTimeout(200);
+  must(/tutor voice: Athena/.test(await page.locator('#reader').textContent()), 'with Athena chosen the reader bar names the tutor voice');
+  await page.click('#qBar [data-course="OCR-H481"]'); await page.waitForSelector('#v-rooms [data-open="OCR-H481|1.2"]'); await page.click('#v-rooms [data-open="OCR-H481|1.2"]'); await page.waitForSelector('#reader #rdPage');
+  await page.click('#rdPage'); await page.waitForFunction(() => /using this device/.test(document.querySelector('#reader').textContent), null, { timeout: 8000 });
+  must((await page.locator('.rd-cur').count()) === 1, 'when the stub Worker cannot make the voice, the bar says the device voice is reading instead and reading goes on');
+  await snap(page, '27-tutor-voice-fallback', 'The tutor voice chosen, the tutor service unable to make it in this proof: the bar says this device’s voice is reading instead, and the reading carries on with its highlight');
+  await page.evaluate(() => { readerStop(); S.setup.support.tutorVoice = ''; S.setup.support.reader = false; applySupport(); });
   await page.context().close();
   /* phone: the timer from Go, the coach as a bottom sheet with its mic, then the prompter */
   page = await openSup('tok-matthew', { width: 390, height: 844 }, '#v-campus .campus');

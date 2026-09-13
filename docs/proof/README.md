@@ -158,6 +158,12 @@ The Office’s Support panel: reader, speed, line focus, spacing, coach speaks; 
 
 ![26-support-office](26-support-office.png)
 
+## 27-tutor-voice-fallback
+
+The tutor voice chosen, the tutor service unable to make it in this proof: the bar says this device’s voice is reading instead, and the reading carries on with its highlight
+
+![27-tutor-voice-fallback](27-tutor-voice-fallback.png)
+
 ## 27-phone-coach
 
 Phone: Go started the step’s timer (25% extra time applied, Break stops the clock); the coach opens as a bottom sheet that says what it sees, with the mic beside its box

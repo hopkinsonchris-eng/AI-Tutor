@@ -5,6 +5,7 @@
  * session token, and everything else — the AI proxy, progress, the admin API —
  * is keyed to that session. The Anthropic API key never leaves this Worker.
  *
+ *   POST /tts                 bearer {text, voice: athena|helios} -> audio/mpeg; R2 cache tts/aura-1/<voice>/<sha256>.mp3; one cap request per 1,000 fresh characters
  *   POST /courses/request      bearer {level, subject, board, code} -> {status: requested|published|building|review}; never starts a build
  *   POST /courses/build        bearer, ADMIN ONLY — starts a build (spends the API); students get 403
  *   POST /auth/login          {username, password}      -> {token, user}
@@ -116,6 +117,7 @@ export default {
       if (p.startsWith('/manage/')) return manage(request, env, url, cors);
       if (request.method === 'GET') return json({ ok: true, service: 'tutor-proxy' }, 200, cors);
       if (p === '/speech' && request.method === 'POST') return speech(request, env, cors);
+      if (p === '/tts' && request.method === 'POST') return tts(request, env, cors);
       if (request.method === 'POST' && (p === '/' || p === '/v1/messages')) return proxy(request, env, cors);
       return json({ error: 'not found' }, 404, cors);
     } catch (e) {
@@ -698,6 +700,41 @@ async function speech(request, env, cors) {
     return json({ text, words: text ? text.split(/\s+/).length : 0 }, 200, cors);
   } catch (e) {
     return json({ error: 'Could not transcribe the recording: ' + String(e && e.message || e).slice(0, 160) }, 502, cors);
+  }
+}
+
+/* ---------- the tutor voice: one sentence in, MP3 out ----------
+   Deepgram Aura-1 on Workers AI, two British voices. The audio is cached in R2 under the model, the voice and the
+   sentence's hash, so a lesson is synthesised once for everyone who reads it; a hit is free. Fresh text is metered
+   at one request per thousand characters against the daily cap. Nothing about the student is stored. */
+const TTS_MODEL = '@cf/deepgram/aura-1', TTS_VOICES = ['athena', 'helios'], TTS_MAX = 600;
+const hex = buf => [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, '0')).join('');
+async function tts(request, env, cors) {
+  const s = await sessionUser(request, env);
+  if (!s) return json({ error: 'Sign in to use the tutor voice' }, 401, cors);
+  const body = await readJson(request);
+  const text = String(body.text || '').replace(/\s+/g, ' ').trim(), voice = String(body.voice || '');
+  if (!TTS_VOICES.includes(voice)) return json({ error: 'voice must be athena or helios' }, 400, cors);
+  if (!text || text.length > TTS_MAX) return json({ error: `text must be 1 to ${TTS_MAX} characters — one sentence at a time` }, 400, cors);
+  const key = `tts/aura-1/${voice}/${hex(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text)))}.mp3`;
+  const audioHeaders = { ...cors, 'Content-Type': 'audio/mpeg', 'Cache-Control': 'private, max-age=31536000, immutable' };
+  const hit = env.DESK ? await env.DESK.get(key) : null;
+  if (hit) return new Response(await hit.arrayBuffer(), { status: 200, headers: { ...audioHeaders, 'X-TTS': 'hit' } });
+  if (!env.AI || typeof env.AI.run !== 'function') return json({ error: 'The tutor voice is not set up on the tutor service (no AI binding). The device voice still works.' }, 503, cors);
+  const { user } = s; const daily = user.daily || DEFAULT_DAILY; const uk = `usage:${user.username}:${today()}`, ck = `ttschars:${user.username}:${today()}`;
+  const used = parseInt((await env.USAGE.get(uk)) || '0', 10);
+  if (used >= daily) return json(apiError('rate_limit_error', `${user.name}'s daily limit of ${daily} requests is used up — resets at midnight UTC`), 429, cors);
+  const before = parseInt((await env.USAGE.get(ck)) || '0', 10), after = before + text.length, inc = Math.floor(after / 1000) - Math.floor(before / 1000);
+  await env.USAGE.put(ck, String(after), { expirationTtl: 2 * 86400 });
+  if (inc) await env.USAGE.put(uk, String(used + inc), { expirationTtl: 100 * 86400 });
+  try {
+    const res = await env.AI.run(TTS_MODEL, { text, speaker: voice, encoding: 'mp3', container: 'none' }, { returnRawResponse: true });
+    const buf = res instanceof ArrayBuffer ? res : res && typeof res.arrayBuffer === 'function' ? await res.arrayBuffer() : res && res.body ? await new Response(res.body).arrayBuffer() : res instanceof Uint8Array ? res.buffer : null;
+    if (!buf || !buf.byteLength) throw new Error('empty audio');
+    if (env.DESK) { try { await env.DESK.put(key, buf, { httpMetadata: { contentType: 'audio/mpeg' } }); } catch (e) {} }
+    return new Response(buf, { status: 200, headers: { ...audioHeaders, 'X-TTS': 'miss' } });
+  } catch (e) {
+    return json({ error: 'Could not make the tutor voice: ' + String(e && e.message || e).slice(0, 160) }, 502, cors);
   }
 }
 

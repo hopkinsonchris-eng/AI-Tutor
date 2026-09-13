@@ -83,8 +83,9 @@ const coachName=()=>String(S&&S.setup&&S.setup.coachName||'').trim().slice(0,24)
 const SUBJECT_COLOURS=['#2B4C7E','#2E6B4E','#A8761B','#8E3B5C','#2E6B6B','#B3372B','#5C5B8E','#7A6A2E'];
 function subjectColour(specId){const i=S&&S.setup?S.setup.subjects.findIndex(x=>x.specId===specId):-1;return SUBJECT_COLOURS[(i<0?0:i)%SUBJECT_COLOURS.length];}
 /* an index card that turns over: front is the question, back the answer; `key` is the UI.revealed key that says which face is up */
-function flashCardHtml(c,key,opts={}){const {spec,topic}=nodeTopic(c.node);const up=!!UI.revealed[key];const anim=UI.fcAnim===key?' unflip':'';UI.fcAnim=null;
-  return `<button type="button" class="fc${opts.mini?' mini':''}${up?' flipped':anim}" data-flip="${esc(key)}" style="--sc:${subjectColour(spec.id)}" aria-pressed="${up}" aria-label="${up?'Turn back to the question':'Turn over for the answer'}"><div class="fc-inner">
+/* a card drawn already turned over is drawn still: only the tap that turns it animates, so re-rendering the room never flips every open card again */
+function flashCardHtml(c,key,opts={}){const {spec,topic}=nodeTopic(c.node);const up=!!UI.revealed[key];const anim=UI.fcAnim===key?' unflip':'';UI.fcAnim=null;const just=UI.fcJust===key;if(just)UI.fcJust=null;
+  return `<button type="button" class="fc${opts.mini?' mini':''}${up?' flipped'+(just?'':' still'):anim}" data-flip="${esc(key)}" style="--sc:${subjectColour(spec.id)}" aria-pressed="${up}" aria-label="${up?'Turn back to the question':'Turn over for the answer'}"><div class="fc-inner">
    <div class="fc-face fc-front"><div class="fc-band"><span>${esc(spec.subject)}</span><span class="fc-topic">${esc(topic.name)}${c.code?` · ${esc(c.code)}`:''}</span></div><div class="fc-body">${esc(c.front)}</div><div class="fc-hint">Turn over</div></div>
    <div class="fc-face fc-back"><div class="fc-band"><span>Answer</span><span class="fc-topic">${esc(spec.subject)}</span></div><div class="fc-body">${esc(c.back)}${c.open?'<span class="fc-open">Any sound example scores — these are some of the acceptable answers. Mark yourself right if yours is as specific and as correct.</span>':''}</div><div class="fc-hint">Turn back</div></div>
   </div></button>`;}
@@ -1292,10 +1293,10 @@ document.addEventListener('click',async e=>{let t=e.target;noteActivity();
   if(t.id==='backRooms'){UI.room=null;renderRooms();return;}
   const stn=t.closest('[data-station]');if(stn){openStation(stn.dataset.station,stn.tagName!=='BUTTON');return;}
   const fl=t.closest('[data-flip]');if(fl){const k=fl.dataset.flip;const was=!!UI.revealed[k];UI.revealed[k]=!was;const ticked=tourTick('cards');
-    if(k==='card'){if(was)UI.fcAnim=k;renderToday();return;}
+    if(k==='card'){if(was)UI.fcAnim=k;else UI.fcJust=k;renderToday();return;}
     /* a deck card turns over in place: nothing else on the page moves, blinks or scrolls */
-    if(ticked||!fl.classList||!fl.setAttribute){if(was)UI.fcAnim=k;renderRooms();return;}
-    fl.classList.toggle('flipped',!was);fl.classList.toggle('unflip',was);fl.setAttribute('aria-pressed',String(!was));fl.setAttribute('aria-label',!was?'Turn back to the question':'Turn over for the answer');return;}
+    if(ticked||!fl.classList||!fl.setAttribute){if(was)UI.fcAnim=k;else UI.fcJust=k;renderRooms();return;}
+    fl.classList.remove('still');fl.classList.toggle('flipped',!was);fl.classList.toggle('unflip',was);fl.setAttribute('aria-pressed',String(!was));fl.setAttribute('aria-label',!was?'Turn back to the question':'Turn over for the answer');return;}
   const rv=t.closest('[data-reveal]');if(rv){UI.revealed[rv.dataset.reveal]=true;renderAll();return;}
   const lx=t.closest('[data-lxrev]');if(lx){const k='lx'+lx.dataset.lxrev;const AUx=authoredFor(nodeTopic(UI.room).spec.id,nodeTopic(UI.room).topic.id);const ex=AUx&&AUx.lesson&&AUx.lesson.examples[+lx.dataset.lxrev];UI.revealed[k]=Math.max(UI.revealed[k]||0,ex&&!ex.setup?1:0)+1;renderRooms();return;}
   const ax=t.closest('[data-axrev]');if(ax){const k='ax'+ax.dataset.axrev;const AUx=authoredFor(nodeTopic(UI.room).spec.id,nodeTopic(UI.room).topic.id);const ex=AUx&&AUx.room&&AUx.room.examples[+ax.dataset.axrev];UI.revealed[k]=Math.max(UI.revealed[k]||0,ex&&!ex.setup?1:0)+1;renderRooms();return;}

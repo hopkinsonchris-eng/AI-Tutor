@@ -164,7 +164,7 @@ details.links{margin-top:8px;font-size:14px}details.links summary{cursor:pointer
 .fc-inner{display:grid;transform-style:preserve-3d;transition:transform .55s cubic-bezier(.4,.1,.2,1)}
 .fc-face{grid-area:1/1;display:flex;flex-direction:column;min-height:230px;background:#fff;border:1.5px solid var(--rule);border-radius:7px;box-shadow:0 1px 0 var(--rule),0 6px 14px rgba(25,29,35,.08);overflow:hidden;-webkit-backface-visibility:hidden;backface-visibility:hidden}
 .fc-back{transform:rotateY(180deg);background:color-mix(in srgb,var(--sc) 7%,#fff)}
-.fc.flipped .fc-inner{transform:rotateY(180deg);animation:fcflip .55s cubic-bezier(.4,.1,.2,1)}
+.fc.flipped .fc-inner{transform:rotateY(180deg);animation:fcflip .55s cubic-bezier(.4,.1,.2,1)}.fc.flipped.still .fc-inner{animation:none}
 .fc.unflip .fc-inner{animation:fcunflip .55s cubic-bezier(.4,.1,.2,1)}
 @keyframes fcflip{from{transform:rotateY(0)}to{transform:rotateY(180deg)}}
 @keyframes fcunflip{from{transform:rotateY(180deg)}to{transform:rotateY(0)}}

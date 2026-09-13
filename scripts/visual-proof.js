@@ -318,11 +318,11 @@ const server = http.createServer((req, res) => {
   await page.click('#coachClose');
   await page.evaluate(() => { S.setup.support.reader = true; S.setup.support.lineFocus = 3; S.setup.support.spacing = true; applySupport(); renderAll(); });
   await page.click('[data-station="lesson"]'); await page.waitForSelector('#reader #rdPage', { timeout: 5000 }); await page.waitForTimeout(250);
-  must((await page.locator('#v-rooms .rdb').count()) >= 3, 'every block of the lesson has a 🔊');
+  must((await page.locator('#v-rooms .rdb').count()) >= 3 && (await page.locator('#v-rooms h2 .rdb, #v-rooms h3 .rdb, #v-rooms .sub .rdb, #v-rooms .fine .rdb, #wall .rdb').count()) === 0, 'the lesson’s body paragraphs have a 🔊; titles, sub-lines, captions and the wall do not');
   await page.click('#rdPage'); await page.waitForSelector('.rd-cur', { timeout: 5000 }); await page.waitForTimeout(200);
   must((await page.locator('#rdmask').isVisible()) && /Stop/.test(await page.locator('#reader').textContent()) && (await page.locator('body.rd-space').count()) === 1, 'reading: the current block is highlighted, the line-focus window is up, spacing is wider');
   await page.locator('.rd-cur').scrollIntoViewIfNeeded(); await page.waitForTimeout(150);
-  await snap(page, '24-reader-line-focus', 'The reader: Read this page under the header, a 🔊 on every block, the block being read highlighted with its current sentence, a three-line focus window dimming the rest, and wider spacing');
+  await snap(page, '24-reader-line-focus', 'The reader: Read this page under the header, a 🔊 on each body paragraph, the block being read highlighted with its current sentence, a three-line focus window dimming the rest, and wider spacing');
   /* calm mode on the campus */
   await page.evaluate(() => { readerStop(); S.setup.support.reader = false; S.setup.support.spacing = false; S.setup.support.calm = true; applySupport(); UI.room = null; go('campus'); renderCampus(); });
   await page.waitForSelector('#v-campus .campus');

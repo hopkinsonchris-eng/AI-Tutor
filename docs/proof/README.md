@@ -142,7 +142,7 @@ The coach floats beside every page: opened from the button at the bottom right, 
 
 ## 24-reader-line-focus
 
-The reader: Read this page under the header, a 🔊 on every block, the block being read highlighted with its current sentence, a three-line focus window dimming the rest, and wider spacing
+The reader: Read this page under the header, a 🔊 on each body paragraph, the block being read highlighted with its current sentence, a three-line focus window dimming the rest, and wider spacing
 
 ![24-reader-line-focus](24-reader-line-focus.png)
 

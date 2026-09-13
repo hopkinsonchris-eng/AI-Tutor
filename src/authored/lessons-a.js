@@ -4,7 +4,7 @@ const LESSONS = {};
 LESSONS.P2 = {
  why:'Every question in this course, including statistics and mechanics, ends in algebra. If manipulation is slow or unreliable, you lose time on every paper and accuracy marks on most questions. This room is not about learning new ideas so much as making old ones automatic — and then extending them to functions and partial fractions, which Year 2 leans on heavily.',
  idea:[
-  {h:'Indices and surds are one system', t:'Every rule of indices is a statement about repeated multiplication. a^m × a^n = a^(m+n) because you are counting factors. From that, a^0 = 1 (no factors), a^(−n) = 1/a^n (undoing factors) and a^(1/n) = ⁿ√a (a number that gives a when multiplied by itself n times). Surds are just irrational numbers written exactly. Simplify by pulling out square factors — √50 = √(25 × 2) = 5√2 — and rationalise denominators by multiplying by the conjugate, so that (a − √b)(a + √b) = a² − b leaves no root underneath.'},
+  {h:'Indices and surds are one system', t:'Every rule of indices is a statement about repeated multiplication. aᵐ × aⁿ = aᵐ⁺ⁿ because you are counting factors. From that, a⁰ = 1 (no factors), a⁻ⁿ = 1/aⁿ (undoing factors) and a¹⁄ⁿ = ⁿ√a (a number that gives a when multiplied by itself n times). Surds are just irrational numbers written exactly. Simplify by pulling out square factors — √50 = √(25 × 2) = 5√2 — and rationalise denominators by multiplying by the conjugate, so that (a − √b)(a + √b) = a² − b leaves no root underneath.'},
   {h:'Three ways to read a quadratic', t:'ax² + bx + c tells you three things once you know how to look. Factorised, (x − p)(x − q), it shows the roots. Completed square, a(x + h)² + k, it shows the vertex at (−h, k) and therefore the minimum or maximum. The discriminant b² − 4ac tells you how many real roots there are without finding them: positive means two, zero means one repeated, negative means none. Exam questions about "the line meets the curve", "the equation has real roots" or "k such that…" are discriminant questions in disguise.'},
   {h:'Inequalities need a sketch', t:'To solve x² − 4x − 5 > 0, find the roots (−1 and 5), sketch the parabola, and read off where it is above the axis: x < −1 or x > 5. Never divide an inequality by something that might be negative. For a modulus inequality like |2x − 1| < 5, unpack to −5 < 2x − 1 < 5. The picture prevents the classic error of writing −1 < x < 5 when the answer is the outside region.'},
   {h:'Functions as objects', t:'A function is a rule with a domain. fg(x) means apply g first, then f. An inverse f⁻¹ undoes f and exists only if f is one-to-one; its graph is the reflection of f in y = x, and its domain is the range of f. Partial fractions split a fraction with a factorised denominator into simpler pieces — cover-up or substitution finds the constants — and you will meet them again in integration and binomial expansions, which is why they live here.'}],
@@ -56,8 +56,8 @@ LESSONS.P4 = {
  examples:[
   {title:'A geometric series has second term 6 and fifth term 48. Find a and r, and S₁₀',
    steps:['ar = 6 and ar⁴ = 48.','Divide: r³ = 8, so r = 2.','Then a = 3.','S₁₀ = 3(2¹⁰ − 1)/(2 − 1) = 3 × 1023 = 3069.']},
-  {title:'Expand (4 + x)^(1/2) up to the x² term and state the validity',
-   steps:['Factor out 4: (4 + x)^(1/2) = 2(1 + x/4)^(1/2).','Expand the bracket: 1 + (1/2)(x/4) + (1/2)(−1/2)/2 (x/4)² = 1 + x/8 − x²/128.','Multiply by 2: 2 + x/4 − x²/64.','Valid for |x/4| < 1, i.e. |x| < 4.']}],
+  {title:'Expand (4 + x)¹⁄² up to the x² term and state the validity',
+   steps:['Factor out 4: (4 + x)¹⁄² = 2(1 + x/4)¹⁄².','Expand the bracket: 1 + (1/2)(x/4) + (1/2)(−1/2)/2 (x/4)² = 1 + x/8 − x²/128.','Multiply by 2: 2 + x/4 − x²/64.','Valid for |x/4| < 1, i.e. |x| < 4.']}],
  check:[{q:'10th term of 5, 8, 11, …?',a:'32'},{q:'Does 3 + 4.5 + 6.75 + … have a sum to infinity?',a:'No: r = 1.5 > 1'},{q:'Coefficient of x³ in (1 + x)⁷?',a:'35'}]
 };
 

@@ -246,6 +246,8 @@ const click=async s=>L.click({target:T(s)});const change=async s=>L.change({targ
  reply=()=>({content:[{type:'text',text:'Which case study would you use, Matthew?'}]});G.openRoom(geoRoom,'coach');$('coachIn').value='help me plan';await click({id:'coachGo'});await sleep(30);
  const cp=lastFetch.body.messages[0].content[0].text;ok('A9 coach prompt: board, topic, no model essay, Matthew',/OCR/.test(cp)&&/1\.2 Earth/.test(cp)&&/never write a model essay/.test(cp)&&/Refer to the student as Matthew/.test(cp)&&/EVALUATION/.test(cp));
  ok('A9 reply stored',G.S.coach[geoRoom].length===2);
+ reply=()=>({content:[{type:'text',text:'Kinetic energy is ½mv^2, and CO_2 is a product.'}]});$('coachIn').value='what is KE?';await click({id:'coachGo'});await sleep(30);ok('NT3 whatever a model writes arrives in the one written form: ½mv² and CO₂',G.S.coach[geoRoom][3].text==='Kinetic energy is ½mv², and CO₂ is a product.',G.S.coach[geoRoom][3].text);G.S.coach[geoRoom].splice(2,2);
+ ok('NT3 a kit fetched at runtime is normalised too',(()=>{const k=Object.values(G.KITS)[0];const j=JSON.stringify(k||{});return k&&!/\^\d/.test(j);})());
  /* exam hall + boundaries */
  G.go('exam');await click({dataset:{subject:'OCR-H481'}});$('rpComp').value='C1';$('rpScore').value='50';$('rpTotal').value='66';$('rpSeries').value='June 2024';await click({id:'rpSave'});
  ok('A10 paper saved and prediction uses it',G.S.papers.length===1&&G.predictSubject(G.S,G.SPECS['OCR-H481'],G.S.setup.subjects[0].options).papersUsed===1);

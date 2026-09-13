@@ -6,7 +6,7 @@ ROOMS.push({
  upLearn:'Algebra & functions (Pure Year 1 and Year 2 lessons)',
  pearson:'Pure Year 1: Ch 1 Algebraic expressions, Ch 2 Quadratics, Ch 3 Equations and inequalities, Ch 4 Graphs and transformations, Ch 7 Algebraic methods. Pure Year 2: Ch 1 Algebraic methods, Ch 2 Functions and graphs',
  concept:'Everything in A level maths stands on this room. Indices and surds are the vocabulary; quadratics are the first structure you learn to read completely (roots, vertex, discriminant); inequalities, polynomials and graph transformations turn that reading into a toolkit. In Year 2 the room grows to include functions as objects — composite, inverse, modulus — and partial fractions, which integration will need later. The single habit that matters most here: never do a manipulation in your head that you could write down. That is where marks go missing.',
- formulae:['Laws of indices: a^m × a^n = a^(m+n), (a^m)^n = a^(mn), a^(-n) = 1/a^n, a^(1/n) = ⁿ√a',
+ formulae:['Laws of indices: aᵐ × aⁿ = aᵐ⁺ⁿ, (aᵐ)ⁿ = aᵐⁿ, a⁻ⁿ = 1/aⁿ, a¹⁄ⁿ = ⁿ√a',
   'Quadratic formula: x = (−b ± √(b² − 4ac)) / 2a',
   'Discriminant b² − 4ac: > 0 two real roots, = 0 one repeated root, < 0 no real roots',
   'Completed square: x² + bx + c = (x + b/2)² − b²/4 + c',
@@ -156,7 +156,7 @@ ROOMS.push({
  videos:[{ch:'TLMaths',q:'TLMaths binomial expansion negative fractional powers'},
   {ch:'ExamSolutions',q:'ExamSolutions geometric series sum to infinity'}],
  examples:[
-  {title:'Expand (1 + x/2)^(1/2) up to the term in x²',
+  {title:'Expand (1 + x/2)¹⁄² up to the term in x²',
    steps:['Use (1 + y)ⁿ with n = 1/2 and y = x/2.',
     'First term: 1. Second term: n·y = (1/2)(x/2) = x/4.',
     'Third term: n(n − 1)/2 · y² = (1/2)(−1/2)/2 · (x/2)² = (−1/8)(x²/4).',

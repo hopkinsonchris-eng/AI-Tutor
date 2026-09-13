@@ -1188,7 +1188,7 @@ const SPEC_8464 = {
      "code": "5.1.1.5",
      "q": "How big and how massive are atoms, and what are isotopes?",
      "idea": "Size and mass of atoms",
-     "content": "Atoms are very small, with a radius of about 0.1 nm (1 x 10^-10 m); the radius of a nucleus is less than 1/10 000 of that of the atom (about 1 x 10^-14 m). Almost all of the mass of an atom is in the nucleus. The relative masses of protons, neutrons and electrons are given. The sum of the protons and neutrons in an atom is its mass number. Atoms of the same element can have different numbers of neutrons; these are isotopes of that element. Students should be able to calculate the numbers of protons, neutrons and electrons in an atom or ion, given its atomic number and mass number, and relate the size and scale of atoms to objects in the physical world."
+     "content": "Atoms are very small, with a radius of about 0.1 nm (1 x 10⁻¹⁰ m); the radius of a nucleus is less than 1/10 000 of that of the atom (about 1 x 10⁻¹⁴ m). Almost all of the mass of an atom is in the nucleus. The relative masses of protons, neutrons and electrons are given. The sum of the protons and neutrons in an atom is its mass number. Atoms of the same element can have different numbers of neutrons; these are isotopes of that element. Students should be able to calculate the numbers of protons, neutrons and electrons in an atom or ion, given its atomic number and mass number, and relate the size and scale of atoms to objects in the physical world."
     },
     {
      "code": "5.1.1.6",
@@ -1402,7 +1402,7 @@ const SPEC_8464 = {
      "code": "5.3.2.1",
      "q": "What is a mole and how does it relate to relative formula mass and the Avogadro constant?",
      "idea": "Moles",
-     "content": "Higher tier only: chemical amounts are measured in moles (symbol mol). The mass of one mole of a substance in grams is numerically equal to its relative formula mass. One mole of a substance contains the same number of the stated particles, atoms, molecules or ions as one mole of any other substance. The number of atoms, molecules or ions in a mole of a given substance is the Avogadro constant, value 6.02 x 10^23 per mole. Students should understand that the measurement of amounts in moles can apply to atoms, molecules, ions, electrons, formulae and equations, eg one mole of carbon (C) has the same number of atoms as the number of molecules in one mole of carbon dioxide (CO2). Students should be able to use the relative formula mass of a substance to calculate the number of moles in a given mass of that substance and vice versa (moles = mass ÷ Mr)."
+     "content": "Higher tier only: chemical amounts are measured in moles (symbol mol). The mass of one mole of a substance in grams is numerically equal to its relative formula mass. One mole of a substance contains the same number of the stated particles, atoms, molecules or ions as one mole of any other substance. The number of atoms, molecules or ions in a mole of a given substance is the Avogadro constant, value 6.02 x 10²³ per mole. Students should understand that the measurement of amounts in moles can apply to atoms, molecules, ions, electrons, formulae and equations, eg one mole of carbon (C) has the same number of atoms as the number of molecules in one mole of carbon dioxide (CO2). Students should be able to use the relative formula mass of a substance to calculate the number of moles in a given mass of that substance and vice versa (moles = mass ÷ Mr)."
     },
     {
      "code": "5.3.2.2",

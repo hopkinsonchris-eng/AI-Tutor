@@ -222,9 +222,9 @@ const SPEC_9MA0 = {
    "option": null,
    "name": "Algebra and functions",
    "caseStudies": [
-    "[2.1] Evaluate 8^(2/3) and write 1/√x as a single power of x, using the equivalence of a^(m/n) and ⁿ√(aᵐ)",
+    "[2.1] Evaluate 8²⁄³ and write 1/√x as a single power of x, using the equivalence of aᵐ⁄ⁿ and ⁿ√(aᵐ)",
     "[2.2] Rationalise the denominator of 6/(3 − √2), and simplify algebraic surds using (√x)² = x, √(xy) = √x √y and (√x + √y)(√x − √y) = x − y",
-    "[2.3] Write 2x² + 8x + 3 in the form a(x + b)² + c, use b² − 4ac to find the values of k for which x² + kx + 9 = 0 has repeated roots, and solve a quadratic in a function of the unknown such as 4^x − 5(2^x) + 4 = 0",
+    "[2.3] Write 2x² + 8x + 3 in the form a(x + b)² + c, use b² − 4ac to find the values of k for which x² + kx + 9 = 0 has repeated roots, and solve a quadratic in a function of the unknown such as 4ˣ − 5(2ˣ) + 4 = 0",
     "[2.4] Solve y = 2x + 3, y = x² − 4x + 8 simultaneously; and solve 2x − 3y = 6, x² − y² + 3x = 50",
     "[2.5] Solve px² + qx + r < ax + b, interpreting the solution as the range of x for which the curve y = px² + qx + r is below the line y = ax + b, and give the answer using ‘and’/‘or’ or set notation",
     "[2.6] Factorise the cubic expressions x³ + 3x² − 4 and 6x³ + 11x² − x − 6 using the factor theorem, then simplify a rational expression by factorising and cancelling",
@@ -239,7 +239,7 @@ const SPEC_9MA0 = {
      "code": "2.1",
      "q": "How do I simplify expressions with fractional, negative and zero powers?",
      "idea": "Laws of indices for all rational exponents",
-     "content": "Understand and use the laws of indices for all rational exponents. Students need to know and use aᵐ × aⁿ = a^(m + n), aᵐ ÷ aⁿ = a^(m − n) and (aᵐ)ⁿ = a^(mn). The equivalence of a^(m/n) and ⁿ√(aᵐ) should be known, so a rational power may be read either as a root of a power or as a power of a root. The laws hold for all rational values of m and n, so an expression involving fractional or negative powers can be written as a single power of a."
+     "content": "Understand and use the laws of indices for all rational exponents. Students need to know and use aᵐ × aⁿ = aᵐ⁺ⁿ, aᵐ ÷ aⁿ = aᵐ⁻ⁿ and (aᵐ)ⁿ = aᵐⁿ. The equivalence of aᵐ⁄ⁿ and ⁿ√(aᵐ) should be known, so a rational power may be read either as a root of a power or as a power of a root. The laws hold for all rational values of m and n, so an expression involving fractional or negative powers can be written as a single power of a."
     },
     {
      "code": "2.2",
@@ -287,7 +287,7 @@ const SPEC_9MA0 = {
      "code": "2.9",
      "q": "How does the graph of y = f(x) move or stretch when I change it to y = af(x), f(x) + a, f(x + a) or f(ax)?",
      "idea": "Transformations of graphs: translations, stretches, reflections and combinations",
-     "content": "Understand the effect of simple transformations on the graph of y = f(x), including sketching associated graphs: y = af(x), y = f(x) + a, y = f(x + a), y = f(ax), and combinations of these transformations. Students should be able to find the graphs of y = |f(x)| and y = |f(−x)|, given the graph of y = f(x). Students should be able to apply a combination of these transformations to any of the functions in the A level specification (quadratics, cubics, quartics, reciprocal, a/x², |x|, sin x, cos x, tan x, e^x and a^x) and sketch the resulting graph. Given the graph of y = f(x), students should be able to sketch the graph of, e.g. y = 2f(3x), or y = f(−x) + 1, and should be able to sketch (for example) y = 3 + sin 2x, y = −cos(x + π/4)."
+     "content": "Understand the effect of simple transformations on the graph of y = f(x), including sketching associated graphs: y = af(x), y = f(x) + a, y = f(x + a), y = f(ax), and combinations of these transformations. Students should be able to find the graphs of y = |f(x)| and y = |f(−x)|, given the graph of y = f(x). Students should be able to apply a combination of these transformations to any of the functions in the A level specification (quadratics, cubics, quartics, reciprocal, a/x², |x|, sin x, cos x, tan x, eˣ and aˣ) and sketch the resulting graph. Given the graph of y = f(x), students should be able to sketch the graph of, e.g. y = 2f(3x), or y = f(−x) + 1, and should be able to sketch (for example) y = 3 + sin 2x, y = −cos(x + π/4)."
     },
     {
      "code": "2.10",
@@ -347,7 +347,7 @@ const SPEC_9MA0 = {
    "option": null,
    "name": "Sequences and series",
    "caseStudies": [
-    "[4.1] Expand (2 + 3x)⁵ in ascending powers of x using Pascal's triangle and ⁿCᵣ, then expand (1 + 4x)^(1/2) up to the term in x³ and state the range of validity |4x| < 1",
+    "[4.1] Expand (2 + 3x)⁵ in ascending powers of x using Pascal's triangle and ⁿCᵣ, then expand (1 + 4x)¹⁄² up to the term in x³ and state the range of validity |4x| < 1",
     "[4.2] Show that uₙ = 1/(3n + 1) describes a decreasing sequence, since uₙ₊₁ < uₙ for all integer n",
     "[4.3] Use the result Σ₁ⁿ 1 = n to evaluate a sum written in sigma notation, e.g. Σ from r = 1 to n of (4r + 3)",
     "[4.4] Prove the formula for the sum of the first n terms of an arithmetic series, then use Sₙ = ½n[2a + (n − 1)d] to find the sum",
@@ -472,32 +472,32 @@ const SPEC_9MA0 = {
    "option": null,
    "name": "Exponentials and logarithms",
    "caseStudies": [
-    "[6.1] Sketch the graph of y = e^(2x + 1) + 3, stating the coordinates of the y-intercept and the equation of the asymptote",
-    "[6.2] Given y = 5e^(3x), write down the gradient dy/dx and explain why an exponential model is appropriate when the rate of change is proportional to y",
-    "[6.3] Solve e^(2x + 1) = 5 and ln (3x − 4) = 2, giving your answers to 3 significant figures",
+    "[6.1] Sketch the graph of y = e²ˣ⁺¹ + 3, stating the coordinates of the y-intercept and the equation of the asymptote",
+    "[6.2] Given y = 5e³ˣ, write down the gradient dy/dx and explain why an exponential model is appropriate when the rate of change is proportional to y",
+    "[6.3] Solve e²ˣ⁺¹ = 5 and ln (3x − 4) = 2, giving your answers to 3 significant figures",
     "[6.4] Using the laws of logarithms, write log_a x + 2 log_a y − ½ log_a z as a single logarithm",
-    "[6.5] Solve 2^(3x − 1) = 3, giving your answer to 3 significant figures",
-    "[6.6] Given data for x and y believed to satisfy y = ax^n, plot log y against log x and use the straight line obtained to estimate the values of a and n",
-    "[6.7] A population is modelled by P = P₀e^(kt); use the given data to find the constants, state the initial population, and comment on whether the model is appropriate for large values of t"
+    "[6.5] Solve 2³ˣ⁻¹ = 3, giving your answer to 3 significant figures",
+    "[6.6] Given data for x and y believed to satisfy y = axⁿ, plot log y against log x and use the straight line obtained to estimate the values of a and n",
+    "[6.7] A population is modelled by P = P₀eᵏᵗ; use the given data to find the constants, state the initial population, and comment on whether the model is appropriate for large values of t"
    ],
    "ideas": [
     {
      "code": "6.1",
      "q": "What do exponential graphs like y = aˣ and y = eˣ look like, and how do I sketch transformations of them?",
-     "idea": "The graphs of aˣ and eˣ, including y = e^(ax + b) + c",
-     "content": "Know and use the function aˣ and its graph, where a is positive. Understand the difference in shape between the graph for a < 1 and the graph for a > 1. Know and use the function eˣ and its graph. Graph work is to include the graph of y = e^(ax + b) + c, for constants a, b and c."
+     "idea": "The graphs of aˣ and eˣ, including y = eᵃˣ⁺ᵇ + c",
+     "content": "Know and use the function aˣ and its graph, where a is positive. Understand the difference in shape between the graph for a < 1 and the graph for a > 1. Know and use the function eˣ and its graph. Graph work is to include the graph of y = eᵃˣ⁺ᵇ + c, for constants a, b and c."
     },
     {
      "code": "6.2",
      "q": "Why is an exponential function the right model when something grows or decays at a rate proportional to its size?",
-     "idea": "The gradient of e^(kx) is k e^(kx), and the proportional-rate condition for exponential models",
-     "content": "Know that the gradient of e^(kx) is equal to k e^(kx), and hence understand why the exponential model is suitable in many applications. Realise that when the rate of change is proportional to the y value, an exponential model should be used: recognising that proportional-rate condition is the reason for choosing an exponential function in a modelling problem."
+     "idea": "The gradient of eᵏˣ is k eᵏˣ, and the proportional-rate condition for exponential models",
+     "content": "Know that the gradient of eᵏˣ is equal to k eᵏˣ, and hence understand why the exponential model is suitable in many applications. Realise that when the rate of change is proportional to the y value, an exponential model should be used: recognising that proportional-rate condition is the reason for choosing an exponential function in a modelling problem."
     },
     {
      "code": "6.3",
-     "q": "What does log_a x mean, and how do I solve equations involving e^x and ln x?",
+     "q": "What does log_a x mean, and how do I solve equations involving eˣ and ln x?",
      "idea": "Logarithms as the inverse of exponentials; ln x as the inverse of eˣ",
-     "content": "Know and use the definition of log_a x as the inverse of aˣ, where a is positive and x ≥ 0; here a ≠ 1. Know and use the function ln x and its graph. Know and use ln x as the inverse function of eˣ. Solution of equations of the form e^(ax + b) = p and ln (ax + b) = q is expected."
+     "content": "Know and use the definition of log_a x as the inverse of aˣ, where a is positive and x ≥ 0; here a ≠ 1. Know and use the function ln x and its graph. Know and use ln x as the inverse function of eˣ. Solution of equations of the form eᵃˣ⁺ᵇ = p and ln (ax + b) = q is expected."
     },
     {
      "code": "6.4",
@@ -509,7 +509,7 @@ const SPEC_9MA0 = {
      "code": "6.5",
      "q": "How do I solve an equation where the unknown is in the power, such as aˣ = b?",
      "idea": "Solving aˣ = b by taking logarithms",
-     "content": "Solve equations of the form aˣ = b. The expected step is to take logarithms of both sides, giving x log a = log b and hence x = log b ÷ log a; students may use the change of base formula. Questions may be of the form, e.g. 2^(3x − 1) = 3, where the index is itself a linear expression in x."
+     "content": "Solve equations of the form aˣ = b. The expected step is to take logarithms of both sides, giving x log a = log b and hence x = log b ÷ log a; students may use the change of base formula. Questions may be of the form, e.g. 2³ˣ⁻¹ = 3, where the index is itself a linear expression in x."
     },
     {
      "code": "6.6",
@@ -532,9 +532,9 @@ const SPEC_9MA0 = {
    "name": "Differentiation",
    "caseStudies": [
     "[7.1] Use the gradient expression lim(h→0) (((x + h)ⁿ − xⁿ)/h) to differentiate from first principles for n = 2 and n = 3",
-    "[7.2] Differentiate (2x + 5)(x − 1) and (x² + 3x − 5)/(4x^(1/2)), x > 0",
+    "[7.2] Differentiate (2x + 5)(x − 1) and (x² + 3x − 5)/(4x¹⁄²), x > 0",
     "[7.3] Find the equations of the tangent and the normal at a given point on a curve, and locate its maxima, minima and points of inflection",
-    "[7.4] Differentiate 2x⁴ sin x, e^(3x)/x, cos² x and tan² 2x, and use dV/dt = dV/dr × dr/dt for a connected rate of change",
+    "[7.4] Differentiate 2x⁴ sin x, e³ˣ/x, cos² x and tan² 2x, and use dV/dt = dV/dr × dr/dt for a connected rate of change",
     "[7.5] Find the equation of the tangent or normal to a curve given parametrically or implicitly, using the first derivative only",
     "[7.6] In a simple model, the rate of decrease of the radius of the mint is inversely proportional to the square of the radius — construct the differential equation"
    ],
@@ -549,7 +549,7 @@ const SPEC_9MA0 = {
      "code": "7.2",
      "q": "Which standard functions do I need to be able to differentiate, and what are their derivatives?",
      "idea": "Differentiating xⁿ for rational n, and the standard exponential, logarithmic and trigonometric derivatives",
-     "content": "Differentiate xⁿ, for rational values of n, and related constant multiples, sums and differences. Differentiate e^(kx) and a^(kx), sin kx, cos kx, tan kx and related sums, differences and constant multiples. Understand and use the derivative of ln x. For example, the ability to differentiate expressions such as (2x + 5)(x − 1) and (x² + 3x − 5)/(4x^(1/2)), x > 0, is expected — so expressions must first be multiplied out or written as sums of powers of x. Knowledge and use of the result d/dx (a^(kx)) = k a^(kx) ln a is expected."
+     "content": "Differentiate xⁿ, for rational values of n, and related constant multiples, sums and differences. Differentiate eᵏˣ and aᵏˣ, sin kx, cos kx, tan kx and related sums, differences and constant multiples. Understand and use the derivative of ln x. For example, the ability to differentiate expressions such as (2x + 5)(x − 1) and (x² + 3x − 5)/(4x¹⁄²), x > 0, is expected — so expressions must first be multiplied out or written as sums of powers of x. Knowledge and use of the result d/dx (aᵏˣ) = k aᵏˣ ln a is expected."
     },
     {
      "code": "7.3",
@@ -561,7 +561,7 @@ const SPEC_9MA0 = {
      "code": "7.4",
      "q": "How do I differentiate products, quotients and composite functions, and handle connected rates of change?",
      "idea": "Product, quotient and chain rules, inverse functions and connected rates of change",
-     "content": "Differentiate using the product rule, the quotient rule and the chain rule, including problems involving connected rates of change and inverse functions. Differentiation of cosec x, cot x and sec x. Differentiation of functions of the form x = sin y, x = 3 tan 2y and the use of dy/dx = 1/(dx/dy). Use of connected rates of change in models, e.g. dV/dt = dV/dr × dr/dt. Skill will be expected in the differentiation of functions generated from standard forms using products, quotients and composition, such as 2x⁴ sin x, e^(3x)/x, cos² x and tan² 2x."
+     "content": "Differentiate using the product rule, the quotient rule and the chain rule, including problems involving connected rates of change and inverse functions. Differentiation of cosec x, cot x and sec x. Differentiation of functions of the form x = sin y, x = 3 tan 2y and the use of dy/dx = 1/(dx/dy). Use of connected rates of change in models, e.g. dV/dt = dV/dr × dr/dt. Skill will be expected in the differentiation of functions generated from standard forms using products, quotients and composition, such as 2x⁴ sin x, e³ˣ/x, cos² x and tan² 2x."
     },
     {
      "code": "7.5",
@@ -584,7 +584,7 @@ const SPEC_9MA0 = {
    "name": "Integration",
    "caseStudies": [
     "[8.1] Find ∫ (3x² + 2) dx, remembering the constant of integration, and check by differentiating the answer",
-    "[8.2] Integrate ½x² − 3x^(−½), and integrate (x + 2)²/x^(½); also integrate sin 3x, sec² 2x, tan x, e^(5x) and 1/(2x)",
+    "[8.2] Integrate ½x² − 3x^(−½), and integrate (x + 2)²/x^(½); also integrate sin 3x, sec² 2x, tan x, e⁵ˣ and 1/(2x)",
     "[8.3] Find the finite area bounded by the curve y = 6x − x² and the line y = 2x; or the finite area bounded by the curve y = x² − 5x + 6 and the curve y = 4 − x²",
     "[8.4] Show that ∫ₐᵇ f(x) dx = lim(δx→0) Σ(x=a to b) f(x) δx, and explain the area under a curve as the limit of a sum of strips",
     "[8.5] Use the substitution u = 2x + 1 to find ∫ x√(2x + 1) dx; find ∫ ln x dx by parts, and write ∫ f′(x)/f(x) dx as ln f(x) + c",
@@ -601,9 +601,9 @@ const SPEC_9MA0 = {
     },
     {
      "code": "8.2",
-     "q": "How do I integrate powers of x and the standard functions e^(kx), 1/x, sin kx and cos kx?",
+     "q": "How do I integrate powers of x and the standard functions eᵏˣ, 1/x, sin kx and cos kx?",
      "idea": "Integrating xⁿ (n ≠ −1) and the standard exponential, reciprocal and trigonometric functions",
-     "content": "Integrate xⁿ (excluding n = −1) and related sums, differences and constant multiples. For example, the ability to integrate expressions such as ½x² − 3x^(−½) and (x + 2)²/x^(½) is expected — terms must first be written as powers of x. Given f′(x) and a point on the curve, students should be able to find an equation of the curve in the form y = f(x), using the point to determine the constant of integration. Also integrate e^(kx), 1/x, sin kx and cos kx and related sums, differences and constant multiples, to include integration of standard functions such as sin 3x, sec² 2x, tan x, e^(5x) and 1/(2x). Students are expected to be able to use trigonometric identities to integrate, for example, sin² x, tan² x and cos² 3x."
+     "content": "Integrate xⁿ (excluding n = −1) and related sums, differences and constant multiples. For example, the ability to integrate expressions such as ½x² − 3x^(−½) and (x + 2)²/x^(½) is expected — terms must first be written as powers of x. Given f′(x) and a point on the curve, students should be able to find an equation of the curve in the form y = f(x), using the point to determine the constant of integration. Also integrate eᵏˣ, 1/x, sin kx and cos kx and related sums, differences and constant multiples, to include integration of standard functions such as sin 3x, sec² 2x, tan x, e⁵ˣ and 1/(2x). Students are expected to be able to use trigonometric identities to integrate, for example, sin² x, tan² x and cos² 3x."
     },
     {
      "code": "8.3",
@@ -928,7 +928,7 @@ const SPEC_9MA0 = {
     "[7.1] A particle travels 5 m east then 3 m west in 4 s: state its displacement, the distance travelled and its average speed, explaining why distance and speed must be positive",
     "[7.2] A velocity–time graph is drawn for a car that accelerates, travels at constant velocity then decelerates: find the acceleration from the gradient and the total displacement from the area under the graph",
     "[7.3] Use suvat formulae for constant acceleration in 2-D, e.g. v = u + at, r = ut + ½at² with vectors given in i − j or column vector form",
-    "[7.4] Given r = t²i + t^(3/2)j, find ṙ and r̈ at a given time",
+    "[7.4] Given r = t²i + t³⁄²j, find ṙ and r̈ at a given time",
     "[7.5] A particle is projected with speed u at an angle α to the horizontal: derive formulae for the time of flight, the range, the greatest height and the equation of the path of the projectile"
    ],
    "ideas": [
@@ -954,7 +954,7 @@ const SPEC_9MA0 = {
      "code": "7.4",
      "q": "How do I use differentiation and integration when the acceleration is not constant?",
      "idea": "Calculus in kinematics: differentiating and integrating displacement, velocity and acceleration with respect to time",
-     "content": "Use calculus in kinematics for motion in a straight line: v = dr/dt, a = dv/dt = d²r/dt², r = ∫v dt, v = ∫a dt. The level of calculus required will be consistent with that in Sections 7 and 8 of the Pure Mathematics content, so constants of integration must be found from the given initial conditions. Extend to 2 dimensions using vectors: differentiation and integration of a vector with respect to time, component by component, e.g. given r = t²i + t^(3/2)j, find ṙ and r̈ at a given time."
+     "content": "Use calculus in kinematics for motion in a straight line: v = dr/dt, a = dv/dt = d²r/dt², r = ∫v dt, v = ∫a dt. The level of calculus required will be consistent with that in Sections 7 and 8 of the Pure Mathematics content, so constants of integration must be found from the given initial conditions. Extend to 2 dimensions using vectors: differentiation and integration of a vector with respect to time, component by component, e.g. given r = t²i + t³⁄²j, find ṙ and r̈ at a given time."
     },
     {
      "code": "7.5",

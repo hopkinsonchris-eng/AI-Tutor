@@ -66,4 +66,7 @@ ok('V5 good marking passes',G.validateMarking(pt,mk,30)===null);ok('V5 mark abov
 /* rooms teach the subject, never the exam's paperwork */
 ok('G10 the cards and questions prompts forbid cards and questions about the exam itself',G.cardsPrompt(SPEC_H481,t,10).includes(G.CONTENT_RULE)&&G.questionsPrompt(SPEC_H481,t,'Learning').includes(G.CONTENT_RULE)&&/how long a paper lasts/.test(G.CONTENT_RULE)&&/dictionary/.test(G.CONTENT_RULE));
 
+
+ok('G11 the lesson, cards and questions prompts ask for superscript and subscript characters, never ^ or _',/never with \^ or _/.test(G.CONTENT_RULE)&&/x², 10⁻³/.test(G.CONTENT_RULE)&&G.lessonPrompt(SPEC_H481,t,'Matthew').includes(G.CONTENT_RULE));
+
 console.log(`PASSED: ${pass}`);fails.forEach(f=>console.log('FAILED: '+f));console.log('-'.repeat(50));console.log(fails.length?`RESULT: ${fails.length} FAILURE(S)`:'RESULT: ALL GREEN');process.exit(fails.length?1:0);

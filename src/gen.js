@@ -19,6 +19,7 @@ function registerBlock(support) { return support && support.literal ? LITERAL_RE
 function lessonPrompt(spec, topic, student, opts = {}) {
   return `You are writing a study lesson for ${student}, a UK A level student, on the topic below. Write in clear British English, second person, warm but direct. Do not copy the specification wording.
 ${specBlock(spec, topic)}
+${CONTENT_RULE}
 ${registerBlock(opts.support)}Write a lesson with: "why" (80\u2013120 words on why this topic matters and how it is examined); "sections" — one per key idea, each {"code": the key-idea code, "heading": short, "text": 150\u2013220 words explaining the idea with mechanisms and at least one concrete named example}; "examTips" — 3 short bullets on how this topic is asked and where marks are lost; "checks" — 4 short recall questions each {"q","a","code"}.
 ${JSON_RULE}
 {"why":"...","sections":[{"code":"...","heading":"...","text":"..."}],"examTips":["..."],"checks":[{"q":"...","a":"...","code":"..."}]}`;
@@ -37,7 +38,7 @@ ${String(notes || '').slice(0, 6000)}
 Return JSON only: {"cards":[{"front":"...","back":"...","code":"..."}]}`;
 }
 /* what a room teaches is the subject, never the exam's paperwork */
-const CONTENT_RULE = 'Teach and test the subject itself: never the exam\'s format, timing, marks, rules, paper structure or task instructions. A card or question about how long a paper lasts, how many marks a task carries, whether a dictionary is allowed or what a task type is called is wrong and must not be written.';
+const CONTENT_RULE = 'Teach and test the subject itself: never the exam\'s format, timing, marks, rules, paper structure or task instructions. A card or question about how long a paper lasts, how many marks a task carries, whether a dictionary is allowed or what a task type is called is wrong and must not be written. Write powers and indices with superscript characters (x², 10⁻³, eᵏˣ, x¹⁄²) and chemical or index subscripts with subscript characters (H₂O, x₁), never with ^ or _.';
 function cardsPrompt(spec, topic, count, opts = {}) {
   return `Create ${count} recall cards for the topic below: definitions, key figures with dates, named case-study facts, processes as one-line chains. ${CONTENT_RULE} Each card must be reconstructable knowledge, not recognition — the front asks, the back answers in under 25 words. Cite the key-idea code each card belongs to. Where a case study is required but not specified, use a well-documented 21st-century example and name it.
 ${specBlock(spec, topic)}

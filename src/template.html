@@ -51,12 +51,14 @@ function stateKey(){return AUTH_MODE&&AUTH.user?KEY+':'+AUTH.user.username:KEY;}
 let COURSES={catalogue:[],courses:{},building:{},depth:{}},SPEC_META={};const SPEC_CACHE='platform:spec:v1:';
 /* Room kits: the depth the Worker wrote and checked for a built course, fetched per room and cached on the device by build stamp. */
 let KITS={};const KIT_CACHE='platform:kit:v1:';
+/* one written form for every power and subscript, whatever the kit, the older authored layer or a model wrote */
+try{for(const k of Object.keys(KITS))KITS[k]=notationDeep(KITS[k]);for(const k of Object.keys(AUTHORED||{}))AUTHORED[k]=notationDeep(AUTHORED[k]);}catch(e){}
 /* Hand-built kits ship with the site (KIT_INDEX, dist/kits/); Worker-built ones come from the tutor. Either way a room's kit is fetched on first open and cached by build stamp. */
 function kitInfo(specId,topicId){const bi=typeof KIT_INDEX!=='undefined'&&KIT_INDEX[specId];if(bi&&bi[topicId])return {at:bi[topicId],failed:false,building:false,builtIn:true};if(bi)return null;const d=COURSES.depth&&COURSES.depth[specId];if(!d)return null;const at=d.done&&d.done[topicId];return {at:at||null,failed:(d.failed||[]).includes(topicId),building:d.status==='building'};}
 async function ensureKit(specId,topicId){const info=kitInfo(specId,topicId);if(!info||!info.at)return false;const key=specId+'|'+topicId;if(KITS[key]&&KITS[key].built&&KITS[key].built.at===info.at)return false;
-  try{const c=JSON.parse(await rawGet(KIT_CACHE+key)||'null');if(c&&c.built&&c.built.at===info.at){KITS[key]=c;return true;}}catch(e){}
+  try{const c=JSON.parse(await rawGet(KIT_CACHE+key)||'null');if(c&&c.built&&c.built.at===info.at){KITS[key]=notationDeep(c);return true;}}catch(e){}
   try{let kit;if(info.builtIn){const res=await fetch('./kits/'+encodeURIComponent(specId)+'/'+encodeURIComponent(encodeURIComponent(topicId))+'.json');if(!res.ok)return false;kit=JSON.parse(await res.text());}else{if(!AUTH_MODE)return false;kit=(await api('/courses/'+encodeURIComponent(specId)+'/kit/'+encodeURIComponent(topicId))).kit;}
-    KITS[key]=kit;try{await rawSet(KIT_CACHE+key,JSON.stringify(kit));}catch(e){}return true;}catch(e){return false;}}
+    KITS[key]=notationDeep(kit);try{await rawSet(KIT_CACHE+key,JSON.stringify(kit));}catch(e){}return true;}catch(e){return false;}}
 /* Courses built by the Worker join the built-in specs at runtime. A copy is kept on the device so a student who has a course keeps it even if it is later withdrawn for new students. */
 async function loadCourses(){if(!AUTH_MODE||!AUTH.user)return;try{COURSES=await api('/courses');}catch(e){}}
 async function ensureSpec(id){const stamp=x=>(x&&x.resources&&x.resources.at)||'';if(SPECS[id]&&!(SPEC_META[id]&&COURSES.courses[id]&&stamp(COURSES.courses[id])&&stamp(COURSES.courses[id])!==stamp(SPEC_META[id])))return true;
@@ -165,7 +167,7 @@ async function callClaude(parts,max=1500,retries=6,model='claude-sonnet-5'){let 
   let data=null;try{data=JSON.parse(raw);}catch(e){lastErr='HTTP '+res.status+', non-JSON reply: '+(raw||'(empty)').slice(0,120)+(!raw?' — the tutor route isn\u2019t reaching Claude from here':'');LAST_API_ERROR={status:res.status,body:raw.slice(0,400),when:new Date().toISOString()};if(a<retries)continue;break;}
   if(AUTH_MODE&&res.status===401){await signedOut();throw new Error('You were signed out — sign in again to carry on.');}
   if(!res.ok||(data&&data.type==='error')){const m=(data&&data.error&&data.error.message)||('HTTP '+res.status);lastErr=res.status===429?'rate limited':res.status===529||res.status===503?'service busy':('HTTP '+res.status+': '+m);LAST_API_ERROR={status:res.status,body:raw.slice(0,400),when:new Date().toISOString()};if(RETRY.has(res.status))continue;break;}
-  const text=(data.content||[]).filter(c=>c.type==='text').map(c=>c.text).join('').replace(/```json|```/g,'').trim();if(!text){lastErr='empty reply';continue;}return text;}
+  const text=notation((data.content||[]).filter(c=>c.type==='text').map(c=>c.text).join('').replace(/```json|```/g,'').trim());if(!text){lastErr='empty reply';continue;}return text;}
   throw new Error(lastErr||'unknown');}
 /* Generate JSON, validate against the spec, retry once with the validator's complaint. */
 /* the model's JSON, even when it arrives inside fences or with a sentence around it */
@@ -226,7 +228,7 @@ async function tutorSpeak(R,voice){const text=R.queue[R.i];const a=ttsAudio();if
   let p;try{p=a.play();}catch(e){browserSpeak(R);return;}
   if(p&&p.catch)p.catch(()=>{if(UI.reader!==R||!R.speaking)return;try{a.pause();}catch(e){}browserSpeak(R);});}
 function browserSpeak(R){if(!speechOk()){R.i++;speakNext();return;}
-  let u;try{u=new SpeechSynthesisUtterance(R.queue[R.i]);}catch(e){R.speaking=false;renderReader();return;}u.rate=sup().readerRate||1;const v=pickVoice();if(v){try{u.voice=v;u.lang=v.lang||'en-GB';}catch(e){}}else u.lang='en-GB';
+  let u;try{u=new SpeechSynthesisUtterance(speakable(R.queue[R.i]));}catch(e){R.speaking=false;renderReader();return;}u.rate=sup().readerRate||1;const v=pickVoice();if(v){try{u.voice=v;u.lang=v.lang||'en-GB';}catch(e){}}else u.lang='en-GB';
   u.onstart=()=>{if(UI.reader===R)highlightSentence(R.queue[R.i]);};u.onend=()=>{if(UI.reader!==R||!R.speaking)return;R.i++;speakNext();};u.onerror=()=>{if(UI.reader!==R||!R.speaking)return;R.i++;speakNext();};
   try{speechSynthesis.speak(u);}catch(e){R.speaking=false;renderReader();}}
 function readPage(fromEl){const blocks=readerBlocks();if(!blocks.length){readText('There is nothing to read on this page.',null);return;}let bi=fromEl?blocks.indexOf(fromEl):0;if(bi<0)bi=0;UI.readerPage={blocks,bi};readBlockAt();}

@@ -5,15 +5,15 @@ LESSONS.P6 = {
  why:'Growth and decay — money, populations, radioactivity, cooling coffee — all follow exponential laws, and logarithms are how you solve for the unknown that is stuck in a power. Beyond modelling, logs are also the tool that turns a curve into a straight line so that constants can be read from a graph. Expect one modelling question on nearly every pure paper.',
  idea:[
   {h:'What a log is', t:'log_a x asks: "a to what power gives x?" So log₂ 8 = 3 because 2³ = 8. Every statement about logs is a statement about powers read backwards, which is why the laws of logs mirror the laws of indices: adding logs multiplies, subtracting divides, a coefficient becomes a power. Logs of zero or negative numbers do not exist — always check solutions in the original equation.'},
-  {h:'The number e', t:'e ≈ 2.718 is the base at which the gradient of aˣ equals aˣ itself. That property is why it appears throughout calculus and in every natural growth model. ln x means log_e x, and eˣ and ln x undo each other: e^(ln x) = x, ln(eˣ) = x.'},
+  {h:'The number e', t:'e ≈ 2.718 is the base at which the gradient of aˣ equals aˣ itself. That property is why it appears throughout calculus and in every natural growth model. ln x means log_e x, and eˣ and ln x undo each other: eˡⁿˣ = x, ln(eˣ) = x.'},
   {h:'Solving exponential equations', t:'Unknown in the power? Take logs of both sides and bring the power down: 5ˣ = 30 becomes x ln 5 = ln 30. If the same base appears with two different exponents, it may be a quadratic in disguise: e²ˣ − 3eˣ + 2 = 0 is u² − 3u + 2 = 0 with u = eˣ.'},
-  {h:'Modelling and linearising', t:'N = Ae^(kt): A is the starting value, k the rate, and the doubling or halving time is ln 2/|k|. If data fit y = axⁿ, then log y = log a + n log x — a straight line of gradient n and intercept log a when you plot log y against log x. If they fit y = abˣ, plot log y against x instead. Questions ask you to identify which, read the constants, and interpret them in context.'}],
+  {h:'Modelling and linearising', t:'N = Aeᵏᵗ: A is the starting value, k the rate, and the doubling or halving time is ln 2/|k|. If data fit y = axⁿ, then log y = log a + n log x — a straight line of gradient n and intercept log a when you plot log y against log x. If they fit y = abˣ, plot log y against x instead. Questions ask you to identify which, read the constants, and interpret them in context.'}],
  examples:[
   {title:'A cup of coffee cools according to T = 20 + 60e^(−0.05t) (°C, t in minutes). Find the initial temperature, the temperature after 20 minutes, and the time to reach 40°C',
-   steps:['t = 0: T = 20 + 60 = 80°C.','t = 20: T = 20 + 60e^(−1) = 20 + 22.07 = 42.1°C.','T = 40: 60e^(−0.05t) = 20, so e^(−0.05t) = 1/3.','−0.05t = ln(1/3) = −1.0986, so t = 21.97 ≈ 22.0 minutes.']},
+   steps:['t = 0: T = 20 + 60 = 80°C.','t = 20: T = 20 + 60e⁻¹ = 20 + 22.07 = 42.1°C.','T = 40: 60e^(−0.05t) = 20, so e^(−0.05t) = 1/3.','−0.05t = ln(1/3) = −1.0986, so t = 21.97 ≈ 22.0 minutes.']},
   {title:'Solve log₃(x + 6) − log₃ x = 2',
    steps:['Combine: log₃((x + 6)/x) = 2.','Undo the log: (x + 6)/x = 3² = 9.','x + 6 = 9x, so 8x = 6, x = 3/4.','Check: both x and x + 6 are positive, so the logs exist. x = 3/4.']}],
- check:[{q:'Solve 4ˣ = 32 exactly.',a:'x = 5/2'},{q:'Write ln 12 − ln 4 as a single log.',a:'ln 3'},{q:'A quantity halves every 7 years. What is k in Ae^(−kt)?',a:'k = ln 2 / 7 ≈ 0.099'}]
+ check:[{q:'Solve 4ˣ = 32 exactly.',a:'x = 5/2'},{q:'Write ln 12 − ln 4 as a single log.',a:'ln 3'},{q:'A quantity halves every 7 years. What is k in Ae⁻ᵏᵗ?',a:'k = ln 2 / 7 ≈ 0.099'}]
 };
 
 LESSONS.P7 = {

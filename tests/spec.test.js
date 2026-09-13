@@ -34,6 +34,10 @@ ok('V11 family prior: sciences, languages, maths, essay',familyFor('Chemistry')=
 r=mut(s=>{s.resources={hubs:[{name:'Physics & Maths Tutor',url:'https://www.physicsandmathstutor.com/',kind:'notes'}]};s.topics[0].links=[{t:'Video',url:'https://www.youtube.com/watch?v=x',kind:'video'}];});ok('V12 a well-formed resources block and topic links are accepted',r.ok,r.problems.join('|'));
 r=mut(s=>{s.resources={hubs:[{name:'Bad',url:'http://example.com/',kind:'notes'}]};});ok('V13 a hub page without an https link is refused and named',!r.ok&&/resources.*https/.test(r.problems.join()),r.problems.join('|'));
 r=mut(s=>{s.topics[0].links=[{t:'',url:'https://x.example/',kind:'video'}];});ok('V13 a topic link without a title is refused and names the topic',!r.ok&&r.problems.join().includes(`topic "${good.topics[0].id}"`)&&/link/.test(r.problems.join()),r.problems.join('|'));
+/* the shipped kits and specs write powers as superscripts */
+{const fs=require('fs');const path=require('path');const bad=[];for(const dir of ['src/kits','src/specs','src/authored']){for(const f of fs.readdirSync(path.join(__dirname,'..',dir))){if(!f.endsWith('.js'))continue;const src=fs.readFileSync(path.join(__dirname,'..',dir,f),'utf8');const m=src.match(/[A-Za-z0-9)]\^-?\d/g);if(m)bad.push(f+': '+m.slice(0,3).join(' '));}}
+ ok('NT4 no shipped kit, spec or authored lesson writes a plain power with a caret (x^2, 10^-3); a power with an operator or a decimal inside keeps its brackets',bad.length===0,bad.join(' | '));
+ const K=require('../src/kits/EDX-9MA0.js');ok('NT4 the maths kits carry superscripts',/²/.test(JSON.stringify(K.KITS))&&/¹⁄²|ᵏˣ|³ˣ/.test(JSON.stringify(K.KITS)));}
 console.log(`PASSED: ${pass}`); fails.forEach(f=>console.log('FAILED: '+f));
 
 /* the language and English specs carry no exam-structure rooms */
@@ -41,5 +45,16 @@ console.log(`PASSED: ${pass}`); fails.forEach(f=>console.log('FAILED: '+f));
  ok('SP-content German 4GN1 has the five themes, the vocabulary appendix and the grammar list, and no Paper rooms',SPEC_4GN1.topics.length===7&&SPEC_4GN1.topics.every(t=>!/^Paper \d/.test(t.name))&&SPEC_4GN1.components.filter(c=>c.coversAll).length>=2);
  ok('SP-content English Language 4EA1 has no assessment-objectives room',!SPEC_4EA1.topics.some(t=>t.id==='reading-writing-skills'||/Assessment objectives/.test(t.name)));
  const K=require('../src/kits/EDX-4GN1.js');ok('SP-content the German kits match the topics that remain',Object.keys(K.KITS).sort().join()===SPEC_4GN1.topics.map(t=>t.id).sort().join());}
+
+
+console.log(`PASSED: ${pass}`); fails.forEach(f=>console.log('FAILED: '+f));
+
+/* the language and English specs carry no exam-structure rooms */
+{const {SPEC_4GN1}=require('../src/specs/edexcel-4gn1.js');const {SPEC_4EA1}=require('../src/specs/edexcel-4ea1.js');
+ ok('SP-content German 4GN1 has the five themes, the vocabulary appendix and the grammar list, and no Paper rooms',SPEC_4GN1.topics.length===7&&SPEC_4GN1.topics.every(t=>!/^Paper \d/.test(t.name))&&SPEC_4GN1.components.filter(c=>c.coversAll).length>=2);
+ ok('SP-content English Language 4EA1 has no assessment-objectives room',!SPEC_4EA1.topics.some(t=>t.id==='reading-writing-skills'||/Assessment objectives/.test(t.name)));
+ const K=require('../src/kits/EDX-4GN1.js');ok('SP-content the German kits match the topics that remain',Object.keys(K.KITS).sort().join()===SPEC_4GN1.topics.map(t=>t.id).sort().join());}
+
+
 
 console.log('-'.repeat(50)); console.log(fails.length?`RESULT: ${fails.length} FAILURE(S)`:'RESULT: ALL GREEN'); process.exit(fails.length?1:0);

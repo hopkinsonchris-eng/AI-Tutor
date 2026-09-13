@@ -162,4 +162,13 @@ ok('U3 a mistake older than thirty days or already cleared no longer pulls',(()=
  ok('T2 another subject’s work does not count',C.subjectTrend(st,SPEC_9PL0,'2026-09-13')==='flat');
  st.practice=[];st.papers.push({spec:'EDX-9PL0',score:10,total:30,date:'2026-09-05'});ok('T2 a paper sat this fortnight is up for its subject',C.subjectTrend(st,SPEC_9PL0,'2026-09-13')==='up');}
 
+
+/* notation: one written form, and what the voice says */
+ok('NT1 carets become superscripts: digits, minus, letters, bracketed products and fractions',C.notation('x^2 + 10^-3 + e^(kx) + x^(1/2) + a^{m+n} + 2^x + f(x)^2')==='x² + 10⁻³ + eᵏˣ + x¹⁄² + aᵐ⁺ⁿ + 2ˣ + f(x)²',C.notation('x^2 + 10^-3 + e^(kx) + x^(1/2) + a^{m+n} + 2^x + f(x)^2'));
+ok('NT1 underscores become chemical and index subscripts, and identifiers are left alone',C.notation('H_2O, CO_2, C_6H_12O_6, x_1, x_12')==='H₂O, CO₂, C₆H₁₂O₆, x₁, x₁₂'&&C.notation('SPEC_4MA1 and some_var1')==='SPEC_4MA1 and some_var1',C.notation('SPEC_4MA1 and some_var1'));
+ok('NT1 a power with no superscript form is left as written, and text without notation is untouched',C.notation('e^q and 58e^(−0.04t)')==='e^q and 58e^(−0.04t)'&&C.notation('The perfect tense: ich habe gekauft')==='The perfect tense: ich habe gekauft');
+ok('NT1 the deep walker reaches every string and leaves numbers alone',JSON.stringify(C.notationDeep({a:'x^2',b:[{c:'H_2O',n:3}]}))===JSON.stringify({a:'x²',b:[{c:'H₂O',n:3}]}));
+ok('NT2 the voice says squared, cubed and to the power of, and reads subscripts as digits',C.speakable('v^2 = u^2 + 2as; V = x³; 10^-3; e^(kx); x^(1/2); H_2O')==='v squared = u squared + 2as; V = x cubed; 10 to the power of minus 3; e to the power of k x; x to the power of 1 over 2; H 2 O',C.speakable('v^2 = u^2 + 2as; V = x³; 10^-3; e^(kx); x^(1/2); H_2O'));
+ok('NT2 the voice names the symbols a voice would mangle',C.speakable('√16 ≠ 5, ΔH ≈ ±5 kJ, 25 °C, θ = π/2, ½')==='the square root of 16 is not equal to 5, delta H is approximately plus or minus 5 kJ, 25 degrees C, theta = pi /2, a half',C.speakable('√16 ≠ 5, ΔH ≈ ±5 kJ, 25 °C, θ = π/2, ½'));
+
 console.log(`PASSED: ${pass}`);fails.forEach(f=>console.log('FAILED: '+f));console.log('-'.repeat(50));console.log(fails.length?`RESULT: ${fails.length} FAILURE(S)`:'RESULT: ALL GREEN');process.exit(fails.length?1:0);

@@ -400,8 +400,39 @@ function normaliseSupport(s) {
   return o;
 }
 /* The spoken form of a sentence for the tutor voice: only symbols a voice would mangle are swapped; every word stays as written (a reader reads what is on the page). */
-const SPEAK_SYMBOLS = [[/\s*×\s*/g, ' times '], [/\s*÷\s*/g, ' divided by '], [/\s*→\s*/g, ' gives '], [/\s*≥\s*/g, ' at least '], [/\s*≤\s*/g, ' at most '], [/\s*°\s*/g, ' degrees ']];
-function speakable(text) { let t = String(text || ''); for (const [re, w] of SPEAK_SYMBOLS) t = t.replace(re, w); return t.replace(/\s+/g, ' ').trim(); }
+/* ---------- Notation: one written form everywhere, and a spoken form for the voice ---------- */
+/* x^2, 10^-3, e^(kx), x^(1/2), a^{m+n} and H_2O become x², 10⁻³, eᵏˣ, x¹⁄², aᵐ⁺ⁿ and H₂O. A power that has no superscript form is left as written. */
+const SUP = { '0': '⁰', '1': '¹', '2': '²', '3': '³', '4': '⁴', '5': '⁵', '6': '⁶', '7': '⁷', '8': '⁸', '9': '⁹', '+': '⁺', '-': '⁻', '−': '⁻', '/': '⁄', '(': '⁽', ')': '⁾',
+  a: 'ᵃ', b: 'ᵇ', c: 'ᶜ', d: 'ᵈ', e: 'ᵉ', f: 'ᶠ', g: 'ᵍ', h: 'ʰ', i: 'ⁱ', j: 'ʲ', k: 'ᵏ', l: 'ˡ', m: 'ᵐ', n: 'ⁿ', o: 'ᵒ', p: 'ᵖ', r: 'ʳ', s: 'ˢ', t: 'ᵗ', u: 'ᵘ', v: 'ᵛ', w: 'ʷ', x: 'ˣ', y: 'ʸ', z: 'ᶻ' };
+const SUB = { '0': '₀', '1': '₁', '2': '₂', '3': '₃', '4': '₄', '5': '₅', '6': '₆', '7': '₇', '8': '₈', '9': '₉' };
+const SUP_BACK = Object.assign(Object.fromEntries(Object.entries(SUP).map(([k, v]) => [v, k])), { '⁻': '-' }); const SUB_BACK = Object.fromEntries(Object.entries(SUB).map(([k, v]) => [v, k]));
+function toSup(group) { let out = ''; for (const ch of group) { if (!SUP[ch]) return null; out += SUP[ch]; } return out; }
+function notation(text) {
+  let t = String(text == null ? '' : text);
+  // a power: base^(group), base^{group} or base^token, where the base is a letter, digit or closing bracket
+  t = t.replace(/([A-Za-z0-9)\]])\^(?:\(([^()]{1,12})\)|\{([^{}]{1,12})\}|(-?[0-9]+|[A-Za-z]))/g, (m, base, g1, g2, g3) => {
+    const group = g1 != null ? g1 : g2 != null ? g2 : g3; const trimmed = group.replace(/\s+/g, '');
+    // a bracketed product such as (kx) or (m+n) needs no brackets once it is raised; a bracketed fraction keeps them out too
+    const sup = toSup(trimmed); return sup == null ? m : base + sup; });
+  // a chemical or index subscript: a letter or bracket, an underscore, up to two digits, not followed by a word character
+  // (not an identifier such as SPEC_4MA1: letters straight after the digits that run into another digit are code, not chemistry)
+  t = t.replace(/([A-Za-z)\]])_([0-9]{1,2})(?![0-9_])(?![A-Za-z]+[0-9])/g, (m, base, digits) => base + [...digits].map(d => SUB[d]).join(''));
+  return t;
+}
+/* the same, through every string of an object: a kit, a lesson, a reply */
+function notationDeep(v) { if (typeof v === 'string') return notation(v); if (Array.isArray(v)) return v.map(notationDeep); if (v && typeof v === 'object') { const o = {}; for (const [k, x] of Object.entries(v)) o[k] = notationDeep(x); return o; } return v; }
+const SPEAK_SYMBOLS = [[/\s*×\s*/g, ' times '], [/\s*÷\s*/g, ' divided by '], [/\s*→\s*/g, ' gives '], [/\s*≥\s*/g, ' at least '], [/\s*≤\s*/g, ' at most '], [/\s*°\s*/g, ' degrees '],
+  [/√\s*/g, ' the square root of '], [/\s*≠\s*/g, ' is not equal to '], [/\s*≈\s*/g, ' is approximately '], [/\s*±\s*/g, ' plus or minus '], [/\s*∝\s*/g, ' is proportional to '], [/π/g, ' pi '], [/Δ/g, ' delta '], [/θ/g, ' theta '], [/λ/g, ' lambda '], [/Ω/g, ' ohms '], [/½/g, ' a half '], [/¼/g, ' a quarter '], [/¾/g, ' three quarters '], [/⅓/g, ' a third '], [/⅔/g, ' two thirds ']];
+/* what the voice says: powers as squared, cubed or to the power of …; subscripts as their digits; symbols as words */
+function speakable(text) {
+  let t = notation(text);
+  t = t.replace(/([⁰¹²³⁴⁵⁶⁷⁸⁹⁺⁻⁽⁾⁄ᵃᵇᶜᵈᵉᶠᵍʰⁱʲᵏˡᵐⁿᵒᵖʳˢᵗᵘᵛʷˣʸᶻ]+)/g, run => {
+    const plain = [...run].map(c => SUP_BACK[c] || '').join('');
+    if (plain === '2') return ' squared'; if (plain === '3') return ' cubed';
+    const spoken = plain.replace(/[()]/g, '').replace(/([a-z])(?=[a-z0-9])/g, '$1 ').replace(/-/g, ' minus ').replace(/\+/g, ' plus ').replace(/\//g, ' over ');
+    return ' to the power of ' + spoken.trim() + ' '; });
+  t = t.replace(/[₀₁₂₃₄₅₆₇₈₉]+/g, run => ' ' + [...run].map(c => SUB_BACK[c]).join('') + ' ');
+  for (const [re, w] of SPEAK_SYMBOLS) t = t.replace(re, w); return t.replace(/\s+/g, ' ').replace(/ ([;,.!?)])/g, '$1').trim(); }
 /* Sentences for the reader: split on . ? ! followed by a space and a capital, digit or quote; never inside decimals, codes or common abbreviations. */
 const ABBREV = /(?:\b(?:e\.g|i\.e|etc|cf|vs|Fig|Figs|No|Nos|Dr|Mr|Mrs|Ms|Prof|St|Ch|Eq|approx|p|pp|c|Jan|Feb|Mar|Apr|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec)|\b[A-Z])\.$/;
 function splitSentences(text) {
@@ -463,4 +494,4 @@ function supportUsageLine(state, today) {
   return parts.length ? 'Support this week: ' + parts.join(' · ') : '';
 }
 if (typeof module !== 'undefined') module.exports = { DAY, STATES, FAILURE_MODES, REMEDY, BLOCKS, phaseFor, days, iso, resolveTopics, nodeId, newState, topicWeights, deskResurface, daysToExam, pileCounts,
-  recordResult, recordWrong, applyDecay, dueForReview, scheduleCard, dueCards, subjectPriority, buildSession, topicForCode, questionTopic, paperTopics, paperPriority, applyPaper, retestQueue, recordRetest, gradeFromBoundaries, RETEST_CAP, errorUrgency, MASTERY_FACTOR, DEFAULT_BOUNDS, gradeFor, predictSubject, weeklyReport, streakDays, nudgeFallback, nudgePrompt, topicLinks, SUPPORT_DEFAULTS, normaliseSupport, splitSentences, prompterLine, timerMinutes, marksToMinutes, chunkFallback, supportUsageLine, TUTOR_VOICES, speakable, newTour, gradesShown, subjectTrend };
+  recordResult, recordWrong, applyDecay, dueForReview, scheduleCard, dueCards, subjectPriority, buildSession, topicForCode, questionTopic, paperTopics, paperPriority, applyPaper, retestQueue, recordRetest, gradeFromBoundaries, RETEST_CAP, errorUrgency, MASTERY_FACTOR, DEFAULT_BOUNDS, gradeFor, predictSubject, weeklyReport, streakDays, nudgeFallback, nudgePrompt, topicLinks, SUPPORT_DEFAULTS, normaliseSupport, splitSentences, prompterLine, timerMinutes, marksToMinutes, chunkFallback, supportUsageLine, TUTOR_VOICES, speakable, notation, notationDeep, newTour, gradesShown, subjectTrend };

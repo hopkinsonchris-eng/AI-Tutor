@@ -636,7 +636,7 @@ const SPEC_4MA1 = {
    "name": "Electronic calculators",
    "caseStudies": [
     "[1.11 A] Use a scientific electronic calculator to determine a numerical result, using the memory and brackets to keep a multi-step calculation in one line",
-    "[Calculators — Foundation Tier] Check that the calculator has the minimum functions required for papers 1F and 2F, including x², √x, xʸ, x^(1/y), x̄, Σx, Σfx, and sine, cosine and tangent with their inverses"
+    "[Calculators — Foundation Tier] Check that the calculator has the minimum functions required for papers 1F and 2F, including x², √x, xʸ, x¹⁄ʸ, x̄, Σx, Σfx, and sine, cosine and tangent with their inverses"
    ],
    "ideas": [
     {
@@ -649,7 +649,7 @@ const SPEC_4MA1 = {
      "code": "Calculators — Foundation Tier",
      "q": "What must the calculator be able to do?",
      "idea": "Minimum calculator functions for papers 1F and 2F",
-     "content": "Students will be expected to have access to a suitable electronic calculator for all examination papers. The electronic calculator to be used by students attempting Foundation Tier examination papers (1F and 2F) should have these functions as a minimum: +, −, ×, ÷, x², √x, memory, brackets, xʸ, x^(1/y), x̄, Σx, Σfx, sine, cosine, tangent and their inverses."
+     "content": "Students will be expected to have access to a suitable electronic calculator for all examination papers. The electronic calculator to be used by students attempting Foundation Tier examination papers (1F and 2F) should have these functions as a minimum: +, −, ×, ÷, x², √x, memory, brackets, xʸ, x¹⁄ʸ, x̄, Σx, Σfx, sine, cosine, tangent and their inverses."
     },
     {
      "code": "Calculators — Prohibitions",
@@ -666,7 +666,7 @@ const SPEC_4MA1 = {
    "name": "Use of symbols",
    "caseStudies": [
     "[2.1 C] Write a × a × a as a³, and show that a⁻⁵ = 1/a⁵ and a⁰ = 1",
-    "[2.1 D] Use the index laws xᵐ × xⁿ = x^(m+n), xᵐ ÷ xⁿ = x^(m−n) and (xᵐ)ⁿ = x^(mn) to simplify an expression",
+    "[2.1 D] Use the index laws xᵐ × xⁿ = xᵐ⁺ⁿ, xᵐ ÷ xⁿ = xᵐ⁻ⁿ and (xᵐ)ⁿ = xᵐⁿ to simplify an expression",
     "[2.1 A] Write an expression, an equation and a formula using symbols for the numbers or variables described in words"
    ],
    "ideas": [
@@ -692,7 +692,7 @@ const SPEC_4MA1 = {
      "code": "2.1 D",
      "q": "How are powers combined?",
      "idea": "The index laws",
-     "content": "Use index laws in simple cases: xᵐ × xⁿ = x^(m+n), xᵐ ÷ xⁿ = x^(m−n) and (xᵐ)ⁿ = x^(mn), applied to terms with the same base."
+     "content": "Use index laws in simple cases: xᵐ × xⁿ = xᵐ⁺ⁿ, xᵐ ÷ xⁿ = xᵐ⁻ⁿ and (xᵐ)ⁿ = xᵐⁿ, applied to terms with the same base."
     }
    ]
   },

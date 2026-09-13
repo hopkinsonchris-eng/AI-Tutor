@@ -118,7 +118,7 @@ export default {
       if (p === '/courses' || p.startsWith('/courses/')) return courses(request, env, url, cors);
       if (p.startsWith('/manage/courses') || p.startsWith('/manage/reviews') || p === '/manage/catalogue') return manageCourses(request, env, url, cors);
       if (p.startsWith('/manage/')) return manage(request, env, url, cors);
-      if (request.method === 'GET') return json({ ok: true, service: 'tutor-proxy', build: 'reads-7' }, 200, cors);
+      if (request.method === 'GET') return json({ ok: true, service: 'tutor-proxy', build: 'reads-8' }, 200, cors);
       if (p === '/speech' && request.method === 'POST') return speech(request, env, cors);
       if (p === '/tts' && request.method === 'POST') return tts(request, env, cors);
       if (request.method === 'POST' && (p === '/' || p === '/v1/messages')) return proxy(request, env, cors);
@@ -249,7 +249,7 @@ async function readsViaSearch(env, ctx, sites) {
 async function verifyPage(url, sites) {
   const ctrl = typeof AbortController !== 'undefined' ? new AbortController() : null; const timer = ctrl && setTimeout(() => ctrl.abort(), 8000);
   try {
-    const res = await fetch(url, { redirect: 'follow', signal: ctrl ? ctrl.signal : undefined, headers: { 'User-Agent': READ_UA, 'Accept': 'text/html,application/xhtml+xml', 'Accept-Language': 'en-GB,en;q=0.9' } });
+    const res = await fetch(url, { redirect: 'follow', signal: ctrl ? ctrl.signal : undefined, headers: { 'User-Agent': READ_UA, 'Accept': 'text/html,application/xhtml+xml,application/pdf;q=0.9,*/*;q=0.8', 'Accept-Language': 'en-GB,en;q=0.9' } });
     if (!res.ok) return { ok: false, why: 'HTTP ' + res.status };
     const type = String(res.headers.get('content-type') || '');
     const finalUrl = res.url || url; if (!siteFor(finalUrl, sites)) return { ok: false, why: 'redirected off the list' };

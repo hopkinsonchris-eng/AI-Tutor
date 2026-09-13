@@ -32,5 +32,6 @@ ok('C8 the Office says admin only for an admin', />admin</.test(campusSvg({ subj
 ok('a portfolio with no subjects still draws the Exam Hall and the Office', /data-bldg-view="exam"/.test(campusSvg({ subjects: [] })) && /data-bldg-view="office"/.test(campusSvg({ subjects: [] })));
 
 ok('C13 calm mode: the drawing carries no time-of-day wash, and everything else is still there', (() => { const c = campusSvg({ subjects: subs(2), exam: {}, office: {}, hour: 17, calm: true }); const n = campusSvg({ subjects: subs(2), exam: {}, office: {}, hour: 17 }); return !/opacity="\.0[68]" pointer-events="none"/.test(c) && /opacity="\.06" pointer-events="none"/.test(n) && (c.match(/data-bldg="S\d"/g) || []).length === 2 && /data-bldg-view="exam"/.test(c); })());
+ok('C14 no gate marker: the foot of the path carries no stray line or GATE label', !/GATE/.test(campusSvg({ subjects: subs(2), exam: {}, office: {} })));
 
 console.log(`PASSED: ${pass}`); fails.forEach(f => console.log('FAILED: ' + f)); console.log('-'.repeat(50)); console.log(fails.length ? `RESULT: ${fails.length} FAILURE(S)` : 'RESULT: ALL GREEN'); process.exit(fails.length ? 1 : 0);

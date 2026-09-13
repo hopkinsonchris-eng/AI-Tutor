@@ -23,7 +23,7 @@
     { name: 'terrace',  w: 4.6, d: 2.4, h: 2.4, roof: 'pitched', bays: 3 },
   ];
 
-  /* plots along a central path: subjects left and right, the Office by the gate, the Exam Hall at the head */
+  /* plots along a central path: subjects left and right, the Office at the foot of the path, the Exam Hall at the head */
   const ROW = 6, TOP = 5.4;
   function plots(n) {
     const out = [];
@@ -149,7 +149,7 @@
       for (let c = 0; c < 5; c++) { const u = x + 0.9 + c * 1.3; b += `<polygon points="${[pt(u, y + d, 0), pt(u + 0.3, y + d, 0), pt(u + 0.3, y + d, h - 0.2), pt(u, y + d, h - 0.2)].join(' ')}" fill="${PAPER}" stroke="${INK}" stroke-width="1"/>`; }
       b += windows(x, y, w, d, h, 0); b += door(x, y, w, d, INK); b += flag(x, y, w, d, h + 1.35, FLAG[model.exam && model.exam.marker]);
       labels.push(label(x, y, w, d, 'Exam Hall', model.exam && model.exam.sub || '')); return b + '</g>'; } }); }
-    // office by the gate
+    // office at the foot of the path
     { const x = 9.4, y = gy1 - 3.4, w = 2.6, d = 2, h = 1.6; things.push({ z: x + y + d, draw: () => {
       let b = `<g class="bldg" data-bldg-view="office" role="link" tabindex="0" aria-label="${model.admin ? 'Office and Admin' : 'Office'}" style="cursor:pointer">` + box(x, y, w, d, h, { base: '#EFE9DB', roof: 'hip' });
       b += windows(x, y, w, d, h, 0); b += door(x, y, w, d, '#767C86'); b += flag(x, y, w, d, h + 0.9, FLAG[model.office && model.office.marker]);
@@ -157,9 +157,6 @@
     // trees
     const trees = [[1.2, 1.6, 1], [13.2, 1.4, 1.1], [0.6, gy1 - 1.4, 1.2], [13.6, gy1 - 1, 1], [12.2, 3.2, 0.9], [1.4, gy1 - 6, .9]].map(([x, y, k]) => ({ z: x + y, draw: () => tree(x, y, k) }));
     const all = things.concat(trees).sort((a, b) => a.z - b.z).map(t => t.draw()).join('');
-    // gate marker "you are here" at the foot of the path
-    const [ex, ey] = iso(7, gy1 - 0.2, 0);
-    const gate = `<g aria-hidden="true"><line x1="${ex - 22}" y1="${ey}" x2="${ex + 22}" y2="${ey}" stroke="${INK}" stroke-width="1.4"/><text x="${ex}" y="${ey + 16}" text-anchor="middle" font-size="10.5" fill="${PENCIL}" letter-spacing=".06em">GATE</text></g>`;
     // frame the drawing
     const corners = [iso(gx0, gy0, 0), iso(gx1, gy0, 0), iso(gx1, gy1, 0), iso(gx0, gy1, 0)];
     const minX = Math.min(...corners.map(c => c[0])) - 20, maxX = Math.max(...corners.map(c => c[0])) + 20;
@@ -167,7 +164,7 @@
     const hour = model.hour == null ? 12 : model.hour; const dusk = hour < 7 || hour >= 19; const evening = !dusk && (hour >= 16);
     const plot = [pt(gx0, gy0, 0), pt(gx1, gy0, 0), pt(gx1, gy1, 0), pt(gx0, gy1, 0)].join(' ');
     const wash = model.calm ? '' : dusk ? `<polygon points="${plot}" fill="#2B4C7E" opacity=".08" pointer-events="none"/>` : evening ? `<polygon points="${plot}" fill="#A8761B" opacity=".06" pointer-events="none"/>` : '';
-    return `<svg class="campus" viewBox="${minX} ${minY} ${maxX - minX} ${maxY - minY}" role="group" aria-label="Your campus" font-family="Instrument Sans, ui-sans-serif, system-ui, sans-serif">${ground}${pathMain}${paths}${all}${labels.join('')}${gate}${wash}</svg>`;
+    return `<svg class="campus" viewBox="${minX} ${minY} ${maxX - minX} ${maxY - minY}" role="group" aria-label="Your campus" font-family="Instrument Sans, ui-sans-serif, system-ui, sans-serif">${ground}${pathMain}${paths}${all}${labels.join('')}${wash}</svg>`;
   }
 
   root.campusSvg = campusSvg;

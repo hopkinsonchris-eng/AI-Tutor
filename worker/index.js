@@ -118,7 +118,7 @@ export default {
       if (p === '/courses' || p.startsWith('/courses/')) return courses(request, env, url, cors);
       if (p.startsWith('/manage/courses') || p.startsWith('/manage/reviews') || p === '/manage/catalogue') return manageCourses(request, env, url, cors);
       if (p.startsWith('/manage/')) return manage(request, env, url, cors);
-      if (request.method === 'GET') return json({ ok: true, service: 'tutor-proxy', build: 'reads-4' }, 200, cors);
+      if (request.method === 'GET') return json({ ok: true, service: 'tutor-proxy', build: 'reads-5' }, 200, cors);
       if (p === '/speech' && request.method === 'POST') return speech(request, env, cors);
       if (p === '/tts' && request.method === 'POST') return tts(request, env, cors);
       if (request.method === 'POST' && (p === '/' || p === '/v1/messages')) return proxy(request, env, cors);
@@ -259,7 +259,7 @@ async function verifyPage(url, sites) {
 async function readPicks(env, ctx, verified) {
   const lines = verified.map(v => `${v.url} | ${v.title} | ${v.site} | ${v.kind} | ${v.free}`).join('\n');
   const prompt = `${videoContext(ctx)}\n\nThese pages exist and are on trusted sites, one per line: url | title | site | kind | free or freemium.\n${lines}\n\nChoose up to ${READ_MAX} that plainly teach or practise THIS topic at this level — pages a student can learn the key ideas from or test themselves on. Judge from the url, title and site. Reject a page about a different topic, a different qualification or level, a home or index page, or anything you are not sure teaches this topic. Prefer a mix: notes, practice and the board's own page when each is there, free before freemium. Order the best first. If nothing qualifies, return an empty list. For each pick give why in at most 12 words, addressed to the student, saying what the page gives them.`;
-  const r = await askJson(env, prompt, { type: 'object', properties: { picks: { type: 'array', items: { type: 'object', properties: { url: { type: 'string' }, why: { type: 'string' } }, required: ['url', 'why'], additionalProperties: false } } }, required: ['picks'], additionalProperties: false }, 800);
+  const r = await askJson(env, prompt, { type: 'object', properties: { picks: { type: 'array', items: { type: 'object', properties: { url: { type: 'string' }, why: { type: 'string' } }, required: ['url', 'why'], additionalProperties: false } } }, required: ['picks'], additionalProperties: false }, 1200);
   return Array.isArray(r.picks) ? r.picks : [];
 }
 /* The picking step, then the existence check: a video is listed only if the model chose it AND YouTube still serves it. */
@@ -314,7 +314,8 @@ async function videoPicks(env, ctx, cands) {
   return (Array.isArray(r.picks) ? r.picks : []).filter(p => p && /^[A-Za-z0-9_-]{6,20}$/.test(String(p.id)) && !seen.has(p.id) && seen.add(p.id)).map(p => ({ id: String(p.id), why: String(p.why || '').replace(/\s+/g, ' ').trim().slice(0, 120) })).slice(0, VIDEO_MAX + 2);
 }
 async function askJson(env, prompt, schema, maxTokens) {
-  const body = { model: VIDEO_MODEL, max_tokens: maxTokens, messages: [{ role: 'user', content: prompt }], output_config: { format: { type: 'json_schema', schema } } };
+  /* thinking is off: it would count against max_tokens and cut the JSON short */
+  const body = { model: VIDEO_MODEL, max_tokens: maxTokens, thinking: { type: 'disabled' }, messages: [{ role: 'user', content: prompt }], output_config: { format: { type: 'json_schema', schema } } };
   const res = await fetch('https://api.anthropic.com/v1/messages', { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-api-key': env.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01' }, body: JSON.stringify(body) });
   const text = await res.text();
   if (!res.ok) throw new Error(`Anthropic ${res.status}: ${text.slice(0, 200)}`);

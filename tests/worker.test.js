@@ -598,6 +598,9 @@ const baseEnv = () => ({ ANTHROPIC_API_KEY: 'sk-ant-test', ALLOWED_ORIGIN: 'http
        return fetchR(url, init); };
      r = await worker.fetch(req('/reads', J('POST', geo)), env);
      ok('RD1 reads need a session', r.status === 401);
+     { const saw = []; const f = sandbox.__fetch; sandbox.__fetch = async (u, i) => { if (String(u).includes('api.anthropic.com')) saw.push(JSON.parse(i.body)); return f(u, i); }; await worker.fetch(req('/videos', J('POST', { ...body, topic: 'Z', topicName: 'Zed' }, VST)), env); sandbox.__fetch = f;
+       ok('RD1 the structured calls run with thinking off so the JSON is never cut short', saw.filter(b => b.output_config).length >= 1 && saw.filter(b => b.output_config).every(b => b.thinking && b.thinking.type === 'disabled'), String(saw.length)); }
+     searchCalls.length = 0;
      r = await worker.fetch(req('/reads', J('POST', { spec: 'OCR-H481' }, VST)), env);
      ok('RD1 reads need the room’s context', r.status === 400);
      r = await worker.fetch(req('/reads', J('POST', geo, VST)), env);

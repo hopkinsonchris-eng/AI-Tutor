@@ -229,6 +229,42 @@ function validateChunks(o, level, minutes) {
   if (minutes && (tot < minutes * 0.7 || tot > minutes * 1.3)) return `minutes add to ${tot}, not ${minutes}`;
   return null;
 }
+
+/* ============ THE FIRST WEEK: ten things a new student does once, in their own subjects ============ */
+const TOUR_STEPS = [
+  { key: 'building', group: 'find', text: 'Open one of your buildings', meaning: 'open one of the subject buildings on the campus', must: 'a subject name' },
+  { key: 'lesson', group: 'find', text: 'Go through a door and read the lesson', meaning: 'open a door in the corridor and read the lesson inside', must: 'the word door or lesson, and the first room\'s name' },
+  { key: 'caretaker', group: 'find', text: 'Ask the caretaker where something lives', meaning: 'type a question into the Ask the caretaker box on the campus', must: 'the word caretaker' },
+  { key: 'cards', group: 'work', text: 'Turn a flash card over', meaning: 'turn over a flash card in a room', must: 'the words flash card' },
+  { key: 'question', group: 'work', text: 'Answer one exam question and see the marks', meaning: 'answer one practice question in a room and mark it', must: 'the word question' },
+  { key: 'exit', group: 'work', text: 'Take an exit ticket', meaning: 'take the exit ticket at the end of a room', must: 'the words exit ticket' },
+  { key: 'coach', group: 'work', text: 'Ask your coach something about the lesson', meaning: 'ask the coach a question', must: 'the coach\'s name' },
+  { key: 'exam', group: 'see', text: 'Look round the Exam Hall', meaning: 'open the Exam Hall', must: 'the words Exam Hall' },
+  { key: 'progress', group: 'see', text: 'Check Progress', meaning: 'open the Progress page', must: 'the word Progress' },
+  { key: 'office', group: 'see', text: 'Try a helper in the Office', meaning: 'open the Office and try one of the Support helpers', must: 'the word Office' }
+];
+const TOUR_GROUPS = [['find', 'Find your way'], ['work', 'Do the work'], ['see', 'See how you’re doing']];
+const rxEsc = s => String(s).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+/* names = { student, coach, subjects: [{ subject, short, topic }] } — the first room of each subject */
+function tourPrompt(names, opts = {}) {
+  const subs = (names.subjects || []).map(s => `${s.subject}${s.short && s.short !== s.subject ? ` (${s.short})` : ''} — first room: ${s.topic}`);
+  return `You are the caretaker of a student's study campus, writing the ten lines of their first-week checklist. Each line tells the student one thing to do, in plain words, as one short sentence of at most 90 characters, no exclamation marks, no praise, no greeting. Use the student's own subjects, rooms and coach where the step says so, and keep the meaning of each step exactly.
+Student: ${names.student || 'the student'}. Coach's name: ${names.coach || 'Coach'}.
+Subjects:
+${subs.join('\n') || 'none yet'}
+Steps (key — what the student does — the line must mention):
+${TOUR_STEPS.map(s => `${s.key} — ${s.meaning} — ${s.must}`).join('\n')}
+${registerBlock(opts.support)}Reply with JSON only: {"lines": {${TOUR_STEPS.map(s => `"${s.key}": "<line>"`).join(', ')}}}`;
+}
+/* accept only lines that are short, plain and about the step; the app lays them over the fixed text */
+function validateTour(o, names) {
+  const out = {}; if (!o || typeof o !== 'object' || !o.lines || typeof o.lines !== 'object') return out;
+  const subs = (names && names.subjects) || []; const any = arr => arr.filter(Boolean).map(rxEsc).join('|');
+  const must = { building: any(subs.flatMap(s => [s.subject, s.short])), lesson: 'door|lesson', caretaker: 'caretaker', cards: 'flash ?cards?', question: 'question', exit: 'exit ticket', coach: any([names && names.coach, 'coach']), exam: 'exam hall', progress: 'progress', office: 'office' };
+  for (const st of TOUR_STEPS) { const v = o.lines[st.key]; if (typeof v !== 'string') continue; const t = v.trim().replace(/\s+/g, ' ');
+    if (t.length < 8 || t.length > 90 || /!/.test(t) || !must[st.key]) continue; if (!new RegExp(must[st.key], 'i').test(t)) continue; out[st.key] = t; }
+  return out;
+}
 if (typeof module !== 'undefined') module.exports = { topicOf, ideaCodes, specBlock, lessonPrompt, cardsPrompt, transcribePrompt, cardsFromNotesPrompt, questionsPrompt, essayQuestionPrompt, markEssayPrompt, coachPrompt,
   validCodes, validateLesson, validateCards, validateQuestions, validateEssayQ, validateMarking, weeklyNotePrompt, caretakerPrompt, validateCaretaker,
-  LITERAL_REGISTER, registerBlock, STATION_LABELS, sceneSummary, sceneBlock, floatingCoachPrompt, validateCoachReply, chunkPrompt, validateChunks };
+  LITERAL_REGISTER, registerBlock, STATION_LABELS, sceneSummary, sceneBlock, floatingCoachPrompt, validateCoachReply, chunkPrompt, validateChunks, TOUR_STEPS, TOUR_GROUPS, tourPrompt, validateTour };

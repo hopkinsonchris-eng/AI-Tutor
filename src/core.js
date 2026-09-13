@@ -51,10 +51,12 @@ function resolveTopics(spec, options) {
   });
 }
 function nodeId(specId, topicId) { return `${specId}|${topicId}`; }
+/* the first-week walkthrough: which steps are done (key -> date), whether it is hidden, the caretaker's lines, the days it was seen */
+function newTour() { return { done: {}, hidden: false, finished: false, lines: null, visits: [] }; }
 function newState(setup, specs) {
   setup = Object.assign({}, setup, { support: normaliseSupport(setup && setup.support) });
   const s = { version: 3, created: null, setup, nodes: {}, errors: [], hours: 0, dayHours: {}, transitions: [], practice: [],
-    essays: [], papers: [], cards: {}, generated: {}, coach: {}, coachNotes: {}, pins: {}, doneToday: {}, coldDone: {}, checklist: {}, boundaries: {} };
+    essays: [], papers: [], cards: {}, generated: {}, coach: {}, coachNotes: {}, pins: {}, doneToday: {}, coldDone: {}, checklist: {}, boundaries: {}, tour: newTour() };
   for (const sub of setup.subjects) {
     const spec = specs[sub.specId]; if (!spec) continue;
     for (const t of resolveTopics(spec, sub.options)) {
@@ -450,4 +452,4 @@ function supportUsageLine(state, today) {
   return parts.length ? 'Support this week: ' + parts.join(' · ') : '';
 }
 if (typeof module !== 'undefined') module.exports = { DAY, STATES, FAILURE_MODES, REMEDY, BLOCKS, phaseFor, days, iso, resolveTopics, nodeId, newState, topicWeights, deskResurface, daysToExam, pileCounts,
-  recordResult, recordWrong, applyDecay, dueForReview, scheduleCard, dueCards, subjectPriority, buildSession, topicForCode, questionTopic, paperTopics, paperPriority, applyPaper, retestQueue, recordRetest, gradeFromBoundaries, RETEST_CAP, errorUrgency, MASTERY_FACTOR, DEFAULT_BOUNDS, gradeFor, predictSubject, weeklyReport, streakDays, nudgeFallback, nudgePrompt, topicLinks, SUPPORT_DEFAULTS, normaliseSupport, splitSentences, prompterLine, timerMinutes, marksToMinutes, chunkFallback, supportUsageLine, TUTOR_VOICES, speakable };
+  recordResult, recordWrong, applyDecay, dueForReview, scheduleCard, dueCards, subjectPriority, buildSession, topicForCode, questionTopic, paperTopics, paperPriority, applyPaper, retestQueue, recordRetest, gradeFromBoundaries, RETEST_CAP, errorUrgency, MASTERY_FACTOR, DEFAULT_BOUNDS, gradeFor, predictSubject, weeklyReport, streakDays, nudgeFallback, nudgePrompt, topicLinks, SUPPORT_DEFAULTS, normaliseSupport, splitSentences, prompterLine, timerMinutes, marksToMinutes, chunkFallback, supportUsageLine, TUTOR_VOICES, speakable, newTour };

@@ -50,4 +50,16 @@ ok('V5 good marking passes',G.validateMarking(pt,mk,30)===null);ok('V5 mark abov
  ok('S3 chunk replies are validated by count, length and minutes',G.validateChunks({steps:[{text:'Read the question once',minutes:2},{text:'Underline the command word',minutes:1},{text:'Write the first line',minutes:12}]},1,15)===null&&G.validateChunks({steps:[{text:'a',minutes:15}]},1,15)!==null&&G.validateChunks({steps:[{text:'one two three four five six seven eight nine ten eleven twelve thirteen fourteen fifteen',minutes:5},{text:'b',minutes:5},{text:'c',minutes:5}]},1,15)!==null&&G.validateChunks({steps:[{text:'a',minutes:1},{text:'b',minutes:1},{text:'c',minutes:1}]},1,15)!==null&&G.validateChunks(null,1,15)!==null);
 }
 
+
+/* the first week: the caretaker's ten lines */
+{const names={student:'Matthew',coach:'Coach',subjects:[{subject:'Geography',short:'Geography',topic:'1.1 Earth’s life support systems'},{subject:'Politics',short:'Politics',topic:'1.1 Democracy and participation'}]};
+ const tp=G.tourPrompt(names);
+ ok('G8 the tour prompt names the student, the coach, every subject with its first room, and all ten steps with what each must mention',/Student: Matthew/.test(tp)&&/Coach's name: Coach/.test(tp)&&/Geography — first room: 1.1 Earth’s life support systems/.test(tp)&&/Politics — first room/.test(tp)&&G.TOUR_STEPS.every(s=>tp.includes(s.key+' — '+s.meaning))&&/at most 90 characters/.test(tp)&&/"building": "<line>"/.test(tp));
+ ok('G8 ten steps in three groups, each with fixed text',G.TOUR_STEPS.length===10&&G.TOUR_GROUPS.length===3&&G.TOUR_STEPS.every(s=>s.text&&G.TOUR_GROUPS.some(g=>g[0]===s.group)));
+ const v=G.validateTour({lines:{building:'Open your Geography building on the campus',lesson:'Go through the first door and read the lesson',caretaker:'Ask the caretaker where coasts live',cards:'Turn a flash card over in Earth’s life support systems',question:'Answer one question and mark it',exit:'Take the exit ticket at the end of the room',coach:'Ask Coach what a spit is',exam:'x'.repeat(120),progress:'Check Progress to see the week',office:'Try a helper in the Office',bogus:'Look round the Office'}},names);
+ ok('G9 validateTour keeps short lines that are about their step, drops a 120-character line and an unknown key',Object.keys(v).length===9&&v.exam===undefined&&v.bogus===undefined&&v.cards==='Turn a flash card over in Earth’s life support systems',JSON.stringify(Object.keys(v)));
+ const v2=G.validateTour({lines:{building:'Open a building!',lesson:'Read it',cards:'Look at the deck',coach:'Ask your tutor'}},names);
+ ok('G9 an exclamation mark, a line too short, a line that never says flash card, and a coach line without the coach’s name are all dropped',Object.keys(v2).length===0,JSON.stringify(v2));
+ ok('G9 a partial reply is a partial set, never an error',Object.keys(G.validateTour({lines:{office:'Try a helper in the Office'}},names)).length===1&&Object.keys(G.validateTour(null,names)).length===0&&Object.keys(G.validateTour({lines:'x'},names)).length===0);}
+
 console.log(`PASSED: ${pass}`);fails.forEach(f=>console.log('FAILED: '+f));console.log('-'.repeat(50));console.log(fails.length?`RESULT: ${fails.length} FAILURE(S)`:'RESULT: ALL GREEN');process.exit(fails.length?1:0);

@@ -346,3 +346,24 @@ body.status-on .timer{bottom:calc(96px + env(safe-area-inset-bottom))}@media (mi
 #supportPanel h3{margin-top:16px}
 @media (max-width:759px){body.coach-on .cpanel{height:72vh}body.coach-on .timer{bottom:calc(72vh + 10px)}}
 @media (max-width:759px){.timer{max-width:calc(100vw - 160px)}.timer small{max-width:96px}.timer .tbtns .act{padding:5px 6px}.timer .tring{width:34px;height:34px}}
+/* ---- the wizard: one question a screen ---- */
+.wizard{max-width:620px;margin:22px auto}.wizard h2{margin:6px 0 4px;font-size:22px;text-wrap:balance}.wizard .sub{max-width:56ch}.wizard input{width:100%;font-size:17px;padding:10px 12px}
+.wzdots{display:flex;gap:6px;margin:0 0 16px}.wzdots i{display:block;flex:1;max-width:44px;height:4px;border-radius:2px;background:var(--rule)}.wzdots i.on{background:var(--ink)}.wzdots i.done{background:var(--green)}
+.wznav{justify-content:space-between;margin-top:18px}.wznav>*{flex:0 0 auto}.wznav .act{margin:0;min-width:120px}.wizard .row[data-pick]>*{flex:0 0 auto}.wzcourse{margin-top:10px}.wzsum{margin-top:14px;padding:10px 12px;border:1px dashed var(--rule);border-radius:3px;font-size:14px;line-height:1.55}.wzsum .nlabel{display:block;margin-bottom:2px}
+/* ---- the first-week card on the notice board ---- */
+.fw{position:relative;padding-right:30px}.fw .fwx{position:absolute;top:6px;right:8px;background:none;border:0;color:var(--pencil);font-size:14px;cursor:pointer;padding:2px 4px}.fw .fwx:hover{color:var(--ink)}
+.fw .fwbar{height:5px;margin:4px 0 8px;background:#EBE4D2}.fw .fwbar i{background:var(--green);transition:width .4s ease}
+.fwgrp{font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--pencil);margin:8px 0 2px}.fwlist{list-style:none;margin:0;padding:0}
+.fwlist li{display:flex;gap:8px;align-items:flex-start;padding:5px 0;border-top:1px solid #E7DCC0;font-size:13.5px;line-height:1.35}.fwlist li .t{flex:0 0 17px;height:17px;border:1.5px solid var(--ink);border-radius:50%;font-size:10px;font-style:normal;display:flex;align-items:center;justify-content:center;margin-top:1px}
+.fwlist li.done .t{background:var(--green);border-color:var(--green);color:#fff}.fwlist li.done span{color:var(--pencil);text-decoration:line-through;text-decoration-thickness:1px}
+.fwlist li.now{background:#EAF0F8;margin:0 -6px;padding:6px;border-radius:3px;border-top-color:transparent}.fwlist li .act{margin:0 0 0 auto;white-space:nowrap;padding:3px 9px;font-size:12px}
+.fwpanel{display:flex;gap:14px;align-items:center;justify-content:space-between;flex-wrap:wrap}.fwpanel .act{margin:0}
+/* ---- the spotlight: one thing to press, with the caretaker's caption ---- */
+[data-spot]{outline:3px solid var(--amber);outline-offset:3px;border-radius:3px;animation:spotpulse 1.6s ease-in-out infinite}
+svg [data-spot],g[data-spot]{outline:none;animation:spotglow 1.6s ease-in-out infinite;filter:drop-shadow(0 0 4px var(--amber)) drop-shadow(0 0 10px var(--amber))}
+@keyframes spotpulse{0%,100%{outline-color:var(--amber)}50%{outline-color:rgba(168,118,27,.15)}}
+@keyframes spotglow{0%,100%{opacity:1}50%{opacity:.72}}
+.spotcap{display:inline-block;background:var(--ink);color:var(--paper);font-size:13.5px;line-height:1.4;padding:8px 12px;border-radius:3px;margin:8px 0 10px;max-width:46ch;box-shadow:0 4px 12px rgba(25,29,35,.18)}
+.campusart .spotcap{display:block;max-width:none;margin:4px 0 8px}
+body.calm [data-spot],body.calm svg [data-spot]{animation:none}body.calm .spotcap{box-shadow:none}
+@media (prefers-reduced-motion:reduce){[data-spot],svg [data-spot]{animation:none}}

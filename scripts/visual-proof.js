@@ -120,7 +120,13 @@ const server = http.createServer((req, res) => {
   const must = (cond, why) => { if (!cond) throw new Error('VISUAL CHECK FAILED: ' + why); console.log('  ok  ', why); };
 
   /* 1. a student's setup screen: level, subject, board, Add */
-  let page = await open('tok-student', { width: 1180, height: 900 });
+  let page = await open('tok-student', { width: 1180, height: 900 }, '#suName');
+  must(/What’s your first name/.test(await page.locator('#v-setup').textContent()) && (await page.locator('#crsSubject').count()) === 0 && (await page.locator('#wzBack').count()) === 0, 'a new student meets the wizard: one question, the name prefilled, nothing else');
+  await snap(page, '29-wizard-name', 'Setup as a wizard: the first of six screens asks one question, with the step marks above it');
+  await page.click('#wzNext'); await page.waitForSelector('[data-year]');
+  await page.click('#wzNext'); await page.waitForSelector('[data-level]');
+  await page.click('#wzNext'); await page.waitForSelector('#crsSubject');
+  must(/Which subjects are you studying/.test(await page.locator('#v-setup').textContent()), 'screen 4 asks for the subjects');
   await page.selectOption('#crsSubject', 'Biology');
   await page.waitForSelector('#crsBoard');
   await snap(page, '1-setup-dropdowns', 'Level → Subject → Board; AQA Biology is "not mapped yet, ask Chris"');
@@ -134,9 +140,14 @@ const server = http.createServer((req, res) => {
   await page.click('#crsAdd');   // Chris has mapped it by now in this scenario
 
   /* 3. published → added, with provenance */
-  await page.waitForFunction(() => /data-su="AQA-7402" checked/.test(document.body.innerHTML), null, { timeout: 60000 });
+  await page.waitForFunction(() => /data-surm="AQA-7402"/.test(document.body.innerHTML), null, { timeout: 60000 });
   await page.evaluate(() => document.querySelector('#buildBox') && document.querySelector('#buildBox').scrollIntoView());
   await snap(page, '3-course-added', 'Added, with the provenance line: document, checked date, judge score');
+  await page.click('#wzNext'); await page.waitForSelector('[data-wzsup="reader"]');
+  must(/Anything that helps you read and focus/.test(await page.locator('#v-setup').textContent()) && /Skip →/.test(await page.locator('#wzNext').textContent()), 'screen 5: the helpers, all off, Skip offered');
+  await page.check('[data-wzsup="calm"]'); await page.waitForFunction(() => /Next →/.test(document.querySelector('#wzNext').textContent), null, { timeout: 5000 });
+  await page.waitForTimeout(400);
+  await snap(page, '30-wizard-helpers', 'Screen 5 of the wizard: the reading and focus helpers, optional, the same settings the Office holds');
   await page.context().close();
 
   /* 4. the admin's review queue and course list */
@@ -154,11 +165,21 @@ const server = http.createServer((req, res) => {
   must((await page.locator('#v-campus .bldg[data-bldg]').count()) === 5 && (await page.locator('#v-campus [data-bldg-view="exam"]').count()) === 1 && (await page.locator('#v-campus [data-bldg-view="office"]').count()) === 1, 'campus: five subject buildings, the Exam Hall and the Office');
   must((await page.locator('#qBar [data-course]').count()) === 5 && (await page.locator('#qBar [data-v="exam"]').count()) === 1 && (await page.locator('#qBar [data-v="office"]').count()) === 1 && !(await page.locator('nav.bottom').isVisible()), '1280px: the quick bar carries every course, the Exam Hall and the Office; no bottom bar');
   must(/Now ·/.test(await page.locator('#v-campus .board').textContent()) && (await page.locator('#v-campus .act.go').count()) === 1 && /From Coach/.test(await page.locator('#v-campus .board').textContent()) && /Then today/.test(await page.locator('#v-campus .board').textContent()), 'the notice board: Now with Go, the coach’s note, the rest of today');
-  must((await page.locator('#v-campus .hint[data-hint="campus"]').count()) === 1, 'first visit: the campus hint is up');
+  must((await page.locator('#v-campus .hint[data-hint]').count()) === 0 && (await page.locator('#v-campus .board .fw[data-tour]').count()) === 1 && /First week · 0 of 10/.test(await page.locator('#v-campus .board .fw').textContent()) && (await page.locator('#v-campus .board [data-show]').count()) === 10, 'first visit: no hint; the First Week card on the notice board with ten steps and Show me');
   must(/day streak/.test(await page.locator('#status').textContent()) && (await page.locator('#status').isVisible()), 'status strip visible with the streak');
   const doorFill = await page.locator('#v-campus .bldg[data-bldg="OCR-H481"] polygon[fill="#2B4C7E"]').count();
   must(doorFill >= 1, 'the Geography building’s door wears Geography’s colour');
-  await snap(page, '6-campus', 'The campus: one building per subject with its colour on the door, lit windows for progress and a flag for what is due; the Exam Hall and the Office; the notice board says what to do now, with the coach’s note and the rest of the day; the quick bar under the date');
+  await snap(page, '6-campus', 'The campus: one building per subject with its colour on the door, lit windows for progress and a flag for what is due; the Exam Hall and the Office; the notice board carries the First Week card, what to do now, the coach’s note and the rest of the day; the quick bar under the date');
+  /* Show me: teleport to the first corridor and spotlight the first door */
+  await page.click('#v-campus .board [data-show="lesson"]');
+  await page.waitForSelector('#v-rooms .door[data-spot]', { timeout: 5000 });
+  must((await page.locator('[data-spot]').count()) === 1 && (await page.locator('#v-rooms .spotcap[data-spotcap="lesson"]').count()) === 1 && (await page.locator('#v-rooms .door[data-spot]').first().getAttribute('data-open')) === (await page.locator('#v-rooms .door').first().getAttribute('data-open')), 'Show me on step 2: the first corridor, exactly one door spotlit, with the caretaker’s caption');
+  await snap(page, '31-show-me-door', 'Show me on “Go through a door and read the lesson”: the corridor with the first door spotlit in amber and the caretaker’s one-line caption above it');
+  await page.click('#v-rooms .door[data-spot]');
+  await page.waitForFunction(() => !document.querySelector('[data-spot]') && /This room/.test(document.querySelector('#wall').textContent), null, { timeout: 10000 });
+  await page.click('#brand'); await page.waitForSelector('#v-campus .board .fw[data-tour]');
+  must(/First week · 2 of 10/.test(await page.locator('#v-campus .board .fw').textContent()) && (await page.locator('#v-campus .board .fwlist li.done').count()) === 2, 'opening the building and the door ticked steps 1 and 2 by themselves; the spotlight is gone');
+  await snap(page, '32-first-week-ticked', 'Back on the campus: the First Week card has ticked the two steps the student really did, and the next one is marked');
   await page.click('#v-campus [data-cards]');
   await page.waitForSelector('#v-today .fc', { timeout: 5000 });
   await page.locator('#v-today .fc').scrollIntoViewIfNeeded();
@@ -176,7 +197,7 @@ const server = http.createServer((req, res) => {
   /* the corridor */
   await page.click('#qBar [data-course="OCR-H481"]');
   await page.waitForSelector('#v-rooms .door', { timeout: 10000 });
-  must((await page.locator('#v-rooms .door').count()) === 9 && (await page.locator('#v-rooms .sign').count()) >= 3 && (await page.locator('#v-rooms .door[data-s="Fluent"]').count()) >= 1 && (await page.locator('#v-rooms .hint[data-hint="corridor"]').count()) === 1, 'the corridor: nine doors under their component signs, state strips, the corridor hint');
+  must((await page.locator('#v-rooms .door').count()) === 9 && (await page.locator('#v-rooms .sign').count()) >= 3 && (await page.locator('#v-rooms .door[data-s="Fluent"]').count()) >= 1 && (await page.locator('#v-rooms .hint[data-hint]').count()) === 0, 'the corridor: nine doors under their component signs, state strips, no hint');
   must(/Jump to a topic/.test(await page.locator('#wall').textContent()) && /In this building/.test(await page.locator('#wall').textContent()), 'the wall beside the corridor: jump box, what is due in this building');
   const chipNow = await page.locator('#qBar [data-course="OCR-H481"]').getAttribute('class');
   must(!/ghost/.test(chipNow), 'walking into the building turns its chip on the quick bar solid');
@@ -188,7 +209,7 @@ const server = http.createServer((req, res) => {
   /* the classroom */
   await page.click('#v-rooms [data-open="OCR-H481|1.2"]');
   await page.waitForFunction(() => /This room/.test(document.querySelector('#wall').textContent), null, { timeout: 10000 });
-  must((await page.locator('#v-rooms #backRooms').count()) === 1 && (await page.locator('#v-rooms .doorstep').count()) >= 1 && /Watch and read/.test(await page.locator('#wall').textContent()) && (await page.locator('#wall a.link').count()) >= 1 && (await page.locator('#v-rooms .hint[data-hint="room"]').count()) === 1, 'in a room: Corridor button, neighbouring doors, the wall shows this room, its cards, mistakes and links, and the room hint');
+  must((await page.locator('#v-rooms #backRooms').count()) === 1 && (await page.locator('#v-rooms .doorstep').count()) >= 1 && /Watch and read/.test(await page.locator('#wall').textContent()) && (await page.locator('#wall a.link').count()) >= 1 && (await page.locator('#v-rooms .hint[data-hint]').count()) === 0, 'in a room: Corridor button, neighbouring doors, the wall shows this room, its cards, mistakes and links, and no hint');
   let c = await box(page, 'main.centre'), w = await box(page, '#wall');
   must(c.x + c.width <= w.x + 1 && w.x + w.width <= 1281, `1280px room: centre and wall side by side (centre ${Math.round(c.width)}, wall ${Math.round(w.width)})`);
   await snap(page, '8-classroom-wall', 'A classroom: breadcrumb, Corridor button and neighbouring doors above the desk, the wall beside it with this room, cards due, mistakes, watch and read');
@@ -320,7 +341,7 @@ const server = http.createServer((req, res) => {
   await page.click('[data-station="lesson"]'); await page.waitForSelector('#reader #rdPage', { timeout: 5000 }); await page.waitForTimeout(250);
   must((await page.locator('#v-rooms .rdb').count()) >= 3 && (await page.locator('#v-rooms h2 .rdb, #v-rooms h3 .rdb, #v-rooms .sub .rdb, #v-rooms .fine .rdb, #wall .rdb, [data-hint] .rdb').count()) === 0, 'the lesson’s body paragraphs have a 🔊; titles, sub-lines, captions and the wall do not');
   await page.click('#rdPage'); await page.waitForSelector('.rd-cur', { timeout: 5000 }); await page.waitForTimeout(200);
-  must((await page.locator('.rd-cur[data-hint]').count()) === 0, 'Read this page starts with the page, not the onboarding hint');
+  must((await page.locator('.rd-cur[data-hint], .rd-cur[data-tour], .rd-cur[data-spotcap]').count()) === 0, 'Read this page starts with the page, never the First Week card or a caption');
   must((await page.locator('#rdmask').isVisible()) && /Stop/.test(await page.locator('#reader').textContent()) && (await page.locator('body.rd-space').count()) === 1, 'reading: the current block is highlighted, the line-focus window is up, spacing is wider');
   await page.locator('.rd-cur').scrollIntoViewIfNeeded(); await page.waitForTimeout(150);
   await snap(page, '24-reader-line-focus', 'The reader: Read this page under the header, a 🔊 on each body paragraph, the block being read highlighted with its current sentence, a three-line focus window dimming the rest, and wider spacing');

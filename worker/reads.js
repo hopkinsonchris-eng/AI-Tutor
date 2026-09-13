@@ -76,6 +76,12 @@ export function pageTitle(html) {
   const m = String(html || '').match(/<title[^>]*>([\s\S]{0,300}?)<\/title>/i); if (!m) return '';
   return m[1].replace(/<[^>]+>/g, '').replace(/&amp;/g, '&').replace(/&#39;|&apos;/g, '’').replace(/&quot;/g, '"').replace(/&nbsp;/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 160);
 }
+/* a PDF's title from its file name (the search's title is the file's first line, which is often a paper's header) */
+export function pdfTitle(url, fallback) {
+  let name = ''; try { name = decodeURIComponent(new URL(url).pathname.split('/').filter(Boolean).pop() || ''); } catch (e) { name = ''; }
+  name = name.replace(/\.pdf$/i, '').replace(/[-_+]+/g, ' ').replace(/\s+/g, ' ').trim();
+  return name.length >= 12 || (name.split(' ').length >= 3 && name.length >= 8) ? name.slice(0, 160) : String(fallback || name || 'PDF').slice(0, 160);
+}
 /* a page that answers 200 but says it is gone */
 export function looksDead(title) { return /\b(not found|404|page cannot be found|page doesn.t exist|no longer available|access denied)\b/i.test(String(title || '')); }
 /* the pages the model picked, matched back to the verified list, at most `max`, each with a short why */

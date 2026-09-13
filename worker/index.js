@@ -78,7 +78,7 @@
  */
 
 import { WorkflowEntrypoint } from 'cloudflare:workers';
-import { sitesFor, readCandidates, siteFor, pageTitle, looksDead, matchPicks } from './reads.js';
+import { sitesFor, readCandidates, siteFor, pageTitle, looksDead, matchPicks, pdfTitle } from './reads.js';
 import { runBuild, runReview, anthropicAI, headOf, specIdFor } from './builder.js';
 import { runDepth, kitAI } from './depth.js';
 import { papers, PaperMarker } from './papers.js';
@@ -118,7 +118,7 @@ export default {
       if (p === '/courses' || p.startsWith('/courses/')) return courses(request, env, url, cors);
       if (p.startsWith('/manage/courses') || p.startsWith('/manage/reviews') || p === '/manage/catalogue') return manageCourses(request, env, url, cors);
       if (p.startsWith('/manage/')) return manage(request, env, url, cors);
-      if (request.method === 'GET') return json({ ok: true, service: 'tutor-proxy', build: 'reads-8' }, 200, cors);
+      if (request.method === 'GET') return json({ ok: true, service: 'tutor-proxy', build: 'reads-9' }, 200, cors);
       if (p === '/speech' && request.method === 'POST') return speech(request, env, cors);
       if (p === '/tts' && request.method === 'POST') return tts(request, env, cors);
       if (request.method === 'POST' && (p === '/' || p === '/v1/messages')) return proxy(request, env, cors);
@@ -209,7 +209,7 @@ async function findReads(env, ctx) {
   const search = await readsViaSearch(env, ctx, sites);
   const cands = readCandidates(search.text, sites);
   const verified = [], rejected = [];
-  for (const c of cands) { const v = await verifyPage(c.url, sites); if (v.ok) verified.push({ ...c, url: v.url, title: v.title || c.title || c.site, ...(v.pdf ? { pdf: true } : {}) }); else rejected.push({ url: c.url.slice(0, 120), why: v.why }); }
+  for (const c of cands) { const v = await verifyPage(c.url, sites); if (v.ok) verified.push({ ...c, url: v.url, title: v.pdf ? pdfTitle(v.url, c.title) : (v.title || c.title || c.site), ...(v.pdf ? { pdf: true } : {}) }); else rejected.push({ url: c.url.slice(0, 120), why: v.why }); }
   const items = verified.length ? matchPicks(await readPicks(env, ctx, verified), verified, READ_MAX) : [];
   /* what happened, for the admin's eye: how many lines the search gave, which sites it could not reach, why pages were refused */
   return { items, at, found: verified.length, via: 'search', proposed: cands.length, lines: search.lines, dropped: search.dropped, rejected: rejected.slice(0, 6) };

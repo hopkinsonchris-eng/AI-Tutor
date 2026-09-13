@@ -367,3 +367,10 @@ svg [data-spot],g[data-spot]{outline:none;animation:spotglow 1.6s ease-in-out in
 .campusart .spotcap{display:block;max-width:none;margin:4px 0 8px}
 body.calm [data-spot],body.calm svg [data-spot]{animation:none}body.calm .spotcap{box-shadow:none}
 @media (prefers-reduced-motion:reduce){[data-spot],svg [data-spot]{animation:none}}
+/* ---- the floating first-week bar: where you are in the walkthrough, and the way back to the card ---- */
+.tourbar{position:fixed;left:12px;right:12px;bottom:calc(66px + env(safe-area-inset-bottom));z-index:31;background:var(--ink);color:var(--paper);border-radius:6px;padding:10px 12px;display:flex;flex-direction:column;gap:6px;font-size:13.5px;line-height:1.4;box-shadow:0 6px 18px rgba(25,29,35,.28)}
+.tourbar.hide{display:none}body.status-on .tourbar{bottom:calc(96px + env(safe-area-inset-bottom))}
+.tourbar .tb-step{font-size:11px;letter-spacing:.07em;text-transform:uppercase;opacity:.75}.tourbar .tb-done{font-weight:700;color:#9AD3B0}.tourbar .tb-next{font-weight:500}
+.tourbar .tb-row{gap:8px;margin-top:2px}.tourbar .tb-row>*{flex:0 0 auto}.tourbar .act{margin:0}.tourbar .act.ghost{border-color:var(--paper);color:var(--paper);background:transparent}.tourbar .act.ghost:hover{background:rgba(255,255,255,.1)}
+@media (min-width:760px){.tourbar{left:14px;right:auto;bottom:14px;max-width:380px}body.status-on .tourbar{bottom:14px}body.wall-on .tourbar{bottom:14px}}
+body.calm .tourbar{box-shadow:none}

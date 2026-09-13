@@ -160,6 +160,13 @@ const click=async s=>L.click({target:T(s)});const change=async s=>L.change({targ
  await click({dataset:{show:'coach'}});ok('W7 Show me on step 7 opens the room on the coach with the Ask button spotlit',G.view==='rooms'&&G.UI.station==='coach'&&G.UI.coachOpen===true&&/id="coachGo" data-spot="1"/.test(reg['coachPanel'].innerHTML)&&/data-spotcap="coach"/.test(reg['coachPanel'].innerHTML),reg['coachPanel'].innerHTML.slice(0,200));
  G.UI.coachOpen=false;await click({dataset:{show:'office'}});const OF=()=>reg['v-office'].innerHTML;ok('W7 Show me on step 10 opens the Office with the Support panel spotlit',G.view==='office'&&/id="supportPanel" data-spot="1"/.test(OF())&&/data-spotcap="office"/.test(OF()));
  await click({dataset:{show:'exam'}});ok('W7 Show me on step 8 opens the Exam Hall, which ticks on opening, so nothing is spotlit',G.view==='exam'&&T0().exam===G.TODAY&&!G.UI.spot);
+ /* the floating bar: the way back, and the way on */
+ const TB=()=>reg['tourBack'];G.S.tour=Object.assign(G.newTour(),{lines:G.S.tour.lines});G.UI.tourTrail=null;G.go('campus');G.renderAll();ok('W14 no bar until a Show me is pressed',TB().innerHTML==='');
+ await click({dataset:{show:'lesson'}});ok('W14 Show me raises the floating bar with the step, its line and Back to First Week',/First week · 2 of 10/.test(TB().innerHTML)&&/read the lesson/.test(TB().innerHTML)&&/id="tourBackGo"/.test(TB().innerHTML)&&!/Done/.test(TB().innerHTML)&&G.UI.tourTrail==='lesson',TB().innerHTML);
+ G.openRoom(firstGeo,'lesson');ok('W14 the tick turns the bar into Done with the next step and its own Show me',T0().lesson===G.TODAY&&/✓ Done/.test(TB().innerHTML)&&/Next: Ask the caretaker/.test(TB().innerHTML)&&/data-show="caretaker"/.test(TB().innerHTML)&&/id="tourBackGo"/.test(TB().innerHTML),TB().innerHTML);
+ await click({dataset:{show:'caretaker'}});ok('W14 Show me from the bar moves the trail on to the next step',G.view==='campus'&&G.UI.tourTrail==='caretaker'&&/id="askIn" data-spot="1"/.test(CV0())&&/First week · 3 of 10/.test(TB().innerHTML));
+ await click({id:'tourBackGo'});ok('W14 Back to First Week returns to the campus card and drops the bar',G.view==='campus'&&G.UI.tourTrail===null&&TB().innerHTML===''&&!G.UI.spot&&/data-tour="1"/.test(CV0()));
+ await click({dataset:{show:'cards'}});await click({dataset:{tourHide:'1'}});ok('W14 hiding the card drops the bar too',TB().innerHTML===''&&G.UI.tourTrail===null);G.S.tour.hidden=false;
  /* hide, restart, nudge */
  G.go('campus');G.renderCampus();await click({dataset:{tourHide:'1'}});ok('W9 ✕ hides the card',G.S.tour.hidden===true&&!/data-tour="1"/.test(CV0()));
  G.go('office');G.renderOffice();ok('W9 the Office offers Show me around',/id="tourRestart"/.test(OF()));

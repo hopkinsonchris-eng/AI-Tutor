@@ -23,6 +23,7 @@
  </main>
  <aside class="wall hide" id="wall" aria-label="On the wall"></aside>
 </div>
+<div id="tourBack" class="tourbar hide" role="status" aria-live="polite"></div>
 <button id="coachFab" class="fab hide" type="button" aria-haspopup="dialog" aria-expanded="false" aria-controls="coachPanel"></button>
 <aside id="coachPanel" class="cpanel hide" role="dialog" aria-label="Coach" aria-modal="false"></aside>
 <div id="prompt" class="prompt hide" role="status" aria-live="polite"></div>
@@ -461,7 +462,7 @@ function tourStep(k){return TOUR_STEPS.find(x=>x.key===k);}
 function tourLine(k){const T=tour();return (T&&T.lines&&T.lines[k])||tourStep(k).text;}
 function tourDone(){const T=tour();return T?TOUR_STEPS.filter(x=>T.done[x.key]).length:0;}
 function tourNext(){const T=tour();return T?TOUR_STEPS.find(x=>!T.done[x.key])||null:null;}
-function tourTick(k){const T=tour();if(!tourActive()||T.done[k])return false;T.done[k]=TODAY;if(UI.spot&&UI.spot.key===k)UI.spot=null;save();return true;}
+function tourTick(k){const T=tour();if(!tourActive()||T.done[k])return false;T.done[k]=TODAY;if(UI.spot&&UI.spot.key===k)UI.spot=null;save();renderTourBack();return true;}
 function tourFirstRoom(){const sub=courseOrder()[0];const sp=sub&&specById(sub.specId);if(!sp)return null;const r=roomOrder(sp)[0];return r?{specId:sp.id,room:r}:null;}
 function tourNames(){return {student:S.setup.student,coach:coachName(),subjects:S.setup.subjects.map(sub=>{const sp=specById(sub.specId);if(!sp)return null;const r=roomOrder(sp)[0];const t=r?nodeTopic(r).topic:sp.topics[0];return {subject:sp.subject,short:shortName(sp),topic:(topicCode(t)?topicCode(t)+' ':'')+t.name};}).filter(Boolean)};}
 /* one small call after setup: the caretaker writes the ten lines in the student's own subjects; anything unusable keeps the fixed text */
@@ -471,7 +472,15 @@ function spotOn(k){return !!(UI.spot&&UI.spot.key===k);}
 function spotCap(k){return spotOn(k)?`<div class="spotcap" data-spotcap="${k}" role="status">${esc(tourLine(k))}</div>`:'';}
 function spotInto(html,k,marks){if(!spotOn(k))return html;for(const m of marks){if(m instanceof RegExp){const r=m.exec(html);if(r)return html.slice(0,r.index+r[0].length)+' data-spot="1"'+html.slice(r.index+r[0].length);continue;}const i=html.indexOf(m);if(i>=0)return html.slice(0,i)+m+' data-spot="1"'+html.slice(i+m.length);}return html;}
 function spotCheck(){const p=UI.spot;if(!p)return;if(view!==p.view||(p.corridor&&UI.room)||(p.room&&UI.room!==p.room)||(p.station&&UI.station!==p.station))UI.spot=null;}
-function tourShow(k){if(!tour())return;const fr=tourFirstRoom();UI.spot=null;
+/* after Show me: bring the spotlit thing on screen, and put the cursor in it if it is a box */
+function spotReveal(){setTimeout(()=>{try{const el=document.querySelector('[data-spot]');if(!el)return;if(el.scrollIntoView)el.scrollIntoView({block:'center',behavior:'smooth'});if(el.tagName==='INPUT'&&el.focus)el.focus({preventScroll:true});}catch(e){}},80);}
+/* the floating bar while a Show me is in progress: the step, then Done with the next step, and always the way back to the card */
+function renderTourBack(){const el=document.getElementById('tourBack');if(!el)return;const k=UI.tourTrail;const T=tour();if(!k||!T||T.hidden||!S||!tourStep(k)){el.classList.add('hide');el.innerHTML='';return;}
+  el.classList.remove('hide');const done=!!T.done[k];const nx=done?tourNext():null;const n=TOUR_STEPS.findIndex(x=>x.key===k)+1;
+  el.innerHTML=done?`<span class="tb-done">✓ Done</span><span class="tb-next">${nx?`Next: ${esc(tourLine(nx.key))}`:'You’ve seen everything.'}</span><div class="row tb-row">${nx?`<button class="act small" data-show="${nx.key}">Show me →</button>`:''}<button class="act ghost small" id="tourBackGo">Back to First Week</button></div>`
+  :`<span class="tb-step">First week · ${n} of ${TOUR_STEPS.length}</span><span class="tb-next">${esc(tourLine(k))}</span><div class="row tb-row"><button class="act ghost small" id="tourBackGo">Back to First Week</button></div>`;}
+function tourShow(k){if(!tour()||!tourStep(k))return;const fr=tourFirstRoom();UI.spot=null;UI.tourTrail=k;const done=tourShowGo(k,fr);renderTourBack();spotReveal();return done;}
+function tourShowGo(k,fr){
   if(k==='building'||k==='caretaker'){UI.room=null;go('campus');UI.spot={key:k,view:'campus'};renderCampus();return;}
   if(k==='lesson'){if(!fr)return;UI.subject=fr.specId;UI.room=null;go('rooms');UI.spot={key:k,view:'rooms',corridor:true};renderRooms();return;}
   if(k==='cards'||k==='question'||k==='exit'||k==='coach'){if(!fr)return;const st=k==='question'?'practise':k;openRoom(fr.room,st);UI.spot={key:k,view:'rooms',room:fr.room,station:st};renderRooms();if(k==='coach')renderCoachPanel();return;}
@@ -832,7 +841,7 @@ async function loadAdminTodo(){if(!isAdmin()||ADMIN_TODO!==null)return;ADMIN_TOD
 function wallView(){return !!S&&['rooms','exam','prog'].includes(view);}
 function statusView(){return !!S&&['campus','today','rooms','exam','prog','office'].includes(view);}
 /* the wall beside the centre: what the right rail used to carry — this room, this building, the board's conventions, the pattern */
-function renderRails(){applySupport();renderPrompt();if(UI.coachOpen)renderCoachPanel();const on=wallView();try{if(document.body&&document.body.classList)document.body.classList.toggle('wall-on',on);}catch(e){}
+function renderRails(){applySupport();renderPrompt();renderTourBack();if(UI.coachOpen)renderCoachPanel();const on=wallView();try{if(document.body&&document.body.classList)document.body.classList.toggle('wall-on',on);}catch(e){}
   const R=document.getElementById('wall');if(!R)return;
   if(!on){R.innerHTML='';R.classList.add('hide');renderStatus();return;}
   R.classList.remove('hide');renderWall(R);renderStatus();}
@@ -1238,8 +1247,9 @@ document.addEventListener('click',async e=>{let t=e.target;noteActivity();
   const bl=t.closest('[data-bldg]');if(bl){UI.subject=bl.dataset.bldg;UI.room=null;go('rooms');renderRooms();return;}
   const bv=t.closest('[data-bldg-view]');if(bv){go(bv.dataset.bldgView);if(bv.dataset.bldgView==='office')renderOffice();return;}
   {const sh=t.closest('[data-show]');if(sh){tourShow(sh.dataset.show);return;}}
-  if(t.closest('[data-tour-hide]')){S.tour.hidden=true;UI.spot=null;await save();renderCampus();return;}
-  if(t.id==='tourRestart'){const lines=S.tour&&S.tour.lines||null;S.tour=newTour();S.tour.lines=lines;UI.spot=null;UI.room=null;await save();go('campus');renderCampus();tourWrite();return;}
+  if(t.id==='tourBackGo'){UI.tourTrail=null;UI.spot=null;UI.room=null;go('campus');renderCampus();renderTourBack();setTimeout(()=>{try{const c=document.querySelector('#board [data-tour]');if(c&&c.scrollIntoView)c.scrollIntoView({block:'start',behavior:'smooth'});}catch(e){}},80);return;}
+  if(t.closest('[data-tour-hide]')){S.tour.hidden=true;UI.spot=null;UI.tourTrail=null;await save();renderCampus();renderTourBack();return;}
+  if(t.id==='tourRestart'){const lines=S.tour&&S.tour.lines||null;S.tour=newTour();S.tour.lines=lines;UI.spot=null;UI.tourTrail=null;UI.room=null;await save();go('campus');renderCampus();renderTourBack();tourWrite();return;}
   if(t.id==='backCampus'){UI.room=null;go('campus');renderCampus();return;}
   if(t.id==='askGo'){await askCaretaker(document.getElementById('askIn').value);return;}
   if(t.id==='voiceTry'){const tv=tutorVoice();const v=pickVoice();readText(`This is ${tv?tutorVoiceName(tv):v?v.name:'the voice'}. It will read the page to you, one sentence at a time.`);return;}

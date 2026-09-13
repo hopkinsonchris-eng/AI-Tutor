@@ -177,7 +177,10 @@ const server = http.createServer((req, res) => {
   await snap(page, '31-show-me-door', 'Show me on “Go through a door and read the lesson”: the corridor with the first door spotlit in amber and the caretaker’s one-line caption above it');
   await page.click('#v-rooms .door[data-spot]');
   await page.waitForFunction(() => !document.querySelector('[data-spot]') && /This room/.test(document.querySelector('#wall').textContent), null, { timeout: 10000 });
-  await page.click('#brand'); await page.waitForSelector('#v-campus .board .fw[data-tour]');
+  must(/✓ Done/.test(await page.locator('#tourBack').textContent()) && (await page.locator('#tourBack [data-show="caretaker"]').count()) === 1 && (await page.locator('#tourBack #tourBackGo').count()) === 1 && (await page.locator('#tourBack').isVisible()), 'the floating bar says Done, offers the next step with its own Show me, and the way back to the card');
+  await snap(page, '33-first-week-bar', 'In the room the Show me led to: the step is done, so the floating bar at the bottom left says Done, names the next step with its own Show me, and always offers Back to First Week');
+  await page.click('#tourBackGo'); await page.waitForSelector('#v-campus .board .fw[data-tour]');
+  must(!(await page.locator('#tourBack').isVisible()), 'Back to First Week drops the bar');
   must(/First week · 2 of 10/.test(await page.locator('#v-campus .board .fw').textContent()) && (await page.locator('#v-campus .board .fwlist li.done').count()) === 2, 'opening the building and the door ticked steps 1 and 2 by themselves; the spotlight is gone');
   await snap(page, '32-first-week-ticked', 'Back on the campus: the First Week card has ticked the two steps the student really did, and the next one is marked');
   await page.click('#v-campus [data-cards]');

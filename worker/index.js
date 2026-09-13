@@ -118,7 +118,7 @@ export default {
       if (p === '/courses' || p.startsWith('/courses/')) return courses(request, env, url, cors);
       if (p.startsWith('/manage/courses') || p.startsWith('/manage/reviews') || p === '/manage/catalogue') return manageCourses(request, env, url, cors);
       if (p.startsWith('/manage/')) return manage(request, env, url, cors);
-      if (request.method === 'GET') return json({ ok: true, service: 'tutor-proxy', build: 'reads-2' }, 200, cors);
+      if (request.method === 'GET') return json({ ok: true, service: 'tutor-proxy', build: 'reads-3' }, 200, cors);
       if (p === '/speech' && request.method === 'POST') return speech(request, env, cors);
       if (p === '/tts' && request.method === 'POST') return tts(request, env, cors);
       if (request.method === 'POST' && (p === '/' || p === '/v1/messages')) return proxy(request, env, cors);
@@ -206,19 +206,20 @@ async function roomReads(request, env, cors) {
 }
 async function findReads(env, ctx) {
   const at = now(); const sites = sitesFor(ctx);
-  const said = await readsViaSearch(env, ctx, sites);
-  const cands = readCandidates(said, sites);
-  const verified = [];
-  for (const c of cands) { const v = await verifyPage(c.url, sites); if (v) verified.push({ ...c, url: v.url, title: v.title || c.title || c.site }); }
+  const search = await readsViaSearch(env, ctx, sites);
+  const cands = readCandidates(search.text, sites);
+  const verified = [], rejected = [];
+  for (const c of cands) { const v = await verifyPage(c.url, sites); if (v.ok) verified.push({ ...c, url: v.url, title: v.title || c.title || c.site }); else rejected.push({ url: c.url.slice(0, 120), why: v.why }); }
   const items = verified.length ? matchPicks(await readPicks(env, ctx, verified), verified, READ_MAX) : [];
-  return { items, at, found: verified.length, via: 'search' };
+  /* what happened, for the admin's eye: how many lines the search gave, which sites it could not reach, why pages were refused */
+  return { items, at, found: verified.length, via: 'search', proposed: cands.length, lines: search.lines, dropped: search.dropped, rejected: rejected.slice(0, 6) };
 }
 /* the search: the model's web search, fenced to the room's trusted sites; one page per line */
 async function readsViaSearch(env, ctx, sites) {
   let allowed = [...new Set(sites.map(s => s.host))];
   const prompt = `${videoContext(ctx)}\n\nUsing web search over the allowed sites only, find up to 8 pages that TEACH this topic at this level for this qualification: revision notes, worked examples, practice questions with answers, or the board's own resource page for this course. Never a home page, a search page, a login page or a shop. Answer with one page per line and nothing else, in the form:\nhttps://... | title | notes or practice or official`;
   const headers = { 'Content-Type': 'application/json', 'x-api-key': env.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01' };
-  let data, turns = 0, dropped = 0;
+  let data, turns = 0, rounds = 0; const dropped = [];
   const body = { model: VIDEO_MODEL, max_tokens: 3000, tools: [{ type: 'web_search_20260209', name: 'web_search', max_uses: 5, allowed_domains: allowed }], messages: [{ role: 'user', content: prompt }] };
   while (turns++ < 6) {
     const res = await fetch('https://api.anthropic.com/v1/messages', { method: 'POST', headers, body: JSON.stringify(body) });
@@ -226,27 +227,28 @@ async function readsViaSearch(env, ctx, sites) {
     if (!res.ok) {
       /* the search tool cannot reach some sites at all; it names them — drop them from the fence and search the rest */
       const m = res.status === 400 && /not accessible/i.test(text) ? [...text.matchAll(/'([a-z0-9.-]+\.[a-z]{2,})'/gi)].map(x => x[1].toLowerCase()) : [];
-      if (m.length && dropped < 2) { dropped++; allowed = allowed.filter(h => !m.some(d => h === d || h.endsWith('.' + d) || d.endsWith('.' + h))); if (!allowed.length) return ''; body.tools[0].allowed_domains = allowed; continue; }
+      if (m.length && rounds < 2) { rounds++; dropped.push(...m); allowed = allowed.filter(h => !m.some(d => h === d || h.endsWith('.' + d) || d.endsWith('.' + h))); if (!allowed.length) return { text: '', lines: 0, dropped }; body.tools[0].allowed_domains = allowed; continue; }
       throw new Error(`Anthropic ${res.status}: ${text.slice(0, 200)}`);
     }
     data = JSON.parse(text);
     if (data.stop_reason !== 'pause_turn') break;
     body.messages.push({ role: 'assistant', content: data.content });
   }
-  return (data && data.content || []).filter(c => c.type === 'text').map(c => c.text).join('\n');
+  const said = (data && data.content || []).filter(c => c.type === 'text').map(c => c.text).join('\n');
+  return { text: said, lines: said.split('\n').filter(l => /https?:\/\//.test(l)).length, dropped };
 }
 /* a page is listed only if it loads like a browser sees it, as HTML, at an address still on the list, and does not say it is gone */
 async function verifyPage(url, sites) {
   const ctrl = typeof AbortController !== 'undefined' ? new AbortController() : null; const timer = ctrl && setTimeout(() => ctrl.abort(), 8000);
   try {
-    const res = await fetch(url, { redirect: 'follow', signal: ctrl ? ctrl.signal : undefined, headers: { 'User-Agent': READ_UA, 'Accept': 'text/html', 'Accept-Language': 'en-GB,en;q=0.9' } });
-    if (!res.ok) return null;
-    if (!/text\/html/i.test(res.headers.get('content-type') || '')) return null;
-    const finalUrl = res.url || url; if (!siteFor(finalUrl, sites)) return null;
+    const res = await fetch(url, { redirect: 'follow', signal: ctrl ? ctrl.signal : undefined, headers: { 'User-Agent': READ_UA, 'Accept': 'text/html,application/xhtml+xml', 'Accept-Language': 'en-GB,en;q=0.9' } });
+    if (!res.ok) return { ok: false, why: 'HTTP ' + res.status };
+    if (!/text\/html|xhtml/i.test(res.headers.get('content-type') || '')) return { ok: false, why: 'not a page: ' + String(res.headers.get('content-type') || '').slice(0, 40) };
+    const finalUrl = res.url || url; if (!siteFor(finalUrl, sites)) return { ok: false, why: 'redirected off the list' };
     const html = (await res.text()).slice(0, 65536); const title = pageTitle(html);
-    if (looksDead(title)) return null;
-    return { url: finalUrl, title };
-  } catch (e) { return null; }
+    if (looksDead(title)) return { ok: false, why: 'says it is gone: ' + title.slice(0, 60) };
+    return { ok: true, url: finalUrl, title };
+  } catch (e) { return { ok: false, why: 'fetch failed: ' + String(e && e.message || e).slice(0, 80) }; }
   finally { if (timer) clearTimeout(timer); }
 }
 async function readPicks(env, ctx, verified) {

@@ -286,6 +286,17 @@ function topicLinks(spec, topic) {
 /* The drawn desk. Days to the exam: to the first day of the exam term in the chosen year, or mid-May if the
    calendar does not reach that year. Piles: the bank at each difficulty minus the questions got right there
    in this room, never below one sheet while the bank has any. */
+/* predicted grades are shown only inside the last year before the exam; before that a U is just a fact about the calendar */
+function gradesShown(setup, today) { const d = daysToExam(setup, today); return d != null && d < 365; }
+/* progress in a subject over the last fortnight: 'up' when a room's state rose, practice went right or a paper was sat; else 'flat' */
+function subjectTrend(state, spec, today) {
+  const since = iso(new Date(today) - 14 * DAY);
+  const mine = id => !!(state.nodes[id] && state.nodes[id].spec === spec.id);
+  if ((state.transitions || []).some(t => t.date >= since && mine(t.node) && STATES.indexOf(t.to) > STATES.indexOf(t.from))) return 'up';
+  if ((state.practice || []).some(x => x.date >= since && x.ok && mine(x.node))) return 'up';
+  if ((state.papers || []).some(x => x.spec === spec.id && x.date && x.date >= since)) return 'up';
+  return 'flat';
+}
 function daysToExam(setup, today) {
   const y = setup && setup.examYear; if (!y) return null;
   const b = BLOCKS.find(x => x.kind === 'EXAM' && x.from.startsWith(String(y)));
@@ -452,4 +463,4 @@ function supportUsageLine(state, today) {
   return parts.length ? 'Support this week: ' + parts.join(' · ') : '';
 }
 if (typeof module !== 'undefined') module.exports = { DAY, STATES, FAILURE_MODES, REMEDY, BLOCKS, phaseFor, days, iso, resolveTopics, nodeId, newState, topicWeights, deskResurface, daysToExam, pileCounts,
-  recordResult, recordWrong, applyDecay, dueForReview, scheduleCard, dueCards, subjectPriority, buildSession, topicForCode, questionTopic, paperTopics, paperPriority, applyPaper, retestQueue, recordRetest, gradeFromBoundaries, RETEST_CAP, errorUrgency, MASTERY_FACTOR, DEFAULT_BOUNDS, gradeFor, predictSubject, weeklyReport, streakDays, nudgeFallback, nudgePrompt, topicLinks, SUPPORT_DEFAULTS, normaliseSupport, splitSentences, prompterLine, timerMinutes, marksToMinutes, chunkFallback, supportUsageLine, TUTOR_VOICES, speakable, newTour };
+  recordResult, recordWrong, applyDecay, dueForReview, scheduleCard, dueCards, subjectPriority, buildSession, topicForCode, questionTopic, paperTopics, paperPriority, applyPaper, retestQueue, recordRetest, gradeFromBoundaries, RETEST_CAP, errorUrgency, MASTERY_FACTOR, DEFAULT_BOUNDS, gradeFor, predictSubject, weeklyReport, streakDays, nudgeFallback, nudgePrompt, topicLinks, SUPPORT_DEFAULTS, normaliseSupport, splitSentences, prompterLine, timerMinutes, marksToMinutes, chunkFallback, supportUsageLine, TUTOR_VOICES, speakable, newTour, gradesShown, subjectTrend };

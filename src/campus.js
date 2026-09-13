@@ -13,15 +13,23 @@
 
   /* eight building shapes, chosen by the subject's position in the portfolio */
   const SHAPES = [
-    { name: 'hall',     w: 4, d: 3, h: 2.2, roof: 'pitched' },
-    { name: 'tower',    w: 2.4, d: 2.4, h: 3.6, roof: 'flat' },
-    { name: 'block',    w: 3.4, d: 3.4, h: 2.6, roof: 'flat' },
-    { name: 'long',     w: 5, d: 2.2, h: 1.8, roof: 'pitched' },
-    { name: 'lshape',   w: 4, d: 4, h: 2.2, roof: 'flat', cut: true },
-    { name: 'pavilion', w: 3, d: 3, h: 2, roof: 'hip' },
-    { name: 'clock',    w: 2.2, d: 2.2, h: 3.2, roof: 'pitched', clock: true },
-    { name: 'terrace',  w: 4.6, d: 2.4, h: 2.4, roof: 'pitched', bays: 3 },
+    { name: 'hall',     w: 4, d: 3, h: 2.2, st: 2, roof: 'pitched' },
+    { name: 'tower',    w: 2.4, d: 2.4, h: 3.6, st: 4, roof: 'flat' },
+    { name: 'block',    w: 3.4, d: 3.4, h: 2.6, st: 3, roof: 'flat' },
+    { name: 'long',     w: 5, d: 2.2, h: 1.8, st: 2, roof: 'pitched' },
+    { name: 'lshape',   w: 4, d: 4, h: 2.2, st: 2, roof: 'flat', cut: true },
+    { name: 'pavilion', w: 3, d: 3, h: 2, st: 2, roof: 'hip' },
+    { name: 'clock',    w: 2.2, d: 2.2, h: 3.2, st: 3, roof: 'pitched', clock: true },
+    { name: 'terrace',  w: 4.6, d: 2.4, h: 2.4, st: 2, roof: 'pitched', bays: 3 },
   ];
+  /* a building starts as one storey and gains a floor for every share of its rooms the student has completed; finished floors are lit.
+     With rooms and done: storeys = completed floors + the one being built, up to the shape's full height. Without them: the shape's fixed height, lit by pct. */
+  function storeys(sh, s) {
+    if (!(s.rooms > 0)) return { h: sh.h, lit: s.pct || 0 };
+    const done = Math.max(0, Math.min(s.rooms, s.done || 0)); const completed = done >= s.rooms ? sh.st : Math.floor(done / s.rooms * sh.st);
+    const n = Math.min(sh.st, completed + 1);
+    return { h: 0.6 + n, lit: completed / n, storeys: n, completed };
+  }
 
   /* plots along a central path: subjects left and right, the Office at the foot of the path, the Exam Hall at the head */
   const ROW = 6, TOP = 5.4;
@@ -76,7 +84,7 @@
 
   /* windows on the two visible faces; lit ones glow warm. count is spread across both faces, lit from the bottom up */
   function windows(x, y, w, d, h, lit, total) {
-    const rows = Math.max(1, Math.floor(h - 0.6)), colsL = Math.max(1, Math.floor(w * 1.1)), colsR = Math.max(1, Math.floor(d * 1.1));
+    const rows = Math.max(1, Math.floor(h - 0.6 + 1e-6)), colsL = Math.max(1, Math.floor(w * 1.1)), colsR = Math.max(1, Math.floor(d * 1.1));
     const cells = [];
     for (let r = 0; r < rows; r++) {
       for (let c = 0; c < colsL; c++) cells.push({ f: 'L', r, c });
@@ -118,7 +126,7 @@
     return `<text x="${px}" y="${py + 12}" text-anchor="middle" font-size="12.5" font-weight="600" fill="${INK}" ${halo}>${esc(text)}</text>` + (sub ? `<text x="${px}" y="${py + 26}" text-anchor="middle" font-size="10.5" fill="${PENCIL}" ${halo}>${esc(sub)}</text>` : '');
   }
 
-  /* model: { subjects:[{id,name,short,colour,pct,marker,rooms,due}], exam:{marker}, office:{name}, admin:bool, hour:0-23 } */
+  /* model: { subjects:[{id,name,short,colour,pct,marker,rooms,done,summary}], exam:{marker}, office:{name}, admin:bool, hour:0-23, calm:bool } */
   function campusSvg(model) {
     const subs = model.subjects || [];
     const P = plots(subs.length);
@@ -133,14 +141,14 @@
       paths += `<polygon points="${left ? [pt(p.x + sh.w / 2 - 0.4, yy, 0), pt(p.x + sh.w / 2 + 0.4, yy, 0), pt(p.x + sh.w / 2 + 0.4, yy + 1.2, 0), pt(6.2, yy + 1.2, 0), pt(6.2, yy + 0.4, 0), pt(p.x + sh.w / 2 - 0.4, yy + 0.4, 0)].join(' ') : [pt(p.x + sh.w / 2 - 0.4, yy, 0), pt(p.x + sh.w / 2 + 0.4, yy, 0), pt(p.x + sh.w / 2 + 0.4, yy + 0.4, 0), pt(7.8, yy + 0.4, 0), pt(7.8, yy + 1.2, 0), pt(p.x + sh.w / 2 - 0.4, yy + 1.2, 0)].join(' ')}" fill="#E9E2D2" stroke="${INK}" stroke-width="0.8"/>`; });
     // buildings as drawable things with a depth key
     subs.forEach((s, i) => { const p = P[i]; const sh = SHAPES[i % SHAPES.length]; things.push({ z: p.x + p.y + sh.d, draw: () => {
-      const base = tint(s.colour, 0.82);
-      let b = `<g class="bldg" data-bldg="${esc(s.id)}" data-i="${i}" role="link" tabindex="0" aria-label="${esc(s.name)}: ${esc(s.summary || '')}" style="cursor:pointer">`;
-      b += box(p.x, p.y, sh.w, sh.d, sh.h, { base, roof: sh.roof });
-      if (sh.cut) b += box(p.x + sh.w - 1.4, p.y - 1.2, 1.4, 1.2, sh.h, { base, roof: 'flat' });
-      b += windows(p.x, p.y, sh.w, sh.d, sh.h, s.pct || 0);
-      if (sh.clock) { const [cx, cy] = iso(p.x + sh.w / 2, p.y + sh.d, sh.h - 0.6); b += `<circle cx="${cx}" cy="${cy}" r="9" fill="${PAPER}" stroke="${INK}" stroke-width="1.2"/><line x1="${cx}" y1="${cy}" x2="${cx}" y2="${cy - 6}" stroke="${INK}" stroke-width="1.2"/><line x1="${cx}" y1="${cy}" x2="${cx + 4}" y2="${cy + 2}" stroke="${INK}" stroke-width="1.2"/>`; }
+      const base = tint(s.colour, 0.82); const st = storeys(sh, s); const h = st.h;
+      let b = `<g class="bldg" data-bldg="${esc(s.id)}" data-i="${i}"${st.storeys ? ` data-storeys="${st.storeys}" data-lit="${st.completed}"` : ''} role="link" tabindex="0" aria-label="${esc(s.name)}: ${esc(s.summary || '')}" style="cursor:pointer">`;
+      b += box(p.x, p.y, sh.w, sh.d, h, { base, roof: sh.roof });
+      if (sh.cut) b += box(p.x + sh.w - 1.4, p.y - 1.2, 1.4, 1.2, h, { base, roof: 'flat' });
+      b += windows(p.x, p.y, sh.w, sh.d, h, st.lit);
+      if (sh.clock) { const [cx, cy] = iso(p.x + sh.w / 2, p.y + sh.d, h - 0.6); b += `<circle cx="${cx}" cy="${cy}" r="9" fill="${PAPER}" stroke="${INK}" stroke-width="1.2"/><line x1="${cx}" y1="${cy}" x2="${cx}" y2="${cy - 6}" stroke="${INK}" stroke-width="1.2"/><line x1="${cx}" y1="${cy}" x2="${cx + 4}" y2="${cy + 2}" stroke="${INK}" stroke-width="1.2"/>`; }
       b += door(p.x, p.y, sh.w, sh.d, s.colour);
-      b += flag(p.x, p.y, sh.w, sh.d, sh.roof === 'flat' ? sh.h : sh.h + Math.min(sh.w, sh.d) * 0.45, FLAG[s.marker]);
+      b += flag(p.x, p.y, sh.w, sh.d, sh.roof === 'flat' ? h : h + Math.min(sh.w, sh.d) * 0.45, FLAG[s.marker]);
       labels.push(label(p.x, p.y, sh.w, sh.d, s.short || s.name, s.sub || ''));
       return b + '</g>'; } }); });
     // exam hall at the head of the path

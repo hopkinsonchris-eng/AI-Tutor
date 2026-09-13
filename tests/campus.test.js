@@ -34,4 +34,16 @@ ok('a portfolio with no subjects still draws the Exam Hall and the Office', /dat
 ok('C13 calm mode: the drawing carries no time-of-day wash, and everything else is still there', (() => { const c = campusSvg({ subjects: subs(2), exam: {}, office: {}, hour: 17, calm: true }); const n = campusSvg({ subjects: subs(2), exam: {}, office: {}, hour: 17 }); return !/opacity="\.0[68]" pointer-events="none"/.test(c) && /opacity="\.06" pointer-events="none"/.test(n) && (c.match(/data-bldg="S\d"/g) || []).length === 2 && /data-bldg-view="exam"/.test(c); })());
 ok('C14 no gate marker: the foot of the path carries no stray line or GATE label', !/GATE/.test(campusSvg({ subjects: subs(2), exam: {}, office: {} })));
 
+
+/* buildings grow a floor per share of rooms completed; finished floors are lit */
+{const windows=g=>lit(g)+dark(g);const mk=(done,rooms)=>{const m={subjects:subs(3),exam:{},office:{},hour:11};m.subjects[1].rooms=rooms;m.subjects[1].done=done;m.subjects[1].pct=0.9;return group(campusSvg(m),'S1');};
+ const g0=mk(0,8),g1=mk(2,8),g2=mk(4,8),g3=mk(8,8),gp=mk(8,8);
+ ok('C15 a subject with nothing completed is a single storey with no lights, whatever its pct',/data-storeys="1" data-lit="0"/.test(g0)&&lit(g0)===0&&windows(g0)>0,g0.match(/data-storeys[^>]*/)+'');
+ ok('C15 completing a quarter of the rooms (one of four floors’ worth) adds a second floor and lights the first',/data-storeys="2" data-lit="1"/.test(g1)&&windows(g1)===2*windows(g0)&&lit(g1)===windows(g0),g1.match(/data-storeys[^>]*/)+' '+lit(g1)+'/'+windows(g1));
+ ok('C15 half the rooms: three floors, two lit',/data-storeys="3" data-lit="2"/.test(g2)&&windows(g2)===3*windows(g0)&&lit(g2)===2*windows(g0));
+ ok('C15 every room completed: the tower’s full four floors, all lit',/data-storeys="4" data-lit="4"/.test(g3)&&windows(g3)===4*windows(g0)&&dark(g3)===0);
+ const hallDone=(()=>{const m={subjects:subs(1),exam:{},office:{},hour:11};m.subjects[0].rooms=9;m.subjects[0].done=9;return group(campusSvg(m),'S0');})();
+ ok('C15 a two-storey shape never grows past two',/data-storeys="2" data-lit="2"/.test(hallDone));
+ ok('C15 a model without room counts keeps the old fixed height lit by pct',!/data-storeys/.test(group(campusSvg({subjects:subs(2),exam:{},office:{},hour:11}),'S0')));}
+
 console.log(`PASSED: ${pass}`); fails.forEach(f => console.log('FAILED: ' + f)); console.log('-'.repeat(50)); console.log(fails.length ? `RESULT: ${fails.length} FAILURE(S)` : 'RESULT: ALL GREEN'); process.exit(fails.length ? 1 : 0);

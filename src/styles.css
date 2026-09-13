@@ -374,3 +374,4 @@ body.calm [data-spot],body.calm svg [data-spot]{animation:none}body.calm .spotca
 .tourbar .tb-row{gap:8px;margin-top:2px}.tourbar .tb-row>*{flex:0 0 auto}.tourbar .act{margin:0}.tourbar .act.ghost{border-color:var(--paper);color:var(--paper);background:transparent}.tourbar .act.ghost:hover{background:rgba(255,255,255,.1)}
 @media (min-width:760px){.tourbar{left:14px;right:auto;bottom:14px;max-width:380px}body.status-on .tourbar{bottom:14px}body.wall-on .tourbar{bottom:14px}}
 body.calm .tourbar{box-shadow:none}
+.trend{font-weight:700;font-variant-numeric:normal}.trend.up{color:var(--green)}.trend.flat{color:var(--pencil)}

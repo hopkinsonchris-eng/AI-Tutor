@@ -150,4 +150,16 @@ ok('U3 a mistake older than thirty days or already cleared no longer pulls',(()=
   ok('TV1 the two voices are listed with plain labels',C.TUTOR_VOICES.length===2&&C.TUTOR_VOICES[0][0]==='athena'&&/British/.test(C.TUTOR_VOICES[0][1])&&C.TUTOR_VOICES[1][0]==='helios');
   ok('TV2 the spoken form only swaps symbols a voice would mangle, and leaves everything else exactly as written',C.speakable('Speed = distance ÷ time, so 3 × 4 → 12 at ≥ 20 °C.')==='Speed = distance divided by time, so 3 times 4 gives 12 at at least 20 degrees C.'&&C.speakable('Section 3.1.2 covers H2O and 45%.')==='Section 3.1.2 covers H2O and 45%.'&&C.speakable('  spaced   out ')==='spaced out'&&C.speakable('a ≤ b')==='a at most b');
 }
+
+/* predicted grades gated to the last year; the trend before that */
+{const st=JSON.parse(JSON.stringify(s2));st.transitions=[];st.practice=[];st.papers=[];
+ ok('T1 grades are shown only inside the last 365 days before the exam',C.gradesShown({examYear:2028},'2026-09-13')===false&&C.gradesShown({examYear:2027},'2026-09-13')===true&&C.gradesShown({examYear:2028},'2027-06-01')===true&&C.gradesShown({},'2026-09-13')===false);
+ ok('T2 no work in a fortnight is flat',C.subjectTrend(st,SPEC_H481,'2026-09-13')==='flat');
+ st.transitions.push({date:'2026-09-01',node:'OCR-H481|1.2',from:'Unassessed',to:'Learning'});ok('T2 a room whose state rose in the last fortnight is up',C.subjectTrend(st,SPEC_H481,'2026-09-13')==='up');
+ ok('T2 the same rise a month ago is flat again',C.subjectTrend(st,SPEC_H481,'2026-10-13')==='flat');
+ st.transitions=[{date:'2026-09-10',node:'OCR-H481|1.2',from:'Fluent',to:'Learning'}];ok('T2 a fall is not progress',C.subjectTrend(st,SPEC_H481,'2026-09-13')==='flat');
+ st.practice.push({date:'2026-09-12',node:'OCR-H481|1.2',ok:true});ok('T2 a right answer in practice is up',C.subjectTrend(st,SPEC_H481,'2026-09-13')==='up');
+ ok('T2 another subject’s work does not count',C.subjectTrend(st,SPEC_9PL0,'2026-09-13')==='flat');
+ st.practice=[];st.papers.push({spec:'EDX-9PL0',score:10,total:30,date:'2026-09-05'});ok('T2 a paper sat this fortnight is up for its subject',C.subjectTrend(st,SPEC_9PL0,'2026-09-13')==='up');}
+
 console.log(`PASSED: ${pass}`);fails.forEach(f=>console.log('FAILED: '+f));console.log('-'.repeat(50));console.log(fails.length?`RESULT: ${fails.length} FAILURE(S)`:'RESULT: ALL GREEN');process.exit(fails.length?1:0);

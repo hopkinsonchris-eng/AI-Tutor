@@ -51,17 +51,24 @@ export function cleanUrl(url) {
   try { const u = new URL(url); if (u.protocol !== 'https:') return null; u.hash = ''; for (const k of [...u.searchParams.keys()]) if (/^utm_|^fbclid$|^gclid$/.test(k)) u.searchParams.delete(k); return u.href; } catch (e) { return null; }
 }
 /* the model's answer, one page per line as url | title | kind, kept only when the page is https and on the list */
-export function readCandidates(text, sites, max = 12) {
-  const out = [], seen = new Set();
+export function readCandidates(text, sites, max = 14) {
+  const all = [], seen = new Set();
   for (const line of String(text || '').split('\n')) {
     const m = line.match(/(https?:\/\/[^\s|]+)/); if (!m) continue;
     const url = cleanUrl(m[1]); if (!url) continue;
     const site = siteFor(url, sites); if (!site) continue;
     if (seen.has(url)) continue; seen.add(url);
     const parts = line.split('|').map(x => x.trim()); const title = (parts[1] || '').slice(0, 160); const kind = READ_KINDS.includes((parts[2] || '').toLowerCase()) ? parts[2].toLowerCase() : site.official ? 'official' : 'notes';
-    out.push({ url, title, kind, site: site.name, free: site.free });
-    if (out.length >= max) break;
+    all.push({ url, title, kind, site: site.name, free: site.free });
   }
+  return spread(all, max);
+}
+/* a fair share of the fetches: free sites before freemium, then round the sites in turn, so one site never fills the list */
+export function spread(list, max) {
+  const bySite = new Map(); for (const c of list) { if (!bySite.has(c.site)) bySite.set(c.site, []); bySite.get(c.site).push(c); }
+  const order = [...bySite.keys()].sort((a, b) => (bySite.get(a)[0].free === 'freemium' ? 1 : 0) - (bySite.get(b)[0].free === 'freemium' ? 1 : 0));
+  const out = []; let added = true;
+  while (added && out.length < max) { added = false; for (const k of order) { const q = bySite.get(k); if (q.length && out.length < max) { out.push(q.shift()); added = true; } } }
   return out;
 }
 /* the page's own title, from its head */
@@ -72,13 +79,19 @@ export function pageTitle(html) {
 /* a page that answers 200 but says it is gone */
 export function looksDead(title) { return /\b(not found|404|page cannot be found|page doesn.t exist|no longer available|access denied)\b/i.test(String(title || '')); }
 /* the pages the model picked, matched back to the verified list, at most `max`, each with a short why */
-export function matchPicks(picks, verified, max = 4) {
-  const items = [], seen = new Set();
+/* free pages come before freemium ones, and no site takes more than two of the places while another site has a pick waiting */
+export function matchPicks(picks, verified, max = 4, perSite = 2) {
+  const chosen = [], seen = new Set();
   for (const p of Array.isArray(picks) ? picks : []) {
     const url = cleanUrl(p && p.url); if (!url || seen.has(url)) continue;
     const v = verified.find(x => x.url === url); if (!v) continue; seen.add(url);
-    items.push({ ...v, why: String(p.why || '').replace(/\s+/g, ' ').trim().slice(0, 120) });
-    if (items.length >= max) break;
+    chosen.push({ ...v, why: String(p.why || '').replace(/\s+/g, ' ').trim().slice(0, 120) });
   }
+  const items = [], count = {};
+  const take = (pass) => { for (const c of chosen) { if (items.includes(c) || items.length >= max) continue; if (!pass(c)) continue; if ((count[c.site] || 0) >= perSite) continue; items.push(c); count[c.site] = (count[c.site] || 0) + 1; } };
+  take(c => c.free !== 'freemium' && !count[c.site]);   // one free page per site
+  take(c => c.free === 'freemium' && !count[c.site]);   // one freemium page per site
+  take(c => c.free !== 'freemium');                      // more free pages, up to two a site
+  take(() => true);                                      // then whatever is left
   return items;
 }

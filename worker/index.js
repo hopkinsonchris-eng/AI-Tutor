@@ -118,7 +118,7 @@ export default {
       if (p === '/courses' || p.startsWith('/courses/')) return courses(request, env, url, cors);
       if (p.startsWith('/manage/courses') || p.startsWith('/manage/reviews') || p === '/manage/catalogue') return manageCourses(request, env, url, cors);
       if (p.startsWith('/manage/')) return manage(request, env, url, cors);
-      if (request.method === 'GET') return json({ ok: true, service: 'tutor-proxy', build: 'reads-5' }, 200, cors);
+      if (request.method === 'GET') return json({ ok: true, service: 'tutor-proxy', build: 'reads-6' }, 200, cors);
       if (p === '/speech' && request.method === 'POST') return speech(request, env, cors);
       if (p === '/tts' && request.method === 'POST') return tts(request, env, cors);
       if (request.method === 'POST' && (p === '/' || p === '/v1/messages')) return proxy(request, env, cors);
@@ -194,7 +194,7 @@ async function roomReads(request, env, cors) {
     ideas: (Array.isArray(b.ideas) ? b.ideas : []).slice(0, 12).map(x => str(x, 160)).filter(Boolean) };
   if (!ctx.spec || !ctx.topic || !ctx.subject || !ctx.topicName) return json({ error: 'spec, topic, subject and topicName are required' }, 400, cors);
   if (!/^[A-Za-z0-9._-]+$/.test(ctx.spec) || /\s/.test(ctx.topic)) return json({ error: 'spec and topic must be ids' }, 400, cors);
-  const ck = `reads1:${ctx.spec}:${ctx.topic}`;
+  const ck = `reads2:${ctx.spec}:${ctx.topic}`;
   const cached = await env.USAGE.get(ck, 'json');
   if (cached && !(b.refresh === true && s.user.role === 'admin')) return json(cached, 200, cors);
   if (!env.ANTHROPIC_API_KEY) return json({ items: [], at: now(), error: 'no model key' }, 200, cors);
@@ -209,15 +209,15 @@ async function findReads(env, ctx) {
   const search = await readsViaSearch(env, ctx, sites);
   const cands = readCandidates(search.text, sites);
   const verified = [], rejected = [];
-  for (const c of cands) { const v = await verifyPage(c.url, sites); if (v.ok) verified.push({ ...c, url: v.url, title: v.title || c.title || c.site }); else rejected.push({ url: c.url.slice(0, 120), why: v.why }); }
+  for (const c of cands) { const v = await verifyPage(c.url, sites); if (v.ok) verified.push({ ...c, url: v.url, title: v.title || c.title || c.site, ...(v.pdf ? { pdf: true } : {}) }); else rejected.push({ url: c.url.slice(0, 120), why: v.why }); }
   const items = verified.length ? matchPicks(await readPicks(env, ctx, verified), verified, READ_MAX) : [];
   /* what happened, for the admin's eye: how many lines the search gave, which sites it could not reach, why pages were refused */
-  return { items, at, found: verified.length, via: 'search', proposed: cands.length, lines: search.lines, dropped: search.dropped, rejected: rejected.slice(0, 6), shape: search.shape, stop: search.stop };
+  return { items, at, found: verified.length, via: 'search', proposed: cands.length, lines: search.lines, dropped: search.dropped, rejected: rejected.slice(0, 6) };
 }
 /* the search: the model's web search, fenced to the room's trusted sites; one page per line */
 async function readsViaSearch(env, ctx, sites) {
   let allowed = [...new Set(sites.map(s => s.host))];
-  const prompt = `${videoContext(ctx)}\n\nUsing web search over the allowed sites only, find up to 8 pages that TEACH this topic at this level for this qualification: revision notes, worked examples, practice questions with answers, or the board's own resource page for this course. Never a home page, a search page, a login page or a shop. Answer with one page per line and nothing else, in the form:\nhttps://... | title | notes or practice or official`;
+  const prompt = `${videoContext(ctx)}\n\nUsing web search over the allowed sites only, find up to 8 pages that TEACH this topic at this level for this qualification: revision notes (a PDF of notes counts), worked examples, practice questions with answers, or the board's own resource page for this course. Look first for pages written for ${ctx.board} ${ctx.code}; a page for the same subject and level on another board is acceptable when nothing else covers the topic. Never a home page, a search page, a login page or a shop. Answer with one page per line and nothing else, in the form:\nhttps://... | title | notes or practice or official`;
   const headers = { 'Content-Type': 'application/json', 'x-api-key': env.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01' };
   let data, turns = 0, rounds = 0; const dropped = [];
   const body = { model: VIDEO_MODEL, max_tokens: 3000, tools: [{ type: 'web_search_20260209', name: 'web_search', max_uses: 5, allowed_domains: allowed }], messages: [{ role: 'user', content: prompt }] };
@@ -248,8 +248,10 @@ async function verifyPage(url, sites) {
   try {
     const res = await fetch(url, { redirect: 'follow', signal: ctrl ? ctrl.signal : undefined, headers: { 'User-Agent': READ_UA, 'Accept': 'text/html,application/xhtml+xml', 'Accept-Language': 'en-GB,en;q=0.9' } });
     if (!res.ok) return { ok: false, why: 'HTTP ' + res.status };
-    if (!/text\/html|xhtml/i.test(res.headers.get('content-type') || '')) return { ok: false, why: 'not a page: ' + String(res.headers.get('content-type') || '').slice(0, 40) };
+    const type = String(res.headers.get('content-type') || '');
     const finalUrl = res.url || url; if (!siteFor(finalUrl, sites)) return { ok: false, why: 'redirected off the list' };
+    if (/application\/pdf/i.test(type)) return { ok: true, url: finalUrl, title: '', pdf: true };   /* a PDF of notes is a real page too; its title comes from the search */
+    if (!/text\/html|xhtml/i.test(type)) return { ok: false, why: 'not a page: ' + type.slice(0, 40) };
     const html = (await res.text()).slice(0, 65536); const title = pageTitle(html);
     if (looksDead(title)) return { ok: false, why: 'says it is gone: ' + title.slice(0, 60) };
     return { ok: true, url: finalUrl, title };
@@ -257,8 +259,8 @@ async function verifyPage(url, sites) {
   finally { if (timer) clearTimeout(timer); }
 }
 async function readPicks(env, ctx, verified) {
-  const lines = verified.map(v => `${v.url} | ${v.title} | ${v.site} | ${v.kind} | ${v.free}`).join('\n');
-  const prompt = `${videoContext(ctx)}\n\nThese pages exist and are on trusted sites, one per line: url | title | site | kind | free or freemium.\n${lines}\n\nChoose up to ${READ_MAX} that plainly teach or practise THIS topic at this level — pages a student can learn the key ideas from or test themselves on. Judge from the url, title and site. Reject a page about a different topic, a different qualification or level, a home or index page, or anything you are not sure teaches this topic. Prefer a mix: notes, practice and the board's own page when each is there, free before freemium. Order the best first. If nothing qualifies, return an empty list. For each pick give why in at most 12 words, addressed to the student, saying what the page gives them.`;
+  const lines = verified.map(v => `${v.url} | ${v.title}${v.pdf ? ' (PDF)' : ''} | ${v.site} | ${v.kind} | ${v.free}`).join('\n');
+  const prompt = `${videoContext(ctx)}\n\nThese pages exist and are on trusted sites, one per line: url | title | site | kind | free or freemium.\n${lines}\n\nChoose up to ${READ_MAX} that plainly teach or practise THIS topic at this level — pages a student can learn the key ideas from or test themselves on. Judge from the url, title and site. Reject a page about a different topic, a different qualification or level, a home or index page, or anything you are not sure teaches this topic. Prefer pages written for ${ctx.board} ${ctx.code} over the same subject on another board, free before freemium, and a mix of notes, practice and the board's own page when each is there. Never more than two from one site. Order the best first. If nothing qualifies, return an empty list. For each pick give why in at most 12 words, addressed to the student, saying what the page gives them.`;
   const r = await askJson(env, prompt, { type: 'object', properties: { picks: { type: 'array', items: { type: 'object', properties: { url: { type: 'string' }, why: { type: 'string' } }, required: ['url', 'why'], additionalProperties: false } } }, required: ['picks'], additionalProperties: false }, 1200);
   return Array.isArray(r.picks) ? r.picks : [];
 }

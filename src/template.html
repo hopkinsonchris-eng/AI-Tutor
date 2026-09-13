@@ -1291,7 +1291,11 @@ document.addEventListener('click',async e=>{let t=e.target;noteActivity();
   if(t.id==='rtStop'){UI.retest=null;renderToday();return;}
   if(t.id==='backRooms'){UI.room=null;renderRooms();return;}
   const stn=t.closest('[data-station]');if(stn){openStation(stn.dataset.station,stn.tagName!=='BUTTON');return;}
-  const fl=t.closest('[data-flip]');if(fl){const k=fl.dataset.flip;const was=!!UI.revealed[k];UI.revealed[k]=!was;if(was)UI.fcAnim=k;tourTick('cards');if(k==='card')renderToday();else renderRooms();return;}
+  const fl=t.closest('[data-flip]');if(fl){const k=fl.dataset.flip;const was=!!UI.revealed[k];UI.revealed[k]=!was;const ticked=tourTick('cards');
+    if(k==='card'){if(was)UI.fcAnim=k;renderToday();return;}
+    /* a deck card turns over in place: nothing else on the page moves, blinks or scrolls */
+    if(ticked||!fl.classList||!fl.setAttribute){if(was)UI.fcAnim=k;renderRooms();return;}
+    fl.classList.toggle('flipped',!was);fl.classList.toggle('unflip',was);fl.setAttribute('aria-pressed',String(!was));fl.setAttribute('aria-label',!was?'Turn back to the question':'Turn over for the answer');return;}
   const rv=t.closest('[data-reveal]');if(rv){UI.revealed[rv.dataset.reveal]=true;renderAll();return;}
   const lx=t.closest('[data-lxrev]');if(lx){const k='lx'+lx.dataset.lxrev;const AUx=authoredFor(nodeTopic(UI.room).spec.id,nodeTopic(UI.room).topic.id);const ex=AUx&&AUx.lesson&&AUx.lesson.examples[+lx.dataset.lxrev];UI.revealed[k]=Math.max(UI.revealed[k]||0,ex&&!ex.setup?1:0)+1;renderRooms();return;}
   const ax=t.closest('[data-axrev]');if(ax){const k='ax'+ax.dataset.axrev;const AUx=authoredFor(nodeTopic(UI.room).spec.id,nodeTopic(UI.room).topic.id);const ex=AUx&&AUx.room&&AUx.room.examples[+ax.dataset.axrev];UI.revealed[k]=Math.max(UI.revealed[k]||0,ex&&!ex.setup?1:0)+1;renderRooms();return;}

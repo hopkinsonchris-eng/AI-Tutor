@@ -118,7 +118,7 @@ export default {
       if (p === '/courses' || p.startsWith('/courses/')) return courses(request, env, url, cors);
       if (p.startsWith('/manage/courses') || p.startsWith('/manage/reviews') || p === '/manage/catalogue') return manageCourses(request, env, url, cors);
       if (p.startsWith('/manage/')) return manage(request, env, url, cors);
-      if (request.method === 'GET') return json({ ok: true, service: 'tutor-proxy', build: 'reads-3' }, 200, cors);
+      if (request.method === 'GET') return json({ ok: true, service: 'tutor-proxy', build: 'reads-4' }, 200, cors);
       if (p === '/speech' && request.method === 'POST') return speech(request, env, cors);
       if (p === '/tts' && request.method === 'POST') return tts(request, env, cors);
       if (request.method === 'POST' && (p === '/' || p === '/v1/messages')) return proxy(request, env, cors);
@@ -212,7 +212,7 @@ async function findReads(env, ctx) {
   for (const c of cands) { const v = await verifyPage(c.url, sites); if (v.ok) verified.push({ ...c, url: v.url, title: v.title || c.title || c.site }); else rejected.push({ url: c.url.slice(0, 120), why: v.why }); }
   const items = verified.length ? matchPicks(await readPicks(env, ctx, verified), verified, READ_MAX) : [];
   /* what happened, for the admin's eye: how many lines the search gave, which sites it could not reach, why pages were refused */
-  return { items, at, found: verified.length, via: 'search', proposed: cands.length, lines: search.lines, dropped: search.dropped, rejected: rejected.slice(0, 6) };
+  return { items, at, found: verified.length, via: 'search', proposed: cands.length, lines: search.lines, dropped: search.dropped, rejected: rejected.slice(0, 6), shape: search.shape, stop: search.stop };
 }
 /* the search: the model's web search, fenced to the room's trusted sites; one page per line */
 async function readsViaSearch(env, ctx, sites) {
@@ -234,8 +234,13 @@ async function readsViaSearch(env, ctx, sites) {
     if (data.stop_reason !== 'pause_turn') break;
     body.messages.push({ role: 'assistant', content: data.content });
   }
-  const said = (data && data.content || []).filter(c => c.type === 'text').map(c => c.text).join('\n');
-  return { text: said, lines: said.split('\n').filter(l => /https?:\/\//.test(l)).length, dropped };
+  /* the pages come from three places: the lines the model wrote, the citations on its text, and the search tool's own results */
+  const blocks = data && data.content || []; const lines = [];
+  for (const c of blocks) if (c.type === 'text') { lines.push(String(c.text || '')); for (const ct of c.citations || []) if (ct && ct.url) lines.push(`${ct.url} | ${ct.title || ''}`); }
+  for (const c of blocks) if (c.type === 'web_search_tool_result' && Array.isArray(c.content)) for (const r of c.content) if (r && r.type === 'web_search_result' && r.url) lines.push(`${r.url} | ${r.title || ''}`);
+  const said = lines.join('\n');
+  const shape = blocks.map(c => c.type + (c.type === 'web_search_tool_result' ? ':' + (Array.isArray(c.content) ? c.content.length : String(c.content && c.content.type)) : '')).join(',');
+  return { text: said, lines: said.split('\n').filter(l => /https?:\/\//.test(l)).length, dropped, shape: shape.slice(0, 300), stop: data && data.stop_reason };
 }
 /* a page is listed only if it loads like a browser sees it, as HTML, at an address still on the list, and does not say it is gone */
 async function verifyPage(url, sites) {

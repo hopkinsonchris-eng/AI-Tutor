@@ -622,6 +622,16 @@ const baseEnv = () => ({ ANTHROPIC_API_KEY: 'sk-ant-test', ALLOWED_ORIGIN: 'http
      sandbox.__fetch = async (url, init) => { if (String(url).includes('api.anthropic.com')) return new Response('overloaded', { status: 529 }); return fetchR(url, init); };
      r = await worker.fetch(req('/reads', J('POST', { ...geo, topic: '3.1', topicName: 'Climate change' }, VST)), env); rd = await r.json();
      ok('RD6 a model failure answers an empty list with the error noted, never a 500 to the room', r.status === 200 && rd.items.length === 0 && /529/.test(rd.error));
+     /* addresses that arrive only as citations or as the search tool's own results are candidates too */
+     let pick2 = null;
+     sandbox.__fetch = async (url, init) => { const u = String(url);
+       if (u.includes('api.anthropic.com')) { const b = JSON.parse(init.body);
+         if (b.tools) return new Response(JSON.stringify({ stop_reason: 'end_turn', content: [{ type: 'server_tool_use', id: 't1', name: 'web_search', input: { query: 'x' } }, { type: 'web_search_tool_result', tool_use_id: 't1', content: [{ type: 'web_search_result', url: 'https://www.internetgeography.net/topics/hazards/', title: 'Hazards - Internet Geography' }, { type: 'web_search_result', url: 'https://evil.example.com/x', title: 'off list' }] }, { type: 'text', text: 'Two good pages are the PMT notes and the Internet Geography page.', citations: [{ type: 'web_search_result_location', url: 'https://www.physicsandmathstutor.com/geography-revision/a-level-ocr/hazardous-earth/', title: 'Hazardous Earth — PMT' }] }] }));
+         pick2 = b; return new Response(JSON.stringify({ content: [{ type: 'text', text: JSON.stringify({ picks: [{ url: 'https://www.physicsandmathstutor.com/geography-revision/a-level-ocr/hazardous-earth/', why: 'Plate margins and hazards, spec order.' }] }) }] })); }
+       if (/physicsandmathstutor\.com\/geography-revision\/a-level-ocr\/hazardous/.test(u) || /internetgeography\.net\/topics\/hazards/.test(u)) return new Response('<html><head><title>Page ok</title></head>', { status: 200, headers: { 'Content-Type': 'text/html' } });
+       return fetchR(url, init); };
+     r = await worker.fetch(req('/reads', J('POST', { ...geo, topic: '3.5', topicName: 'Hazardous Earth' }, VST)), env); rd = await r.json();
+     ok('RD2 pages named only in citations or in the search tool’s own results are candidates, and the picking step sees them', r.status === 200 && rd.lines >= 2 && rd.proposed === 2 && rd.found === 2 && pick2 && /hazardous-earth/.test(pick2.messages[0].content) && /topics\/hazards/.test(pick2.messages[0].content) && rd.items.length === 1 && rd.items[0].site === 'PMT' && /web_search_tool_result:2/.test(rd.shape), JSON.stringify(rd));
      sandbox.__fetch = fetchR;}
     sandbox.__fetch = saveFetch;
   }

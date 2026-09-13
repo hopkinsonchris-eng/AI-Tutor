@@ -36,8 +36,10 @@ ${String(notes || '').slice(0, 6000)}
 """
 Return JSON only: {"cards":[{"front":"...","back":"...","code":"..."}]}`;
 }
+/* what a room teaches is the subject, never the exam's paperwork */
+const CONTENT_RULE = 'Teach and test the subject itself: never the exam\'s format, timing, marks, rules, paper structure or task instructions. A card or question about how long a paper lasts, how many marks a task carries, whether a dictionary is allowed or what a task type is called is wrong and must not be written.';
 function cardsPrompt(spec, topic, count, opts = {}) {
-  return `Create ${count} recall cards for the topic below: definitions, key figures with dates, named case-study facts, processes as one-line chains. Each card must be reconstructable knowledge, not recognition — the front asks, the back answers in under 25 words. Cite the key-idea code each card belongs to. Where a case study is required but not specified, use a well-documented 21st-century example and name it.
+  return `Create ${count} recall cards for the topic below: definitions, key figures with dates, named case-study facts, processes as one-line chains. ${CONTENT_RULE} Each card must be reconstructable knowledge, not recognition — the front asks, the back answers in under 25 words. Cite the key-idea code each card belongs to. Where a case study is required but not specified, use a well-documented 21st-century example and name it.
 ${specBlock(spec, topic)}
 ${registerBlock(opts.support)}${JSON_RULE}
 {"cards":[{"front":"...","back":"...","code":"..."}]}`;
@@ -49,7 +51,8 @@ Question shapes available:
 ${shapes}
 ${specBlock(spec, topic)}
 ${registerBlock(opts.support)}${JSON_RULE}
-{"questions":[{"q":"...","marks":4,"command":"Explain","indicative":["..."],"codes":["..."]}]}`;
+{"questions":[{"q":"...","marks":4,"command":"Explain","indicative":["..."],"codes":["..."]}]}
+${CONTENT_RULE}`;
 }
 function essayQuestionPrompt(spec, topic, marks, opts = {}) {
   const shape = spec.markConventions.essayShapes.find(s => s.marks === marks) || spec.markConventions.essayShapes[0];
@@ -267,4 +270,4 @@ function validateTour(o, names) {
 }
 if (typeof module !== 'undefined') module.exports = { topicOf, ideaCodes, specBlock, lessonPrompt, cardsPrompt, transcribePrompt, cardsFromNotesPrompt, questionsPrompt, essayQuestionPrompt, markEssayPrompt, coachPrompt,
   validCodes, validateLesson, validateCards, validateQuestions, validateEssayQ, validateMarking, weeklyNotePrompt, caretakerPrompt, validateCaretaker,
-  LITERAL_REGISTER, registerBlock, STATION_LABELS, sceneSummary, sceneBlock, floatingCoachPrompt, validateCoachReply, chunkPrompt, validateChunks, TOUR_STEPS, TOUR_GROUPS, tourPrompt, validateTour };
+  LITERAL_REGISTER, registerBlock, STATION_LABELS, sceneSummary, sceneBlock, floatingCoachPrompt, validateCoachReply, chunkPrompt, validateChunks, TOUR_STEPS, TOUR_GROUPS, tourPrompt, validateTour, CONTENT_RULE };

@@ -636,63 +636,6 @@ const SPEC_4EA1 = {
      "content": "The table (headed \"Marking up the sample\" on the page; the Issue 7 changes table calls the new section \"Making up the sample\") sets: 30 or fewer students at the centre — all students recorded; over 30 — 30 recorded. In both cases the minimum number of students at each grade (D, M, P) is 10, with \"all students at a grade if the centre has fewer than the stated minimum. Students assessed as Not Classified should not be included.\" \"The sample should be representative of the teaching groups within the centre.\""
     }
    ]
-  },
-  {
-   "id": "reading-writing-skills",
-   "component": "C1",
-   "option": null,
-   "name": "Assessment objectives: the reading and writing skills assessed",
-   "caseStudies": [],
-   "ideas": [
-    {
-     "code": "AO1",
-     "q": "What does reading and understanding a text mean for the marks?",
-     "idea": "AO1 — Read and understand a variety of texts, selecting and interpreting",
-     "content": "\"AO1 Read and understand a variety of texts, selecting and interpreting information, ideas and perspectives.\" 15% of the International GCSE (Component 1: 7%, Component 2/Component 3: 8%), 23 raw marks in all — 11 at Component 1 Question 1 and 12 at Component 2/3 Question 1. The levels reward the selection of information, ideas and perspectives, the use of quotations and textual references, and interpretation that goes beyond \"retelling or paraphrasing\"."
-    },
-    {
-     "code": "AO2",
-     "q": "What does analysing a writer's methods mean for the marks?",
-     "idea": "AO2 — Understand and analyse linguistic and structural devices and their effects",
-     "content": "\"AO2 Understand and analyse how writers use linguistic and structural devices to achieve their effects.\" 20% of the International GCSE (Component 1: 8%, Component 2/Component 3: 12%), 30 raw marks — 12 at Component 1 Question 2 and 18 at Component 2/3 Question 1, the largest single AO tariff on the reading side. The five levels run from \"limited identification of language and/or structural devices\" and \"basic and simple comment on the effect\" to \"subtle and discriminating selection\" and \"a perceptive analysis of the effects of language and structure\"."
-    },
-    {
-     "code": "AO3",
-     "q": "What does comparing two texts demand?",
-     "idea": "AO3 — Explore links and connections between writers’ ideas and perspectives",
-     "content": "\"AO3 Explore links and connections between writers’ ideas and perspectives, as well as how these are conveyed.\" 15% of the International GCSE, all of it in Component 1 (22 raw marks at Question 3) and none in Component 2 or Component 3. Under Key qualification features (\"Broad and deep development of students’ skills\") the specification says students develop the ability to \"make comparisons between texts and analyse the ways in which writers achieve their effects\"; the link must be made both on what the writers think and on how they convey it."
-    },
-    {
-     "code": "AO4",
-     "q": "What does writing for a purpose and audience demand?",
-     "idea": "AO4 — Communicate effectively and imaginatively, adapting form, tone and register",
-     "content": "\"AO4 Communicate effectively and imaginatively, adapting form, tone and register of writing for specific purposes and audiences.\" 30% of the International GCSE, the largest single objective (Component 1: 18%, Component 2/Component 3: 12%), 45 raw marks — 27 in the transactional task and 18 in the imaginative task. Under Key qualification features (\"Broad and deep development of students’ skills\") the specification says students develop the ability to \"construct and convey meaning in written language, matching style to audience and purpose\"."
-    },
-    {
-     "code": "AO5",
-     "q": "What does technical accuracy count for?",
-     "idea": "AO5 — Write clearly, with accurate spelling, punctuation and grammar",
-     "content": "\"AO5 Write clearly, using a range of vocabulary and sentence structures, with appropriate paragraphing and accurate spelling, grammar and punctuation.\" 20% of the International GCSE (Component 1: 12%, Component 2/Component 3: 8%), 30 raw marks — 18 in the transactional task and 12 in the imaginative task. Both components' content overviews require students to \"use spelling, punctuation and grammar accurately\", and the qualification aims require students to \"write effectively and coherently using Standard English appropriately\" and to \"use grammar correctly, punctuate and spell accurately\"."
-    },
-    {
-     "code": "AO6",
-     "q": "What is assessed if a student takes the optional endorsement?",
-     "idea": "AO6 — Speaking and listening skills (optional Spoken Language Endorsement)",
-     "content": "\"AO6 Speaking and listening skills: demonstrate presentation skills in a formal setting; listen and respond appropriately to spoken language, including to questions and feedback to presentations; use spoken Standard English effectively in speeches and presentations.\" Its weighting in the International GCSE is \"Not applicable\": the optional spoken language endorsement (4EA1/E) carries no marks and is graded Not Classified, Pass, Merit or Distinction, reported as a separate grade on the certificate. The presentation is prepared, lasts no longer than 10 minutes and is given to an audience that must always include the teacher."
-    },
-    {
-     "code": "Qualification aims and objectives",
-     "q": "What is the course as a whole meant to produce?",
-     "idea": "The aims: wide reading, critical reading, effective writing and accurate Standard English",
-     "content": "\"The aims and objectives of this qualification are to enable students to: read a wide range of texts fluently and with good understanding; read critically and use knowledge gained from wide reading to inform and improve their own writing; write effectively and coherently using Standard English appropriately; use grammar correctly, punctuate and spell accurately; acquire and apply a wide vocabulary alongside knowledge and understanding of grammatical terminology, and linguistic conventions for reading, writing and spoken language; listen to and understand spoken language, and use spoken Standard English effectively.\""
-    },
-    {
-     "code": "Broad and deep development of students’ skills",
-     "q": "Which three abilities does the specification say the design develops?",
-     "idea": "Responding to varied sources, comparing texts, and matching style to audience and purpose",
-     "content": "\"For example, students develop the ability to: read and respond to material from a variety of sources; make comparisons between texts and analyse the ways in which writers achieve their effects; construct and convey meaning in written language, matching style to audience and purpose.\" Throughout the qualification students \"should develop the skills of interpretation and analysis\" (non-fiction) and \"the skills of inference and analysis\" (poetry and prose)."
-    }
-   ]
   }
  ]
 };

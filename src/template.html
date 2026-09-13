@@ -62,7 +62,7 @@ async function loadCourses(){if(!AUTH_MODE||!AUTH.user)return;try{COURSES=await 
 async function ensureSpec(id){const stamp=x=>(x&&x.resources&&x.resources.at)||'';if(SPECS[id]&&!(SPEC_META[id]&&COURSES.courses[id]&&stamp(COURSES.courses[id])&&stamp(COURSES.courses[id])!==stamp(SPEC_META[id])))return true;
   try{const r=await api('/courses/'+encodeURIComponent(id)+'/spec');SPECS[id]=r.spec;SPEC_META[id]=r.meta;try{await rawSet(SPEC_CACHE+id,JSON.stringify(r));}catch(e){}return true;}
   catch(e){try{const c=JSON.parse(await rawGet(SPEC_CACHE+id)||'null');if(c&&c.spec){SPECS[id]=c.spec;SPEC_META[id]=c.meta;return true;}}catch(e2){}return false;}}
-async function ensureSpecsFor(state){if(!state||!state.setup)return;for(const sub of state.setup.subjects)await ensureSpec(sub.specId);}
+async function ensureSpecsFor(state){if(!state||!state.setup)return;for(const sub of state.setup.subjects)await ensureSpec(sub.specId);if(state===S&&pruneOrphanRooms())await save();}
 function courseIdFor(board,code){const P={'aqa':'AQA','pearson edexcel':'EDX','edexcel':'EDX','ocr':'OCR','eduqas':'EDQ','wjec':'WJEC'};return (P[String(board).toLowerCase()]||String(board).replace(/[^A-Za-z]/g,'').slice(0,5).toUpperCase())+'-'+String(code).toUpperCase();}
 /* "German (International GCSE)" is offered under German, with the qualification named next to the board, so a student
    looking for German finds every German course in one list. Courses the platform already has come first. */
@@ -120,7 +120,7 @@ async function loadForUser(){S=null;UI.room=null;let server=null;try{server=awai
   if(S)delete S.tutor;
   await loadCourses();await ensureSpecsFor(S);if(S){S.setup.subjects=S.setup.subjects.filter(sub=>SPECS[sub.specId]);if(!S.setup.subjects.length)S=null;}
   try{MATHS=JSON.parse(await rawGet(MATHS_KEY)||'null');if(MATHS&&MATHS.dayHours)UI.mathsHours=MATHS.dayHours[TODAY]||0;UI.mathsPresent=!!MATHS;}catch(e){}
-  await mirrorMaths();normaliseState();if(S&&syncState.pending){await save();pushSync();}if(S)loadDeskAll();}
+  await mirrorMaths();normaliseState();if(S&&pruneOrphanRooms())syncState.pending=true;if(S&&syncState.pending){await save();pushSync();}if(S)loadDeskAll();}
 async function load(){let got=null;try{got=JSON.parse(await rawGet(KEY)||'null');}catch(e){}if(got&&got.nodes&&got.setup)S=got;
   try{MATHS=JSON.parse(await rawGet(MATHS_KEY)||'null');if(MATHS&&MATHS.dayHours)UI.mathsHours=MATHS.dayHours[TODAY]||0;UI.mathsPresent=!!MATHS;}catch(e){}
   await mirrorMaths();
@@ -413,8 +413,11 @@ async function pollBuild(id){if(!UI.build||UI.build.id!==id)return;
     renderSetup();}
   catch(e){UI.build.status='failed';UI.build.message=e.message;renderSetup();}}
 function presetBoundaries(){for(const sub of S.setup.subjects){const A=AUTHORED[sub.specId];if(A&&A.boundaries&&!S.boundaries[sub.specId]){const b=A.boundaries.overall[0];const total=300;S.boundaries[sub.specId]={};for(const g of ['A*','A','B','C','D','E'])S.boundaries[sub.specId][g]=Math.round(b[g]/total*100);}}}
-function mergeSetup(newSetup){const fresh=newState(newSetup,SPECS);for(const [id,n] of Object.entries(fresh.nodes)){if(S.nodes[id])fresh.nodes[id]=S.nodes[id];}S.nodes=fresh.nodes;S.setup=newSetup;delete S.nudge;
-  for(const k of ['errors','essays','practice','transitions'])S[k]=S[k].filter(x=>!x.node||S.nodes[x.node]);for(const k of Object.keys(S.cards))if(!S.nodes[S.cards[k].node])delete S.cards[k];for(const k of Object.keys(S.coachNotes||{}))if(!S.nodes[k])delete S.coachNotes[k];}
+function mergeSetup(newSetup){const fresh=newState(newSetup,SPECS);for(const [id,n] of Object.entries(fresh.nodes)){if(S.nodes[id])fresh.nodes[id]=S.nodes[id];}S.nodes=fresh.nodes;S.setup=newSetup;delete S.nudge;dropStrays();}
+/* everything keyed to a room that no longer exists goes with it */
+function dropStrays(){for(const k of ['errors','essays','practice','transitions'])S[k]=(S[k]||[]).filter(x=>!x.node||S.nodes[x.node]);for(const k of Object.keys(S.cards))if(!S.nodes[S.cards[k].node])delete S.cards[k];for(const k of Object.keys(S.coachNotes||{}))if(!S.nodes[k])delete S.coachNotes[k];}
+/* a topic that has left a known specification takes its room with it: the drawing never meets a door with no topic behind it */
+function pruneOrphanRooms(){if(!S)return 0;let n=0;for(const [id,nd] of Object.entries(S.nodes)){const sp=SPECS[nd.spec];if(sp&&!sp.topics.some(t=>t.id===nd.topic)){delete S.nodes[id];n++;}}if(n){dropStrays();if(S.tour&&S.tour.lines)S.tour.lines=null;}return n;}
 function keepName(){if(UI.setup.wz!=null)return;const nm=document.getElementById('suName');if(nm)UI.setup.student=nm.value;}
 function setupValid(){const st=UI.setup;if(!st.student||!st.subjects.length)return 'Enter a name and choose at least one subject.';for(const sub of st.subjects){const sp=specById(sub.specId);for(const o of sp.options){const v=sub.options[o.id];const n=Array.isArray(v)?v.length:(v?1:0);if(n!==o.choose)return `${sp.subject}: choose exactly ${o.choose} for ${o.label}.`;}}return null;}
 

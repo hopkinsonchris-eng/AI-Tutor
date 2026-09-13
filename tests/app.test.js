@@ -185,6 +185,11 @@ const click=async s=>L.click({target:T(s)});const change=async s=>L.change({targ
   G.S.setup.examYear=2027;G.renderAll();ok('T3 inside the last year the grades come back everywhere',/predicted/.test(HG())&&!/class="trend/.test(HG())&&/class="cg">U</.test(reg['v-office'].innerHTML)&&/Range U/.test(reg['v-prog'].innerHTML),HG());
   G.S.setup.examYear=2028;G.renderAll();
   ok('T4 the campus model carries each subject’s rooms and how many are started, so the buildings can grow',(()=>{const m=G.campusModel();const g=m.subjects.find(x=>x.id==='OCR-H481');return g.rooms===9&&g.done===0&&/data-storeys="1" data-lit="0"/.test(reg['v-campus'].innerHTML.match(/data-bldg="OCR-H481"[^>]*/)[0]);})(),(reg['v-campus'].innerHTML.match(/data-bldg="OCR-H481"[^>]*/)||[''])[0]);}
+ /* a room whose topic has left the specification is dropped, with everything keyed to it */
+ {G.S.nodes['OCR-H481|9.9']={spec:'OCR-H481',topic:'9.9',state:'Learning'};G.S.cards['cstray']={node:'OCR-H481|9.9',front:'f',back:'b',due:G.TODAY,ease:1,reps:0};G.S.errors.unshift({date:G.TODAY,node:'OCR-H481|9.9',mode:'RECALL-GAP',ref:'x'});
+  const n=G.pruneOrphanRooms();G.UI.room=null;G.UI.subject='OCR-H481';G.renderRooms();
+  ok('SP1 pruneOrphanRooms drops the stray room, its card and its error, and the corridor still draws nine doors',n===1&&!G.S.nodes['OCR-H481|9.9']&&!G.S.cards.cstray&&!G.S.errors.some(e=>e.node==='OCR-H481|9.9')&&(reg['v-rooms'].innerHTML.match(/class="door"/g)||[]).length===9);
+  ok('SP1 a room of a spec the app has not loaded is left alone',(()=>{G.S.nodes['ZZZ-1|1']={spec:'ZZZ-1',topic:'1',state:'Unassessed'};const k=G.pruneOrphanRooms();const kept=!!G.S.nodes['ZZZ-1|1'];delete G.S.nodes['ZZZ-1|1'];return k===0&&kept;})());}
  G.go('today');ok('B1 banner: the wordmark is there, the place is Campus › Full plan and the signed-in student is named',/Campus/.test(reg['bWhere'].innerHTML)&&/<b>Full plan<\/b>/.test(reg['bWhere'].innerHTML)&&/class="av"[^>]*>M</.test(reg['bWho'].innerHTML)&&/Matthew/.test(reg['bWho'].innerHTML)&&!/admin/.test(reg['bWho'].innerHTML),reg['bWhere'].innerHTML+' | '+reg['bWho'].innerHTML);
  /* rooms: subject chips and topic grid */
  G.renderRooms();ok('A3 the corridor shows 9 geography rooms',(reg['v-rooms'].innerHTML.match(/class="door"/g)||[]).length===9);

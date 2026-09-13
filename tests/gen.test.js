@@ -62,4 +62,8 @@ ok('V5 good marking passes',G.validateMarking(pt,mk,30)===null);ok('V5 mark abov
  ok('G9 an exclamation mark, a line too short, a line that never says flash card, and a coach line without the coach’s name are all dropped',Object.keys(v2).length===0,JSON.stringify(v2));
  ok('G9 a partial reply is a partial set, never an error',Object.keys(G.validateTour({lines:{office:'Try a helper in the Office'}},names)).length===1&&Object.keys(G.validateTour(null,names)).length===0&&Object.keys(G.validateTour({lines:'x'},names)).length===0);}
 
+
+/* rooms teach the subject, never the exam's paperwork */
+ok('G10 the cards and questions prompts forbid cards and questions about the exam itself',G.cardsPrompt(SPEC_H481,t,10).includes(G.CONTENT_RULE)&&G.questionsPrompt(SPEC_H481,t,'Learning').includes(G.CONTENT_RULE)&&/how long a paper lasts/.test(G.CONTENT_RULE)&&/dictionary/.test(G.CONTENT_RULE));
+
 console.log(`PASSED: ${pass}`);fails.forEach(f=>console.log('FAILED: '+f));console.log('-'.repeat(50));console.log(fails.length?`RESULT: ${fails.length} FAILURE(S)`:'RESULT: ALL GREEN');process.exit(fails.length?1:0);

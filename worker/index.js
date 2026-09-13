@@ -709,6 +709,8 @@ async function speech(request, env, cors) {
    at one request per thousand characters against the daily cap. Nothing about the student is stored. */
 const TTS_MODEL = '@cf/deepgram/aura-1', TTS_VOICES = ['athena', 'helios'], TTS_MAX = 600;
 const hex = buf => [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, '0')).join('');
+/* what the cache may hold: MPEG audio (an ID3 tag or a frame sync) of a plausible size; anything else is an error body and is never served */
+function looksLikeMp3(buf) { if (!buf || buf.byteLength < 256) return false; const b = new Uint8Array(buf, 0, 3); return (b[0] === 0x49 && b[1] === 0x44 && b[2] === 0x33) || (b[0] === 0xff && (b[1] & 0xe0) === 0xe0); }
 async function tts(request, env, cors) {
   const s = await sessionUser(request, env);
   if (!s) return json({ error: 'Sign in to use the tutor voice' }, 401, cors);
@@ -719,7 +721,7 @@ async function tts(request, env, cors) {
   const key = `tts/aura-1/${voice}/${hex(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text)))}.mp3`;
   const audioHeaders = { ...cors, 'Content-Type': 'audio/mpeg', 'Cache-Control': 'private, max-age=31536000, immutable' };
   const hit = env.DESK ? await env.DESK.get(key) : null;
-  if (hit) return new Response(await hit.arrayBuffer(), { status: 200, headers: { ...audioHeaders, 'X-TTS': 'hit' } });
+  if (hit) { const cached = await hit.arrayBuffer(); if (looksLikeMp3(cached)) return new Response(cached, { status: 200, headers: { ...audioHeaders, 'X-TTS': 'hit' } }); try { await env.DESK.delete(key); } catch (e) {} }
   if (!env.AI || typeof env.AI.run !== 'function') return json({ error: 'The tutor voice is not set up on the tutor service (no AI binding). The device voice still works.' }, 503, cors);
   const { user } = s; const daily = user.daily || DEFAULT_DAILY; const uk = `usage:${user.username}:${today()}`, ck = `ttschars:${user.username}:${today()}`;
   const used = parseInt((await env.USAGE.get(uk)) || '0', 10);
@@ -728,9 +730,10 @@ async function tts(request, env, cors) {
   await env.USAGE.put(ck, String(after), { expirationTtl: 2 * 86400 });
   if (inc) await env.USAGE.put(uk, String(used + inc), { expirationTtl: 100 * 86400 });
   try {
-    const res = await env.AI.run(TTS_MODEL, { text, speaker: voice, encoding: 'mp3', container: 'none' }, { returnRawResponse: true });
+    const res = await env.AI.run(TTS_MODEL, { text, speaker: voice, encoding: 'mp3' }, { returnRawResponse: true });
     const buf = res instanceof ArrayBuffer ? res : res && typeof res.arrayBuffer === 'function' ? await res.arrayBuffer() : res && res.body ? await new Response(res.body).arrayBuffer() : res instanceof Uint8Array ? res.buffer : null;
-    if (!buf || !buf.byteLength) throw new Error('empty audio');
+    if (res && typeof res.status === 'number' && res.status >= 400) { let why = ''; try { why = JSON.parse(new TextDecoder().decode(buf)).message || ''; } catch (e) {} throw new Error(why || ('the model answered ' + res.status)); }
+    if (!looksLikeMp3(buf)) throw new Error('the model did not return audio');
     if (env.DESK) { try { await env.DESK.put(key, buf, { httpMetadata: { contentType: 'audio/mpeg' } }); } catch (e) {} }
     return new Response(buf, { status: 200, headers: { ...audioHeaders, 'X-TTS': 'miss' } });
   } catch (e) {

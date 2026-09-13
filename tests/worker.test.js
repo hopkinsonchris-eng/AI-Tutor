@@ -867,14 +867,15 @@ const baseEnv = () => ({ ANTHROPIC_API_KEY: 'sk-ant-test', ALLOWED_ORIGIN: 'http
     ok('TT2 one sentence at a time: over 600 characters is refused', r.status === 400);
     r = await worker.fetch(say({ text: 'Hello.', voice: 'athena' }, bearer(tok)), env);
     ok('TT3 without the AI binding it says the voice is not set up and that the device voice still works; nothing counted', r.status === 503 && /device voice/.test((await r.json()).error) && (await env.USAGE.get(`usage:sam:${todayKey}`)) === null);
-    let calls = []; env.AI = { async run(model, input, opts) { calls.push({ model, input, opts }); return new Response(new Uint8Array([0xff, 0xfb, 0x90, 0x00, 1, 2, 3])); } };
+    const mp3Bytes = () => { const u = new Uint8Array(600); u[0] = 0xff; u[1] = 0xfb; u[2] = 0x90; for (let i = 3; i < 600; i++) u[i] = i & 255; return u; };
+    let calls = []; env.AI = { async run(model, input, opts) { calls.push({ model, input, opts }); return new Response(mp3Bytes()); } };
     r = await worker.fetch(say({ text: 'The mean is 2.5 km.', voice: 'athena' }, bearer(tok)), env);
     const mp3 = new Uint8Array(await r.arrayBuffer());
-    ok('TT4 a miss calls Aura-1 with the speaker, MP3 with no container, and streams the audio back', r.status === 200 && r.headers.get('Content-Type') === 'audio/mpeg' && r.headers.get('X-TTS') === 'miss' && mp3.length === 7 && mp3[0] === 0xff && calls.length === 1 && calls[0].model === '@cf/deepgram/aura-1' && calls[0].input.text === 'The mean is 2.5 km.' && calls[0].input.speaker === 'athena' && calls[0].input.encoding === 'mp3' && calls[0].input.container === 'none' && calls[0].opts && calls[0].opts.returnRawResponse === true, JSON.stringify(calls[0]));
+    ok('TT4 a miss calls Aura-1 with the speaker and MP3 encoding, no container (Aura refuses one with MP3), and streams the audio back', r.status === 200 && r.headers.get('Content-Type') === 'audio/mpeg' && r.headers.get('X-TTS') === 'miss' && mp3.length === 600 && mp3[0] === 0xff && calls.length === 1 && calls[0].model === '@cf/deepgram/aura-1' && calls[0].input.text === 'The mean is 2.5 km.' && calls[0].input.speaker === 'athena' && calls[0].input.encoding === 'mp3' && !('container' in calls[0].input) && calls[0].opts && calls[0].opts.returnRawResponse === true, JSON.stringify(calls[0]));
     const keys = [...env.DESK._map.keys()];
     ok('TT4 the audio is cached in R2 under the model, the voice and the sentence’s hash', keys.length === 1 && /^tts\/aura-1\/athena\/[0-9a-f]{64}\.mp3$/.test(keys[0]) && env.DESK._map.get(keys[0]).meta.contentType === 'audio/mpeg', keys.join());
     r = await worker.fetch(say({ text: 'The mean is 2.5 km.', voice: 'athena' }, bearer(tok)), env);
-    ok('TT5 the same sentence again is a hit: served from R2, no model call', r.status === 200 && r.headers.get('X-TTS') === 'hit' && calls.length === 1 && (await r.arrayBuffer()).byteLength === 7);
+    ok('TT5 the same sentence again is a hit: served from R2, no model call', r.status === 200 && r.headers.get('X-TTS') === 'hit' && calls.length === 1 && (await r.arrayBuffer()).byteLength === 600);
     r = await worker.fetch(say({ text: 'The mean is 2.5 km.', voice: 'helios' }, bearer(tok)), env);
     ok('TT5 the other voice is its own entry', r.headers.get('X-TTS') === 'miss' && calls.length === 2 && env.DESK._map.size === 2);
     ok('TT6 nineteen and nineteen fresh characters do not yet count a request', (await env.USAGE.get(`usage:sam:${todayKey}`)) === null && (await env.USAGE.get(`ttschars:sam:${todayKey}`)) === '38');
@@ -891,6 +892,17 @@ const baseEnv = () => ({ ANTHROPIC_API_KEY: 'sk-ant-test', ALLOWED_ORIGIN: 'http
     await env.USAGE.put(`usage:sam:${todayKey}`, '0'); env.AI = { async run() { throw new Error('model offline'); } };
     r = await worker.fetch(say({ text: 'Something else entirely.', voice: 'helios' }, bearer(tok)), env);
     ok('TT8 a model failure is a clear 502, not a crash', r.status === 502 && /could not make the tutor voice/i.test((await r.json()).error));
+    env.AI = { async run() { return new Response(JSON.stringify({ name: 'AiError', httpCode: 400, message: 'Unsupported audio format' }), { status: 400, headers: { 'Content-Type': 'application/json' } }); } };
+    const sizeBefore = env.DESK._map.size;
+    r = await worker.fetch(say({ text: 'A sentence the model refuses.', voice: 'athena' }, bearer(tok)), env);
+    ok('TT10 an error answer from the model is a 502 with its reason, never cached, never served as audio', r.status === 502 && /Unsupported audio format/.test((await r.json()).error) && env.DESK._map.size === sizeBefore);
+    env.AI = { async run() { return new Response(new Uint8Array([1, 2, 3])); } };
+    r = await worker.fetch(say({ text: 'A sentence with no audio back.', voice: 'athena' }, bearer(tok)), env);
+    ok('TT10 bytes that are not MPEG audio are refused too', r.status === 502 && /did not return audio/.test((await r.json()).error) && env.DESK._map.size === sizeBefore);
+    const badKey = [...env.DESK._map.keys()][0]; env.DESK._map.set(badKey, { buf: new TextEncoder().encode('{"error":"stale junk"}'), meta: { contentType: 'audio/mpeg' } });
+    env.AI = { async run() { return new Response(mp3Bytes()); } };
+    r = await worker.fetch(say({ text: 'The mean is 2.5 km.', voice: 'athena' }, bearer(tok)), env);
+    ok('TT11 a cached entry that is not audio is replaced, not served', r.status === 200 && r.headers.get('X-TTS') === 'miss' && (await r.arrayBuffer()).byteLength === 600 && env.DESK._map.get(badKey).buf.byteLength === 600);
     r = await worker.fetch(req('/tts', { method: 'OPTIONS' }), env);
     ok('TT9 the preflight is allowed', r.status === 204);
   }

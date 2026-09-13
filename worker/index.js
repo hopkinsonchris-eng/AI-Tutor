@@ -118,7 +118,7 @@ export default {
       if (p === '/courses' || p.startsWith('/courses/')) return courses(request, env, url, cors);
       if (p.startsWith('/manage/courses') || p.startsWith('/manage/reviews') || p === '/manage/catalogue') return manageCourses(request, env, url, cors);
       if (p.startsWith('/manage/')) return manage(request, env, url, cors);
-      if (request.method === 'GET') return json({ ok: true, service: 'tutor-proxy', build: 'reads-6' }, 200, cors);
+      if (request.method === 'GET') return json({ ok: true, service: 'tutor-proxy', build: 'reads-7' }, 200, cors);
       if (p === '/speech' && request.method === 'POST') return speech(request, env, cors);
       if (p === '/tts' && request.method === 'POST') return tts(request, env, cors);
       if (request.method === 'POST' && (p === '/' || p === '/v1/messages')) return proxy(request, env, cors);
@@ -220,11 +220,14 @@ async function readsViaSearch(env, ctx, sites) {
   const prompt = `${videoContext(ctx)}\n\nUsing web search over the allowed sites only, find up to 8 pages that TEACH this topic at this level for this qualification: revision notes (a PDF of notes counts), worked examples, practice questions with answers, or the board's own resource page for this course. Look first for pages written for ${ctx.board} ${ctx.code}; a page for the same subject and level on another board is acceptable when nothing else covers the topic. Never a home page, a search page, a login page or a shop. Answer with one page per line and nothing else, in the form:\nhttps://... | title | notes or practice or official`;
   const headers = { 'Content-Type': 'application/json', 'x-api-key': env.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01' };
   let data, turns = 0, rounds = 0; const dropped = [];
-  const body = { model: VIDEO_MODEL, max_tokens: 3000, tools: [{ type: 'web_search_20260209', name: 'web_search', max_uses: 5, allowed_domains: allowed }], messages: [{ role: 'user', content: prompt }] };
+  /* thinking off and four searches: with thinking on, five searches ran past the API gateway's time limit */
+  const body = { model: VIDEO_MODEL, max_tokens: 3000, thinking: { type: 'disabled' }, tools: [{ type: 'web_search_20260209', name: 'web_search', max_uses: 4, allowed_domains: allowed }], messages: [{ role: 'user', content: prompt }] };
+  let retried = false;
   while (turns++ < 6) {
     const res = await fetch('https://api.anthropic.com/v1/messages', { method: 'POST', headers, body: JSON.stringify(body) });
     const text = await res.text();
     if (!res.ok) {
+      if (res.status >= 500 && !retried) { retried = true; continue; }   /* one more go after a gateway timeout or an overload */
       /* the search tool cannot reach some sites at all; it names them — drop them from the fence and search the rest */
       const m = res.status === 400 && /not accessible/i.test(text) ? [...text.matchAll(/'([a-z0-9.-]+\.[a-z]{2,})'/gi)].map(x => x[1].toLowerCase()) : [];
       if (m.length && rounds < 2) { rounds++; dropped.push(...m); allowed = allowed.filter(h => !m.some(d => h === d || h.endsWith('.' + d) || d.endsWith('.' + h))); if (!allowed.length) return { text: '', lines: 0, dropped }; body.tools[0].allowed_domains = allowed; continue; }

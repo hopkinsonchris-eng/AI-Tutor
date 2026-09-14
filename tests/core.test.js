@@ -171,4 +171,10 @@ ok('NT1 the deep walker reaches every string and leaves numbers alone',JSON.stri
 ok('NT2 the voice says squared, cubed and to the power of, and reads subscripts as digits',C.speakable('v^2 = u^2 + 2as; V = x³; 10^-3; e^(kx); x^(1/2); H_2O')==='v squared = u squared + 2as; V = x cubed; 10 to the power of minus 3; e to the power of k x; x to the power of 1 over 2; H 2 O',C.speakable('v^2 = u^2 + 2as; V = x³; 10^-3; e^(kx); x^(1/2); H_2O'));
 ok('NT2 the voice names the symbols a voice would mangle',C.speakable('√16 ≠ 5, ΔH ≈ ±5 kJ, 25 °C, θ = π/2, ½')==='the square root of 16 is not equal to 5, delta H is approximately plus or minus 5 kJ, 25 degrees C, theta = pi /2, a half',C.speakable('√16 ≠ 5, ΔH ≈ ±5 kJ, 25 °C, θ = π/2, ½'));
 
+/* levelled model answers: which sentences each level adds */
+{const L=[{level:1,answer:'The rate rises. It then levels off.'},{level:2,answer:'The rate rises. Light is the limiting factor at first. It then levels off. Another factor limits it.'},{level:3,answer:'The rate rises. Light is the limiting factor at first. It then levels off. This is because carbon dioxide runs short. Another factor limits it.'}];
+const tags=k=>C.levelWords(L,k).map(t=>t.tag).join('');
+ok('ML1 level 1 is all base words; level 2 tags only the sentences it added; level 3 tags its own sentences 3 and keeps level 2’s as 2',tags(1)==='0000000'&&tags(2)==='000'+'2222222'+'0000'+'2222'&&tags(3)==='000'+'2222222'+'0000'+'3333333'+'2222',tags(1)+' '+tags(2)+' '+tags(3));
+ok('ML1 the words come back in the level’s own order so the answer reads as written',C.levelWords(L,3).map(t=>t.w).join(' ')===L[2].answer);
+ok('ML1 a two-level answer has no level 3 and a missing level reads as empty',C.levelWords(L.slice(0,2),2).filter(t=>t.tag===3).length===0&&C.levelWords([L[0]],3).length===0);}
 console.log(`PASSED: ${pass}`);fails.forEach(f=>console.log('FAILED: '+f));console.log('-'.repeat(50));console.log(fails.length?`RESULT: ${fails.length} FAILURE(S)`:'RESULT: ALL GREEN');process.exit(fails.length?1:0);

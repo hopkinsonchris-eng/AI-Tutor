@@ -48,4 +48,17 @@ r=v(sampleKit(topic,'quantitative',{lesson:{examples:sampleKit(topic,'quantitati
 ok('K11 a setup that states the result the final step reaches is refused',!r.ok&&/gives away the result/.test(r.problems.join()),r.problems.join('|'));
 r=v(sampleKit(topic,'quantitative',{lesson:{examples:sampleKit(topic,'quantitative').lesson.examples.map((e,i)=>i?e:Object.assign({},e,{steps:['A student is given the full situation for '+topic.name+': the values 4, 8 and 12 and is asked for the mean.',e.steps[1],e.steps[2]]}))}}));
 ok('K11 a first step that restates the setup is refused',!r.ok&&/first step only restates/.test(r.problems.join()),r.problems.join('|'));
+/* a levelled model answer */
+const LV={kind:'extended',title:'Six-mark model answer (6 marks)',question:'Explain why large organisms need exchange surfaces. (6 marks)',expected:'The examiner wants the surface area to volume ratio named, why it falls as size grows, and the features of an exchange surface linked back to diffusion.',
+  levels:[{level:1,marks:'1–2',answer:'Large organisms have a small surface area to volume ratio. So they need special surfaces.'},
+    {level:2,marks:'3–4',answer:'Large organisms have a small surface area to volume ratio. Diffusion across the skin is too slow to supply them. So they need special surfaces.'},
+    {level:3,marks:'5–6',answer:'Large organisms have a small surface area to volume ratio. Diffusion across the skin is too slow to supply them. So they need special surfaces. The lungs are thin and have a good blood supply, which keeps the gradient steep.'}]};
+r=v(sampleKit(sciTopic,'science',{extras:[{kind:'practical',title:'Required practical',items:['Method step one']},LV]}),sciTopic,'science');
+ok('K12 a levelled model answer (question, expected, cumulative levels) passes as the science family’s extended section',r.ok,r.problems.join('|'));
+r=v(sampleKit(sciTopic,'science',{extras:[{kind:'practical',title:'Required practical',items:['Method step one']},Object.assign({},LV,{levels:[LV.levels[0],Object.assign({},LV.levels[1],{answer:'Big organisms have a small ratio. So they need special surfaces.'}),LV.levels[2]]})]}),sciTopic,'science');
+ok('K12 a level that paraphrases an earlier sentence instead of keeping it is refused and the sentence named',!r.ok&&/word for word/.test(r.problems.join())&&/Large organisms have a small/.test(r.problems.join()),r.problems.join('|'));
+r=v(sampleKit(sciTopic,'science',{extras:[{kind:'practical',title:'Required practical',items:['Method step one']},Object.assign({},LV,{expected:'short'})]}),sciTopic,'science');
+ok('K12 a levelled answer without what the examiner is looking for is refused',!r.ok&&/expected/.test(r.problems.join()),r.problems.join('|'));
+r=v(sampleKit(topic,'essay',{extras:[Object.assign({},LV,{kind:'paragraph'}),{kind:'factfile',title:'Fact file',items:['Fact.']},{kind:'plan',title:'Plan',items:['Intro']}]}),topic,'essay');
+ok('K12 one levelled answer counts as a strong and a weaker paragraph for the essay family',r.ok,r.problems.join('|'));
 console.log(`PASSED: ${pass}`); fails.forEach(f => console.log('FAILED: ' + f)); console.log('-'.repeat(50)); console.log(fails.length ? `RESULT: ${fails.length} FAILURE(S)` : 'RESULT: ALL GREEN'); process.exit(fails.length ? 1 : 0);

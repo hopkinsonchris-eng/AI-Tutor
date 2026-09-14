@@ -400,6 +400,19 @@ function normaliseSupport(s) {
   return o;
 }
 /* The spoken form of a sentence for the tutor voice: only symbols a voice would mangle are swapped; every word stays as written (a reader reads what is on the page). */
+/* ---------- A levelled model answer: what each level adds ----------
+   The levels grow sentence by sentence (the kit contract keeps every sentence of one level word for word in the next), so a
+   sentence is tagged by the first level it appears at: 0 for the base answer, 2 or 3 for what that level added. Level 3
+   is coloured with both: green for its own sentences, orange for the ones level 2 had added. */
+const levelSentences = t => String(t || '').split(/(?<=[.!?])\s+/).map(x => x.trim()).filter(Boolean);
+function levelWords(levels, k) {
+  const text = n => (levels.find(l => l.level === n) || {}).answer || '';
+  const has = n => levelSentences(text(n)), s1 = has(1), s2 = has(2);
+  const tagOf = s => k >= 3 && !s2.includes(s) ? 3 : k >= 2 && !s1.includes(s) ? 2 : 0;
+  const out = [];
+  for (const s of has(Math.min(k, 3))) { const tag = tagOf(s); for (const w of s.split(/\s+/)) out.push({ w, tag }); }
+  return out;
+}
 /* ---------- Notation: one written form everywhere, and a spoken form for the voice ---------- */
 /* x^2, 10^-3, e^(kx), x^(1/2), a^{m+n} and H_2O become x², 10⁻³, eᵏˣ, x¹⁄², aᵐ⁺ⁿ and H₂O. A power that has no superscript form is left as written. */
 const SUP = { '0': '⁰', '1': '¹', '2': '²', '3': '³', '4': '⁴', '5': '⁵', '6': '⁶', '7': '⁷', '8': '⁸', '9': '⁹', '+': '⁺', '-': '⁻', '−': '⁻', '/': '⁄', '(': '⁽', ')': '⁾',
@@ -494,4 +507,4 @@ function supportUsageLine(state, today) {
   return parts.length ? 'Support this week: ' + parts.join(' · ') : '';
 }
 if (typeof module !== 'undefined') module.exports = { DAY, STATES, FAILURE_MODES, REMEDY, BLOCKS, phaseFor, days, iso, resolveTopics, nodeId, newState, topicWeights, deskResurface, daysToExam, pileCounts,
-  recordResult, recordWrong, applyDecay, dueForReview, scheduleCard, dueCards, subjectPriority, buildSession, topicForCode, questionTopic, paperTopics, paperPriority, applyPaper, retestQueue, recordRetest, gradeFromBoundaries, RETEST_CAP, errorUrgency, MASTERY_FACTOR, DEFAULT_BOUNDS, gradeFor, predictSubject, weeklyReport, streakDays, nudgeFallback, nudgePrompt, topicLinks, SUPPORT_DEFAULTS, normaliseSupport, splitSentences, prompterLine, timerMinutes, marksToMinutes, chunkFallback, supportUsageLine, TUTOR_VOICES, speakable, notation, notationDeep, newTour, gradesShown, subjectTrend };
+  recordResult, recordWrong, applyDecay, dueForReview, scheduleCard, dueCards, subjectPriority, buildSession, topicForCode, questionTopic, paperTopics, paperPriority, applyPaper, retestQueue, recordRetest, gradeFromBoundaries, RETEST_CAP, errorUrgency, MASTERY_FACTOR, DEFAULT_BOUNDS, gradeFor, predictSubject, weeklyReport, streakDays, nudgeFallback, nudgePrompt, topicLinks, SUPPORT_DEFAULTS, normaliseSupport, splitSentences, prompterLine, timerMinutes, marksToMinutes, chunkFallback, supportUsageLine, TUTOR_VOICES, speakable, notation, notationDeep, levelWords, newTour, gradesShown, subjectTrend };

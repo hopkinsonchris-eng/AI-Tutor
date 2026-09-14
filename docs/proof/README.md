@@ -2,6 +2,12 @@
 
 Screenshots from `npm run proof`: the built app in Chromium against a stub of the tutor Worker.
 
+## 29-wizard-name
+
+Setup as a wizard: the first of six screens asks one question, with the step marks above it
+
+![29-wizard-name](29-wizard-name.png)
+
 ## 1-setup-dropdowns
 
 Level → Subject → Board; AQA Biology is "not mapped yet, ask Chris"
@@ -20,6 +26,12 @@ Added, with the provenance line: document, checked date, judge score
 
 ![3-course-added](3-course-added.png)
 
+## 30-wizard-helpers
+
+Screen 5 of the wizard: the reading and focus helpers, optional, the same settings the Office holds
+
+![30-wizard-helpers](30-wizard-helpers.png)
+
 ## 4-admin-review-queue
 
 A breaking proposal from the monthly pass with the topic-level diff and the document's own words, and a course that needs a link
@@ -34,9 +46,27 @@ The course list: provenance, models, prompt version, judge, last monthly run, re
 
 ## 6-campus
 
-The campus: one building per subject with its colour on the door, lit windows for progress and a flag for what is due; the Exam Hall and the Office; the notice board says what to do now, with the coach’s note and the rest of the day; the quick bar under the date
+The campus: one building per subject with its colour on the door, lit windows for progress and a flag for what is due; the Exam Hall and the Office; the notice board carries the First Week card, what to do now, the coach’s note and the rest of the day; the quick bar under the date
 
 ![6-campus](6-campus.png)
+
+## 31-show-me-door
+
+Show me on “Go through a door and read the lesson”: the corridor with the first door spotlit in amber and the caretaker’s one-line caption above it
+
+![31-show-me-door](31-show-me-door.png)
+
+## 33-first-week-bar
+
+In the room the Show me led to: the step is done, so the floating bar at the bottom left says Done, names the next step with its own Show me, and always offers Back to First Week
+
+![33-first-week-bar](33-first-week-bar.png)
+
+## 32-first-week-ticked
+
+Back on the campus: the First Week card has ticked the two steps the student really did, and the next one is marked
+
+![32-first-week-ticked](32-first-week-ticked.png)
 
 ## 20-flash-card-front
 
@@ -55,6 +85,12 @@ The same card turned over: the answer on the back, Right and Wrong to mark yours
 Inside a building: one door per topic under its component sign, a state strip on each door, what is due behind it; the wall says what is due in this building and has the jump box
 
 ![7-corridor](7-corridor.png)
+
+## 34-wall-reads
+
+Watch and read on the wall: the checked video, then Read — three pages from trusted UK sites the Worker fetched and a model picked, each with its site, a free or freemium tag, one line on what it gives you, and Pin to desk
+
+![34-wall-reads](34-wall-reads.png)
 
 ## 8-classroom-wall
 
@@ -85,6 +121,12 @@ Phone: the campus and the notice board stack, the quick bar scrolls sideways, th
 A built course’s room after depth: the checked lesson with one section per key idea, faded worked examples, the required-practical method sheet, and the provenance line
 
 ![11-room-with-kit](11-room-with-kit.png)
+
+## 35-model-answer-levels
+
+A levelled model answer on the Level 3 tab: the question, what the examiner is looking for, then the answer with what level 2 added in orange and what level 3 added in green; the tabs choose the level
+
+![35-model-answer-levels](35-model-answer-levels.png)
 
 ## 12-maths-room-with-kit
 

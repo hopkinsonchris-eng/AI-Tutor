@@ -78,7 +78,7 @@ nav button .ic{font-size:17px;line-height:1}nav button[aria-selected="true"]{col
 .stations{display:flex;border-bottom:1px solid var(--rule);margin:0 -16px 14px;padding:0 8px;overflow-x:auto;contain:inline-size}   /* eight no-wrap tabs must scroll, never widen the column */
 .stations button{background:none;border:none;font:inherit;font-size:13.5px;font-weight:600;color:var(--pencil);padding:10px 10px;cursor:pointer;border-bottom:2.5px solid transparent;margin-bottom:-1px;white-space:nowrap}
 .stations button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--ink)}
-.formula{font-family:ui-monospace,'SF Mono',Menlo,monospace;font-size:13.5px;padding:8px 0;border-top:1px solid var(--rule);line-height:1.5}
+.formula{font-size:14.5px;padding:8px 0;border-top:1px solid var(--rule);line-height:1.55;font-variant-numeric:tabular-nums}
 .formula:first-child{border-top:none}
 .link{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:11px 0;border-top:1px solid var(--rule);font-size:14.5px;text-decoration:none;color:var(--ink)}
 .link:first-child{border-top:none}.link .lgo{color:var(--blue);font-weight:600;font-size:13px;white-space:nowrap}
@@ -94,7 +94,7 @@ nav button .ic{font-size:17px;line-height:1}nav button[aria-selected="true"]{col
 .qtext{font-size:15.5px;line-height:1.55}
 .hint{background:#FDFCF9;border-left:3px solid var(--amber);padding:9px 12px;font-size:14px;margin-top:8px}
 .ans{background:#EDF5F0;border-left:3px solid var(--green);padding:10px 12px;font-size:14.5px;margin-top:10px}
-.ans .mono{font-family:ui-monospace,'SF Mono',Menlo,monospace;font-size:14px}
+.ans .mono{font-size:14.5px;font-weight:600;font-variant-numeric:tabular-nums}
 .pill{display:inline-block;font-size:11px;font-weight:700;padding:2px 7px;border-radius:2px;border:1.5px solid var(--blue);color:var(--blue);margin-left:6px}
 .d1{border-color:var(--green);color:var(--green)}.d3{border-color:var(--red);color:var(--red)}
 .chat{max-height:340px;overflow-y:auto;border:1px solid var(--rule);border-radius:3px;padding:10px;background:#fff;margin-top:8px}
@@ -114,7 +114,7 @@ nav button .ic{font-size:17px;line-height:1}nav button[aria-selected="true"]{col
 .shot .cam{font-size:24px;line-height:1}.shot.filled{border-style:solid;border-color:var(--green);color:var(--green);padding:5px}
 .thumb{max-width:100%;max-height:88px;border-radius:2px;display:block}
 .readback{background:#FDFCF9;border:1.5px solid var(--amber);border-radius:3px;padding:14px;margin-top:14px}.readback h3{margin-top:0}
-.mono{font-family:ui-monospace,'SF Mono',Menlo,monospace;font-size:14px}
+.mono{font-size:14.5px;font-variant-numeric:tabular-nums}
 .fu{border-top:1px solid var(--rule);padding:12px 0;font-size:14.5px;display:flex;gap:10px}
 .fu .fk{flex:0 0 auto;font-size:10.5px;font-weight:700;padding:3px 7px;border-radius:2px;height:fit-content;border:1.5px solid var(--blue);color:var(--blue)}
 .fu[data-k="stretch"] .fk{border-color:var(--green);color:var(--green)}.fu[data-k="resource"] .fk{border-color:var(--amber);color:var(--amber)}
@@ -381,3 +381,10 @@ body.calm .tourbar{box-shadow:none}
 .rd .rbody{min-width:0;flex:1}.rd .rbody a{color:var(--ink);text-decoration:none}.rd .rbody b{font-size:13.5px;display:block;line-height:1.3}.rd .rbody small{display:block;color:var(--pencil);font-size:12px;margin-top:2px}.rd .rwhy{color:var(--ink);opacity:.8}
 .rfree{display:inline-block;font-size:10px;color:var(--green);border:1px solid var(--green);border-radius:2px;padding:0 5px;margin-left:6px;text-transform:uppercase;letter-spacing:.05em}.rfree.mium{color:var(--amber);border-color:var(--amber)}
 .rd .vpin{margin-top:6px}
+/* ---- a levelled model answer ---- */
+.model{border:1px solid var(--rule);border-radius:3px;background:var(--card);padding:12px 14px;margin:6px 0 16px}.model .nlabel{display:block;margin-bottom:3px}
+.model .mq{font-weight:600;font-size:15px;line-height:1.5;margin-bottom:10px}.model .mexp{font-size:14px;line-height:1.55;background:#FDFBF4;border-left:3px solid var(--amber);padding:8px 10px;margin-bottom:12px}
+.model .mans p{font-size:15px;line-height:1.7;margin:0}.model mark{background:none;color:inherit;padding:0 2px;border-radius:2px}
+.model mark.l2,.mkey mark.l2{background:#FBE3C2;color:#7A4B00}.model mark.l3,.mkey mark.l3{background:#D9EFDF;color:#1F4D33}
+.mtabs{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px;border-top:1px solid var(--rule);padding-top:10px}.mtabs button{font:inherit;font-size:13px;font-weight:600;border:1.5px solid var(--ink);background:transparent;color:var(--ink);border-radius:3px;padding:5px 11px;cursor:pointer}.mtabs button[aria-selected="true"]{background:var(--ink);color:var(--paper)}
+.mkey{margin:8px 0 0}

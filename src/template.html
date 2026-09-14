@@ -569,11 +569,21 @@ function stFormulae(AU,spec,topic){const r=AU.room,src=AU.sources||{tl:[],es:''}
    without a setup (older Worker builds) show their first line at once so the student has something to predict from. */
 function workedExampleHtml(e,rev,attr){const setup=e.setup||'';const cues=e.cues||[];let shown=rev||0;if(!setup&&shown===0)shown=1;const done=shown>=e.steps.length;
   return `<div class="qcard"><div class="qtext" style="font-weight:600">${esc(e.title)}</div>${setup?`<div class="setup">${esc(setup)}</div>`:''}${e.steps.map((x,si)=>`<div class="stepline ${si<shown?'':'hid'}">${esc(x)}</div>`).join('')}${done?'<div class="good">Now reproduce it on paper with the screen covered.</div>':`<div class="cue"><b>Predict:</b> ${esc(cues[shown]||'what the next line will be, then check.')}</div><button class="act ghost small" ${attr}>Reveal</button>`}</div>`;}
+/* A levelled model answer: the question, what the examiner is looking for, then the answer at one level with tabs for the others.
+   Level 2 shows in orange what it adds to level 1; level 3 keeps that and shows its own additions in green. */
+function modelAnswerHtml(x,key){const L=x.levels.slice().sort((a,b)=>a.level-b.level);const cur=UI.revealed['ml'+key]||L[0].level;const words=levelWords(L,cur);
+  const runs=[];for(const t of words){const last=runs[runs.length-1];if(last&&last.tag===t.tag)last.ws.push(t.w);else runs.push({tag:t.tag,ws:[t.w]});}
+  const body=runs.map(r=>r.tag?`<mark class="l${r.tag}">${esc(r.ws.join(' '))}</mark>`:esc(r.ws.join(' '))).join(' ');
+  const has=n=>L.some(l=>l.level===n);
+  return `<div class="model" data-model="${esc(key)}"><div class="mq"><small class="nlabel">The question</small>${esc(x.question)}</div><div class="mexp"><small class="nlabel">What the examiner is looking for</small>${esc(x.expected)}</div>
+   <div class="mans" data-mlevel-shown="${cur}"><small class="nlabel">A level ${cur} answer</small><p>${body}</p></div>
+   <div class="mtabs" role="tablist">${L.map(l=>`<button role="tab" aria-selected="${cur===l.level}" data-mlevel="${esc(key)}|${l.level}">Level ${l.level} · ${esc(l.marks)} marks</button>`).join('')}</div>
+   ${cur>=2?`<p class="fine mkey">${has(2)?'<mark class="l2">orange</mark>: added for level 2':''}${cur>=3&&has(3)?' · <mark class="l3">green</mark>: added for level 3':''}</p>`:''}</div>`;}
 function stLesson(spec,topic){const AU=authoredFor(spec.id,topic.id);if(AU&&AU.lesson){const L=AU.lesson;const rv=UI.revealed;
   return `<h3 style="margin-top:4px">Why this exists</h3><p style="font-size:15px;line-height:1.6">${esc(L.why)}</p><h3>The idea</h3>${L.idea.map((x,i)=>`<div class="qcard" style="margin-top:8px"><div class="qtext" style="font-weight:600">${i+1}. ${esc(x.h)}${x.code?`<span class="cite">${esc(x.code)}</span>`:''}</div>${rv['li'+i]?`<p style="font-size:14.5px;line-height:1.6;margin:8px 0 0">${esc(x.t)}</p>`:`<button class="act ghost small" data-reveal="li${i}">Read</button>`}</div>`).join('')}
    <h3>Worked examples — say your prediction out loud, then reveal</h3>${L.examples.map((e,ei)=>workedExampleHtml(e,rv['lx'+ei],`data-lxrev="${ei}"`)).join('')}
    <h3>Check yourself</h3>${L.check.map((c,i)=>`<div class="qcard"><div class="qtext">${esc(c.q)}</div>${rv['lc'+i]?`<div class="ans"><span class="mono">${esc(c.a)}</span></div>`:`<button class="act ghost small" data-reveal="lc${i}">Reveal</button>`}</div>`).join('')}
-   ${AU.extras&&AU.extras.length?AU.extras.map(x=>`<h3>${esc(x.title)}</h3>${x.items.map(i=>`<div class="formula">${esc(i)}</div>`).join('')}`).join(''):''}
+   ${AU.extras&&AU.extras.length?AU.extras.map((x,xi)=>`<h3>${esc(x.title)}</h3>${Array.isArray(x.levels)?modelAnswerHtml(x,'x'+xi):(x.items||[]).map(i=>`<div class="formula">${esc(i)}</div>`).join('')}`).join(''):''}
    <div class="row"><button class="act" data-teach="1">${esc(coachName())}, teach me this</button><button class="act ghost" data-station="formulae">${AU.kit?(AU.kit.family==='quantitative'?'Formulae & links →':'Key facts & links →'):'Formulae, examples & videos →'}</button></div>`;}
   const L=(S.generated[UI.room]||{}).lesson;
   if(!L)return `<p style="font-size:15px;line-height:1.6">${esc(topic.ideas.map(i=>i.idea).join(' · '))}</p><h3>Key ideas in this room</h3>${topic.ideas.map(i=>`<div class="formula"><span class="cite" style="margin:0 6px 0 0">${esc(i.code)}</span>${esc(i.idea)} — <span style="color:var(--pencil)">${esc(i.content)}</span></div>`).join('')}
@@ -1312,6 +1322,7 @@ document.addEventListener('click',async e=>{let t=e.target;noteActivity();
     if(ticked||!fl.classList||!fl.setAttribute){if(was)UI.fcAnim=k;else UI.fcJust=k;renderRooms();return;}
     fl.classList.remove('still');fl.classList.toggle('flipped',!was);fl.classList.toggle('unflip',was);fl.setAttribute('aria-pressed',String(!was));fl.setAttribute('aria-label',!was?'Turn back to the question':'Turn over for the answer');return;}
   const rv=t.closest('[data-reveal]');if(rv){UI.revealed[rv.dataset.reveal]=true;renderAll();return;}
+  const ml=t.closest('[data-mlevel]');if(ml){const [k,n]=ml.dataset.mlevel.split('|');UI.revealed['ml'+k]=+n;renderRooms();return;}
   const lx=t.closest('[data-lxrev]');if(lx){const k='lx'+lx.dataset.lxrev;const AUx=authoredFor(nodeTopic(UI.room).spec.id,nodeTopic(UI.room).topic.id);const ex=AUx&&AUx.lesson&&AUx.lesson.examples[+lx.dataset.lxrev];UI.revealed[k]=Math.max(UI.revealed[k]||0,ex&&!ex.setup?1:0)+1;renderRooms();return;}
   const ax=t.closest('[data-axrev]');if(ax){const k='ax'+ax.dataset.axrev;const AUx=authoredFor(nodeTopic(UI.room).spec.id,nodeTopic(UI.room).topic.id);const ex=AUx&&AUx.room&&AUx.room.examples[+ax.dataset.axrev];UI.revealed[k]=Math.max(UI.revealed[k]||0,ex&&!ex.setup?1:0)+1;renderRooms();return;}
   if(t.closest('[data-kitcards]')){const {spec,topic}=nodeTopic(UI.room);const AU=authoredFor(spec.id,topic.id);if(AU&&AU.cards&&!(S.kitCards||{})[UI.room]){for(const c of AU.cards){const cid='c'+Math.random().toString(36).slice(2,9);S.cards[cid]={node:UI.room,front:c.front,back:c.back,code:c.code,due:TODAY,ease:1,reps:0,open:!!c.open};}S.kitCards=S.kitCards||{};S.kitCards[UI.room]=true;await save();}renderRooms();return;}

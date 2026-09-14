@@ -78,14 +78,33 @@ function validateKit(kit, topic, family) {
   });
 
   const extras = Array.isArray(kit.extras) ? kit.extras : [];
-  extras.forEach((x, i) => { if (!x || !KINDS.includes(x.kind) || !x.title || !Array.isArray(x.items) || !x.items.length || x.items.some(it => !it)) bad(`extras[${i}]: needs kind (one of ${KINDS.join(', ')}), a title and at least one non-empty item`); });
+  extras.forEach((x, i) => {
+    if (!x || !KINDS.includes(x.kind) || !x.title) return bad(`extras[${i}]: needs kind (one of ${KINDS.join(', ')}) and a title`);
+    if (Array.isArray(x.levels)) return levelledProblems(x).forEach(pb => bad(`extras[${i}]: ${pb}`));
+    if (!Array.isArray(x.items) || !x.items.length || x.items.some(it => !it)) bad(`extras[${i}]: needs at least one non-empty item, or a levelled model answer (question, expected, levels)`); });
   const fam = FAMILIES[family];
   if (fam && fam.kit) for (const [kind, min] of Object.entries(fam.kit.kinds)) {
     const need = min === 'ifPracticals' ? ((topic.caseStudies || []).length ? 1 : 0) : min;
-    const have = extras.filter(x => x && x.kind === kind).length;
+    const have = extras.reduce((n, x) => n + (x && x.kind === kind ? (Array.isArray(x.levels) ? x.levels.length : 1) : 0), 0);   // a levelled model answer is one section per level: a strong and a weaker paragraph in one
     if (have < need) bad(`extras: the ${family} family needs at least ${need} "${kind}" section${need === 1 ? '' : 's'}, has ${have}`);
   }
   return { ok: problems.length === 0, problems };
 }
 
-module.exports = { validateKit, KINDS, OPEN_FRONT };
+/* A levelled model answer: the question, what the examiner expects, and two or three answers that grow — every sentence of one
+   level appears word for word in the next, so the app can colour what each level adds. */
+const sentences = t => String(t || '').split(/(?<=[.!?])\s+/).map(x => x.trim()).filter(x => x.length > 3);
+function levelledProblems(x) {
+  const out = [];
+  if (typeof x.question !== 'string' || x.question.trim().length < 10) out.push('a levelled model answer needs the question');
+  if (typeof x.expected !== 'string' || x.expected.trim().length < 40) out.push('a levelled model answer needs "expected": what the examiner is looking for, at least 40 characters');
+  const L = x.levels; if (L.length < 2 || L.length > 3) out.push('levels: two or three');
+  L.forEach((l, i) => { if (!l || ![1, 2, 3].includes(l.level) || typeof l.marks !== 'string' || !l.marks || typeof l.answer !== 'string' || l.answer.trim().length < 30) out.push(`levels[${i}]: needs level 1–3, marks and an answer of at least 30 characters`); });
+  for (let i = 1; i < L.length; i++) { const a = L[i - 1], b = L[i]; if (!a || !b || typeof a.answer !== 'string' || typeof b.answer !== 'string') continue;
+    if (!(b.level > a.level)) out.push(`levels[${i}]: levels must rise`);
+    const missing = sentences(a.answer).filter(s => !b.answer.includes(s));
+    if (missing.length) out.push(`levels[${i}]: level ${b.level} must keep every sentence of level ${a.level} word for word; missing: "${missing[0].slice(0, 60)}"`);
+    if (b.answer.length <= a.answer.length) out.push(`levels[${i}]: level ${b.level} must add to level ${a.level}`); }
+  return out;
+}
+module.exports = { validateKit, KINDS, OPEN_FRONT, levelledProblems };

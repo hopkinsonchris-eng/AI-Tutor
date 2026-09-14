@@ -20,7 +20,7 @@ Room kit (the depth the Worker writes and checks for every room of a course in t
 
 ```
 Essay-based kit.
-1. Model paragraphs: at least two, each titled with the level it would earn under the board’s levels (for example "Model paragraph — Level 4") and written to that level, with the point, the named evidence, the developed chain of reasoning and the mini-judgement; one strong and one weaker, so the student can see the difference.
+1. Model paragraphs: at least two, each titled with the level it would earn under the board’s levels (for example "Model paragraph — Level 4") and written to that level, with the point, the named evidence, the developed chain of reasoning and the mini-judgement; one strong and one weaker, so the student can see the difference. A hand-built kit may give the pair as one levelled model answer (question, expected, levels 1 to 3 whose answers grow cumulatively, sentence for sentence), which counts as one paragraph per level.
 2. A case-study fact file for each named example the specification requires for the topic: the dates, figures, places and names an examiner rewards, one per item.
 3. An essay plan for one question in the board’s own command words: the decoded question, the paragraphs in order, the evaluation thread, and what the conclusion must say.
 4. Questions are exam-style in the board’s command words, with the marks each carries; `a` is the indicative content an examiner expects in one or two lines, `sol` is a model answer at the top level.
@@ -67,7 +67,7 @@ Room kit (the depth the Worker writes and checks for every room of a course in t
 ```
 Science with practicals kit.
 1. A method sheet for every required practical the topic names: the title as the specification gives it, the method in numbered steps, the independent, dependent and control variables, the apparatus the document lists, the likely errors, and the AT / WS skills it assesses.
-2. At least one extended-response model answer (six marks at GCSE, nine at A level) written to the levels, with a note on what a bottom-level answer misses.
+2. At least one extended-response model answer (six marks at GCSE, nine at A level) written to the levels, with a note on what a bottom-level answer misses. A hand-built kit gives it as a levelled model answer — question, expected (what the examiner is looking for, to the student) and levels 1 to 3, each with its marks and an answer that keeps every sentence of the level below word for word and adds to it — so the app can show the level 1 answer and colour what levels 2 and 3 add; a Worker-built kit lists the question, the top-level answer and what the bottom level misses as items.
 3. Questions mix recall, explanation and calculation; every calculation question gives the equation, the substitution and the answer with its unit in `sol`, and the intermediate mark-scheme step in a hint.
 4. The lesson pairs each content statement with what the student must do with it: the mechanism, the equation, the graph or the practical.
 5. Cards hold definitions, equations with units, and the key figures.

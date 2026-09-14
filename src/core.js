@@ -385,12 +385,13 @@ function gradeFromBoundaries(score, boundaries) {
 
 /* ---------- Support: the profile, the reader's sentences, the prompter, time, chunking, usage ---------- */
 const TUTOR_VOICES = [['athena', 'Athena — British, female'], ['helios', 'Helios — British, male']];
-const SUPPORT_DEFAULTS = { reader: false, readerRate: 1, lineFocus: 0, spacing: false, readCoach: false, voice: '', tutorVoice: '', dictate: false, prompter: false, prompterMinutes: 5, chunk: false, chunkLevel: 2, calm: false, literal: false, timer: false, extra: 0, breaks: false };
+const SUPPORT_DEFAULTS = { reader: false, readerRate: 0.85, rateSet: false, lineFocus: 0, spacing: false, readCoach: false, voice: '', tutorVoice: '', dictate: false, prompter: false, prompterMinutes: 5, chunk: false, chunkLevel: 2, calm: false, literal: false, timer: false, extra: 0, breaks: false };
 function normaliseSupport(s) {
   const o = Object.assign({}, SUPPORT_DEFAULTS);
   if (!s || typeof s !== 'object') return o;
   for (const k of ['reader', 'spacing', 'readCoach', 'dictate', 'prompter', 'chunk', 'calm', 'literal', 'timer', 'breaks']) if (k in s) o[k] = !!s[k];
-  const rate = parseFloat(s.readerRate); if (Number.isFinite(rate)) o.readerRate = Math.round(Math.max(0.7, Math.min(1.4, rate)) * 10) / 10;
+  /* the speed is 0.85 for everyone until the student moves it (a profile saved before the default changed carries the old 1.0 and is moved too) */
+  const rate = parseFloat(s.readerRate); o.rateSet = !!s.rateSet; if (o.rateSet && Number.isFinite(rate)) o.readerRate = Math.round(Math.max(0.7, Math.min(1.4, rate)) * 100) / 100;
   const lf = parseInt(s.lineFocus, 10); o.lineFocus = [0, 1, 3, 5].includes(lf) ? lf : 0;
   const pm = parseInt(s.prompterMinutes, 10); o.prompterMinutes = [3, 5, 8].includes(pm) ? pm : 5;
   const cl = parseInt(s.chunkLevel, 10); o.chunkLevel = [1, 2, 3].includes(cl) ? cl : 2;
@@ -459,7 +460,9 @@ function spokenExpression(span) {
   let inner = body;
   for (const [re, w] of SPEAK_UNITS) inner = inner.replace(re, w);
   inner = inner.replace(/(\d)(?=[A-Za-z])/g, '$1 ').replace(/[A-Za-z]+/g, w => SPEAK_KEEP.has(w) || w.length > 3 ? w : [...w].join(' '))
-    .replace(/\s*=\s*/g, ' equals ').replace(/\s*\+\s*/g, ' plus ').replace(/\s*\/\s*/g, ' over ').replace(/\s-\s/g, ' minus ');
+    .replace(/\s*=\s*/g, ' equals ').replace(/\s*\+\s*/g, ' plus ').replace(/\s*\/\s*/g, ' over ').replace(/\s-\s/g, ' minus ')
+    .replace(/\ba\b/g, 'ay')   // the variable a, never the article
+    .replace(/\)\s*\(/g, ') times (').replace(/(\d)\s*\(/g, '$1 times (').replace(/\(/g, ' open bracket ').replace(/\)/g, ' close bracket ');
   return ', ' + inner.trim() + ',' + tail;
 }
 /* a chemical formula with subscripts or a charge: every letter said on its own, the subscripts as digits, the charge as plus or minus (H₂SO₄, Na⁺, SO₄²⁻) */

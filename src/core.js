@@ -435,17 +435,57 @@ function notation(text) {
 /* the same, through every string of an object: a kit, a lesson, a reply */
 function notationDeep(v) { if (typeof v === 'string') return notation(v); if (Array.isArray(v)) return v.map(notationDeep); if (v && typeof v === 'object') { const o = {}; for (const [k, x] of Object.entries(v)) o[k] = notationDeep(x); return o; } return v; }
 const SPEAK_SYMBOLS = [[/\s*×\s*/g, ' times '], [/\s*÷\s*/g, ' divided by '], [/\s*→\s*/g, ' gives '], [/\s*≥\s*/g, ' at least '], [/\s*≤\s*/g, ' at most '], [/\s*°\s*/g, ' degrees '],
-  [/√\s*/g, ' the square root of '], [/\s*≠\s*/g, ' is not equal to '], [/\s*≈\s*/g, ' is approximately '], [/\s*±\s*/g, ' plus or minus '], [/\s*∝\s*/g, ' is proportional to '], [/π/g, ' pi '], [/Δ/g, ' delta '], [/θ/g, ' theta '], [/λ/g, ' lambda '], [/Ω/g, ' ohms '], [/½/g, ' a half '], [/¼/g, ' a quarter '], [/¾/g, ' three quarters '], [/⅓/g, ' a third '], [/⅔/g, ' two thirds ']];
-/* what the voice says: powers as squared, cubed or to the power of …; subscripts as their digits; symbols as words */
+  [/√\s*/g, ' the square root of '], [/\s*≠\s*/g, ' is not equal to '], [/\s*≈\s*/g, ' is approximately '], [/\s*±\s*/g, ' plus or minus '], [/\s*∝\s*/g, ' is proportional to '], [/\s*⇌\s*/g, ' in equilibrium with '], [/\s*≡\s*/g, ' is equivalent to '],
+  [/\s*−\s*/g, ' minus '], [/\s*=\s*/g, ' equals '], [/\s*∩\s*/g, ' and '], [/\s*∪\s*/g, ' or '], [/\bdegC\b/g, 'degrees C'], [/(\d)\s*–\s*(?=\d)/g, '$1 to '], [/\s*·\s*/g, ' '], [/(\d)\s*%/g, '$1 percent'], [/\be\.g\.\s*/g, 'for example, '], [/\bi\.e\.\s*/g, 'that is, '],
+  [/π/g, ' pi '], [/Δ/g, ' delta '], [/θ/g, ' theta '], [/λ/g, ' lambda '], [/Ω/g, ' ohms '], [/μ/g, ' micro '], [/ρ/g, ' rho '], [/ω/g, ' omega '], [/α/g, ' alpha '], [/β/g, ' beta '], [/γ/g, ' gamma '], [/ε/g, ' epsilon '], [/φ/g, ' phi '], [/[Σ∑]/g, ' the sum of '], [/∫/g, ' the integral of '], [/∞/g, ' infinity '], [/∠/g, ' angle '],
+  [/½/g, ' a half '], [/¼/g, ' a quarter '], [/¾/g, ' three quarters '], [/⅓/g, ' a third '], [/⅔/g, ' two thirds ']];
+/* units a voice would read letter by letter or skip the slash of */
+const SPEAK_UNITS = [[/\bm\/s²/g, ' metres per second squared'], [/\bm\/s\b/g, ' metres per second'], [/\bkm\/h\b/g, ' kilometres per hour'], [/\bkJ\/mol\b/g, ' kilojoules per mole'], [/\bJ\/mol\b/g, ' joules per mole'], [/\bg\/cm³/g, ' grams per centimetre cubed'], [/\bkg\/m³/g, ' kilograms per metre cubed'],
+  [/\bmol\/dm³/g, ' moles per decimetre cubed'], [/\bg\/dm³/g, ' grams per decimetre cubed'], [/\bN\/kg\b/g, ' newtons per kilogram'], [/\bJ\/kg\s*°C/g, ' joules per kilogram per degree'], [/\bm\s?s⁻¹/g, ' metres per second'], [/\bm\s?s⁻²/g, ' metres per second squared'], [/\bkg\s?m⁻³/g, ' kilograms per metre cubed'],
+  [/\bcm³\/s/g, ' centimetres cubed per second'], [/\bm³\/s/g, ' metres cubed per second'], [/\bcm³/g, ' centimetres cubed'], [/\bdm³/g, ' decimetres cubed'], [/\bm³/g, ' metres cubed'], [/\bkm²/g, ' kilometres squared'], [/\bcm²/g, ' centimetres squared'], [/\bm²/g, ' metres squared'], [/\bmm²/g, ' millimetres squared']];
+/* letter runs inside an expression that are words, not variables to spell: functions, units and the small words an equation can run into */
+const SPEAK_KEEP = new Set(['sin', 'cos', 'tan', 'sec', 'cot', 'log', 'ln', 'exp', 'lim', 'max', 'min', 'kg', 'mg', 'cm', 'mm', 'km', 'nm', 'ms', 'Hz', 'kHz', 'MHz', 'Pa', 'kPa', 'MPa', 'kJ', 'MJ', 'kW', 'MW', 'mol', 'dm', 'min', 'mA', 'kV', 'mV', 'the', 'an', 'of', 'or', 'and', 'per', 'to', 'in', 'on', 'by', 'is', 'if', 'so', 'no', 'for', 'from', 'then', 'than', 'with', 'not']);
+const SUPS = Object.values(SUP).join(''), SUBS = Object.values(SUB).join('');
+const UNIT_RE = ['degC', 'cm³/s', 'm³/s', 'm/s²', 'm/s', 'km/h', 'kJ/mol', 'J/mol', 'g/cm³', 'kg/m³', 'mol/dm³', 'g/dm³', 'N/kg', 'ms⁻¹', 'ms⁻²', 'kgm⁻³', 'cm³', 'dm³', 'm³', 'cm²', 'km²', 'mm²', 'm²', '°C', 'kHz', 'MHz', 'kPa', 'MPa', 'mol', 'kg', 'mg', 'cm', 'mm', 'km', 'ms', 'kJ', 'MJ', 'kW', 'Hz', 'Pa', 'Ω', 'g', 'm', 's', 'J', 'N', 'W', 'V', 'A', 'K']
+  .sort((a, b) => b.length - a.length).map(u => u.replace(/[/]/g, '\\/')).join('|');
+const UNIT_TOKEN = `(?<![A-Za-z])(?:${UNIT_RE})(?![A-Za-z0-9\\/])`;
+const EXPR_TOKEN = `(?:−\\s*)?(?:${UNIT_TOKEN}|[A-Za-z0-9.${SUPS}${SUBS}()πθλΔ√°%½¼¾⅓⅔]+)(?:\\s+${UNIT_TOKEN}){0,2}`;
+const EXPR_OP = '=|×|÷|\\+|−|∩|∪|\\/|\\s-\\s';
+const EXPR_SPAN = new RegExp(`${EXPR_TOKEN}(?:\\s*(?:${EXPR_OP})\\s*${EXPR_TOKEN})+`, 'g');
+/* one expression: units said as words, short letter runs spelled (2as → 2 a s), = + / − said, and the whole thing between pauses */
+function spokenExpression(span) {
+  const tail = (span.match(/[.,;:…]+$/) || [''])[0]; const body = tail ? span.slice(0, -tail.length) : span;
+  if (!/\d|=|×|÷|\+|−/.test(body) && /\//.test(body)) return span;   // and/or, either/or: words, not an expression
+  let inner = body;
+  for (const [re, w] of SPEAK_UNITS) inner = inner.replace(re, w);
+  inner = inner.replace(/(\d)(?=[A-Za-z])/g, '$1 ').replace(/[A-Za-z]+/g, w => SPEAK_KEEP.has(w) || w.length > 3 ? w : [...w].join(' '))
+    .replace(/\s*=\s*/g, ' equals ').replace(/\s*\+\s*/g, ' plus ').replace(/\s*\/\s*/g, ' over ').replace(/\s-\s/g, ' minus ');
+  return ', ' + inner.trim() + ',' + tail;
+}
+/* a chemical formula with subscripts or a charge: every letter said on its own, the subscripts as digits, the charge as plus or minus (H₂SO₄, Na⁺, SO₄²⁻) */
+const CHEM = new RegExp(`\\b\\d*[A-Z][A-Za-z${SUBS}]*[${SUBS}⁺⁻][A-Za-z${SUBS}⁺⁻²³]*`, 'g');
+const charge = run => { const p = [...run].map(c => SUP_BACK[c] || '').join(''); const m = p.match(/^(\d?)([+-])$/); return m ? (m[1] ? m[1] + ' ' : '') + (m[2] === '+' ? 'plus' : 'minus') : run; };
+function spokenFormula(tok) {
+  return tok.replace(/[A-Za-z]+|[₀-₉]+|[⁺⁻²³]+$/g, m => /^[A-Za-z]/.test(m) ? [...m].join(' ') : /^[₀-₉]/.test(m) ? [...m].map(c => SUB_BACK[c]).join('') : ' ' + charge(m))
+    .replace(/([A-Za-z])(?=\d)/g, '$1 ').replace(/(\d)(?=[A-Za-z])/g, '$1 ').replace(/\s+/g, ' ');
+}
+/* does a sentence carry notation the voice should take slowly? */
+function mathsHeavy(text) { const t = notation(text); EXPR_SPAN.lastIndex = 0; return EXPR_SPAN.test(t) || new RegExp(`[${SUPS}${SUBS}×÷√≠≈±∝⇌≡→πΔθλΩ−]`).test(t); }
+/* what the voice says: powers as squared, cubed or to the power of …; subscripts as their digits; symbols as words; expressions spelled and paused */
 function speakable(text) {
   let t = notation(text);
+  t = t.replace(EXPR_SPAN, spokenExpression);
+  for (const [re, w] of SPEAK_UNITS) t = t.replace(re, w);
+  t = t.replace(CHEM, spokenFormula);
   t = t.replace(/([⁰¹²³⁴⁵⁶⁷⁸⁹⁺⁻⁽⁾⁄ᵃᵇᶜᵈᵉᶠᵍʰⁱʲᵏˡᵐⁿᵒᵖʳˢᵗᵘᵛʷˣʸᶻ]+)/g, run => {
     const plain = [...run].map(c => SUP_BACK[c] || '').join('');
-    if (plain === '2') return ' squared'; if (plain === '3') return ' cubed';
+    if (plain === '2') return ' squared '; if (plain === '3') return ' cubed ';
+    if (/^\d?[+-]$/.test(plain)) return ' ' + charge(run);
     const spoken = plain.replace(/[()]/g, '').replace(/([a-z])(?=[a-z0-9])/g, '$1 ').replace(/-/g, ' minus ').replace(/\+/g, ' plus ').replace(/\//g, ' over ');
     return ' to the power of ' + spoken.trim() + ' '; });
   t = t.replace(/[₀₁₂₃₄₅₆₇₈₉]+/g, run => ' ' + [...run].map(c => SUB_BACK[c]).join('') + ' ');
-  for (const [re, w] of SPEAK_SYMBOLS) t = t.replace(re, w); return t.replace(/\s+/g, ' ').replace(/ ([;,.!?)])/g, '$1').trim(); }
+  for (const [re, w] of SPEAK_SYMBOLS) t = t.replace(re, w);
+  return t.replace(/\s+/g, ' ').replace(/ ([;,.!?)])/g, '$1').replace(/,(\s*,)+/g, ',').replace(/,\s*([.;:!?…])/g, '$1').replace(/([.;:!?])\s*,\s*/g, '$1 ').replace(/^,\s*/, '').replace(/\(\s*,\s*/g, '(').replace(/,\s*\)/g, ')').replace(/,\s*$/, '').trim(); }
 /* Sentences for the reader: split on . ? ! followed by a space and a capital, digit or quote; never inside decimals, codes or common abbreviations. */
 const ABBREV = /(?:\b(?:e\.g|i\.e|etc|cf|vs|Fig|Figs|No|Nos|Dr|Mr|Mrs|Ms|Prof|St|Ch|Eq|approx|p|pp|c|Jan|Feb|Mar|Apr|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec)|\b[A-Z])\.$/;
 function splitSentences(text) {
@@ -507,4 +547,4 @@ function supportUsageLine(state, today) {
   return parts.length ? 'Support this week: ' + parts.join(' · ') : '';
 }
 if (typeof module !== 'undefined') module.exports = { DAY, STATES, FAILURE_MODES, REMEDY, BLOCKS, phaseFor, days, iso, resolveTopics, nodeId, newState, topicWeights, deskResurface, daysToExam, pileCounts,
-  recordResult, recordWrong, applyDecay, dueForReview, scheduleCard, dueCards, subjectPriority, buildSession, topicForCode, questionTopic, paperTopics, paperPriority, applyPaper, retestQueue, recordRetest, gradeFromBoundaries, RETEST_CAP, errorUrgency, MASTERY_FACTOR, DEFAULT_BOUNDS, gradeFor, predictSubject, weeklyReport, streakDays, nudgeFallback, nudgePrompt, topicLinks, SUPPORT_DEFAULTS, normaliseSupport, splitSentences, prompterLine, timerMinutes, marksToMinutes, chunkFallback, supportUsageLine, TUTOR_VOICES, speakable, notation, notationDeep, levelWords, newTour, gradesShown, subjectTrend };
+  recordResult, recordWrong, applyDecay, dueForReview, scheduleCard, dueCards, subjectPriority, buildSession, topicForCode, questionTopic, paperTopics, paperPriority, applyPaper, retestQueue, recordRetest, gradeFromBoundaries, RETEST_CAP, errorUrgency, MASTERY_FACTOR, DEFAULT_BOUNDS, gradeFor, predictSubject, weeklyReport, streakDays, nudgeFallback, nudgePrompt, topicLinks, SUPPORT_DEFAULTS, normaliseSupport, splitSentences, prompterLine, timerMinutes, marksToMinutes, chunkFallback, supportUsageLine, TUTOR_VOICES, speakable, mathsHeavy, notation, notationDeep, levelWords, newTour, gradesShown, subjectTrend };

@@ -271,6 +271,9 @@ const server = http.createServer((req, res) => {
   must(/Key facts & links/.test(await page.locator('.stations').textContent()) && /Required practical 1/.test(await page.locator('#v-rooms').textContent()) && (await page.locator('#v-rooms [data-lxrev]').count()) === 4, 'room: kit lesson with worked examples, the practical method sheet and the Key facts tab');
   await snap(page, '11-room-with-kit', 'A built course’s room after depth: the checked lesson with one section per key idea, faded worked examples, the required-practical method sheet, and the provenance line');
   must((await page.locator('#v-rooms .model').count()) === 1 && (await page.locator('#v-rooms .model mark').count()) === 0 && (await page.locator('#v-rooms .mtabs button').count()) === 3, 'model answer: the question, what the examiner is looking for, the level 1 answer with nothing highlighted, and three tabs');
+  await page.evaluate(() => { S.setup.support.reader = true; renderAll(); readerDecorate(); }); await page.waitForTimeout(200);
+  must((await page.locator('#v-rooms .model .mq .rdb').count()) === 1 && (await page.locator('#v-rooms .model .mexp .rdb').count()) === 1 && (await page.locator('#v-rooms .model .mans p .rdb').count()) === 1 && (await page.locator('#v-rooms .model .mtabs .rdb, #v-rooms .model .nlabel .rdb, #v-rooms .model .mkey .rdb').count()) === 0, 'with the reader on, the model answer’s question, expectation and answer each get a 🔊 and the tabs and labels do not');
+  await page.evaluate(() => { S.setup.support.reader = false; renderAll(); });
   await page.click('#v-rooms [data-mlevel$="|3"]'); await page.waitForTimeout(150);
   must((await page.locator('#v-rooms .model mark.l2').count()) >= 1 && (await page.locator('#v-rooms .model mark.l3').count()) >= 1 && /green/.test(await page.locator('#v-rooms .mkey').textContent()), 'model answer at level 3: level 2’s additions in orange, level 3’s in green, and the key');
   await page.locator('#v-rooms .model').scrollIntoViewIfNeeded(); await page.waitForTimeout(150);
@@ -358,7 +361,7 @@ const server = http.createServer((req, res) => {
   await page.click('#coachClose');
   await page.evaluate(() => { S.setup.support.reader = true; S.setup.support.lineFocus = 3; S.setup.support.spacing = true; applySupport(); renderAll(); });
   await page.click('[data-station="lesson"]'); await page.waitForSelector('#reader #rdPage', { timeout: 5000 }); await page.waitForTimeout(250);
-  must((await page.locator('#v-rooms .rdb').count()) >= 3 && (await page.locator('#v-rooms h2 .rdb, #v-rooms h3 .rdb, #v-rooms .sub .rdb, #v-rooms .fine .rdb, #wall .rdb, [data-hint] .rdb').count()) === 0, 'the lesson’s body paragraphs have a 🔊; titles, sub-lines, captions and the wall do not');
+  must((await page.locator('#v-rooms .rdb').count()) >= 3 && (await page.locator('#v-rooms h2 .rdb, #v-rooms h3 .rdb, #v-rooms .sub .rdb, #v-rooms .fine .rdb, #v-rooms .qtitle .rdb, #v-rooms .hid .rdb, #v-rooms .nlabel .rdb, #wall .rdb, [data-hint] .rdb').count()) === 0 && (await page.locator('#v-rooms .qtitle').count()) >= 1, 'the lesson’s body paragraphs have a 🔊; headings, idea and example title lines, unrevealed steps, captions and the wall do not');
   await page.click('#rdPage'); await page.waitForSelector('.rd-cur', { timeout: 5000 }); await page.waitForTimeout(200);
   must((await page.locator('.rd-cur[data-hint], .rd-cur[data-tour], .rd-cur[data-spotcap]').count()) === 0, 'Read this page starts with the page, never the First Week card or a caption');
   must((await page.locator('#rdmask').isVisible()) && /Stop/.test(await page.locator('#reader').textContent()) && (await page.locator('body.rd-space').count()) === 1, 'reading: the current block is highlighted, the line-focus window is up, spacing is wider');

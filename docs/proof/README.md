@@ -152,6 +152,12 @@ Edexcel International GCSE Mathematics A (Foundation), Integers: the checked kit
 
 ![15-igcse-maths-room](15-igcse-maths-room.png)
 
+## 36-english-language-room
+
+AQA GCSE English Language, Paper 1 as a room: the checked kit lesson with the paper’s question sequence, faded worked examples on the room’s own passage, and the provenance line
+
+![36-english-language-room](36-english-language-room.png)
+
 ## 16-exam-real-papers
 
 The Exam Hall for OCR A level Geography: every public series from OCR’s own site, June 2026 locked until its release date, each paper opening on ocr.org.uk with Open paper and Mark my answers, and the notice that nothing of the board’s is stored.

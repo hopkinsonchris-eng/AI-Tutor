@@ -78,7 +78,7 @@ nav button .ic{font-size:17px;line-height:1}nav button[aria-selected="true"]{col
 .stations{display:flex;border-bottom:1px solid var(--rule);margin:0 -16px 14px;padding:0 8px;overflow-x:auto;contain:inline-size}   /* eight no-wrap tabs must scroll, never widen the column */
 .stations button{background:none;border:none;font:inherit;font-size:13.5px;font-weight:600;color:var(--pencil);padding:10px 10px;cursor:pointer;border-bottom:2.5px solid transparent;margin-bottom:-1px;white-space:nowrap}
 .stations button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--ink)}
-.formula{font-size:14.5px;padding:8px 0;border-top:1px solid var(--rule);line-height:1.55;font-variant-numeric:tabular-nums}
+.formula{font-size:14.5px;padding:8px 0;border-top:1px solid var(--rule);line-height:1.55;font-variant-numeric:tabular-nums;white-space:pre-line}
 .formula:first-child{border-top:none}
 .link{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:11px 0;border-top:1px solid var(--rule);font-size:14.5px;text-decoration:none;color:var(--ink)}
 .link:first-child{border-top:none}.link .lgo{color:var(--blue);font-weight:600;font-size:13px;white-space:nowrap}

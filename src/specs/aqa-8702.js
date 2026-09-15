@@ -24,7 +24,7 @@ const SPEC_8702 = {
     "Section B The 19th-century novel: \"students will answer one question on their novel of choice. They will be required to write in detail about an extract from the novel and then to write about the novel as a whole.\" One question of 30 marks (AO1=12, AO2=12, AO3=6); no AO4 marks are awarded in this section. Students answer on the one novel they have studied from the seven set texts of 3.1.2."
    ],
    "openBook": false,
-   "note": "\"How it's assessed: written exam: 1 hour 45 minutes; 64 marks; 40% of GCSE.\" \"All assessments are closed book: any stimulus materials required will be provided as part of the assessment.\" \"All assessments are compulsory.\" Both sections begin from a printed extract. In the assessment weightings table the maximum raw mark for \"Shakespeare and the 19th-century novel\" is 64, the scaling factor is x1 and the maximum scaled mark is 64."
+   "note": "How it's assessed (the document's three bullets): \"written exam: 1 hour 45 minutes\", \"64 marks\", \"40% of GCSE\". \"All assessments are closed book: any stimulus materials required will be provided as part of the assessment.\" \"All assessments are compulsory.\" Both sections begin from a printed extract. In the assessment weightings table the maximum raw mark for \"Shakespeare and the 19th-century novel\" is 64, the scaling factor is x1 and the maximum scaled mark is 64."
   },
   {
    "id": "C2",
@@ -35,11 +35,11 @@ const SPEC_8702 = {
    "minutes": 135,
    "sections": [
     "Section A Modern texts: \"students will answer one essay question from a choice of two on their studied modern prose or drama text.\" One question of 30 marks (AO1=12, AO2=12, AO3=6), plus 4 marks for AO4, which \"will be assessed on Section A only\" — 34 marks in all. Each question carries two \"Write about:\" bullets, the first on the ideas or characters, the second on \"how … presents these ideas by the ways he writes\".",
-    "Section B Poetry: \"students will answer one comparative question on one named poem printed on the paper and one other poem from their chosen anthology cluster.\" One question of 30 marks (AO1=12, AO2=12, AO3=6); \"There are 30 marks for Section B.\" The named poem is reproduced on the paper; the second poem is chosen by the student from the same cluster.",
+    "Section B Poetry: \"students will answer one comparative question on one named poem printed on the paper and one other poem from their chosen anthology cluster.\" One question of 30 marks (AO1=12, AO2=12, AO3=6); \"There are 30 marks for Section B and 32 marks for Section C.\" The named poem is reproduced on the paper; the second poem is chosen by the student from the same cluster.",
     "Section C Unseen poetry: \"Students will answer one question on one unseen poem and one question comparing this poem with a second unseen poem.\" Question 27.1 is 24 marks (AO1=12, AO2=12) on the first poem; Question 27.2 is 8 marks (AO2 only) comparing the two poems. \"There are … 32 marks for Section C.\" Both poems are printed on the paper and both questions are compulsory."
    ],
    "openBook": false,
-   "note": "\"How it's assessed: written exam: 2 hour 15 minutes; 96 marks; 60% of GCSE.\" The specimen paper's instructions read: \"Answer one question from Section A, one question from Section B and both questions in Section C\"; \"The maximum mark for this paper is 96\"; \"AO4 will be assessed in Section A. There are 4 marks available for AO4 in Section A in addition to 30 marks for answering the question.\" In the assessment weightings table the maximum raw mark for \"Modern texts and poetry\" is 96, the scaling factor is x1 and the maximum scaled mark is 96; the total scaled mark for the qualification is 160."
+   "note": "How it's assessed (the document's three bullets): \"written exam: 2 hour 15 minutes\", \"96 marks\", \"60% of GCSE\". The specimen paper's instructions read: \"Answer one question from Section A, one question from Section B and both questions in Section C\"; \"The maximum mark for this paper is 96\"; \"AO4 will be assessed in Section A. There are 4 marks available for AO4 in Section A in addition to 30 marks for answering the question.\" In the assessment weightings table the maximum raw mark for \"Modern texts and poetry\" is 96, the scaling factor is x1 and the maximum scaled mark is 96; the total scaled mark for the qualification is 160."
   }
  ],
  "options": [
@@ -2693,9 +2693,9 @@ const SPEC_8702 = {
    "id": "skills",
    "component": "C1",
    "option": null,
-   "name": "3.3 Skills",
+   "name": "3.3 Skills (both papers)",
    "caseStudies": [
-    "3.3 Skills: \"In studying the set texts students should have the opportunity to develop the following skills.\" The skills are grouped under two headings, \"Reading comprehension and reading critically\" (four bullets) and \"Writing\" (two bullets); they are not a separate paper but the abilities every question on both papers tests.",
+    "3.3 Skills: \"In studying the set texts students should have the opportunity to develop the following skills.\" The skills are grouped under two headings, \"Reading comprehension and reading critically\" (four bullets) and \"Writing\" (two bullets); they are not a separate paper but the abilities every question on both papers tests. The room is attached to Paper 1 in this map only so that it has a place in the timetable; the skills are examined on both papers.",
     "The skills map onto the four assessment objectives: AO1 \"Read, understand and respond to texts\", AO2 \"Analyse the language, form and structure used by a writer to create meanings and effects, using relevant subject terminology where appropriate\", AO3 \"Show understanding of the relationships between texts and the contexts in which they were written\", AO4 \"Use a range of vocabulary and sentence structures for clarity, purpose and effect, with accurate spelling and punctuation.\""
    ],
    "ideas": [

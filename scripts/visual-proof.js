@@ -24,8 +24,8 @@ biology.topics = ['3.1 Biological molecules', '3.2 Cells', '3.3 Organisms exchan
 const CATALOGUE = JSON.parse(fs.readFileSync(path.join(ROOT, 'data', 'catalogue.json'), 'utf8')).qualifications.map(q => ({ ...q, id: (q.board === 'Pearson Edexcel' ? 'EDX' : q.board === 'Eduqas' ? 'EDQ' : q.board) + '-' + q.code, hasUrl: !!q.specUrl }));
 /* a student a term in: six courses, mixed mastery, cards due, a marked essay, four days' streak */
 const core = require(path.join(ROOT, 'src', 'core.js'));
-const SPECS = {}; for (const sp of Object.values({ ...require(path.join(ROOT, 'src', 'specs', 'ocr-h481.js')), ...require(path.join(ROOT, 'src', 'specs', 'edexcel-9ma0.js')), ...require(path.join(ROOT, 'src', 'specs', 'edexcel-4gn1.js')), ...require(path.join(ROOT, 'src', 'specs', 'aqa-8700.js')), ...require(path.join(ROOT, 'src', 'specs', 'edexcel-4ma1.js')) })) SPECS[sp.id] = sp; SPECS['AQA-7402'] = biology;
-const setup = { student: 'Matthew', examYear: 2028, subjects: [{ specId: 'OCR-H481', options: { landscape: '1.1.1', globalSystems: '2.2.1', globalGovernance: '2.2.4', debates: ['3.1', '3.5'] } }, { specId: 'EDX-9MA0', options: {} }, { specId: 'AQA-7402', options: {} }, { specId: 'EDX-4GN1', options: {} }, { specId: 'EDX-4MA1', options: {} }, { specId: 'AQA-8700', options: {} }] };
+const SPECS = {}; for (const sp of Object.values({ ...require(path.join(ROOT, 'src', 'specs', 'ocr-h481.js')), ...require(path.join(ROOT, 'src', 'specs', 'edexcel-9ma0.js')), ...require(path.join(ROOT, 'src', 'specs', 'edexcel-4gn1.js')), ...require(path.join(ROOT, 'src', 'specs', 'aqa-8700.js')), ...require(path.join(ROOT, 'src', 'specs', 'edexcel-4ma1.js')), ...require(path.join(ROOT, 'src', 'specs', 'edexcel-1ma1.js')) })) SPECS[sp.id] = sp; SPECS['AQA-7402'] = biology;
+const setup = { student: 'Matthew', examYear: 2028, subjects: [{ specId: 'OCR-H481', options: { landscape: '1.1.1', globalSystems: '2.2.1', globalGovernance: '2.2.4', debates: ['3.1', '3.5'] } }, { specId: 'EDX-9MA0', options: {} }, { specId: 'AQA-7402', options: {} }, { specId: 'EDX-4GN1', options: {} }, { specId: 'EDX-4MA1', options: {} }, { specId: 'AQA-8700', options: {} }, { specId: 'EDX-1MA1', options: { tier: 'higher' } }] };
 const progress = core.newState(setup, SPECS); progress.created = '2026-09-01';
 /* real papers: a stand-in for the tutor's attempt routes, answering as the Worker would once the model has spoken */
 const ATTEMPTS = {}; let nextAttempt = 1;
@@ -167,8 +167,8 @@ const server = http.createServer((req, res) => {
   /* 6–9. the campus (tooler criteria 1, 3, 4, 5, 6, 7, 9, 11, 13): campus home, corridor, classroom with the wall, phone */
   page = await open('tok-matthew', { width: 1280, height: 900 }, '#v-campus .campus');
   await page.waitForFunction(() => /Matthew,/.test(document.querySelector('#v-campus').textContent), null, { timeout: 15000 });
-  must((await page.locator('#v-campus .bldg[data-bldg]').count()) === 6 && (await page.locator('#v-campus [data-bldg-view="exam"]').count()) === 1 && (await page.locator('#v-campus [data-bldg-view="office"]').count()) === 1, 'campus: six subject buildings, the Exam Hall and the Office');
-  must((await page.locator('#qBar [data-course]').count()) === 6 && (await page.locator('#qBar [data-v="exam"]').count()) === 1 && (await page.locator('#qBar [data-v="office"]').count()) === 1 && !(await page.locator('nav.bottom').isVisible()), '1280px: the quick bar carries every course, the Exam Hall and the Office; no bottom bar');
+  must((await page.locator('#v-campus .bldg[data-bldg]').count()) === 7 && (await page.locator('#v-campus [data-bldg-view="exam"]').count()) === 1 && (await page.locator('#v-campus [data-bldg-view="office"]').count()) === 1, 'campus: seven subject buildings, the Exam Hall and the Office');
+  must((await page.locator('#qBar [data-course]').count()) === 7 && (await page.locator('#qBar [data-v="exam"]').count()) === 1 && (await page.locator('#qBar [data-v="office"]').count()) === 1 && !(await page.locator('nav.bottom').isVisible()), '1280px: the quick bar carries every course, the Exam Hall and the Office; no bottom bar');
   must(/Now ·/.test(await page.locator('#v-campus .board').textContent()) && (await page.locator('#v-campus .act.go').count()) === 1 && /From Coach/.test(await page.locator('#v-campus .board').textContent()) && /Then today/.test(await page.locator('#v-campus .board').textContent()), 'the notice board: Now with Go, the coach’s note, the rest of today');
   must((await page.locator('#v-campus .hint[data-hint]').count()) === 0 && (await page.locator('#v-campus .board .fw[data-tour]').count()) === 1 && /First week · 0 of 10/.test(await page.locator('#v-campus .board .fw').textContent()) && (await page.locator('#v-campus .board [data-show]').count()) === 10, 'first visit: no hint; the First Week card on the notice board with ten steps and Show me');
   must(/day streak/.test(await page.locator('#status').textContent()) && (await page.locator('#status').isVisible()), 'status strip visible with the streak');
@@ -246,7 +246,7 @@ const server = http.createServer((req, res) => {
   c = await box(page, 'main.centre'); w = await box(page, '#wall'); const pnl = await box(page, '#v-rooms .panel');
   must(c.x + c.width <= w.x + 1 && pnl.x + pnl.width <= w.x - 8, `1180px room: the panel stays inside its column beside the wall (centre ${Math.round(c.x)}–${Math.round(c.x + c.width)}, panel ${Math.round(pnl.x)}–${Math.round(pnl.x + pnl.width)}, wall from ${Math.round(w.x)})`);
   await page.click('#qBar [data-v="office"]'); await page.waitForSelector('#v-office [data-act="courses"]');
-  must(/data-act="signout"|id="signOut"/.test(await page.locator('#v-office').innerHTML()) && (await page.locator('#v-office .ccard').count()) === 6, 'the Office: Add or change courses, the account with Sign out, the five courses with pins');
+  must(/data-act="signout"|id="signOut"/.test(await page.locator('#v-office').innerHTML()) && (await page.locator('#v-office .ccard').count()) === 7, 'the Office: Add or change courses, the account with Sign out, the seven courses with pins');
   await snap(page, '10-office', 'The Office: courses with pins and progress, Add or change courses, the account');
   await page.context().close();
 
@@ -322,6 +322,14 @@ const server = http.createServer((req, res) => {
   await page.waitForFunction(() => /Written and checked/.test(document.querySelector('#v-rooms').textContent), null, { timeout: 10000 });
   must(/The passages written for this room/.test(await page.locator('#v-rooms').textContent()) && /Model paragraph — Level 4/.test(await page.locator('#v-rooms').textContent()) && (await page.locator('#v-rooms [data-lxrev]').count()) >= 4 && /Key facts & links/.test(await page.locator('.stations').textContent()), 'English Language room: the kit prints its own passages, a Level 4 model paragraph, faded worked examples, and the Key facts tab');
   await snap(page, '36-english-language-room', 'AQA GCSE English Language, Paper 1 as a room: the checked kit lesson with the paper’s question sequence, faded worked examples on the room’s own passage, and the provenance line');
+  /* 17. Edexcel GCSE Mathematics, Higher tier: the tier route opens all 26 rooms, each with its checked kit and the Exam Aid sheet */
+  await page.click('#brand'); await page.waitForSelector('#qBar [data-course="EDX-1MA1"]');
+  await page.click('#qBar [data-course="EDX-1MA1"]'); await page.waitForSelector('#v-rooms [data-open="EDX-1MA1|number-structure-higher"]');
+  must((await page.locator('#v-rooms .pen').count()) === 0 && (await page.locator('#v-rooms .door').count()) === 26, 'corridor: the Higher tier route opens all 26 Maths rooms, every one with its kit');
+  await page.click('#v-rooms [data-open="EDX-1MA1|algebra-notation-higher"]');
+  await page.waitForFunction(() => /Written and checked/.test(document.querySelector('#v-rooms').textContent), null, { timeout: 10000 });
+  must(/Formulae & links/.test(await page.locator('.stations').textContent()) && /Formulae sheet/.test(await page.locator('#v-rooms').textContent()) && /non-calculator/.test(await page.locator('#v-rooms').textContent()), 'Higher Maths room: the checked kit has a Formulae sheet from the Exam Aid, the Formulae & links tab, and non-calculator questions');
+  await snap(page, '37-gcse-maths-higher-room', 'Edexcel GCSE Mathematics (Higher tier), Algebra notation — Higher additions: the checked kit lesson, one section per content statement, and its Formulae sheet against the 2026 Exam Aid');
   await page.context().close();
 
   /* ---- real papers: pick a real OCR paper, photograph a page, assign, confirm, marks with slip-first, report ---- */

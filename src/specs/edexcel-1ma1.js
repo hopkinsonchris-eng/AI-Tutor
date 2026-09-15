@@ -180,7 +180,7 @@ const SPEC_1MA1 = {
  ],
  "markConventions": {
   "style": "points",
-  "summary": "Every question is point-marked; there are no levels-marked essays, and the specification prints no question tariffs, so the three essayShapes (3, 5 and 6 marks, minutes pro rata at 1.125 minutes per mark from 80 marks in 90 minutes) are the app's Exam question timing shapes rather than shapes the document sets. The qualification is tiered: Foundation tier makes grades 1 to 5 available and Higher tier grades 4 to 9 (grade 3 allowed), and a student takes all three papers at the same tier in the same assessment series. Each paper is 1 hour 30 minutes, carries 80 marks and is 33.33% of the total GCSE (1.125 minutes per mark); the content outlined for each tier is assessed across all three papers, and every paper covers all Assessment Objectives in the percentages set for the tier. Paper 1 (1MA1/1F or 1MA1/1H) is a non-calculator assessment; a calculator is allowed for Paper 2 (1MA1/2F or 1MA1/2H) and Paper 3 (1MA1/3F or 1MA1/3H), so on Paper 1 exact answers — fractions in lowest terms, multiples of π, surds and the exact trigonometric values of N8, G17 and G21 — and the written method must both be shown. Assessment Objective weightings: AO1 50% Foundation / 40% Higher, AO2 25% / 30%, AO3 25% / 30%. Topic area weightings differ by tier: Foundation — Number 22–28%, Algebra 17–23%, Ratio, Proportion and Rates of change 22–28%, Geometry and Measures 12–18%, Statistics & Probability 12–18%; Higher — Number 12–18%, Algebra 27–33%, Ratio, Proportion and Rates of change 17–23%, Geometry and Measures 17–23%, Statistics & Probability 12–18%. The specification itself defines no mark types; the M, A and B marks described here are Pearson's published mark-scheme practice for this qualification, in which M (method) marks are awarded for a correct method or one that would lead to the answer, A (accuracy) marks are only available once the matching method mark has been earned, and B marks are for an independent correct statement or answer that needs no method, with dependent marks (dM, dA) available only if the earlier named mark has been scored, follow-through (ft) crediting correct work carried out on an earlier wrong value, cao and cso tightening what is accepted, awrt setting the rounding accepted and isw protecting a correct answer from later spoiling. Any correct method scores: a mark scheme lists the expected approach but an unexpected method that is mathematically correct and complete earns the same marks, which is why the method line, not the presentation, is what is credited — and why an answer with no working can lose every method mark. Formulae: Appendix 3 of the specification lists the formulae that can be provided in the examination as part of the relevant question — curved surface area of a cone = πrl, surface area of a sphere = 4πr², volume of a sphere = 4/3 πr³, volume of a cone = 1/3 πr²h — and the specification says the distinction between standard, underlined and bold type applies to the content statements only, not to the mathematical formulae, so Appendix 3 is not divided by tier. Since 2022 Ofqual has required a formulae sheet in GCSE Mathematics, which Pearson issues as an Exam Aid for each tier and each series and prints on the paper as an insert; the room kits' Formulae sheets follow the Exam Aid, marking which results are given and which must be recalled, and the tier split of the current Exam Aid is recorded in appendix3.md. Every other formula in the content — the area of a triangle, parallelogram and trapezium and the volume of a prism (G16), circumference and area of a circle (G17), Pythagoras' theorem and the trigonometric ratios (G20) and, at Higher tier, the quadratic formula, the sine and cosine rules and ½ab sin C (A18, G22, G23) — must be known to the extent the current Exam Aid does not provide it. For level fields, report level 1 for below half marks, 2 for half to two-thirds, 3 for the top third, with maxLevel 3.",
+  "summary": "The document defines three type styles for its content statements (Content, document page 3 / PDF page 15), and all three are modelled here: “All students will develop confidence and competence with the content identified by standard type”; “All students will be assessed on the content identified by the standard and the underlined type; more highly attaining students will develop confidence and competence with all of this content”; “Only the more highly attaining students will be assessed on the content identified by bold type. The highest attaining students will develop confidence and competence with the bold content”; and “The distinction between standard, underlined and bold type applies to the content statements only, not to the Assessment Objectives or to the mathematical formulae”. Bold is the Foundation/Higher line and is carried by the thirteen ‘-higher’ rooms; underlining is the stretch line inside the content both tiers are assessed on, and the 41 statements the two tier lists underline (27 wholly, 14 in part — identically in both lists, and none of them a Higher-only statement) carry underlined: true on the idea and a tag at the end of the idea's content quoting that definition and, where the underlining is partial, the clause it covers. Every question is point-marked; there are no levels-marked essays, and the specification prints no question tariffs, so the three essayShapes (3, 5 and 6 marks, minutes pro rata at 1.125 minutes per mark from 80 marks in 90 minutes) are the app's Exam question timing shapes rather than shapes the document sets. The qualification is tiered: Foundation tier makes grades 1 to 5 available and Higher tier grades 4 to 9 (grade 3 allowed), and a student takes all three papers at the same tier in the same assessment series. Each paper is 1 hour 30 minutes, carries 80 marks and is 33.33% of the total GCSE (1.125 minutes per mark); the content outlined for each tier is assessed across all three papers, and every paper covers all Assessment Objectives in the percentages set for the tier. Paper 1 (1MA1/1F or 1MA1/1H) is a non-calculator assessment; a calculator is allowed for Paper 2 (1MA1/2F or 1MA1/2H) and Paper 3 (1MA1/3F or 1MA1/3H), so on Paper 1 exact answers — fractions in lowest terms, multiples of π, surds and the exact trigonometric values of N8, G17 and G21 — and the written method must both be shown. Assessment Objective weightings: AO1 50% Foundation / 40% Higher, AO2 25% / 30%, AO3 25% / 30%. Topic area weightings differ by tier: Foundation — Number 22–28%, Algebra 17–23%, Ratio, Proportion and Rates of change 22–28%, Geometry and Measures 12–18%, Statistics & Probability 12–18%; Higher — Number 12–18%, Algebra 27–33%, Ratio, Proportion and Rates of change 17–23%, Geometry and Measures 17–23%, Statistics & Probability 12–18%. The specification itself defines no mark types; the M, A and B marks described here are Pearson's published mark-scheme practice for this qualification, in which M (method) marks are awarded for a correct method or one that would lead to the answer, A (accuracy) marks are only available once the matching method mark has been earned, and B marks are for an independent correct statement or answer that needs no method, with dependent marks (dM, dA) available only if the earlier named mark has been scored, follow-through (ft) crediting correct work carried out on an earlier wrong value, cao and cso tightening what is accepted, awrt setting the rounding accepted and isw protecting a correct answer from later spoiling. Any correct method scores: a mark scheme lists the expected approach but an unexpected method that is mathematically correct and complete earns the same marks, which is why the method line, not the presentation, is what is credited — and why an answer with no working can lose every method mark. Formulae: Appendix 3 of the specification lists the formulae that can be provided in the examination as part of the relevant question — curved surface area of a cone = πrl, surface area of a sphere = 4πr², volume of a sphere = 4/3 πr³, volume of a cone = 1/3 πr²h — and the specification says the distinction between standard, underlined and bold type applies to the content statements only, not to the mathematical formulae, so Appendix 3 is not divided by tier. Pearson also issues a tiered Exam Aid formulae sheet for each assessment series, supplied as an insert in the question paper on the day: the Exam Aid states that “A formula sheet will be provided for foundation tier and for higher tier students” and that it “provides students with additional exam formulae which they may refer to in their examinations”, and the 2026 Assessment Window issue is transcribed in appendix3.md. The room kits' Formulae sheets follow the Exam Aid, marking which results are given and which must be recalled. Every other formula in the content — the area of a triangle, parallelogram and trapezium and the volume of a prism (G16), circumference and area of a circle (G17), Pythagoras' theorem and the trigonometric ratios (G20) and, at Higher tier, the quadratic formula, the sine and cosine rules and ½ab sin C (A18, G22, G23) — must be known to the extent the current Exam Aid does not provide it. For level fields, report level 1 for below half marks, 2 for half to two-thirds, 3 for the top third, with maxLevel 3.",
   "commandWords": [
    {
     "word": "Calculate",
@@ -264,7 +264,8 @@ const SPEC_1MA1 = {
   "options": 1,
   "familyFit": 1,
   "at": "2026-09-15",
-  "by": "self-judged in the building session against .claude/skills/course-builder/references/judge.md. Coverage 1.0: all 86 Foundation tier statements are ideas in the thirteen option-null rooms and all 97 Higher tier statements are covered (the same 86 plus the 36 statements the Higher list prints in bold — 11 whole statements and 25 bold additions to shared statements), checked mechanically against the PDF's own font information; no document section is missing and nothing Foundation-only sits in a Higher room or the reverse. Fidelity 0.9: every code, paper code, mark total, minute count, weight, AO wording and AO/content-area percentage is copied from the document, and the only non-document strings are disclosed — the '(i)'/'(ii)' suffixes used to split a single Higher-only statement into the two ideas the platform requires in the four rooms that have only one (N10, N16, G25, P9), the M/A/B mark types named as Pearson's published mark-scheme practice rather than as specification text, and the Exam Aid formulae sheets recorded in appendix3.md as post-2022 Ofqual practice alongside the document's own Appendix 3. Options 1.0: one route option, the document's only choice, with the Foundation route naming the 13 shared rooms and the Higher route all 26, and option 'tier' set on each Higher room. Family fit 1.0: quantitative — points marking, mark types and the any-correct-method principle in the summary, 14 command words taken from the verbs the content statements use, worked-example prompts in caseStudies for every idea; the three essayShapes (3, 5 and 6 marks, minutes pro rata from 80 marks in 90 minutes) are a deliberate, disclosed departure from the quantitative rule's empty array, made because the app's Exam question station reads them, and each structure says the specification sets no essay. Changes: the document says only 'This specification is Issue 2. Key changes are sidelined'; no sideline appears against the subject content pages."
+  "by": "an examiner reading the PDF against the draft; verdict in scratch/courses/EDX-1MA1/spec.verdict.json",
+  "notes": "Scored 0.90 (coverage 1.0, fidelity 0.9, options 1.0, family fit 1.0) with no invented codes and no missing document sections. All four of the examiner's errors have been applied: (1) the document's third type style is now modelled — the 41 underlined statements (27 wholly, 14 in part, read from the PDF's line graphics and identical in both tier lists) carry underlined: true and a content tag quoting the Content section's definition, and markConventions.summary now quotes all three type bullets; (2) the invented paper restriction on G21 is gone, since the document assesses the content of each tier across all three papers; (3) R13 now uses the document's own X and Y (X = kY, X = k/Y); (4) the unsupported ‘Since 2022 Ofqual has required a formulae sheet’ claim is replaced by what the Exam Aid itself says, that a formula sheet will be provided for foundation tier and for higher tier students, in markConventions.summary and in appendix3.md. Two findings from the examiner's notes are left for the admin: commandWords omits ‘Sketch’ (A12, A13) and ‘Find’/‘Work out’, and the monthly pass should file the examiner's reading of the Issue 2 sidelines — the four change bars all concern the introduction of Appendix 3 and the note that the type distinction does not extend to the formulae, with no sideline anywhere on either tier content list, so no code, weighting, paper structure or content statement is marked as changed from Issue 1. The tiered Exam Aid is reissued every series and is the one part of this course that needs re-fetching rather than re-reading."
  },
  "source": {
   "url": "https://qualifications.pearson.com/content/dam/pdf/GCSE/mathematics/2015/specification-and-sample-assesment/gcse-maths-2015-specification.pdf",
@@ -331,13 +332,15 @@ const SPEC_1MA1 = {
      "code": "N7",
      "q": "How are calculations done with roots and with indices?",
      "idea": "Calculating with roots and integer indices",
-     "content": "Calculate with roots, and with integer indices: multiply and divide powers of the same base by adding and subtracting indices, interpret a negative index as a reciprocal, and combine and simplify roots in a calculation."
+     "content": "Calculate with roots, and with integer indices: multiply and divide powers of the same base by adding and subtracting indices, interpret a negative index as a reciprocal, and combine and simplify roots in a calculation. Underlined type in the document: \"All students will be assessed on the content identified by the standard and the underlined type; more highly attaining students will develop confidence and competence with all of this content\" (Content, document page 3 / PDF page 15) — here the whole statement is underlined.",
+     "underlined": true
     },
     {
      "code": "N8",
      "q": "How is an exact answer given without a decimal?",
      "idea": "Exact calculation with fractions and multiples of π",
-     "content": "Calculate exactly with fractions and multiples of π: leave an answer as a fraction in lowest terms, or as a multiple of π (for example an area of 9π cm² rather than 28.3 cm²), which is the form a non-calculator paper expects."
+     "content": "Calculate exactly with fractions and multiples of π: leave an answer as a fraction in lowest terms, or as a multiple of π (for example an area of 9π cm² rather than 28.3 cm²), which is the form a non-calculator paper expects. Underlined type in the document: \"All students will be assessed on the content identified by the standard and the underlined type; more highly attaining students will develop confidence and competence with all of this content\" (Content, document page 3 / PDF page 15) — here the whole statement is underlined.",
+     "underlined": true
     },
     {
      "code": "N9",
@@ -406,13 +409,15 @@ const SPEC_1MA1 = {
      "code": "N15",
      "q": "How accurately should a number be given, and what does that accuracy allow?",
      "idea": "Rounding and error intervals",
-     "content": "Round numbers and measures to an appropriate degree of accuracy (e.g. to a specified number of decimal places or significant figures); use inequality notation to specify simple error intervals due to truncation or rounding, so a length of 8 cm to the nearest cm is written 7.5 ≤ x < 8.5."
+     "content": "Round numbers and measures to an appropriate degree of accuracy (e.g. to a specified number of decimal places or significant figures); use inequality notation to specify simple error intervals due to truncation or rounding, so a length of 8 cm to the nearest cm is written 7.5 ≤ x < 8.5. Underlined type in the document: \"All students will be assessed on the content identified by the standard and the underlined type; more highly attaining students will develop confidence and competence with all of this content\" (Content, document page 3 / PDF page 15) — here the underlined part is \"(e.g. to a specified number of decimal places or significant figures); use inequality notation to specify simple error intervals due to truncation or rounding\".",
+     "underlined": true
     },
     {
      "code": "N16",
      "q": "What follows from a measurement only being accurate to a point?",
      "idea": "Limits of accuracy",
-     "content": "Apply and interpret limits of accuracy: a rounded or truncated measurement stands for every value in its interval, so state the limits the accuracy implies and say what they mean for the quantity being measured."
+     "content": "Apply and interpret limits of accuracy: a rounded or truncated measurement stands for every value in its interval, so state the limits the accuracy implies and say what they mean for the quantity being measured. Underlined type in the document: \"All students will be assessed on the content identified by the standard and the underlined type; more highly attaining students will develop confidence and competence with all of this content\" (Content, document page 3 / PDF page 15) — here the whole statement is underlined.",
+     "underlined": true
     }
    ]
   },
@@ -447,13 +452,15 @@ const SPEC_1MA1 = {
      "code": "A3",
      "q": "What is the difference between an expression, an equation, a formula, an identity and an inequality?",
      "idea": "The vocabulary of algebra",
-     "content": "Understand and use the concepts and vocabulary of expressions, equations, formulae, identities, inequalities, terms and factors: an expression has no equals sign, an equation is true for particular values, an identity for all values, a formula gives a rule for a quantity, and an inequality compares."
+     "content": "Understand and use the concepts and vocabulary of expressions, equations, formulae, identities, inequalities, terms and factors: an expression has no equals sign, an equation is true for particular values, an identity for all values, a formula gives a rule for a quantity, and an inequality compares. Underlined type in the document: \"All students will be assessed on the content identified by the standard and the underlined type; more highly attaining students will develop confidence and competence with all of this content\" (Content, document page 3 / PDF page 15) — here the underlined part is \"formulae, identities, inequalities, terms and factors\".",
+     "underlined": true
     },
     {
      "code": "A4",
      "q": "How is an algebraic expression tidied up or rewritten?",
      "idea": "Simplifying and manipulating expressions",
-     "content": "Simplify and manipulate algebraic expressions (including those involving surds) by: collecting like terms; multiplying a single term over a bracket; taking out common factors; expanding products of two binomials; factorising quadratic expressions of the form x² + bx + c, including the difference of two squares; simplifying expressions involving sums, products and powers, including the laws of indices."
+     "content": "Simplify and manipulate algebraic expressions (including those involving surds) by: collecting like terms; multiplying a single term over a bracket; taking out common factors; expanding products of two binomials; factorising quadratic expressions of the form x² + bx + c, including the difference of two squares; simplifying expressions involving sums, products and powers, including the laws of indices. Underlined type in the document: \"All students will be assessed on the content identified by the standard and the underlined type; more highly attaining students will develop confidence and competence with all of this content\" (Content, document page 3 / PDF page 15) — here the underlined part is \"simplify and manipulate algebraic expressions (including those involving surds) by: … expanding products of two binomials … factorising quadratic expressions of the form x² + bx + c, including the difference of two squares\".",
+     "underlined": true
     },
     {
      "code": "A5",
@@ -465,7 +472,8 @@ const SPEC_1MA1 = {
      "code": "A6",
      "q": "How is it shown that two expressions are always equal?",
      "idea": "Equations, identities and algebraic argument",
-     "content": "Know the difference between an equation and an identity; argue mathematically to show algebraic expressions are equivalent, and use algebra to support and construct arguments: expand and collect both sides to show they agree for all values, and set out the argument as a chain of equivalent expressions."
+     "content": "Know the difference between an equation and an identity; argue mathematically to show algebraic expressions are equivalent, and use algebra to support and construct arguments: expand and collect both sides to show they agree for all values, and set out the argument as a chain of equivalent expressions. Underlined type in the document: \"All students will be assessed on the content identified by the standard and the underlined type; more highly attaining students will develop confidence and competence with all of this content\" (Content, document page 3 / PDF page 15) — here the whole statement is underlined.",
+     "underlined": true
     },
     {
      "code": "A7",
@@ -499,7 +507,8 @@ const SPEC_1MA1 = {
      "code": "A9",
      "q": "How is the graph of a straight line drawn, and how is its equation found?",
      "idea": "Straight-line graphs and their equations",
-     "content": "Plot graphs of equations that correspond to straight-line graphs in the coordinate plane; use the form y = mx + c to identify parallel lines; find the equation of the line through two given points or through one point with a given gradient — parallel lines have equal gradient m."
+     "content": "Plot graphs of equations that correspond to straight-line graphs in the coordinate plane; use the form y = mx + c to identify parallel lines; find the equation of the line through two given points or through one point with a given gradient — parallel lines have equal gradient m. Underlined type in the document: \"All students will be assessed on the content identified by the standard and the underlined type; more highly attaining students will develop confidence and competence with all of this content\" (Content, document page 3 / PDF page 15) — here the underlined part is \"coordinate plane; use the form y = mx + c to identify parallel lines; find the equation of the line through two given points or through one point with a given gradient\".",
+     "underlined": true
     },
     {
      "code": "A10",
@@ -511,19 +520,22 @@ const SPEC_1MA1 = {
      "code": "A11",
      "q": "What can be read off a quadratic graph, and what can be found without it?",
      "idea": "Roots, intercepts and turning points of quadratics",
-     "content": "Identify and interpret roots, intercepts, turning points of quadratic functions graphically; deduce roots algebraically: the roots are where the curve meets the x axis, the y intercept is the value at x = 0, the turning point is the vertex on the line of symmetry, and factorising gives the roots exactly."
+     "content": "Identify and interpret roots, intercepts, turning points of quadratic functions graphically; deduce roots algebraically: the roots are where the curve meets the x axis, the y intercept is the value at x = 0, the turning point is the vertex on the line of symmetry, and factorising gives the roots exactly. Underlined type in the document: \"All students will be assessed on the content identified by the standard and the underlined type; more highly attaining students will develop confidence and competence with all of this content\" (Content, document page 3 / PDF page 15) — here the whole statement is underlined.",
+     "underlined": true
     },
     {
      "code": "A12",
      "q": "What shape does each standard function have?",
      "idea": "Recognising and sketching standard graphs",
-     "content": "Recognise, sketch and interpret graphs of linear functions, quadratic functions, simple cubic functions, the reciprocal function y = 1/x with x ≠ 0: a line, a parabola, a cubic with its double bend, and the two-branch reciprocal curve that never meets either axis."
+     "content": "Recognise, sketch and interpret graphs of linear functions, quadratic functions, simple cubic functions, the reciprocal function y = 1/x with x ≠ 0: a line, a parabola, a cubic with its double bend, and the two-branch reciprocal curve that never meets either axis. Underlined type in the document: \"All students will be assessed on the content identified by the standard and the underlined type; more highly attaining students will develop confidence and competence with all of this content\" (Content, document page 3 / PDF page 15) — here the underlined part is \"functions, simple cubic functions, the reciprocal function y = 1/x with x ≠ 0\".",
+     "underlined": true
     },
     {
      "code": "A14",
      "q": "How is a graph used to answer a question about a real situation?",
      "idea": "Graphs in real contexts",
-     "content": "Plot and interpret graphs (including reciprocal graphs) and graphs of non-standard functions in real contexts to find approximate solutions to problems such as simple kinematic problems involving distance, speed and acceleration: read values off the axes, use the gradient as a rate, and quote the answer with its unit."
+     "content": "Plot and interpret graphs (including reciprocal graphs) and graphs of non-standard functions in real contexts to find approximate solutions to problems such as simple kinematic problems involving distance, speed and acceleration: read values off the axes, use the gradient as a rate, and quote the answer with its unit. Underlined type in the document: \"All students will be assessed on the content identified by the standard and the underlined type; more highly attaining students will develop confidence and competence with all of this content\" (Content, document page 3 / PDF page 15) — here the underlined part is \"plot and interpret graphs (including reciprocal graphs) and graphs of\".",
+     "underlined": true
     }
    ]
   },
@@ -544,31 +556,36 @@ const SPEC_1MA1 = {
      "code": "A17",
      "q": "How is an equation with one unknown solved?",
      "idea": "Solving linear equations",
-     "content": "Solve linear equations in one unknown algebraically (including those with the unknown on both sides of the equation); find approximate solutions using a graph: collect the unknowns on one side and the numbers on the other by inverse operations, or read the solution off where two graphs cross."
+     "content": "Solve linear equations in one unknown algebraically (including those with the unknown on both sides of the equation); find approximate solutions using a graph: collect the unknowns on one side and the numbers on the other by inverse operations, or read the solution off where two graphs cross. Underlined type in the document: \"All students will be assessed on the content identified by the standard and the underlined type; more highly attaining students will develop confidence and competence with all of this content\" (Content, document page 3 / PDF page 15) — here the whole statement is underlined.",
+     "underlined": true
     },
     {
      "code": "A18",
      "q": "How are the solutions of a quadratic equation found?",
      "idea": "Solving quadratic equations by factorising",
-     "content": "Solve quadratic equations algebraically by factorising; find approximate solutions using a graph: write the equation as a product equal to zero, set each bracket to zero to give the two roots, or read the roots off the points where the curve crosses the x axis."
+     "content": "Solve quadratic equations algebraically by factorising; find approximate solutions using a graph: write the equation as a product equal to zero, set each bracket to zero to give the two roots, or read the roots off the points where the curve crosses the x axis. Underlined type in the document: \"All students will be assessed on the content identified by the standard and the underlined type; more highly attaining students will develop confidence and competence with all of this content\" (Content, document page 3 / PDF page 15) — here the whole statement is underlined.",
+     "underlined": true
     },
     {
      "code": "A19",
      "q": "How are two equations in two unknowns solved together?",
      "idea": "Simultaneous linear equations",
-     "content": "Solve two simultaneous equations in two variables (linear/linear) algebraically; find approximate solutions using a graph: eliminate one variable by adding or subtracting matched multiples, or substitute, then back-substitute for the second — or read off the point of intersection of the two lines."
+     "content": "Solve two simultaneous equations in two variables (linear/linear) algebraically; find approximate solutions using a graph: eliminate one variable by adding or subtracting matched multiples, or substitute, then back-substitute for the second — or read off the point of intersection of the two lines. Underlined type in the document: \"All students will be assessed on the content identified by the standard and the underlined type; more highly attaining students will develop confidence and competence with all of this content\" (Content, document page 3 / PDF page 15) — here the whole statement is underlined.",
+     "underlined": true
     },
     {
      "code": "A21",
      "q": "How does a worded situation become algebra that can be solved?",
      "idea": "Deriving and solving equations from a situation",
-     "content": "Translate simple situations or procedures into algebraic expressions or formulae; derive an equation (or two simultaneous equations), solve the equation(s) and interpret the solution: name the unknown, write the relation the situation states, solve, and answer the question asked in context."
+     "content": "Translate simple situations or procedures into algebraic expressions or formulae; derive an equation (or two simultaneous equations), solve the equation(s) and interpret the solution: name the unknown, write the relation the situation states, solve, and answer the question asked in context. Underlined type in the document: \"All students will be assessed on the content identified by the standard and the underlined type; more highly attaining students will develop confidence and competence with all of this content\" (Content, document page 3 / PDF page 15) — here the whole statement is underlined.",
+     "underlined": true
     },
     {
      "code": "A22",
      "q": "How is a range of values solved for and shown?",
      "idea": "Linear inequalities and the solution set",
-     "content": "Solve linear inequalities in one variable; represent the solution set on a number line: work as for an equation, keeping the inequality sign (reversing it if multiplying or dividing by a negative), and mark the solution set with the open or closed circle convention."
+     "content": "Solve linear inequalities in one variable; represent the solution set on a number line: work as for an equation, keeping the inequality sign (reversing it if multiplying or dividing by a negative), and mark the solution set with the open or closed circle convention. Underlined type in the document: \"All students will be assessed on the content identified by the standard and the underlined type; more highly attaining students will develop confidence and competence with all of this content\" (Content, document page 3 / PDF page 15) — here the whole statement is underlined.",
+     "underlined": true
     }
    ]
   },
@@ -593,7 +610,8 @@ const SPEC_1MA1 = {
      "code": "A24",
      "q": "Which sequences should be recognised, and how do they carry on?",
      "idea": "Recognising special sequences",
-     "content": "Recognise and use sequences of triangular, square and cube numbers, simple arithmetic progressions, Fibonacci type sequences, quadratic sequences, and simple geometric progressions (rⁿ where n is an integer, and r is a rational number > 0): identify the pattern behind the terms and use it to continue the sequence or find a missing term."
+     "content": "Recognise and use sequences of triangular, square and cube numbers, simple arithmetic progressions, Fibonacci type sequences, quadratic sequences, and simple geometric progressions (rⁿ where n is an integer, and r is a rational number > 0): identify the pattern behind the terms and use it to continue the sequence or find a missing term. Underlined type in the document: \"All students will be assessed on the content identified by the standard and the underlined type; more highly attaining students will develop confidence and competence with all of this content\" (Content, document page 3 / PDF page 15) — here the underlined part is \"simple arithmetic progressions, Fibonacci type sequences, quadratic sequences, and simple geometric progressions (rⁿ where n is an integer, and r is a rational number > 0)\".",
+     "underlined": true
     },
     {
      "code": "A25",
@@ -630,7 +648,8 @@ const SPEC_1MA1 = {
      "code": "R1",
      "q": "How is a quantity moved from one unit to another?",
      "idea": "Converting standard and compound units",
-     "content": "Change freely between related standard units (e.g. time, length, area, volume/capacity, mass) and compound units (e.g. speed, rates of pay, prices, density, pressure) in numerical and algebraic contexts — area and volume conversions square and cube the linear factor, and a compound unit is converted one part at a time."
+     "content": "Change freely between related standard units (e.g. time, length, area, volume/capacity, mass) and compound units (e.g. speed, rates of pay, prices, density, pressure) in numerical and algebraic contexts — area and volume conversions square and cube the linear factor, and a compound unit is converted one part at a time. Underlined type in the document: \"All students will be assessed on the content identified by the standard and the underlined type; more highly attaining students will develop confidence and competence with all of this content\" (Content, document page 3 / PDF page 15) — here the underlined part is \"prices, density, pressure) in numerical and algebraic contexts\".",
+     "underlined": true
     },
     {
      "code": "R2",
@@ -690,31 +709,36 @@ const SPEC_1MA1 = {
      "code": "R11",
      "q": "How are speed, density, pressure and rates of pay handled?",
      "idea": "Compound units",
-     "content": "Use compound units such as speed, rates of pay, unit pricing, density and pressure: each is one quantity per unit of another, so the three quantities in the relation give two rearrangements, and the unit written on the answer states which."
+     "content": "Use compound units such as speed, rates of pay, unit pricing, density and pressure: each is one quantity per unit of another, so the three quantities in the relation give two rearrangements, and the unit written on the answer states which. Underlined type in the document: \"All students will be assessed on the content identified by the standard and the underlined type; more highly attaining students will develop confidence and competence with all of this content\" (Content, document page 3 / PDF page 15) — here the underlined part is \"density and pressure\".",
+     "underlined": true
     },
     {
      "code": "R12",
      "q": "What happens to length, area and volume when a shape is scaled?",
      "idea": "Comparing lengths, areas and volumes by ratio",
-     "content": "Compare lengths, areas and volumes using ratio notation; make links to similarity (including trigonometric ratios) and scale factors: corresponding lengths of similar figures are in a fixed ratio, and that ratio is what a trigonometric ratio and a scale factor also record."
+     "content": "Compare lengths, areas and volumes using ratio notation; make links to similarity (including trigonometric ratios) and scale factors: corresponding lengths of similar figures are in a fixed ratio, and that ratio is what a trigonometric ratio and a scale factor also record. Underlined type in the document: \"All students will be assessed on the content identified by the standard and the underlined type; more highly attaining students will develop confidence and competence with all of this content\" (Content, document page 3 / PDF page 15) — here the whole statement is underlined.",
+     "underlined": true
     },
     {
      "code": "R13",
      "q": "What does inverse proportion mean algebraically?",
      "idea": "Inverse proportion and its equation",
-     "content": "Understand that X is inversely proportional to Y is equivalent to X is proportional to 1/Y; interpret equations that describe direct and inverse proportion: y = kx for direct and y = k/Y for inverse, with k the constant of proportionality found from a given pair of values."
+     "content": "Understand that X is inversely proportional to Y is equivalent to X is proportional to 1/Y; interpret equations that describe direct and inverse proportion: X = kY for direct and X = k/Y for inverse, with k the constant of proportionality found from a given pair of values. Underlined type in the document: \"All students will be assessed on the content identified by the standard and the underlined type; more highly attaining students will develop confidence and competence with all of this content\" (Content, document page 3 / PDF page 15) — here the whole statement is underlined.",
+     "underlined": true
     },
     {
      "code": "R14",
      "q": "What does the steepness of a graph tell you about a rate?",
      "idea": "Gradient as a rate of change",
-     "content": "Interpret the gradient of a straight line graph as a rate of change; recognise and interpret graphs that illustrate direct and inverse proportion: direct proportion is a straight line through the origin whose gradient is the rate, inverse proportion a curve falling away from both axes."
+     "content": "Interpret the gradient of a straight line graph as a rate of change; recognise and interpret graphs that illustrate direct and inverse proportion: direct proportion is a straight line through the origin whose gradient is the rate, inverse proportion a curve falling away from both axes. Underlined type in the document: \"All students will be assessed on the content identified by the standard and the underlined type; more highly attaining students will develop confidence and competence with all of this content\" (Content, document page 3 / PDF page 15) — here the whole statement is underlined.",
+     "underlined": true
     },
     {
      "code": "R16",
      "q": "How do repeated percentage changes build up over time?",
      "idea": "Growth and decay problems",
-     "content": "Set up, solve and interpret the answers in growth and decay problems, including compound interest: apply the multiplier once per period, so n periods give the multiplier raised to the power n, and interpret the answer as the final amount or the total change."
+     "content": "Set up, solve and interpret the answers in growth and decay problems, including compound interest: apply the multiplier once per period, so n periods give the multiplier raised to the power n, and interpret the answer as the final amount or the total change. Underlined type in the document: \"All students will be assessed on the content identified by the standard and the underlined type; more highly attaining students will develop confidence and competence with all of this content\" (Content, document page 3 / PDF page 15) — here the whole statement is underlined.",
+     "underlined": true
     }
    ]
   },
@@ -747,7 +771,8 @@ const SPEC_1MA1 = {
      "code": "G2",
      "q": "What can be constructed with only a straight edge and compasses?",
      "idea": "Ruler and compass constructions and loci",
-     "content": "Use the standard ruler and compass constructions (perpendicular bisector of a line segment, constructing a perpendicular to a given line from/at a given point, bisecting a given angle); use these to construct given figures and solve loci problems; know that the perpendicular distance from a point to a line is the shortest distance to the line — construction arcs must be left visible."
+     "content": "Use the standard ruler and compass constructions (perpendicular bisector of a line segment, constructing a perpendicular to a given line from/at a given point, bisecting a given angle); use these to construct given figures and solve loci problems; know that the perpendicular distance from a point to a line is the shortest distance to the line — construction arcs must be left visible. Underlined type in the document: \"All students will be assessed on the content identified by the standard and the underlined type; more highly attaining students will develop confidence and competence with all of this content\" (Content, document page 3 / PDF page 15) — here the whole statement is underlined.",
+     "underlined": true
     },
     {
      "code": "G3",
@@ -765,25 +790,29 @@ const SPEC_1MA1 = {
      "code": "G5",
      "q": "When are two triangles certainly identical?",
      "idea": "Congruence criteria for triangles",
-     "content": "Use the basic congruence criteria for triangles (SSS, SAS, ASA, RHS): name the criterion and match the corresponding sides and angles in the right order, since these four sets of information fix a triangle exactly."
+     "content": "Use the basic congruence criteria for triangles (SSS, SAS, ASA, RHS): name the criterion and match the corresponding sides and angles in the right order, since these four sets of information fix a triangle exactly. Underlined type in the document: \"All students will be assessed on the content identified by the standard and the underlined type; more highly attaining students will develop confidence and competence with all of this content\" (Content, document page 3 / PDF page 15) — here the whole statement is underlined.",
+     "underlined": true
     },
     {
      "code": "G6",
      "q": "How is a geometrical result argued from what is already known?",
      "idea": "Conjecture, derivation and simple proof",
-     "content": "Apply angle facts, triangle congruence, similarity and properties of quadrilaterals to conjecture and derive results about angles and sides, including Pythagoras' theorem and the fact that the base angles of an isosceles triangle are equal, and use known results to obtain simple proofs — each step quoting the property it rests on."
+     "content": "Apply angle facts, triangle congruence, similarity and properties of quadrilaterals to conjecture and derive results about angles and sides, including Pythagoras' theorem and the fact that the base angles of an isosceles triangle are equal, and use known results to obtain simple proofs — each step quoting the property it rests on. Underlined type in the document: \"All students will be assessed on the content identified by the standard and the underlined type; more highly attaining students will develop confidence and competence with all of this content\" (Content, document page 3 / PDF page 15) — here the whole statement is underlined.",
+     "underlined": true
     },
     {
      "code": "G7",
      "q": "How are the four transformations carried out and described?",
      "idea": "Congruent and similar shapes by transformation",
-     "content": "Identify, describe and construct congruent and similar shapes, including on coordinate axes, by considering rotation, reflection, translation and enlargement (including fractional scale factors): a complete description gives centre and angle and direction for a rotation, the mirror line for a reflection, the column vector for a translation, and centre and scale factor for an enlargement."
+     "content": "Identify, describe and construct congruent and similar shapes, including on coordinate axes, by considering rotation, reflection, translation and enlargement (including fractional scale factors): a complete description gives centre and angle and direction for a rotation, the mirror line for a reflection, the column vector for a translation, and centre and scale factor for an enlargement. Underlined type in the document: \"All students will be assessed on the content identified by the standard and the underlined type; more highly attaining students will develop confidence and competence with all of this content\" (Content, document page 3 / PDF page 15) — here the underlined part is \"enlargement (including fractional scale factors)\".",
+     "underlined": true
     },
     {
      "code": "G9",
      "q": "What are the parts of a circle called?",
      "idea": "Circle definitions and properties",
-     "content": "Identify and apply circle definitions and properties, including: centre, radius, chord, diameter, circumference, tangent, arc, sector and segment — each named part being used correctly in the working of a circle problem."
+     "content": "Identify and apply circle definitions and properties, including: centre, radius, chord, diameter, circumference, tangent, arc, sector and segment — each named part being used correctly in the working of a circle problem. Underlined type in the document: \"All students will be assessed on the content identified by the standard and the underlined type; more highly attaining students will develop confidence and competence with all of this content\" (Content, document page 3 / PDF page 15) — here the underlined part is \"chord, diameter, circumference, tangent, arc, sector and segment\".",
+     "underlined": true
     },
     {
      "code": "G11",
@@ -801,7 +830,8 @@ const SPEC_1MA1 = {
      "code": "G13",
      "q": "How is a solid shown on paper from each direction?",
      "idea": "Plans and elevations",
-     "content": "Construct and interpret plans and elevations of 3D shapes: the plan is the view from above and the elevations the views from the front and the side, drawn to scale on squared paper, and a given set of views can be read back to identify the solid."
+     "content": "Construct and interpret plans and elevations of 3D shapes: the plan is the view from above and the elevations the views from the front and the side, drawn to scale on squared paper, and a given set of views can be read back to identify the solid. Underlined type in the document: \"All students will be assessed on the content identified by the standard and the underlined type; more highly attaining students will develop confidence and competence with all of this content\" (Content, document page 3 / PDF page 15) — here the whole statement is underlined.",
+     "underlined": true
     }
    ]
   },
@@ -843,31 +873,36 @@ const SPEC_1MA1 = {
      "code": "G17",
      "q": "How are circles, composite shapes and curved solids measured?",
      "idea": "Circles, composite shapes and curved solids",
-     "content": "Know the formulae: circumference of a circle = 2πr = πd, area of a circle = πr²; calculate: perimeters of 2D shapes, including circles; areas of circles and composite shapes; surface area and volume of spheres, pyramids, cones and composite solids — splitting a composite shape or solid into parts whose measures are known. (The cone and sphere formulae are provided within the relevant examination questions; see Appendix 3.)"
+     "content": "Know the formulae: circumference of a circle = 2πr = πd, area of a circle = πr²; calculate: perimeters of 2D shapes, including circles; areas of circles and composite shapes; surface area and volume of spheres, pyramids, cones and composite solids — splitting a composite shape or solid into parts whose measures are known. (The cone and sphere formulae are provided within the relevant examination questions; see Appendix 3.) Underlined type in the document: \"All students will be assessed on the content identified by the standard and the underlined type; more highly attaining students will develop confidence and competence with all of this content\" (Content, document page 3 / PDF page 15) — here the underlined part is \"surface area and volume of spheres, pyramids, cones and composite solids\".",
+     "underlined": true
     },
     {
      "code": "G18",
      "q": "How much of a circle is a sector, and how long is its arc?",
      "idea": "Arcs and sectors",
-     "content": "Calculate arc lengths, angles and areas of sectors of circles: the sector is the fraction of the whole circle given by its angle over 360°, so arc length and area are that fraction of the circumference and of the area, and the relation can be reversed to find the angle."
+     "content": "Calculate arc lengths, angles and areas of sectors of circles: the sector is the fraction of the whole circle given by its angle over 360°, so arc length and area are that fraction of the circumference and of the area, and the relation can be reversed to find the angle. Underlined type in the document: \"All students will be assessed on the content identified by the standard and the underlined type; more highly attaining students will develop confidence and competence with all of this content\" (Content, document page 3 / PDF page 15) — here the whole statement is underlined.",
+     "underlined": true
     },
     {
      "code": "G19",
      "q": "What do congruence and similarity let you calculate?",
      "idea": "Applying congruence and similarity",
-     "content": "Apply the concepts of congruence and similarity, including the relationships between lengths, in similar figures: corresponding lengths of similar figures are in the same ratio, so the scale factor found from one pair gives every other length, while congruent figures are identical in every measurement."
+     "content": "Apply the concepts of congruence and similarity, including the relationships between lengths, in similar figures: corresponding lengths of similar figures are in the same ratio, so the scale factor found from one pair gives every other length, while congruent figures are identical in every measurement. Underlined type in the document: \"All students will be assessed on the content identified by the standard and the underlined type; more highly attaining students will develop confidence and competence with all of this content\" (Content, document page 3 / PDF page 15) — here the whole statement is underlined.",
+     "underlined": true
     },
     {
      "code": "G20",
      "q": "How are the sides and angles of a right-angled triangle found?",
      "idea": "Pythagoras' theorem and the trigonometric ratios",
-     "content": "Know the formulae for: Pythagoras' theorem a² + b² = c², and the trigonometric ratios, sin θ = opposite/hypotenuse, cos θ = adjacent/hypotenuse and tan θ = opposite/adjacent; apply them to find angles and lengths in right-angled triangles in two-dimensional figures — labelling the sides relative to the angle, and using the inverse function to find an angle."
+     "content": "Know the formulae for: Pythagoras' theorem a² + b² = c², and the trigonometric ratios, sin θ = opposite/hypotenuse, cos θ = adjacent/hypotenuse and tan θ = opposite/adjacent; apply them to find angles and lengths in right-angled triangles in two-dimensional figures — labelling the sides relative to the angle, and using the inverse function to find an angle. Underlined type in the document: \"All students will be assessed on the content identified by the standard and the underlined type; more highly attaining students will develop confidence and competence with all of this content\" (Content, document page 3 / PDF page 15) — here the whole statement is underlined.",
+     "underlined": true
     },
     {
      "code": "G21",
      "q": "Which trigonometric values must be known without a calculator?",
      "idea": "Exact values of sine, cosine and tangent",
-     "content": "Know the exact values of sin θ and cos θ for θ = 0°, 30°, 45°, 60° and 90°; know the exact value of tan θ for θ = 0°, 30°, 45° and 60° — these are required on the non-calculator paper and are quoted as exact fractions or surds, not decimals."
+     "content": "Know the exact values of sin θ and cos θ for θ = 0°, 30°, 45°, 60° and 90°; know the exact value of tan θ for θ = 0°, 30°, 45° and 60° — needed above all on the non-calculator paper, and quoted as exact fractions or surds, not decimals. Underlined type in the document: \"All students will be assessed on the content identified by the standard and the underlined type; more highly attaining students will develop confidence and competence with all of this content\" (Content, document page 3 / PDF page 15) — here the whole statement is underlined.",
+     "underlined": true
     }
    ]
   },
@@ -891,7 +926,8 @@ const SPEC_1MA1 = {
      "code": "G25",
      "q": "How are vectors combined and drawn?",
      "idea": "Adding, subtracting and scaling vectors",
-     "content": "Apply addition and subtraction of vectors, multiplication of vectors by a scalar, and diagrammatic and column representations of vectors: add and subtract the components separately, multiply every component by the scalar, and show the result either as a column vector or as a directed line segment."
+     "content": "Apply addition and subtraction of vectors, multiplication of vectors by a scalar, and diagrammatic and column representations of vectors: add and subtract the components separately, multiply every component by the scalar, and show the result either as a column vector or as a directed line segment. Underlined type in the document: \"All students will be assessed on the content identified by the standard and the underlined type; more highly attaining students will develop confidence and competence with all of this content\" (Content, document page 3 / PDF page 15) — here the whole statement is underlined.",
+     "underlined": true
     }
    ]
   },
@@ -939,13 +975,15 @@ const SPEC_1MA1 = {
      "code": "P5",
      "q": "Why do more trials give a better estimate?",
      "idea": "Sample size and theoretical distributions",
-     "content": "Understand that empirical unbiased samples tend towards theoretical probability distributions, with increasing sample size: relative frequency from a small sample can differ widely from the theoretical probability, but settles towards it as the number of trials grows."
+     "content": "Understand that empirical unbiased samples tend towards theoretical probability distributions, with increasing sample size: relative frequency from a small sample can differ widely from the theoretical probability, but settles towards it as the number of trials grows. Underlined type in the document: \"All students will be assessed on the content identified by the standard and the underlined type; more highly attaining students will develop confidence and competence with all of this content\" (Content, document page 3 / PDF page 15) — here the whole statement is underlined.",
+     "underlined": true
     },
     {
      "code": "P6",
      "q": "How is every possibility listed without missing any?",
      "idea": "Enumerating sets and combinations",
-     "content": "Enumerate sets and combinations of sets systematically, using tables, grids, Venn diagrams and tree diagrams: choose the representation that fits the situation, work through the possibilities in a fixed order, and check that the totals in the diagram account for everything."
+     "content": "Enumerate sets and combinations of sets systematically, using tables, grids, Venn diagrams and tree diagrams: choose the representation that fits the situation, work through the possibilities in a fixed order, and check that the totals in the diagram account for everything. Underlined type in the document: \"All students will be assessed on the content identified by the standard and the underlined type; more highly attaining students will develop confidence and competence with all of this content\" (Content, document page 3 / PDF page 15) — here the underlined part is \"Venn diagrams and tree diagrams\".",
+     "underlined": true
     },
     {
      "code": "P7",
@@ -957,7 +995,8 @@ const SPEC_1MA1 = {
      "code": "P8",
      "q": "How are the probabilities of two events happening together worked out?",
      "idea": "Combined events, independent and dependent",
-     "content": "Calculate the probability of independent and dependent combined events, including using tree diagrams and other representations, and know the underlying assumptions: multiply along the branches and add between them, and for a dependent event change the second set of probabilities because the first has altered what is left."
+     "content": "Calculate the probability of independent and dependent combined events, including using tree diagrams and other representations, and know the underlying assumptions: multiply along the branches and add between them, and for a dependent event change the second set of probabilities because the first has altered what is left. Underlined type in the document: \"All students will be assessed on the content identified by the standard and the underlined type; more highly attaining students will develop confidence and competence with all of this content\" (Content, document page 3 / PDF page 15) — here the whole statement is underlined.",
+     "underlined": true
     }
    ]
   },
@@ -978,13 +1017,15 @@ const SPEC_1MA1 = {
      "code": "S1",
      "q": "What can a sample tell you about the whole population?",
      "idea": "Sampling and its limitations",
-     "content": "Infer properties of populations or distributions from a sample, while knowing the limitations of sampling: a sample is used to estimate a property of the population, and the conclusion is only as good as the size and fairness of the sample, which should be stated."
+     "content": "Infer properties of populations or distributions from a sample, while knowing the limitations of sampling: a sample is used to estimate a property of the population, and the conclusion is only as good as the size and fairness of the sample, which should be stated. Underlined type in the document: \"All students will be assessed on the content identified by the standard and the underlined type; more highly attaining students will develop confidence and competence with all of this content\" (Content, document page 3 / PDF page 15) — here the whole statement is underlined.",
+     "underlined": true
     },
     {
      "code": "S2",
      "q": "Which table, chart or diagram suits which kind of data?",
      "idea": "Tables, charts and diagrams",
-     "content": "Interpret and construct tables, charts and diagrams, including frequency tables, bar charts, pie charts and pictograms for categorical data, vertical line charts for ungrouped discrete numerical data, tables and line graphs for time series data and know their appropriate use — reading values off accurately and labelling scales, axes and keys."
+     "content": "Interpret and construct tables, charts and diagrams, including frequency tables, bar charts, pie charts and pictograms for categorical data, vertical line charts for ungrouped discrete numerical data, tables and line graphs for time series data and know their appropriate use — reading values off accurately and labelling scales, axes and keys. Underlined type in the document: \"All students will be assessed on the content identified by the standard and the underlined type; more highly attaining students will develop confidence and competence with all of this content\" (Content, document page 3 / PDF page 15) — here the underlined part is \"line charts for ungrouped discrete numerical data, tables and line graphs for time series data and know their appropriate use\".",
+     "underlined": true
     },
     {
      "code": "S4",
@@ -1002,7 +1043,8 @@ const SPEC_1MA1 = {
      "code": "S6",
      "q": "How is a relationship between two variables seen and used?",
      "idea": "Scatter graphs, correlation and lines of best fit",
-     "content": "Use and interpret scatter graphs of bivariate data; recognise correlation and know that it does not indicate causation; draw estimated lines of best fit; make predictions; interpolate and extrapolate apparent trends while knowing the dangers of so doing — a prediction inside the data is interpolation and is safer than one outside it."
+     "content": "Use and interpret scatter graphs of bivariate data; recognise correlation and know that it does not indicate causation; draw estimated lines of best fit; make predictions; interpolate and extrapolate apparent trends while knowing the dangers of so doing — a prediction inside the data is interpolation and is safer than one outside it. Underlined type in the document: \"All students will be assessed on the content identified by the standard and the underlined type; more highly attaining students will develop confidence and competence with all of this content\" (Content, document page 3 / PDF page 15) — here the whole statement is underlined.",
+     "underlined": true
     }
    ]
   },

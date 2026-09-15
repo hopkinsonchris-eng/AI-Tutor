@@ -1677,7 +1677,7 @@ const SPEC_8702 = {
      "content": "The mother’s work and pride and the son’s protectiveness are the ground the play disturbs. A student must be able to argue how the dialogue distinguishes the generation that arrived from the generation born here, and how the play sets the effort of respectability against the treatment the family receives outside the door."
     },
     {
-     "code": "3.2.1 Princess & The Hustler — Margot and the outsider in the family",
+     "code": "3.2.1 Princess & The Hustler — the half-sister and the outsider in the family",
      "q": "How does the play use the newcomer?",
      "idea": "The half-sister: the arrival that exposes what the family will not say",
      "content": "The play brings a child from the father’s other life into the house, and the household has to decide what it owes her. A strong answer argues why Odimba chooses that device — it makes questions of colour, belonging and family loyalty concrete inside one room — rather than narrating the plot."

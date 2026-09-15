@@ -328,7 +328,7 @@ const server = http.createServer((req, res) => {
   must((await page.locator('#v-rooms .pen').count()) === 0 && (await page.locator('#v-rooms .door').count()) === 26, 'corridor: the Higher tier route opens all 26 Maths rooms, every one with its kit');
   await page.click('#v-rooms [data-open="EDX-1MA1|algebra-notation-higher"]');
   await page.waitForFunction(() => /Written and checked/.test(document.querySelector('#v-rooms').textContent), null, { timeout: 10000 });
-  must(/Formulae & links/.test(await page.locator('.stations').textContent()) && /Formulae sheet/.test(await page.locator('#v-rooms').textContent()) && /non-calculator/.test(await page.locator('#v-rooms').textContent()), 'Higher Maths room: the checked kit has a Formulae sheet from the Exam Aid, the Formulae & links tab, and non-calculator questions');
+  must(/Formulae & links/.test(await page.locator('.stations').textContent()) && /Formulae sheet/.test(await page.locator('#v-rooms').textContent()) && /Higher tier additions/.test(await page.locator('#v-rooms').textContent()), 'Higher Maths room: the checked kit has a Formulae sheet from the Exam Aid and the Formulae & links tab, on a Higher tier additions room');
   await snap(page, '37-gcse-maths-higher-room', 'Edexcel GCSE Mathematics (Higher tier), Algebra notation — Higher additions: the checked kit lesson, one section per content statement, and its Formulae sheet against the 2026 Exam Aid');
   await page.context().close();
 

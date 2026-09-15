@@ -158,6 +158,12 @@ AQA GCSE English Language, Paper 1 as a room: the checked kit lesson with the pa
 
 ![36-english-language-room](36-english-language-room.png)
 
+## 37-gcse-maths-higher-room
+
+Edexcel GCSE Mathematics (Higher tier), Algebra notation — Higher additions: the checked kit lesson, one section per content statement, and its Formulae sheet against the 2026 Exam Aid
+
+![37-gcse-maths-higher-room](37-gcse-maths-higher-room.png)
+
 ## 16-exam-real-papers
 
 The Exam Hall for OCR A level Geography: every public series from OCR’s own site, June 2026 locked until its release date, each paper opening on ocr.org.uk with Open paper and Mark my answers, and the notice that nothing of the board’s is stored.

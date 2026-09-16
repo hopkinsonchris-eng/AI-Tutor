@@ -21,8 +21,8 @@ const SPEC_1HI0 = {
    "sections": [
     "Written examination: 1 hour and 20 minutes. 30%* of the qualification. 52 marks (16 for the historic environment, 36 for the thematic study). First assessment: May/June 2018. (*This weighting relates to assessed content, before including marks for SPaG.)",
     "Content overview. Students take one of the following options: 10: Crime and punishment in Britain, c1000–present and Whitechapel, c1870–c1900: crime, policing and the inner city. 11: Medicine in Britain, c1250–present and The British sector of the Western Front, 1914–18: injuries, treatment and the trenches. 12: Warfare and British society, c1250–present and London and the Second World War, 1939–45. 13: Migrants in Britain, c800–present and Notting Hill, c1948–c1970.",
-    "Section A: historic environment. Worth 10%* of the total qualification and marked out of 16. All questions are compulsory. Students answer two questions that assess knowledge, plus a two-part question based on two provided sources. Questions 1(a) and (b): these focus on describing features (AO1) [4 marks]. Question 2 is a two-part question, targeting AO3, using two contemporary sources, one of which may be visual but at least one will be written. Question 2(a): students assess the usefulness of both sources for a specified enquiry, making use of their knowledge of the historical context [8 marks]. Question 2(b): students suggest a follow-up enquiry relating to one of the sources [4 marks].",
-    "Section B: thematic study. Worth 20%* of the total qualification and marked out of 36; of the 36 marks, up to 4 marks in Question 5/6 will be awarded for spelling, punctuation, grammar and use of specialist terminology (SPaG). All questions target AO1/AO2. Questions 3 and 4 are compulsory. Students then select either Question 5 or Question 6. Question 3: focuses on similarity or difference over time; questions will cross sections of the specification and will normally span at least a century [4 marks]. Question 4: focuses on the process of change (e.g. why there was a rapid change/slow change/why change continued) [12 marks]. Questions 5/6: requires a judgement and may focus on the nature or extent of change, patterns of change (turning points, i.e. significance), the process of change (causation) or the impact of change (consequence); questions will normally span at least a complete period or two centuries [16 marks + 4 SPaG = 20].",
+    "Section A: historic environment. Worth 10%* of the total qualification and marked out of 16. All questions are compulsory. Students answer two questions that assess knowledge, plus a two-part question based on two provided sources. Questions 1(a) and (b): these focus on describing features (AO1). Question 2 is a two-part question, targeting AO3, using two contemporary sources, one of which may be visual but at least one will be written. Question 2(a): students assess the usefulness of both sources for a specified enquiry, making use of their knowledge of the historical context. Question 2(b): students suggest a follow-up enquiry relating to one of the sources. Per-question marks are not printed in the specification: on the specimen and 2023 papers Question 1 carries 4 marks, Question 2(a) 8 and Question 2(b) 4, which is the 16 the specification gives this section.",
+    "Section B: thematic study. Worth 20%* of the total qualification and marked out of 36; of the 36 marks, up to 4 marks in Question 5/6 will be awarded for spelling, punctuation, grammar and use of specialist terminology (SPaG). All questions target AO1/AO2. Questions 3 and 4 are compulsory. Students then select either Question 5 or Question 6. Question 3: focuses on similarity or difference over time; questions will cross sections of the specification and will normally span at least a century. Question 4: focuses on the process of change (e.g. why there was a rapid change/slow change/why change continued). Questions 5/6: requires a judgement and may focus on the nature or extent of change, patterns of change (turning points, i.e. significance), the process of change (causation) or the impact of change (consequence); questions will normally span at least a complete period or two centuries. Per-question marks are not printed in the specification: on the specimen and 2023 papers Question 3 carries 4 marks, Question 4 12 and Question 5 or 6 16 plus up to 4 for SPaG, which is the 36 the specification gives this section.",
     "A Sources Booklet is provided for Section A."
    ]
   },
@@ -36,8 +36,8 @@ const SPEC_1HI0 = {
    "sections": [
     "Written examination: 1 hour and 50 minutes. 40%* of the qualification. 64 marks (32 for the period study and 32 for the British depth study). First assessment: May/June 2018. It comprises two question and answer booklets: P and B. (*This weighting relates to assessed content, before including marks for SPaG.)",
     "Content overview. Students take one of the following British depth study options: B1: Anglo-Saxon and Norman England, c1060–88; B2: The reigns of King Richard I and King John, 1189–1216; B3: Henry VIII and his ministers, 1509–40; B4: Early Elizabethan England, 1558–88. Students also take one of the following period study options: P1: Spain and the 'New World', c1490–c1555; P2: British America, 1713–83: empire and revolution; P3: The American West, c1835–c1895; P4: Superpower relations and the Cold War, 1941–91; P5: Conflict in the Middle East, 1945–95.",
-    "Question and answer booklet P: period study. Worth 20%* of the total qualification and marked out of 32. All questions target AO1/AO2. Students answer four compulsory questions. Questions 1(a) and 1(b): focus on consequence — 'Explain two consequences of…', 8 marks, marked as 2 × 4. Question 2: focuses on analytical narrative, in which students write an account that not only describes what happened but also involves analysis to find connections and make sense of events and their impact [8 marks]. Question 3: students select two from a choice of three parts, each focusing on the importance of an event/person/development in terms of what difference they made [2 × 8 = 16 marks].",
-    "Question and answer booklet B: British depth study. Worth 20%* of the total qualification and marked out of 32. Students answer four questions. Questions 1(a), 1(b) and 2 are compulsory; students then select either Question 3 or Question 4. Question 1(a) and (b): compulsory, target AO1, and focus on describing features — 'Describe two features of…' [4 marks]. Question 2: compulsory, targets AO1/AO2 and focuses on causation — 'Explain why…' [12 marks]. Questions 3/4: target AO1/AO2 and require a judgement; they may focus on similarity, difference, change, continuity, causation, consequence or significance [16 marks]. (On the live papers the booklet's parts are printed as 1(a), 1(b) and 1(c)(i)/(ii).)",
+    "Question and answer booklet P: period study. Worth 20%* of the total qualification and marked out of 32. All questions target AO1/AO2. Students answer four compulsory questions. Questions 1(a) and 1(b): these focus on consequence. Question 2: this focuses on analytical narrative, in which students write an account that not only describes what happened, but also involves analysis to find connections and make sense of events and their impact to explain why events unfolded in the way that they did. Question 3: students select two from a choice of three parts. Each focuses on the importance of an event/person/development in terms of what difference they made in relation to situations and unfolding developments (i.e. their consequence and significance). Per-question marks are not printed in the specification: on the specimen and 2023 papers Question 1 carries 8 marks, marked as 2 × 4 ('NB mark each consequence separately'), Question 2 carries 8 and Question 3 two parts at 8 each (16), which is the 32 the specification gives this booklet.",
+    "Question and answer booklet B: British depth study. Worth 20%* of the total qualification and marked out of 32. Students answer four questions. Questions 1(a), 1(b) and 2 are compulsory; students then select either Question 3 or Question 4. Question 1(a) and (b): these are compulsory and target AO1. They focus on describing features. Question 2: this is compulsory and targets AO1/AO2. It focuses on causation. Questions 3/4: these target AO1/AO2 and require a judgement. They may focus on any of the following: similarity, difference, change, continuity, causation, consequence or significance. Per-question marks are not printed in the specification: on the specimen and 2023 papers this booklet is set as one question in three parts — 1(a) 'Describe two features of…' 4 marks, 1(b) 'Explain why…' 12 marks and 1(c)(i) or 1(c)(ii) judgement 16 marks — totalling the 32 the specification gives this booklet.",
     "The two parts are independent, so any depth study can be combined with any period study; the Paper 2 reference code (2A–2W) is determined by the combination chosen."
    ]
   },
@@ -51,8 +51,8 @@ const SPEC_1HI0 = {
    "sections": [
     "Written examination: 1 hour and 30 minutes. 30%* of the qualification. 52 marks. First assessment: May/June 2018. It comprises two sections: A and B. (*This weighting relates to assessed content, before including marks for SPaG.)",
     "Content overview. Students take one of the following modern depth studies: 30: Russia and the Soviet Union, 1917–41; 31: Weimar and Nazi Germany, 1918–39; 32: Mao's China, 1945–76; 33: The USA, 1954–75: conflict at home and abroad.",
-    "Section A. Worth 10%* of the total qualification and marked out of 16. Students answer two questions: Question 1 is compulsory, then either 2(a) or 2(b). Question 1: targets AO3 and focuses on making inferences from a source — 'Give two things you can infer from Source A about…' [4 marks]. Questions 2(a)/(b): target AO1/AO2 and focus on causation — 'Explain why…' [12 marks].",
-    "Section B. Worth 20%* of the total qualification and marked out of 36; of the 36 marks, up to 4 marks in Question 3(d) will be awarded for SPaG. All question parts are compulsory, based on two provided sources and two provided interpretations. Question 3(a): targets AO3 and uses two contemporary sources; students assess the usefulness of both sources for a specified enquiry, making use of their knowledge of the historical context [8 marks]. Question 3(b): targets AO4 and uses two later written interpretations; students explain how the two interpretations differ [4 marks]. Question 3(c): targets AO4 and uses the same interpretations; students suggest why the two interpretations differ [4 marks]. Question 3(d): targets AO4 and re-uses the interpretations; it requires students to evaluate one interpretation, making use of the other interpretation and their knowledge of the historical context [16 marks + 4 SPaG = 20].",
+    "Section A. Worth 10%* of the total qualification and marked out of 16. Students answer two questions. Question 1 is compulsory. Students then select either 2(a) or 2(b). Question 1: this targets AO3, and focuses on making inferences from a source. Questions 2(a)/(b): these target AO1/AO2, and focus on causation. Per-question marks are not printed in the specification: on the specimen and live papers Question 1 carries 4 marks and Question 2(a)/(b) 12, which is the 16 the specification gives this section.",
+    "Section B. Worth 20%* of the total qualification and marked out of 36; of the 36 marks, up to 4 marks in Question 3(d) will be awarded for spelling, punctuation, grammar and use of specialist terminology (SPaG). All question parts are compulsory. Question 3(a): this targets AO3 and uses two contemporary sources. One of them may be visual, but at least one will be written. Students assess the usefulness of both sources for a specified enquiry, making use of their knowledge of the historical context. Question 3(b): this targets AO4 and uses two later written interpretations. Students explain how the two interpretations differ. Question 3(c): this targets AO4 and uses the same interpretations as part (b). Students suggest why the two interpretations differ. Question 3(d): this targets AO4 and re-uses the interpretations. It requires students to evaluate one interpretation, making use of the other interpretation and their knowledge of the historical context. Per-question marks are not printed in the specification: on the specimen and live papers Question 3(a) carries 8 marks, 3(b) 4, 3(c) 4 and 3(d) 16 plus up to 4 for SPaG, which is the 36 the specification gives this section.",
     "A Sources/Interpretations Booklet is provided."
    ]
   }
@@ -354,7 +354,7 @@ const SPEC_1HI0 = {
  ],
  "markConventions": {
   "style": "levels",
-  "summary": "The total qualification mark is 168, of which 8 marks are for spelling, punctuation, grammar and use of specialist terminology (SPaG): 4 in Paper 1 Question 5/6 and 4 in Paper 3 Question 3(d). Most questions are marked by levels of response on a 'best-fit' basis; the short knowledge questions ('Describe two features of…', 'Give two things you can infer…', 'How could you follow up…') are point-marked, awarding 1 mark for each valid feature, inference or detail and a second mark for the supporting information. Papers and marks as the assessment information states them: Paper 1 (1HI0/10–13, 80 minutes, 52 marks, 30%) — Section A historic environment 16 marks (Q1 describe two features 4; Q2(a) usefulness of two contemporary sources 8; Q2(b) follow-up enquiry 4), Section B thematic study 36 marks (Q3 similarity or difference over time 4; Q4 the process of change 12; Q5 or Q6 judgement 16 plus up to 4 SPaG). Paper 2 (1HI0/2A–2W, 110 minutes, 64 marks, 40%) — booklet P period study 32 marks (Q1 'Explain two consequences of…' 8, marked as 2 × 4; Q2 'Write a narrative account analysing…' 8; Q3 two of three 'Explain the importance of…' parts at 8 each, 16), booklet B British depth study 32 marks (Q1(a) 'Describe two features of…' 4; Q1(b) 'Explain why…' causation 12; Q1(c)(i) or (ii) judgement 16). Paper 3 (1HI0/30–33, 90 minutes, 52 marks, 30%) — Section A 16 marks (Q1 inference from a source 4; Q2(a) or (b) causation 12), Section B 36 marks (Q3(a) usefulness of two contemporary sources 8; Q3(b) main difference between two interpretations 4; Q3(c) suggest one reason why they differ 4; Q3(d) evaluate one interpretation 16 plus up to 4 SPaG). Levels-marked answers are assessed against interdependent AO1 and AO2 (or AO3/AO4) strands: 'An answer displaying no qualities of AO2 cannot be awarded more than the top of Level 1, no matter how strong performance is in AO1.' Extended writing: 'these abilities are rewarded in the mark schemes of questions which target AO2 and which carry 8 or more marks.' Stimulus points: 'Many of the questions that reward extended writing provide stimulus points, which students may (but are not required to) use in their answer. Students must, however, use additional points of their own; failure to do so will be penalised in the mark schemes.' In practice the mark schemes cap the mark for answers that do not go beyond the stimulus ('No access to Level 4 for answers which do not go beyond aspects prompted by the stimulus points'). SPaG is marked separately as Threshold (1), Intermediate (2–3) and High (4): High requires learners to 'spell and punctuate with consistent accuracy', 'use rules of grammar with effective control of meaning overall' and 'use a wide range of specialist terms as appropriate'. The assessment objectives carry AO1 35%, AO2 35%, AO3 15% and AO4 15% of the qualification; by paper, Paper 1 is 11.25/11.25/7.5/–, Paper 2 is 20/20/–/– and Paper 3 is 3.75/3.75/7.5/15.",
+  "summary": "The total qualification mark is 168, of which 8 marks are for spelling, punctuation, grammar and use of specialist terminology (SPaG): 4 in Paper 1 Question 5/6 and 4 in Paper 3 Question 3(d). Most questions are marked by levels of response on a 'best-fit' basis; the short knowledge questions ('Describe two features of…', 'Give two things you can infer…', 'How could you follow up…') are point-marked, awarding 1 mark for each valid feature, inference or detail and a second mark for the supporting information. Section marks are as the assessment information states them (PDF pages 54–56, printed 50–52); the specification prints no per-question mark at all. The per-question marks below are taken from Pearson's specimen assessment materials (the Paper 1, Paper 2 and Paper 3 specimen papers) and from the live 2023 papers 1HI0/10, 1HI0/B3 and 1HI0/P4 with their mark schemes, all saved in scratch/courses/EDX-1HI0/papers/; they sum exactly to the section totals the specification does give. Paper 1 (1HI0/10–13, 80 minutes, 52 marks, 30%) — Section A historic environment 16 marks (Q1 describe two features 4; Q2(a) usefulness of two contemporary sources 8; Q2(b) follow-up enquiry 4), Section B thematic study 36 marks (Q3 similarity or difference over time 4; Q4 the process of change 12; Q5 or Q6 judgement 16 plus up to 4 SPaG). Paper 2 (1HI0/2A–2W, 110 minutes, 64 marks, 40%) — booklet P period study 32 marks (Q1 'Explain two consequences of…' 8, marked as 2 × 4; Q2 'Write a narrative account analysing…' 8; Q3 two of three 'Explain the importance of…' parts at 8 each, 16), booklet B British depth study 32 marks (Q1(a) 'Describe two features of…' 4; Q1(b) 'Explain why…' causation 12; Q1(c)(i) or (ii) judgement 16). Paper 3 (1HI0/30–33, 90 minutes, 52 marks, 30%) — Section A 16 marks (Q1 inference from a source 4; Q2(a) or (b) causation 12), Section B 36 marks (Q3(a) usefulness of two contemporary sources 8; Q3(b) main difference between two interpretations 4; Q3(c) suggest one reason why they differ 4; Q3(d) evaluate one interpretation 16 plus up to 4 SPaG). Levels-marked answers are assessed against interdependent AO1 and AO2 (or AO3/AO4) strands: 'An answer displaying no qualities of AO2 cannot be awarded more than the top of Level 1, no matter how strong performance is in AO1.' Extended writing: 'these abilities are rewarded in the mark schemes of questions which target AO2 and which carry 8 or more marks.' Stimulus points: 'Many of the questions that reward extended writing provide stimulus points, which students may (but are not required to) use in their answer. Students must, however, use additional points of their own; failure to do so will be penalised in the mark schemes.' In practice the mark schemes cap the mark for answers that do not go beyond the stimulus ('No access to Level 4 for answers which do not go beyond aspects prompted by the stimulus points'). SPaG is marked separately as Threshold (1), Intermediate (2–3) and High (4): High requires learners to 'spell and punctuate with consistent accuracy', 'use rules of grammar with effective control of meaning overall' and 'use a wide range of specialist terms as appropriate'. The assessment objectives carry AO1 35%, AO2 35%, AO3 15% and AO4 15% of the qualification; by paper, Paper 1 is 11.25/11.25/7.5/–, Paper 2 is 20/20/–/– and Paper 3 is 3.75/3.75/7.5/15.",
   "commandWords": [
    {
     "word": "Describe two features of…",
@@ -424,12 +424,12 @@ const SPEC_1HI0 = {
    {
     "marks": 12,
     "minutes": 20,
-    "structure": "The 12-mark 'Explain why…' — Paper 1 Question 4 (the process of change), Paper 2 booklet B Question 1(b) (causation) and Paper 3 Question 2 (causation). AO2 6 marks, AO1 6 marks. Level 4 (10–12) requires 'an analytical explanation … directed consistently at the conceptual focus of the question, showing a line of reasoning that is coherent, sustained and logically structured', with 'wide-ranging knowledge and understanding of the required features or characteristics of the period studied'. Structure: three developed reasons, each a paragraph that states the reason, supplies specific evidence and then explains the causal chain back to the outcome named in the question, with a closing sentence linking the reasons together. Level 2 answers are capped at 5 marks and Level 3 at 8 if they do not go beyond the stimulus points, and there is no Level 4 at all for such answers."
+    "structure": "The 12-mark 'Explain why…' — Paper 1 Question 4 (the process of change), Paper 2 booklet B Question 1(b) (causation) and Paper 3 Question 2 (causation). AO2 6 marks, AO1 6 marks. Level 4 (10–12) requires 'an analytical explanation … directed consistently at the conceptual focus of the question, showing a line of reasoning that is coherent, sustained and logically structured', with 'wide-ranging knowledge and understanding of the required features or characteristics of the period studied'. Structure: three developed reasons, each a paragraph that states the reason, supplies specific evidence and then explains the causal chain back to the outcome named in the question, with a closing sentence linking the reasons together. Stimulus points are optional, but the specimen and live mark schemes for this question print three caps on answers that stay inside them: 'Maximum 5 marks for Level 2 answers that do not go beyond aspects prompted by the stimulus points.', 'Maximum 8 marks for Level 3 answers that do not go beyond aspects prompted by the stimulus points.' and 'No access to Level 4 for answers which do not go beyond aspects prompted by the stimulus points.' (papers/gcse-history-paper-1-specimen-papers.pdf p25; papers/1hi0-b3-rms-20230824.pdf)."
    },
    {
     "marks": 8,
     "minutes": 13,
-    "structure": "The 8-mark source-utility question — Paper 1 Question 2(a) and Paper 3 Question 3(a) — targeting AO3. Two contemporary sources are provided, at least one written. The top level requires a judgement on the utility of both sources for the specified enquiry that 'comments on the usefulness of the content of the sources and/or their provenance' and uses knowledge of the historical context to support inferences and to weigh how provenance affects the value of the content. Structure: for each source in turn, what can be inferred from its content for this enquiry, why its nature, origin and purpose make that inference more or less reliable, and what contextual knowledge confirms or qualifies it; then a short comparative judgement on which is more useful for the enquiry and why. Describing the sources, or judging them 'biased' without explaining the effect on utility, stays in the lower levels."
+    "structure": "The 8-mark source-utility question — Paper 1 Question 2(a) and Paper 3 Question 3(a) — targeting AO3. Two contemporary sources are provided, at least one written. The top level (6–8) requires 'judgements on source utility for the specified enquiry … applying valid criteria with developed reasoning which takes into account how the provenance affects the usefulness of the source content', with contextual knowledge 'used in the process of interpreting the sources and applying criteria for judgements on their utility'; the mark scheme defines provenance as 'nature, origin, purpose'. Structure: for each source in turn, what can be inferred from its content for this enquiry, why its nature, origin and purpose make that inference more or less reliable, and what contextual knowledge confirms or qualifies it; then a short comparative judgement on which is more useful for the enquiry and why. Describing the sources, or judging them 'biased' without explaining the effect on utility, stays in the lower levels."
    },
    {
     "marks": 8,
@@ -727,13 +727,13 @@ const SPEC_1HI0 = {
      "code": "10-env — 2 Knowledge, selection and use of sources for historical enquiries: Framing of questions relevant to the pursuit of a specific enquiry",
      "q": "How do you frame a question that a follow-up enquiry could answer?",
      "idea": "Framing questions for a specific enquiry",
-     "content": "Framing of questions relevant to the pursuit of a specific enquiry into this historic environment."
+     "content": "Framing of questions relevant to the pursuit of a specific enquiry."
     },
     {
      "code": "10-env — 2 Knowledge, selection and use of sources for historical enquiries: Selection of appropriate sources for specific investigations",
      "q": "How do you choose the right source for the question you have framed?",
      "idea": "Selecting appropriate sources for specific investigations",
-     "content": "Selection of appropriate sources for specific investigations into this historic environment."
+     "content": "Selection of appropriate sources for specific investigations."
     }
    ]
   },
@@ -1007,13 +1007,13 @@ const SPEC_1HI0 = {
      "code": "11-env — 2 Knowledge, selection and use of sources for historical enquiries: Framing of questions relevant to the pursuit of a specific enquiry",
      "q": "How do you frame a question that a follow-up enquiry could answer?",
      "idea": "Framing questions for a specific enquiry",
-     "content": "Framing of questions relevant to the pursuit of a specific enquiry into this historic environment."
+     "content": "Framing of questions relevant to the pursuit of a specific enquiry."
     },
     {
      "code": "11-env — 2 Knowledge, selection and use of sources for historical enquiries: Selection of appropriate sources for specific investigations",
      "q": "How do you choose the right source for the question you have framed?",
      "idea": "Selecting appropriate sources for specific investigations",
-     "content": "Selection of appropriate sources for specific investigations into this historic environment."
+     "content": "Selection of appropriate sources for specific investigations."
     }
    ]
   },
@@ -1295,13 +1295,13 @@ const SPEC_1HI0 = {
      "code": "12-env — 2 Knowledge, selection and use of sources for historical enquiries: Framing of questions relevant to the pursuit of a specific enquiry",
      "q": "How do you frame a question that a follow-up enquiry could answer?",
      "idea": "Framing questions for a specific enquiry",
-     "content": "Framing of questions relevant to the pursuit of a specific enquiry into this historic environment."
+     "content": "Framing of questions relevant to the pursuit of a specific enquiry."
     },
     {
      "code": "12-env — 2 Knowledge, selection and use of sources for historical enquiries: Selection of appropriate sources for specific investigations",
      "q": "How do you choose the right source for the question you have framed?",
      "idea": "Selecting appropriate sources for specific investigations",
-     "content": "Selection of appropriate sources for specific investigations into this historic environment."
+     "content": "Selection of appropriate sources for specific investigations."
     }
    ]
   },
@@ -1589,13 +1589,13 @@ const SPEC_1HI0 = {
      "code": "13-env — 2 Knowledge, selection and use of sources for historical enquiries: Framing of questions relevant to the pursuit of a specific enquiry",
      "q": "How do you frame a question that a follow-up enquiry could answer?",
      "idea": "Framing questions for a specific enquiry",
-     "content": "Framing of questions relevant to the pursuit of a specific enquiry into this historic environment."
+     "content": "Framing of questions relevant to the pursuit of a specific enquiry."
     },
     {
      "code": "13-env — 2 Knowledge, selection and use of sources for historical enquiries: Selection of appropriate sources for specific investigations",
      "q": "How do you choose the right source for the question you have framed?",
      "idea": "Selecting appropriate sources for specific investigations",
-     "content": "Selection of appropriate sources for specific investigations into this historic environment."
+     "content": "Selection of appropriate sources for specific investigations."
     }
    ]
   },
@@ -1661,7 +1661,7 @@ const SPEC_1HI0 = {
      "code": "B1-1 — 4 The Norman invasion: The Battle of Hastings",
      "q": "What happened at the Battle of Hastings?",
      "idea": "The Battle of Hastings",
-     "content": "The Battle of Hastings: the Norman invasion of 1066 and the course of the battle."
+     "content": "The Battle of Hastings. (Key topic 1: Anglo-Saxon England and the Norman Conquest, 1060–66)"
     },
     {
      "code": "B1-1 — 4 The Norman invasion: Reasons for William's victory",
@@ -1690,7 +1690,7 @@ const SPEC_1HI0 = {
      "code": "B1-2 — 1 Establishing control: The submission of the earls, 1066",
      "q": "How did William establish control immediately after Hastings?",
      "idea": "The submission of the earls, 1066",
-     "content": "The submission of the earls, 1066: how William secured the acceptance of the surviving English nobility after Hastings."
+     "content": "The submission of the earls, 1066."
     },
     {
      "code": "B1-2 — 1 Establishing control: Rewarding followers and establishing control on the borderlands",
@@ -1726,13 +1726,13 @@ const SPEC_1HI0 = {
      "code": "B1-2 — 4 Revolt of the Earls, 1075: Reasons for and features of the revolt",
      "q": "Why did the Earls revolt in 1075?",
      "idea": "Reasons for and features of the Revolt of the Earls",
-     "content": "Reasons for and features of the revolt of the Earls in 1075 against William I."
+     "content": "Reasons for and features of the revolt of the Earls, 1075."
     },
     {
      "code": "B1-2 — 4 Revolt of the Earls, 1075: The defeat of the revolt and its effects",
      "q": "How was the 1075 revolt defeated and what followed?",
      "idea": "The defeat of the revolt and its effects",
-     "content": "The defeat of the revolt of the Earls (1075) and its effects on William I's hold on England."
+     "content": "The defeat of the revolt of the Earls, 1075, and its effects."
     }
    ]
   },
@@ -1796,7 +1796,7 @@ const SPEC_1HI0 = {
      "code": "B1-3 — 3 The Norman aristocracy: The career and significance of Bishop Odo",
      "q": "Who was Bishop Odo and why did he matter?",
      "idea": "The career and significance of Bishop Odo",
-     "content": "The career and significance of Bishop Odo, half-brother of William I and Earl of Kent."
+     "content": "The career and significance of Bishop Odo."
     },
     {
      "code": "B1-3 — 4 William I and the succession: Character and personality of William I and his relations with Robert",
@@ -1984,7 +1984,7 @@ const SPEC_1HI0 = {
      "code": "B2-3 — 1 The dispute with the Papacy: Causes of the dispute",
      "q": "Why did John quarrel with the Papacy?",
      "idea": "Causes of the dispute with the Papacy",
-     "content": "Causes of the dispute between King John and the Papacy over the appointment to Canterbury."
+     "content": "Causes of the dispute with the Papacy, 1205–16."
     },
     {
      "code": "B2-3 — 1 The dispute with the Papacy: The Interdict and its impact on everyday life",
@@ -2038,13 +2038,13 @@ const SPEC_1HI0 = {
      "code": "B2-3 — 4 England in 1216: The problem of the succession",
      "q": "Why was the succession a problem in 1216?",
      "idea": "The problem of the succession",
-     "content": "The problem of the succession on the death of King John in 1216, with the heir a nine-year-old boy."
+     "content": "The problem of the succession."
     },
     {
      "code": "B2-3 — 4 England in 1216: The role of William Marshal as Protector",
      "q": "What did William Marshal do as Protector?",
      "idea": "The role of William Marshal as Protector",
-     "content": "The role of William Marshal as Protector for the young Henry III after the death of King John."
+     "content": "The role of William Marshal as Protector."
     }
    ]
   },
@@ -2115,7 +2115,7 @@ const SPEC_1HI0 = {
      "code": "B3-1 — 4 Wolsey, Catherine, the succession and annulment: Catherine of Aragon and the succession",
      "q": "Why did the succession become a problem?",
      "idea": "Catherine of Aragon and the succession",
-     "content": "Catherine of Aragon and the succession: the failure to produce a surviving male heir for Henry VIII."
+     "content": "Catherine of Aragon and the succession."
     },
     {
      "code": "B3-1 — 4 Wolsey, Catherine, the succession and annulment: Henry's reasons for and attempts to gain an annulment",
@@ -2172,7 +2172,7 @@ const SPEC_1HI0 = {
      "code": "B3-2 — 2 The king's marriages: Reasons for marriage to Anne of Cleves",
      "q": "Why did Henry marry Anne of Cleves?",
      "idea": "The marriage to Anne of Cleves",
-     "content": "Reasons for marriage to Anne of Cleves, and the diplomatic calculation behind it."
+     "content": "Reasons for marriage to Anne of Cleves."
     },
     {
      "code": "B3-2 — 3 Cromwell and government, 1534–40: Reform of government and royal finance",
@@ -2230,7 +2230,7 @@ const SPEC_1HI0 = {
      "code": "B3-3 — 2 Opposition to, and impact of, Reformation, 1534–40: The significance of opposition from Thomas More",
      "q": "Why did Thomas More's opposition matter?",
      "idea": "The opposition of Thomas More",
-     "content": "The significance of opposition from Thomas More to the Henrician Reformation and his execution."
+     "content": "The significance of opposition from Thomas More, 1534–40."
     },
     {
      "code": "B3-3 — 2 Opposition to, and impact of, Reformation, 1534–40: Impact of the Reformation on the English Church",
@@ -2328,7 +2328,7 @@ const SPEC_1HI0 = {
      "code": "B4-1 — 4 The problem of Mary, Queen of Scots: Mary's claim to the English throne",
      "q": "Why was Mary, Queen of Scots a threat to Elizabeth?",
      "idea": "Mary, Queen of Scots: her claim to the English throne",
-     "content": "Mary, Queen of Scots: her claim to the English throne and the danger it posed to Elizabeth."
+     "content": "Mary, Queen of Scots: her claim to the English throne."
     },
     {
      "code": "B4-1 — 4 The problem of Mary, Queen of Scots: Relations between Elizabeth and Mary, 1568–69",
@@ -2382,7 +2382,7 @@ const SPEC_1HI0 = {
      "code": "B4-2 — 2 Relations with Spain: The significance of privateering and the activities of Drake",
      "q": "What did privateering do to Anglo-Spanish relations?",
      "idea": "Privateering and the activities of Drake",
-     "content": "The significance of privateering and the activities of Drake in worsening relations with Spain."
+     "content": "The significance of privateering and the activities of Drake."
     },
     {
      "code": "B4-2 — 3 Outbreak of war with Spain, 1585–88: Reasons for deteriorating relations with Spain",
@@ -2561,13 +2561,13 @@ const SPEC_1HI0 = {
      "code": "P1-2 — 1 The start of an empire: Balboa's claim of Spanish authority over the Pacific (1513)",
      "q": "How did Spain reach the Pacific?",
      "idea": "Balboa and the Pacific (1513)",
-     "content": "Balboa's claim of Spanish authority over the Pacific (1513) on behalf of the Spanish Crown."
+     "content": "Balboa’s claim of Spanish authority over the Pacific (1513)."
     },
     {
      "code": "P1-2 — 1 The start of an empire: The conquest of Cuba",
      "q": "How was Cuba conquered?",
      "idea": "The conquest of Cuba",
-     "content": "The conquest of Cuba and its place in the extension of Spanish authority in the Caribbean."
+     "content": "The conquest of Cuba. (Key topic 2: The conquistadors, 1513–c1528)"
     },
     {
      "code": "P1-2 — 1 The start of an empire: The voyage of Magellan and Spanish claim to the Philippines",
@@ -2579,7 +2579,7 @@ const SPEC_1HI0 = {
      "code": "P1-2 — 2 The conquest of Mexico: Cortes's expedition to Mexico in 1519",
      "q": "Why did Cortes go to Mexico?",
      "idea": "Cortes's expedition to Mexico in 1519",
-     "content": "Cortes's expedition to Mexico in 1519 and its aims."
+     "content": "Cortes’s expedition to Mexico in 1519."
     },
     {
      "code": "P1-2 — 2 The conquest of Mexico: Key events of the Spanish conquest of Mexico",
@@ -2591,7 +2591,7 @@ const SPEC_1HI0 = {
      "code": "P1-2 — 2 The conquest of Mexico: The capture of Tenochtitlan and the Aztec surrender",
      "q": "How did Tenochtitlan fall?",
      "idea": "The capture of Tenochtitlan and the Aztec surrender",
-     "content": "The capture of Tenochtitlan and the Aztec surrender to the Spanish."
+     "content": "The capture of Tenochtitlan and the Aztec surrender."
     },
     {
      "code": "P1-2 — 3 Impact of Spain in the Americas: Cortes's actions as Governor and Captain-General",
@@ -2603,13 +2603,13 @@ const SPEC_1HI0 = {
      "code": "P1-2 — 3 Impact of Spain in the Americas: The consequences of the Spanish invasion for the Aztecs",
      "q": "What did the invasion do to the Aztecs?",
      "idea": "Consequences of the Spanish invasion for the Aztecs",
-     "content": "The consequences of the Spanish invasion for the Aztecs, in their society, economy and population."
+     "content": "The consequences of the Spanish invasion for the Aztecs."
     },
     {
      "code": "P1-2 — 3 Impact of Spain in the Americas: The founding and significance of a Spanish base at Panama",
      "q": "Why did Panama matter to Spain?",
      "idea": "The Spanish base at Panama",
-     "content": "The founding and significance of a Spanish base at Panama for further Spanish expansion."
+     "content": "The founding and significance of a Spanish base at Panama."
     }
    ]
   },
@@ -2715,7 +2715,7 @@ const SPEC_1HI0 = {
      "code": "P2-1 — 2 Slavery in North America: The transatlantic slave trade and 'Atlantic trade triangle'",
      "q": "How did the transatlantic slave trade work?",
      "idea": "The transatlantic slave trade and 'Atlantic trade triangle'",
-     "content": "The transatlantic slave trade and 'Atlantic trade triangle' linking Britain, Africa and the American colonies."
+     "content": "The transatlantic slave trade and ‘Atlantic trade triangle’."
     },
     {
      "code": "P2-1 — 2 Slavery in North America: The impact of slavery on the development of plantations",
@@ -2739,7 +2739,7 @@ const SPEC_1HI0 = {
      "code": "P2-1 — 3 Problems within the colonies: The New York Conspiracy (1741)",
      "q": "What was the New York Conspiracy?",
      "idea": "The New York Conspiracy (1741)",
-     "content": "The New York Conspiracy (1741) and the panic and reprisals that followed it in the colony."
+     "content": "The New York Conspiracy (1741)."
     },
     {
      "code": "P2-1 — 3 Problems within the colonies: Smuggling and customs revenue",
@@ -2805,7 +2805,7 @@ const SPEC_1HI0 = {
      "code": "P2-2 — 3 The aftermath of the French and Indian war: The impact of the war on American colonists' relations with Britain",
      "q": "How did the war change colonial attitudes to Britain?",
      "idea": "The war's impact on colonists' relations with Britain",
-     "content": "The impact of the war on American colonists' relations with Britain, including the cost of the war and Britain's demands on the colonies."
+     "content": "The impact of the war on American colonists’ relations with Britain."
     },
     {
      "code": "P2-2 — 3 The aftermath of the French and Indian war: Opposition to the Sugar Act (1764)",
@@ -2884,7 +2884,7 @@ const SPEC_1HI0 = {
      "code": "P2-3 — 3 Consequences of the war in America: The consequences of the war for Indigenous peoples",
      "q": "What did the war do to Indigenous peoples?",
      "idea": "Consequences of the war for Indigenous peoples",
-     "content": "The consequences of the war for Indigenous peoples, whose lands and alliances were reshaped by the American victory."
+     "content": "The consequences of the war for Indigenous peoples."
     },
     {
      "code": "P2-3 — 3 Consequences of the war in America: The impact of the war on Loyalists",
@@ -3076,13 +3076,13 @@ const SPEC_1HI0 = {
      "code": "P3-3 — 3 Indigenous peoples of the Plains: The hunting and extermination of the buffalo",
      "q": "Why was the destruction of the buffalo so damaging?",
      "idea": "The hunting and extermination of the buffalo",
-     "content": "The hunting and extermination of the buffalo and its consequences for the Indigenous peoples of the Plains."
+     "content": "The hunting and extermination of the buffalo."
     },
     {
      "code": "P3-3 — 3 Indigenous peoples of the Plains: Indigenous people's lives on the reservations",
      "q": "What was life like on the reservations?",
      "idea": "Life on the reservations",
-     "content": "Indigenous people's lives on the reservations and the constraints placed on them there."
+     "content": "Indigenous people's lives on the reservations."
     },
     {
      "code": "P3-3 — 3 Indigenous peoples of the Plains: The significance of changing government attitudes",
@@ -3202,13 +3202,13 @@ const SPEC_1HI0 = {
      "code": "P4-2 — 2 Cold War crises: The construction of the Berlin Wall, 1961",
      "q": "Why was the Berlin Wall built?",
      "idea": "The construction of the Berlin Wall, 1961",
-     "content": "The construction of the Berlin Wall, 1961, and the sealing of the East-West border in the city."
+     "content": "The construction of the Berlin Wall, 1961."
     },
     {
      "code": "P4-2 — 2 Cold War crises: The events of the Cuban Missile Crisis",
      "q": "How did the Cuban Missile Crisis unfold?",
      "idea": "The events of the Cuban Missile Crisis",
-     "content": "The events of the Cuban Missile Crisis of October 1962, from the discovery of the missiles to their withdrawal."
+     "content": "The events of the Cuban Missile Crisis."
     },
     {
      "code": "P4-2 — 2 Cold War crises: The Brezhnev Doctrine and the re-establishment of Soviet control in Czechoslovakia",
@@ -3292,7 +3292,7 @@ const SPEC_1HI0 = {
      "code": "P4-3 — 3 The collapse of Soviet control of Eastern Europe, 1985-91: The significance of the fall of the Berlin Wall",
      "q": "Why did the fall of the Berlin Wall matter?",
      "idea": "The fall of the Berlin Wall",
-     "content": "The significance of the fall of the Berlin Wall in 1989 for Soviet control of Eastern Europe."
+     "content": "The significance of the fall of the Berlin Wall."
     },
     {
      "code": "P4-3 — 3 The collapse of Soviet control of Eastern Europe, 1985-91: The collapse of the Soviet Union",
@@ -3333,7 +3333,7 @@ const SPEC_1HI0 = {
      "code": "P5-1 — 1 The British withdrawal and the creation of Israel: Key events of the Arab-Israeli war (1948–49)",
      "q": "How was the first Arab-Israeli war fought?",
      "idea": "The Arab-Israeli war (1948–49)",
-     "content": "Key events of the Arab-Israeli war (1948–49) that followed the creation of the state of Israel."
+     "content": "Key events of the Arab-Israeli war (1948–49)."
     },
     {
      "code": "P5-1 — 2 Aftermath of the 1948–49 war: Territorial changes and their impact",
@@ -3406,7 +3406,7 @@ const SPEC_1HI0 = {
      "code": "P5-2 — 1 The Six Day War, 1967: Key events of the war",
      "q": "How was the Six Day War fought and won?",
      "idea": "Key events of the Six Day War",
-     "content": "Key events of the Six Day War of 1967 and the Israeli victory over Egypt, Jordan and Syria."
+     "content": "Key events of the Six Day War, 1967."
     },
     {
      "code": "P5-2 — 2 Aftermath of the 1967 war: UN Resolution 242",
@@ -3569,7 +3569,7 @@ const SPEC_1HI0 = {
      "code": "30-1 — 3 The Provisional Government: The significance of the Kornilov Revolt",
      "q": "Why did the Kornilov Revolt matter?",
      "idea": "The Kornilov Revolt",
-     "content": "The significance of the Kornilov Revolt for the Provisional Government and for the Bolsheviks."
+     "content": "The significance of the Kornilov Revolt."
     },
     {
      "code": "30-1 — 4 The Bolshevik Revolution: Lenin's return and activities",
@@ -3605,7 +3605,7 @@ const SPEC_1HI0 = {
      "code": "30-2 — 1 Early consolidation of power, 1917–18: The early Bolshevik decrees",
      "q": "What did the Bolsheviks do first in power?",
      "idea": "The early Bolshevik decrees of November–December 1917",
-     "content": "The early Bolshevik decrees of November–December 1917, by which the new government set out its first measures."
+     "content": "The early Bolshevik decrees of November–December 1917."
     },
     {
      "code": "30-2 — 1 Early consolidation of power, 1917–18: The removal of opposition",
@@ -3718,7 +3718,7 @@ const SPEC_1HI0 = {
      "code": "30-3 — 3 Propaganda and censorship: The new Constitution of 1936",
      "q": "What did the 1936 Constitution claim and what did it do?",
      "idea": "The new Constitution of 1936",
-     "content": "The new Constitution of 1936 and the gap between its guarantees and the reality of Stalin's rule."
+     "content": "The new Constitution of 1936. (Key topic 3: Stalin's rise to power and dictatorship, 1924–41)"
     },
     {
      "code": "30-3 — 4 The Cult of Stalin: The meaning of the Cult of Stalin and reasons for its introduction",
@@ -3730,7 +3730,7 @@ const SPEC_1HI0 = {
      "code": "30-3 — 4 The Cult of Stalin: How the Cult of Stalin was achieved",
      "q": "How was the Cult of Stalin built?",
      "idea": "How the Cult of Stalin was achieved",
-     "content": "How the Cult of Stalin was achieved through propaganda, art, education and the rewriting of history."
+     "content": "How the Cult of Stalin was achieved."
     }
    ]
   },
@@ -3869,7 +3869,7 @@ const SPEC_1HI0 = {
      "code": "31-1 — 4 Changes in society, 1924–29: Changes in the standard of living",
      "q": "How did living standards change in the 'Golden Years'?",
      "idea": "Changes in the standard of living",
-     "content": "Changes in the standard of living in Germany in the years 1924–29, including wages, housing and unemployment insurance."
+     "content": "Changes in the standard of living."
     },
     {
      "code": "31-1 — 4 Changes in society, 1924–29: Changes in the position of women",
@@ -3981,7 +3981,7 @@ const SPEC_1HI0 = {
      "code": "31-3 — 2 The police state: Nazi control of the legal system",
      "q": "What happened to justice under the Nazis?",
      "idea": "Nazi control of the legal system",
-     "content": "Nazi control of the legal system, including judges, the courts and the People's Court."
+     "content": "Nazi control of the legal system."
     },
     {
      "code": "31-3 — 3 Controlling and influencing attitudes: Goebbels and the Ministry of Propaganda",
@@ -4037,7 +4037,7 @@ const SPEC_1HI0 = {
      "code": "31-4 — 1 Nazi policies towards women: Nazi views on women and the family",
      "q": "What did the Nazis believe about women and the family?",
      "idea": "Nazi views on women and the family",
-     "content": "Nazi views on women and the family, and the place they assigned to women in the national community."
+     "content": "Nazi views on women and the family."
     },
     {
      "code": "31-4 — 1 Nazi policies towards women: Nazi policies towards women",
@@ -4129,13 +4129,13 @@ const SPEC_1HI0 = {
      "code": "32-1 — 3 Consolidating the CCP's hold on power, 1951–52: The 'three antis' and 'five antis' movements",
      "q": "What were the 'three antis' and 'five antis' movements?",
      "idea": "The 'three antis' and 'five antis' movements",
-     "content": "The 'three antis' and 'five antis' movements by which the CCP attacked corruption and the business class."
+     "content": "The ‘three antis’ and ‘five antis’ movements."
     },
     {
      "code": "32-1 — 4 The Hundred Flowers campaign, 1956–57: Mao's reasons for the campaign",
      "q": "Why did Mao launch the Hundred Flowers campaign?",
      "idea": "Mao's reasons for the Hundred Flowers campaign",
-     "content": "Mao's reasons for the Hundred Flowers campaign of 1956–57 and what he expected it to produce."
+     "content": "Mao’s reasons for the Hundred Flowers campaign, 1956–57."
     },
     {
      "code": "32-1 — 4 The Hundred Flowers campaign, 1956–57: Key features of the campaign",
@@ -4175,7 +4175,7 @@ const SPEC_1HI0 = {
      "code": "32-2 — 1 Early changes in agriculture, 1949–57: Moves towards agricultural cooperation",
      "q": "What came after land redistribution?",
      "idea": "Moves towards agricultural cooperation",
-     "content": "Moves towards agricultural cooperation in China in the years after the redistribution of land."
+     "content": "Moves towards agricultural cooperation in China, 1949–57."
     },
     {
      "code": "32-2 — 1 Early changes in agriculture, 1949–57: Reasons for the change from voluntary to enforced collectivisation",
@@ -4480,7 +4480,7 @@ const SPEC_1HI0 = {
      "code": "33-2 — 1 Developments, 1960–62: The James Meredith case (1962)",
      "q": "What was at stake in the James Meredith case?",
      "idea": "The James Meredith case (1962)",
-     "content": "The James Meredith case (1962) and the desegregation of the University of Mississippi."
+     "content": "The James Meredith case (1962)."
     },
     {
      "code": "33-2 — 2 Peaceful protests and their impact, 1963–65: King and the peace marches of 1963",
@@ -4492,7 +4492,7 @@ const SPEC_1HI0 = {
      "code": "33-2 — 2 Peaceful protests and their impact, 1963–65: Freedom Summer and the Mississippi murders",
      "q": "What happened in Freedom Summer?",
      "idea": "Freedom Summer and the Mississippi murders",
-     "content": "Freedom Summer and the Mississippi murders of civil rights workers."
+     "content": "Freedom Summer and the Mississippi murders."
     },
     {
      "code": "33-2 — 2 Peaceful protests and their impact, 1963–65: The impact of peaceful protest and the roles of Kennedy and Johnson",
@@ -4534,7 +4534,7 @@ const SPEC_1HI0 = {
      "code": "33-2 — 4 The civil rights movement, 1965–75: The extent of progress in civil rights by 1975",
      "q": "How far had civil rights advanced by 1975?",
      "idea": "The extent of progress in civil rights by 1975",
-     "content": "The extent of progress in civil rights by 1975 for Black Americans in law, politics, employment and education."
+     "content": "The extent of progress in civil rights by 1975."
     }
    ]
   },
@@ -4575,7 +4575,7 @@ const SPEC_1HI0 = {
      "code": "33-3 — 3 The nature of the conflict in Vietnam, 1964–68: The guerrilla tactics used by the Vietcong",
      "q": "How did the Vietcong fight?",
      "idea": "Vietcong guerrilla tactics",
-     "content": "The guerrilla tactics used by the Vietcong against US and South Vietnamese forces."
+     "content": "The guerrilla tactics used by the Vietcong."
     },
     {
      "code": "33-3 — 3 The nature of the conflict in Vietnam, 1964–68: The methods used by the USA",
@@ -4639,7 +4639,7 @@ const SPEC_1HI0 = {
      "code": "33-4 — 1 Opposition to the war: The Kent State University shootings (1970)",
      "q": "What did Kent State do to the anti-war movement?",
      "idea": "The Kent State University shootings (1970)",
-     "content": "The Kent State University shootings (1970) and their impact on American opinion about the war."
+     "content": "The Kent State University shootings (1970)."
     },
     {
      "code": "33-4 — 2 Support for the war: Reasons for support for the war",
@@ -4651,7 +4651,7 @@ const SPEC_1HI0 = {
      "code": "33-4 — 2 Support for the war: The 'hard hats' and the 'silent majority'",
      "q": "Who were the 'hard hats' and the 'silent majority'?",
      "idea": "The 'hard hats' and the 'silent majority'",
-     "content": "The 'hard hats' and the 'silent majority' as expressions of support for the war in the USA."
+     "content": "The ‘hard hats’ and the ‘silent majority’."
     },
     {
      "code": "33-4 — 3 The peace process and end of the war: Reasons for, and key features of, the peace negotiations",
@@ -4663,13 +4663,13 @@ const SPEC_1HI0 = {
      "code": "33-4 — 3 The peace process and end of the war: The significance of the Paris Peace Agreement (1973)",
      "q": "What did the Paris Peace Agreement settle?",
      "idea": "The Paris Peace Agreement (1973)",
-     "content": "The significance of the Paris Peace Agreement (1973) for the US withdrawal from Vietnam."
+     "content": "The significance of the Paris Peace Agreement (1973)."
     },
     {
      "code": "33-4 — 3 The peace process and end of the war: The economic and human costs of the war for the USA",
      "q": "What did the war cost the USA?",
      "idea": "The economic and human costs of the war",
-     "content": "The economic and human costs of the war for the USA, in money, casualties and domestic division."
+     "content": "The economic and human costs of the war for the USA."
     },
     {
      "code": "33-4 — 4 Reasons for the failure of the USA in Vietnam: The strengths of North Vietnam",
@@ -4687,7 +4687,7 @@ const SPEC_1HI0 = {
      "code": "33-4 — 4 Reasons for the failure of the USA in Vietnam: The impact of opposition to the war in the USA",
      "q": "How far did the anti-war movement determine the outcome?",
      "idea": "The impact of opposition to the war in the USA",
-     "content": "The impact of opposition to the war in the USA on the American failure in Vietnam."
+     "content": "The impact of opposition to the war in the USA."
     }
    ]
   }

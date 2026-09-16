@@ -170,6 +170,12 @@ AQA GCSE English Literature, Macbeth as a room: the checked kit lesson working f
 
 ![38-english-literature-room](38-english-literature-room.png)
 
+## 39-geography-room
+
+AQA GCSE Geography, Natural hazards as a room: the checked kit lesson working from the room’s own figures, the Level 3 and Level 1 model paragraphs, and the provenance line
+
+![39-geography-room](39-geography-room.png)
+
 ## 16-exam-real-papers
 
 The Exam Hall for OCR A level Geography: every public series from OCR’s own site, June 2026 locked until its release date, each paper opening on ocr.org.uk with Open paper and Mark my answers, and the notice that nothing of the board’s is stored.

@@ -164,6 +164,12 @@ Edexcel GCSE Mathematics (Higher tier), Algebra notation — Higher additions: t
 
 ![37-gcse-maths-higher-room](37-gcse-maths-higher-room.png)
 
+## 38-english-literature-room
+
+AQA GCSE English Literature, Macbeth as a room: the checked kit lesson working from the room’s own short extracts, the Level 6 and Level 3 model paragraphs, and the provenance line
+
+![38-english-literature-room](38-english-literature-room.png)
+
 ## 16-exam-real-papers
 
 The Exam Hall for OCR A level Geography: every public series from OCR’s own site, June 2026 locked until its release date, each paper opening on ocr.org.uk with Open paper and Mark my answers, and the notice that nothing of the board’s is stored.

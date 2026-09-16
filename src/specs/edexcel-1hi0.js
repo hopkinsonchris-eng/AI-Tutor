@@ -470,10 +470,16 @@ const SPEC_1HI0 = {
      "content": "Students should develop an understanding of the nature and process of change: patterns of change, trends and turning points, and the influence of factors inhibiting or encouraging change within periods and across the theme. The key factors are: attitudes in society; individuals and institutions (Church and government); science and technology."
     },
     {
-     "code": "10 — The process of change: factors working together and the role of the case studies",
-     "q": "How do the key factors combine, and what are the strand 3 case studies for?",
-     "idea": "Factors working together; case studies exemplify strands 1 and 2",
-     "content": "Students should understand how factors worked together to bring about particular developments at particular times. The selected case studies in strand 3 of each period exemplify, in context, the elements defined in strands 1 and 2. They provide opportunities to explore the operation of the key factors and to make detailed comparisons over time."
+     "code": "10 — The process of change: factors working together",
+     "q": "How do the key factors combine to produce change?",
+     "idea": "Factors working together at particular times",
+     "content": "Students should also understand how factors worked together to bring about particular developments at particular times."
+    },
+    {
+     "code": "10 — The process of change: the role of the strand 3 case studies",
+     "q": "What are the strand 3 case studies for?",
+     "idea": "Case studies exemplify, in context, strands 1 and 2",
+     "content": "The selected case studies in strand 3 of each period exemplify, in context, the elements defined in strands 1 and 2. They provide opportunities to explore the operation of the key factors and to make detailed comparisons over time."
     },
     {
      "code": "10-1 — 1 Nature and changing definitions of criminal activity: Crimes against the person, property and authority",
@@ -718,10 +724,16 @@ const SPEC_1HI0 = {
      "content": "Recognition of the strengths and weaknesses of different types of source for specific enquiries."
     },
     {
-     "code": "10-env — 2 Knowledge, selection and use of sources for historical enquiries: Framing of questions and selection of sources",
-     "q": "How do you frame a follow-up question and choose the source to answer it?",
-     "idea": "Framing questions and selecting appropriate sources",
-     "content": "Framing of questions relevant to the pursuit of a specific enquiry. Selection of appropriate sources for specific investigations."
+     "code": "10-env — 2 Knowledge, selection and use of sources for historical enquiries: Framing of questions relevant to the pursuit of a specific enquiry",
+     "q": "How do you frame a question that a follow-up enquiry could answer?",
+     "idea": "Framing questions for a specific enquiry",
+     "content": "Framing of questions relevant to the pursuit of a specific enquiry into this historic environment."
+    },
+    {
+     "code": "10-env — 2 Knowledge, selection and use of sources for historical enquiries: Selection of appropriate sources for specific investigations",
+     "q": "How do you choose the right source for the question you have framed?",
+     "idea": "Selecting appropriate sources for specific investigations",
+     "content": "Selection of appropriate sources for specific investigations into this historic environment."
     }
    ]
   },
@@ -749,10 +761,16 @@ const SPEC_1HI0 = {
      "content": "Students should develop an understanding of the nature and process of change: patterns of change, trends and turning points, and the influence of factors inhibiting or encouraging change within periods and across the theme. The key factors are: individuals and institutions (Church and government); science and technology; attitudes in society."
     },
     {
-     "code": "11 — The process of change: factors working together and the role of the case studies",
-     "q": "How do the key factors combine, and what are the strand 3 case studies for?",
-     "idea": "Factors working together; case studies exemplify strands 1 and 2",
-     "content": "Students should understand how factors worked together to bring about particular developments at particular times. The selected case studies in strand 3 of each period exemplify, in context, the elements defined in strands 1 and 2. They provide opportunities to explore the operation of the key factors and to make detailed comparisons over time."
+     "code": "11 — The process of change: factors working together",
+     "q": "How do the key factors combine to produce change?",
+     "idea": "Factors working together at particular times",
+     "content": "Students should also understand how factors worked together to bring about particular developments at particular times."
+    },
+    {
+     "code": "11 — The process of change: the role of the strand 3 case studies",
+     "q": "What are the strand 3 case studies for?",
+     "idea": "Case studies exemplify, in context, strands 1 and 2",
+     "content": "The selected case studies in strand 3 of each period exemplify, in context, the elements defined in strands 1 and 2. They provide opportunities to explore the operation of the key factors and to make detailed comparisons over time."
     },
     {
      "code": "11-1 — 1 Ideas about the cause of disease and illness: Supernatural and religious explanations",
@@ -986,10 +1004,16 @@ const SPEC_1HI0 = {
      "content": "Recognition of the strengths and weaknesses of different types of source for specific enquiries."
     },
     {
-     "code": "11-env — 2 Knowledge, selection and use of sources for historical enquiries: Framing of questions and selection of sources",
-     "q": "How do you frame a follow-up question and choose the source to answer it?",
-     "idea": "Framing questions and selecting appropriate sources",
-     "content": "Framing of questions relevant to the pursuit of a specific enquiry. Selection of appropriate sources for specific investigations."
+     "code": "11-env — 2 Knowledge, selection and use of sources for historical enquiries: Framing of questions relevant to the pursuit of a specific enquiry",
+     "q": "How do you frame a question that a follow-up enquiry could answer?",
+     "idea": "Framing questions for a specific enquiry",
+     "content": "Framing of questions relevant to the pursuit of a specific enquiry into this historic environment."
+    },
+    {
+     "code": "11-env — 2 Knowledge, selection and use of sources for historical enquiries: Selection of appropriate sources for specific investigations",
+     "q": "How do you choose the right source for the question you have framed?",
+     "idea": "Selecting appropriate sources for specific investigations",
+     "content": "Selection of appropriate sources for specific investigations into this historic environment."
     }
    ]
   },
@@ -1016,10 +1040,16 @@ const SPEC_1HI0 = {
      "content": "Students should develop an understanding of the nature and process of change: patterns of change, trends and turning points, and the influence of factors inhibiting or encouraging change within periods and across the theme. The key factors are: governments and individuals; science, technology and communications; attitudes in society."
     },
     {
-     "code": "12 — The process of change: factors working together and the role of the case studies",
-     "q": "How do the key factors combine, and what are the strand 3 case studies for?",
-     "idea": "Factors working together; case studies exemplify strands 1 and 2",
-     "content": "Students should understand how factors worked together to bring about particular developments at particular times. The selected case studies in strand 3 of each period exemplify, in context, elements defined in strands 1 and 2. They provide opportunities to explore the operation of the key factors and to make detailed comparisons over time."
+     "code": "12 — The process of change: factors working together",
+     "q": "How do the key factors combine to produce change?",
+     "idea": "Factors working together at particular times",
+     "content": "Students should also understand how factors worked together to bring about particular developments at particular times."
+    },
+    {
+     "code": "12 — The process of change: the role of the strand 3 case studies",
+     "q": "What are the strand 3 case studies for?",
+     "idea": "Case studies exemplify, in context, strands 1 and 2",
+     "content": "The selected case studies in strand 3 of each period exemplify, in context, elements defined in strands 1 and 2. They provide opportunities to explore the operation of the key factors and to make detailed comparisons over time."
     },
     {
      "code": "12-1 — 1 The nature of warfare: The composition of the army",
@@ -1262,10 +1292,16 @@ const SPEC_1HI0 = {
      "content": "Recognition of the strengths and weaknesses of different types of source for specific enquiries."
     },
     {
-     "code": "12-env — 2 Knowledge, selection and use of sources for historical enquiries: Framing of questions and selection of sources",
-     "q": "How do you frame a follow-up question and choose the source to answer it?",
-     "idea": "Framing questions and selecting appropriate sources",
-     "content": "Framing of questions relevant to the pursuit of a specific enquiry. Selection of appropriate sources for specific investigations."
+     "code": "12-env — 2 Knowledge, selection and use of sources for historical enquiries: Framing of questions relevant to the pursuit of a specific enquiry",
+     "q": "How do you frame a question that a follow-up enquiry could answer?",
+     "idea": "Framing questions for a specific enquiry",
+     "content": "Framing of questions relevant to the pursuit of a specific enquiry into this historic environment."
+    },
+    {
+     "code": "12-env — 2 Knowledge, selection and use of sources for historical enquiries: Selection of appropriate sources for specific investigations",
+     "q": "How do you choose the right source for the question you have framed?",
+     "idea": "Selecting appropriate sources for specific investigations",
+     "content": "Selection of appropriate sources for specific investigations into this historic environment."
     }
    ]
   },
@@ -1550,10 +1586,16 @@ const SPEC_1HI0 = {
      "content": "Recognition of the strengths and weaknesses of different types of source for specific enquiries."
     },
     {
-     "code": "13-env — 2 Knowledge, selection and use of sources for historical enquiries: Framing of questions and selection of sources",
-     "q": "How do you frame a follow-up question and choose the source to answer it?",
-     "idea": "Framing questions and selecting appropriate sources",
-     "content": "Framing of questions relevant to the pursuit of a specific enquiry. Selection of appropriate sources for specific investigations."
+     "code": "13-env — 2 Knowledge, selection and use of sources for historical enquiries: Framing of questions relevant to the pursuit of a specific enquiry",
+     "q": "How do you frame a question that a follow-up enquiry could answer?",
+     "idea": "Framing questions for a specific enquiry",
+     "content": "Framing of questions relevant to the pursuit of a specific enquiry into this historic environment."
+    },
+    {
+     "code": "13-env — 2 Knowledge, selection and use of sources for historical enquiries: Selection of appropriate sources for specific investigations",
+     "q": "How do you choose the right source for the question you have framed?",
+     "idea": "Selecting appropriate sources for specific investigations",
+     "content": "Selection of appropriate sources for specific investigations into this historic environment."
     }
    ]
   },
@@ -1993,10 +2035,16 @@ const SPEC_1HI0 = {
      "content": "The condition of England at the time of John's death in 1216."
     },
     {
-     "code": "B2-3 — 4 England in 1216: The problem of the succession and the role of William Marshal",
-     "q": "Who held England together after John's death?",
-     "idea": "The succession and William Marshal as Protector",
-     "content": "The problem of the succession. The role of William Marshal as Protector."
+     "code": "B2-3 — 4 England in 1216: The problem of the succession",
+     "q": "Why was the succession a problem in 1216?",
+     "idea": "The problem of the succession",
+     "content": "The problem of the succession on the death of King John in 1216, with the heir a nine-year-old boy."
+    },
+    {
+     "code": "B2-3 — 4 England in 1216: The role of William Marshal as Protector",
+     "q": "What did William Marshal do as Protector?",
+     "idea": "The role of William Marshal as Protector",
+     "content": "The role of William Marshal as Protector for the young Henry III after the death of King John."
     }
    ]
   },

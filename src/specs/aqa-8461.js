@@ -21,7 +21,8 @@ const SPEC_8461 = {
     "What's assessed: Topics 1 – 4: Cell biology; Organisation; Infection and response; and Bioenergetics.",
     "How it's assessed: written exam 1 hour 45 minutes; Foundation and Higher Tier; 100 marks; 50 % of GCSE.",
     "Questions: multiple choice, structured, closed short answer and open response.",
-    "Working scientifically, Mathematical requirements and Use of apparatus and techniques skills are assessed across all papers."
+    "Working scientifically and Use of apparatus and techniques skills will be assessed across all papers.",
+    "Some mathematical skills will only be assessed in certain subject areas. These are detailed in Mathematical requirements."
    ]
   },
   {
@@ -58,7 +59,7 @@ const SPEC_8461 = {
  ],
  "markConventions": {
   "style": "points",
-  "summary": "Linear qualification: both papers are sat at the end of the course and in the same series. Two papers, each 100 raw marks with a scaling factor of x1, giving a total scaled mark of 200; grade boundaries are set on that total and each paper carries 50 % of the GCSE. Graded on the nine-point scale 1 – 9, where 9 is the best grade. A student taking Foundation Tier assessments is awarded a grade in the range 1 to 5; a student taking Higher Tier assessments is awarded a grade in the range 4 to 9, with an allowed grade 3 for a Higher Tier student who just fails to achieve grade 4; below that, U. Question types: multiple choice, structured, closed short answer and open response. Extended response questions are of sufficient length to allow students to construct and develop a sustained line of reasoning which is coherent, relevant, substantiated and logically structured, and may be prose, extended calculations or a combination of both (AQA marks these by levels on the papers – the six-mark tariff and the levels are from the papers, not stated in the specification). Questions drawing on the knowledge and understanding gained from the ten required practical activities count for at least 15 % of the overall marks; a minimum of 10 experiments is required, and centres must supply a practical science statement. Mathematical requirements are targeted at a level of demand appropriate to the subject: Foundation Tier questions no lower than Key Stage 3, Higher Tier questions no lower than Foundation Tier GCSE Mathematics (the specification prints no percentage weighting for mathematics). Content marked (biology only) is not in GCSE Combined Science: Trilogy, and content marked (HT only) is assessed on the Higher Tier only. No data sheet, periodic table or equation sheet is specified for this qualification. Entry codes are 8461F (Foundation) and 8461H (Higher).",
+  "summary": "Linear qualification: both papers are sat at the end of the course and in the same series. Two papers, each 100 raw marks with a scaling factor of x1, giving a total scaled mark of 200; grade boundaries are set on that total and each paper carries 50 % of the GCSE. Graded on the nine-point scale 1 – 9, where 9 is the best grade. A student taking Foundation Tier assessments is awarded a grade in the range 1 to 5; a student taking Higher Tier assessments is awarded a grade in the range 4 to 9, with an allowed grade 3 for a Higher Tier student who just fails to achieve grade 4; below that, U. Question types: multiple choice, structured, closed short answer and open response. Extended response questions are of sufficient length to allow students to construct and develop a sustained line of reasoning which is coherent, relevant, substantiated and logically structured, and may be prose, extended calculations or a combination of both (AQA marks these by levels on the papers – the six-mark tariff and the levels are from the papers, not stated in the specification). Questions drawing on the knowledge and understanding gained from the ten required practical activities count for at least 15 % of the overall marks; a minimum of 10 experiments is required, and centres must supply a practical science statement. Mathematical requirements are targeted at a level of demand appropriate to the subject: Foundation Tier questions no lower than Key Stage 3, Higher Tier questions no lower than Foundation Tier GCSE Mathematics (the specification prints no percentage weighting for mathematics). Content marked (biology only) is not in GCSE Combined Science: Trilogy, and content marked (HT only) is assessed on the Higher Tier only. No data sheet, periodic table or equation sheet is specified for this qualification. Entry codes are 8461F (Foundation) and 8461H (Higher). The command words below take their meanings from AQA’s published command-words list, not from this specification, which prints no command-word glossary; only the example attached to each command word is the document’s own wording. Section 4.8 Key ideas is not a separate room: the specification says its nine key ideas in biology are embedded throughout the subject content, so they sit inside the content rooms rather than in a room of their own.",
   "commandWords": [
    {
     "word": "Describe",
@@ -98,7 +99,7 @@ const SPEC_8461 = {
    },
    {
     "word": "Plot",
-    "means": "Mark points accurately on a graph from data, selecting appropriate scales for the axes and labelling them; draw a line of best fit where appropriate."
+    "means": "Mark points accurately on a graph from data, selecting appropriate scales for the axes and labelling them; plot two variables from experimental or other data."
    }
   ],
   "essayShapes": [
@@ -708,7 +709,7 @@ const SPEC_8461 = {
     {
      "code": "4.5.2.1",
      "q": "How is the nervous system adapted to its function, and what is a reflex arc?",
-     "idea": "Structure and function of the human nervous system",
+     "idea": "Structure and function",
      "content": "Students should be able to explain how the structure of the nervous system is adapted to its functions. The nervous system enables humans to react to their surroundings and to coordinate their behaviour. Information from receptors passes along cells (neurones) as electrical impulses to the central nervous system (CNS). The CNS is the brain and spinal cord. The CNS coordinates the response of effectors which may be muscles contracting or glands secreting hormones: stimulus → receptor → coordinator → effector → response. Students should be able to explain how the various structures in a reflex arc – including the sensory neurone, synapse, relay neurone and motor neurone – relate to their function, and should understand why reflex actions are important. Reflex actions are automatic and rapid; they do not involve the conscious part of the brain. Students should be able to extract and interpret data from graphs, charts and tables about the functioning of the nervous system, and translate information about reaction times between numerical and graphical forms."
     },
     {
@@ -780,7 +781,7 @@ const SPEC_8461 = {
     {
      "code": "4.5.4.1",
      "q": "How do plant hormones coordinate responses to light and gravity?",
-     "idea": "Control and coordination in plants (biology only)",
+     "idea": "Control and coordination (biology only)",
      "content": "(biology only) Plants produce hormones to coordinate and control growth and responses to light (phototropism) and gravity (gravitropism or geotropism). Unequal distributions of auxin cause unequal growth rates in plant roots and shoots. (HT only) Gibberellins are important in initiating seed germination. (HT only) Ethene controls cell division and ripening of fruits. (HT only) The mechanisms of how gibberellins and ethene work are not required."
     },
     {
@@ -1048,13 +1049,13 @@ const SPEC_8461 = {
      "code": "4.7.3.4",
      "q": "Why has large-scale deforestation happened in tropical areas?",
      "idea": "Deforestation",
-     "content": "Large-scale deforestation in tropical areas has occurred to provide land for cattle and rice fields, and to grow crops for biofuels. Students should be able to evaluate the environmental implications of deforestation."
+     "content": "Large-scale deforestation in tropical areas has occurred to provide land for cattle and rice fields, and to grow crops for biofuels."
     },
     {
      "code": "4.7.3.5",
      "q": "What are the biological consequences of global warming?",
      "idea": "Global warming",
-     "content": "Students should be able to describe some of the biological consequences of global warming. Levels of carbon dioxide and methane in the atmosphere are increasing, and contribute to 'global warming'. The scientific consensus about global warming and climate change is based on systematic reviews of thousands of peer reviewed publications, and students should be able to explain why evidence is uncertain or incomplete in a complex context."
+     "content": "Students should be able to describe some of the biological consequences of global warming. Levels of carbon dioxide and methane in the atmosphere are increasing, and contribute to 'global warming'."
     },
     {
      "code": "4.7.3.6",
@@ -1130,7 +1131,7 @@ const SPEC_8461 = {
    "id": "9",
    "component": "B1",
    "option": null,
-   "name": "Mathematical requirements (section 7; assessed on every paper)",
+   "name": "7 Mathematical requirements (the specification numbers this section 7)",
    "caseStudies": [],
    "ideas": [
     {
@@ -1227,7 +1228,7 @@ const SPEC_8461 = {
      "code": "MS 4b",
      "q": "Linear relationships",
      "idea": "Understand that y = mx + c represents a linear relationship",
-     "content": "Graphs: understand that y = mx + c represents a linear relationship, and recognise such a relationship in experimental data."
+     "content": "Graphs: understand that y = mx + c represents a linear relationship."
     },
     {
      "code": "MS 4c",
@@ -1253,7 +1254,7 @@ const SPEC_8461 = {
    "id": "10.1",
    "component": "B1",
    "option": null,
-   "name": "Use of apparatus and techniques (section 8.1)",
+   "name": "8.1 Use of apparatus and techniques (assessed on every paper)",
    "caseStudies": [],
    "ideas": [
     {

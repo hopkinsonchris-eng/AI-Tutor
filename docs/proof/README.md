@@ -176,6 +176,12 @@ AQA GCSE Geography, Natural hazards as a room: the checked kit lesson working fr
 
 ![39-geography-room](39-geography-room.png)
 
+## 40-aqa-maths-higher-room
+
+AQA GCSE Mathematics (Higher tier), Mensuration — Higher additions: the checked kit lesson and its Formulae sheet read against AQA’s 2026 Higher insert
+
+![40-aqa-maths-higher-room](40-aqa-maths-higher-room.png)
+
 ## 16-exam-real-papers
 
 The Exam Hall for OCR A level Geography: every public series from OCR’s own site, June 2026 locked until its release date, each paper opening on ocr.org.uk with Open paper and Mark my answers, and the notice that nothing of the board’s is stored.

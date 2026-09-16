@@ -7,7 +7,7 @@ const SPEC_8462 = {
  "subject": "Chemistry",
  "code": "8462",
  "level": "GCSE",
- "version": "AQA GCSE Chemistry 8462, Version 1.1, 04 October 2019",
+ "version": "AQA GCSE Chemistry 8462. GCSE exams June 2018 onwards. Version 1.1 04 October 2019",
  "firstExam": 2018,
  "essaySubject": false,
  "components": [
@@ -61,7 +61,7 @@ const SPEC_8462 = {
  ],
  "markConventions": {
   "style": "points",
-  "summary": "Two written papers, each 100 raw marks with a scaling factor of ×1, giving a total scaled mark of 200 on which grade boundaries are set; the overall weighting of each component is 50%. Both papers are sat at the end of the course (the qualification is linear) and both are available at Foundation and Higher Tier. The qualification is graded on the nine-point scale 1–9, where 9 is the best grade: a Foundation Tier student is awarded a grade in the range 1 to 5, a Higher Tier student a grade in the range 4 to 9, with an allowed grade 3 for a Higher Tier student who just fails to achieve grade 4; below that the result is U. Entry codes are 8462F (Foundation) and 8462H (Higher). Question types are multiple choice, structured, closed short answer and open response. Extended response questions are of sufficient length to allow students to construct and develop a sustained line of reasoning which is coherent, relevant, substantiated and logically structured, and may be prose, extended calculations, or a combination of both; AQA marks these by levels in its mark schemes, which the specification itself does not set out. Questions drawing on the knowledge and understanding gained from the eight required practical activities count for at least 15% of the overall marks. Maths questions are targeted at a level of demand appropriate to the subject: not lower than Key Stage 3 at Foundation Tier and not lower than Foundation Tier GCSE Mathematics at Higher Tier (the DfE subject criteria set a 20% minimum weighting of mathematics for GCSE Chemistry; this specification states only the level of demand). A periodic table (Appendix A) is supplied for both papers. Content marked (chemistry only) is examined in this qualification but not in GCSE Combined Science: Trilogy; content marked (HT only) is examined on Higher Tier papers only.",
+  "summary": "Two written papers, each 100 raw marks with a scaling factor of ×1, giving a total scaled mark of 200 on which grade boundaries are set; the overall weighting of each component is 50%. Both papers are sat at the end of the course (the qualification is linear) and both are available at Foundation and Higher Tier. The qualification is graded on the nine-point scale 1–9, where 9 is the best grade: a Foundation Tier student is awarded a grade in the range 1 to 5, a Higher Tier student a grade in the range 4 to 9, with an allowed grade 3 for a Higher Tier student who just fails to achieve grade 4; below that the result is U. Entry codes are 8462F (Foundation) and 8462H (Higher). Question types are multiple choice, structured, closed short answer and open response. Extended response questions are of sufficient length to allow students to construct and develop a sustained line of reasoning which is coherent, relevant, substantiated and logically structured, and may be prose, extended calculations, or a combination of both; AQA marks these by levels in its mark schemes, which the specification itself does not set out. Questions drawing on the knowledge and understanding gained from the eight required practical activities count for at least 15% of the overall marks. Maths questions are targeted at a level of demand appropriate to the subject: not lower than Key Stage 3 at Foundation Tier and not lower than Foundation Tier GCSE Mathematics at Higher Tier (the DfE subject criteria set a 20% minimum weighting of mathematics for GCSE Chemistry; this specification states only the level of demand). A periodic table (Appendix A) is supplied for both papers. Content marked (chemistry only) is examined in this qualification but not in GCSE Combined Science: Trilogy; content marked (HT only) is examined on Higher Tier papers only. Section 4.11 Key ideas is not a separate room: the specification embeds its eight key ideas throughout the subject content of 4.1 to 4.10 and states that they underpin many aspects of the science assessment and will therefore be assessed across all papers.",
   "commandWords": [
    {
     "word": "Describe",
@@ -885,7 +885,7 @@ const SPEC_8462 = {
      "code": "4.6.1.2 (Required practical 5)",
      "q": "How does changing concentration affect the rate of a reaction?",
      "idea": "Required practical activity 5: how changes in concentration affect the rates of reactions",
-     "content": "Required practical 5: investigate how changes in concentration affect the rates of reactions by a method involving measuring the volume of a gas produced and a method involving a change in colour or turbidity. This should be an investigation involving developing a hypothesis. AT skills covered by this practical activity: 1, 3, 5 and 6 — AT 1 use of appropriate apparatus to make and record a range of measurements accurately, including mass, time, temperature, and volume of liquids and gases; AT 3 use of appropriate apparatus and techniques for conducting and monitoring chemical reactions; AT 5 making and recording of appropriate observations during chemical reactions including the measurement of rates of reaction by a variety of methods such as production of gas and colour change; AT 6 safe use and careful handling of gases, liquids and solids, including careful mixing of reagents under controlled conditions. Key opportunities for skills development: WS 2.1, WS 2.2, WS 2.3, WS 2.4, WS 2.6, WS 2.7, MS 1a, MS 1c, MS 1d, MS 2a, MS 2b, MS 4a, MS 4b, MS 4c, MS 4d, MS 4e."
+     "content": "Required practical 5: investigate how changes in concentration affect the rates of reactions by a method involving measuring the volume of a gas produced and a method involving a change in colour or turbidity. This should be an investigation involving developing a hypothesis. AT skills covered by this practical activity: 1, 3, 5 and 6 — AT 1 use of appropriate apparatus to make and record a range of measurements accurately, including mass, time, temperature, and volume of liquids and gases; AT 3 use of appropriate apparatus and techniques for conducting and monitoring chemical reactions; AT 5 making and recording of appropriate observations during chemical reactions including the measurement of rates of reaction by a variety of methods such as production of gas and colour change; AT 6 safe use and careful handling of gases, liquids and solids, including careful mixing of reagents under controlled conditions, using appropriate apparatus to explore chemical changes. Key opportunities for skills development: WS 2.1, WS 2.2, WS 2.3, WS 2.4, WS 2.6, WS 2.7, MS 1a, MS 1c, MS 1d, MS 2a, MS 2b, MS 4a, MS 4b, MS 4c, MS 4d, MS 4e."
     },
     {
      "code": "4.6.1.3",
@@ -1331,7 +1331,7 @@ const SPEC_8462 = {
      "code": "4.10.3.3",
      "q": "How are ceramics, polymers and composites made and what are their properties?",
      "idea": "Ceramics, polymers and composites (chemistry only)",
-     "content": "(chemistry only) Most of the glass we use is soda-lime glass, made by heating a mixture of sand, sodium carbonate and limestone; borosilicate glass, made from sand and boron trioxide, melts at higher temperatures than soda-lime glass. Clay ceramics, including pottery and bricks, are made by shaping wet clay and then heating in a furnace. The properties of polymers depend on what monomers they are made from and the conditions under which they are made: for example low density (LD) and high density (HD) poly(ethene) are produced from ethene. Thermosoftening polymers melt when they are heated; thermosetting polymers do not. Most composites are made of two materials, a matrix or binder surrounding and binding together fibres or fragments of the other material, called the reinforcement. Students should be able to explain how LD and HD poly(ethene) are both produced from ethene, explain the difference between thermosoftening and thermosetting polymers in terms of their structures, recall some examples of composites, and given appropriate information compare quantitatively the physical properties of glass and clay ceramics, polymers, composites and metals and explain how the properties of materials are related to their uses."
+     "content": "(chemistry only) Most of the glass we use is soda-lime glass, made by heating a mixture of sand, sodium carbonate and limestone; borosilicate glass, made from sand and boron trioxide, melts at higher temperatures than soda-lime glass. Clay ceramics, including pottery and bricks, are made by shaping wet clay and then heating in a furnace. The properties of polymers depend on what monomers they are made from and the conditions under which they are made: for example low density (LD) and high density (HD) poly(ethene) are produced from ethene. Thermosoftening polymers melt when they are heated; thermosetting polymers do not. Most composites are made of two materials, a matrix or binder surrounding and binding together fibres or fragments of the other material, called the reinforcement. Students should be able to explain how LD and HD poly(ethene) are both produced from ethene, explain the difference between thermosoftening and thermosetting polymers in terms of their structures, recall some examples of composites, and given appropriate information compare quantitatively the physical properties of glass and clay ceramics, polymers, composites and metals and explain how the properties of materials are related to their uses and select appropriate materials."
     },
     {
      "code": "4.10.4.1",
@@ -1375,7 +1375,7 @@ const SPEC_8462 = {
    "id": "9",
    "component": "P1",
    "option": null,
-   "name": "Mathematical requirements (assessed on every paper)",
+   "name": "7 Mathematical requirements (assessed on every paper; the room id 9 is kept for parity with the sibling AQA science courses)",
    "caseStudies": [],
    "ideas": [
     {
@@ -1492,7 +1492,7 @@ const SPEC_8462 = {
    "id": "10.1",
    "component": "P1",
    "option": null,
-   "name": "Use of apparatus and techniques",
+   "name": "8.1 Use of apparatus and techniques (assessed on every paper)",
    "caseStudies": [],
    "ideas": [
     {

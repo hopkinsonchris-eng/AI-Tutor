@@ -60,7 +60,7 @@ const SPEC_8463 = {
  ],
  "markConventions": {
   "style": "points",
-  "summary": "Two papers, each 100 raw marks with a scaling factor of x1, giving a total scaled mark of 200 on which grade boundaries are set. Both papers are sat at the end of the course (linear), at Foundation Tier (entry code 8463F) or Higher Tier (entry code 8463H). The qualification is graded 1-9: Foundation Tier awards grades 1 to 5, Higher Tier grades 4 to 9 with an allowed grade 3 for a student who just fails to achieve grade 4; below that, U. Question types are multiple choice, structured, closed short answer and open response. Extended response questions are of sufficient length to allow students to construct and develop a sustained line of reasoning which is coherent, relevant, substantiated and logically structured, and may be prose, extended calculations, or a combination of both (the six-mark tariff and the levels-based mark schemes come from AQA's papers, not from the specification). Questions drawing on the knowledge and understanding gained from the ten required practical activities count for at least 15% of the overall marks. Maths questions are targeted at a level of demand appropriate to the subject: on Foundation Tier not lower than Key Stage 3, on Higher Tier not lower than Foundation Tier GCSE Mathematics (the DfE requirement that mathematical skills carry 30% of the marks in GCSE Physics is not itself printed in this specification). Appendix A: equations 1–23 must be recalled and applied using standard SI units, and a further 12 equations are supplied on the Physics equation sheet for students to select and apply; equations marked HT are needed on Higher Tier papers only. The 12 equations supplied on the Physics equation sheet, which students select and apply, are: 1 (HT) p = h ρ g (pressure due to a column of liquid); 2 v² − u² = 2 a s; 3 (HT) F = m ∆v / ∆t (force = change in momentum ÷ time taken); 4 Ee = ½ k e² (elastic potential energy); 5 ∆E = m c ∆θ (change in thermal energy); 6 period = 1 ÷ frequency; 7 magnification = image height ÷ object height; 8 (HT) F = B I l (force on a conductor at right angles to a magnetic field carrying a current); 9 E = m L (thermal energy for a change of state); 10 (HT) Vp / Vs = np / ns (transformer turns ratio); 11 (HT) Vp Ip = Vs Is (transformer power); 12 p V = constant (for gases). Equations 1–23 of Appendix A must be recalled and applied.",
+  "summary": "Two papers, each 100 raw marks with a scaling factor of x1, giving a total scaled mark of 200 on which grade boundaries are set. Both papers are sat at the end of the course (linear), at Foundation Tier (entry code 8463F) or Higher Tier (entry code 8463H). The qualification is graded 1-9: Foundation Tier awards grades 1 to 5, Higher Tier grades 4 to 9 with an allowed grade 3 for a student who just fails to achieve grade 4; below that, U. Question types are multiple choice, structured, closed short answer and open response. Extended response questions are of sufficient length to allow students to construct and develop a sustained line of reasoning which is coherent, relevant, substantiated and logically structured, and may be prose, extended calculations, or a combination of both (the six-mark tariff and the levels-based mark schemes come from AQA's papers, not from the specification). Questions drawing on the knowledge and understanding gained from the ten required practical activities count for at least 15% of the overall marks. Maths questions are targeted at a level of demand appropriate to the subject: on Foundation Tier not lower than Key Stage 3, on Higher Tier not lower than Foundation Tier GCSE Mathematics (the DfE requirement that mathematical skills carry 30% of the marks in GCSE Physics is not itself printed in this specification). Appendix A: equations 1–23 must be recalled and applied using standard SI units, and a further 12 equations are supplied on the Physics equation sheet for students to select and apply; equations marked HT are needed on Higher Tier papers only. The 12 equations supplied on the Physics equation sheet, which students select and apply, are: 1 (HT) p = h ρ g (pressure due to a column of liquid); 2 v² − u² = 2 a s; 3 (HT) F = m ∆v / ∆t (force = change in momentum ÷ time taken); 4 Ee = ½ k e² (elastic potential energy); 5 ∆E = m c ∆θ (change in thermal energy); 6 period = 1 ÷ frequency; 7 magnification = image height ÷ object height; 8 (HT) F = B I l (force on a conductor at right angles to a magnetic field carrying a current); 9 E = m L (thermal energy for a change of state); 10 (HT) Vp / Vs = np / ns (transformer turns ratio); 11 (HT) Vp Ip = Vs Is (transformer power); 12 p V = constant (for gases). Equations 1–23 of Appendix A must be recalled and applied. The command-word meanings listed below follow AQA's published science command-words list, not this specification, which prints no command-word list of its own. Section 4.9 Key ideas (page 76) has no room of its own: the specification says those key ideas are embedded throughout the subject content, and repeats them verbatim in section 5.1, so they are covered across the content rather than as a separate topic.",
   "commandWords": [
    {
     "word": "Describe",
@@ -152,13 +152,13 @@ const SPEC_8463 = {
     {
      "code": "4.1.1.3",
      "q": "How is the energy stored in or released from a system calculated as its temperature changes?",
-     "idea": "Energy changes in systems: specific heat capacity",
-     "content": "The amount of energy stored in or released from a system as its temperature changes can be calculated using the equation: change in thermal energy = mass × specific heat capacity × temperature change; ∆E = m c ∆θ; change in thermal energy, ∆E, in joules, J; mass, m, in kilograms, kg; specific heat capacity, c, in joules per kilogram per degree Celsius, J/kg °C; temperature change, ∆θ, in degrees Celsius, °C. The specific heat capacity of a substance is the amount of energy required to raise the temperature of one kilogram of the substance by one degree Celsius. Students should be able to apply this equation, which is given on the Physics equation sheet, to calculate the energy change involved when the temperature of a material changes. This equation and specific heat capacity are also included in Temperature changes in a system and specific heat capacity (page 34)."
+     "idea": "Energy changes in systems",
+     "content": "The amount of energy stored in or released from a system as its temperature changes can be calculated using the equation: change in thermal energy = mass × specific heat capacity × temperature change; ∆E = m c ∆θ; change in thermal energy, ∆E, in joules, J; mass, m, in kilograms, kg; specific heat capacity, c, in joules per kilogram per degree Celsius, J/kg °C; temperature change, ∆θ, in degrees Celsius, °C. The specific heat capacity of a substance is the amount of energy required to raise the temperature of one kilogram of the substance by one degree Celsius. Students should be able to apply this equation which is given on the Physics equation sheet. This equation and specific heat capacity are also included in Temperature changes in a system and specific heat capacity (page 34)."
     },
     {
      "code": "4.1.1.3 RP 1",
      "q": "How is the specific heat capacity of a material determined experimentally?",
-     "idea": "Required practical: specific heat capacity",
+     "idea": "Required practical activity 1: an investigation to determine the specific heat capacity of one or more materials",
      "content": "Required practical activity 1: an investigation to determine the specific heat capacity of one or more materials. The investigation will involve linking the decrease of one energy store (or work done) to the increase in temperature and subsequent increase in thermal energy stored. AT skills covered by this practical activity: AT 1 and 5. This practical activity also provides opportunities to develop WS and MS. Details of all skills are given in Key opportunities for skills development (page 89)."
     },
     {
@@ -176,7 +176,7 @@ const SPEC_8463 = {
     {
      "code": "4.1.2.1 RP 2",
      "q": "How effective are different materials as thermal insulators?",
-     "idea": "Required practical: thermal insulation (physics only)",
+     "idea": "Required practical activity 2 (physics only): investigate the effectiveness of different materials as thermal insulators and the factors that may affect the thermal insulation properties of a material",
      "content": "Required practical activity 2 (physics only): investigate the effectiveness of different materials as thermal insulators and the factors that may affect the thermal insulation properties of a material. AT skills covered by this practical activity: AT 1 and 5. This practical activity also provides opportunities to develop WS and MS. Details of all skills are given in Key opportunities for skills development (page 90)."
     },
     {
@@ -242,19 +242,19 @@ const SPEC_8463 = {
     {
      "code": "4.2.1.3 RP 3",
      "q": "What factors affect the resistance of an electrical circuit?",
-     "idea": "Required practical: factors affecting resistance",
+     "idea": "Required practical activity 3: use circuit diagrams to set up and check appropriate circuits to investigate the factors affecting the resistance of electrical circuits",
      "content": "Required practical activity 3: use circuit diagrams to set up and check appropriate circuits to investigate the factors affecting the resistance of electrical circuits. This should include: the length of a wire at constant temperature; combinations of resistors in series and parallel. AT skills covered by this practical activity: AT 1, 6 and 7. This practical activity also provides opportunities to develop WS and MS. Details of all skills are given in Key opportunities for skills development (page 91)."
     },
     {
      "code": "4.2.1.4",
      "q": "Which components have a constant resistance and which do not?",
-     "idea": "Resistors: ohmic conductors, lamps, diodes, thermistors and LDRs",
+     "idea": "Resistors",
      "content": "Students should be able to explain that, for some resistors, the value of R remains constant but that in others it can change as the current changes. The current through an ohmic conductor (at a constant temperature) is directly proportional to the potential difference across the resistor. This means that the resistance remains constant as the current changes. The resistance of components such as lamps, diodes, thermistors and LDRs is not constant; it changes with the current through the component. The resistance of a filament lamp increases as the temperature of the filament increases. The current through a diode flows in one direction only. The diode has a very high resistance in the reverse direction. The resistance of a thermistor decreases as the temperature increases. The applications of thermistors in circuits eg a thermostat is required. The resistance of an LDR decreases as light intensity increases. The application of LDRs in circuits eg switching lights on when it gets dark is required. Students should be able to: explain the design and use of a circuit to measure the resistance of a component by measuring the current through, and potential difference across, the component; draw an appropriate circuit diagram using correct circuit symbols; use graphs to explore whether circuit elements are linear or non-linear and relate the curves produced to their function and properties. AT 6: investigate the relationship between the resistance of a thermistor and temperature, and between the resistance of an LDR and light intensity."
     },
     {
      "code": "4.2.1.4 RP 4",
      "q": "What are the I–V characteristics of a lamp, a diode and a resistor?",
-     "idea": "Required practical: I–V characteristics",
+     "idea": "Required practical activity 4: use circuit diagrams to construct appropriate circuits to investigate the I–V characteristics of a variety of circuit elements, including a filament lamp, a diode and a resistor at constant temperature",
      "content": "Required practical activity 4: use circuit diagrams to construct appropriate circuits to investigate the I–V characteristics of a variety of circuit elements, including a filament lamp, a diode and a resistor at constant temperature. AT skills covered by this practical activity: AT 6 and 7. This practical activity also provides opportunities to develop WS and MS. Details of all skills are given in Key opportunities for skills development (page 93)."
     },
     {
@@ -278,7 +278,7 @@ const SPEC_8463 = {
     {
      "code": "4.2.4.1",
      "q": "How is electrical power related to potential difference, current and resistance?",
-     "idea": "Electrical power",
+     "idea": "Power",
      "content": "Students should be able to explain how the power transfer in any circuit device is related to the potential difference across it and the current through it, and to the energy changes over time: power = potential difference × current; P = V I. power = current² × resistance; P = I² R. power, P, in watts, W; potential difference, V, in volts, V; current, I, in amperes, A (amp is acceptable for ampere); resistance, R, in ohms, Ω. Students should be able to recall and apply both equations."
     },
     {
@@ -341,7 +341,7 @@ const SPEC_8463 = {
     {
      "code": "4.3.1.1 RP 5",
      "q": "How are the densities of solids and liquids measured?",
-     "idea": "Required practical: density of solids and liquids",
+     "idea": "Required practical activity 5: use appropriate apparatus to make and record the measurements needed to determine the densities of regular and irregular solid objects and liquids",
      "content": "Required practical activity 5: use appropriate apparatus to make and record the measurements needed to determine the densities of regular and irregular solid objects and liquids. Volume should be determined from the dimensions of regularly shaped objects, and by a displacement technique for irregularly shaped objects. Dimensions to be measured using appropriate apparatus such as a ruler, micrometer or Vernier callipers. AT skills covered by this practical activity: AT 1. This practical activity also provides opportunities to develop WS and MS. Details of all skills are given in Key opportunities for skills development (page 94)."
     },
     {
@@ -521,7 +521,7 @@ const SPEC_8463 = {
     {
      "code": "4.5.1.3",
      "q": "How is weight calculated and how does it relate to mass?",
-     "idea": "Gravity, weight and centre of mass",
+     "idea": "Gravity",
      "content": "Weight is the force acting on an object due to gravity. The force of gravity close to the Earth is due to the gravitational field around the Earth. The weight of an object depends on the gravitational field strength at the point where the object is. The weight of an object can be calculated using the equation: weight = mass × gravitational field strength; W = m g; weight, W, in newtons, N; mass, m, in kilograms, kg; gravitational field strength, g, in newtons per kilogram, N/kg (in any calculation the value of the gravitational field strength (g) will be given). Students should be able to recall and apply this equation. The weight of an object may be considered to act at a single point referred to as the object's 'centre of mass'. The weight of an object and the mass of an object are directly proportional. Weight is measured using a calibrated spring-balance (a newtonmeter). Students should recognise and be able to use the symbol for proportionality, ∝."
     },
     {
@@ -545,7 +545,7 @@ const SPEC_8463 = {
     {
      "code": "4.5.3 RP 6",
      "q": "How does the extension of a spring depend on the force applied?",
-     "idea": "Required practical: force and extension for a spring",
+     "idea": "Required practical activity 6: investigate the relationship between force and extension for a spring",
      "content": "Required practical activity 6: investigate the relationship between force and extension for a spring. AT skills covered by this practical activity: AT 1 and 2. This practical activity also provides opportunities to develop WS and MS. Details of all skills are given in Key opportunities for skills development (page 95)."
     },
     {
@@ -599,7 +599,7 @@ const SPEC_8463 = {
     {
      "code": "4.5.6.1.5",
      "q": "How is acceleration calculated, and what do velocity–time graphs show?",
-     "idea": "Acceleration and terminal velocity",
+     "idea": "Acceleration",
      "content": "The average acceleration of an object can be calculated using the equation: acceleration = change in velocity / time taken; a = ∆v / t; acceleration, a, in metres per second squared, m/s²; change in velocity, ∆v, in metres per second, m/s; time, t, in seconds, s. An object that slows down is decelerating. Students should be able to recall and apply this equation and to estimate the magnitude of everyday accelerations. The acceleration of an object can be calculated from the gradient of a velocity–time graph. (HT only) The distance travelled by an object (or displacement of an object) can be calculated from the area under a velocity–time graph. Students should be able to: draw velocity–time graphs from measurements and interpret lines and slopes to determine acceleration; (HT only) interpret enclosed areas in velocity–time graphs to determine distance travelled (or displacement); (HT only) measure, when appropriate, the area under a velocity–time graph by counting squares. The following equation applies to uniform acceleration: final velocity² − initial velocity² = 2 × acceleration × distance; v² − u² = 2 a s; final velocity, v, in metres per second, m/s; initial velocity, u, in metres per second, m/s; acceleration, a, in metres per second squared, m/s²; distance, s, in metres, m. Students should be able to apply this equation which is given on the Physics equation sheet. Near the Earth's surface any object falling freely under gravity has an acceleration of about 9.8 m/s². An object falling through a fluid initially accelerates due to the force of gravity. Eventually the resultant force will be zero and the object will move at its terminal velocity. (physics only) Students should be able to draw and interpret velocity–time graphs for objects that reach terminal velocity, and interpret the changing motion in terms of the forces acting. AT 1, 2: investigation to measure the effect of air resistance on a falling object eg a model parachute."
     },
     {
@@ -617,7 +617,7 @@ const SPEC_8463 = {
     {
      "code": "4.5.6.2.2 RP 7",
      "q": "How does acceleration depend on force and on mass?",
-     "idea": "Required practical: acceleration, force and mass",
+     "idea": "Required practical activity 7: investigate the effect of varying the force on the acceleration of an object of constant mass, and the effect of varying the mass of an object on the acceleration produced by a constant force",
      "content": "Required practical activity 7: investigate the effect of varying the force on the acceleration of an object of constant mass, and the effect of varying the mass of an object on the acceleration produced by a constant force. AT skills covered by this practical activity: AT 1, 2 and 3. This practical activity also provides opportunities to develop WS and MS. Details of all skills are given in Key opportunities for skills development (page 96)."
     },
     {
@@ -727,7 +727,7 @@ const SPEC_8463 = {
     {
      "code": "4.6.1.2 RP 8",
      "q": "How are the frequency, wavelength and speed of waves measured?",
-     "idea": "Required practical: measuring waves in a ripple tank and a solid",
+     "idea": "Required practical activity 8: make observations to identify the suitability of apparatus to measure the frequency, wavelength and speed of waves in a ripple tank and waves in a solid and take appropriate measurements",
      "content": "Required practical activity 8: make observations to identify the suitability of apparatus to measure the frequency, wavelength and speed of waves in a ripple tank and waves in a solid and take appropriate measurements. AT skills covered by this practical activity: AT 4. This practical activity also provides opportunities to develop WS and MS. Details of all skills are given in Key opportunities for skills development (page 97)."
     },
     {
@@ -739,7 +739,7 @@ const SPEC_8463 = {
     {
      "code": "4.6.1.3 RP 9",
      "q": "How does light reflect from different surfaces and refract in different substances?",
-     "idea": "Required practical: reflection and refraction of light (physics only)",
+     "idea": "Required practical activity 9 (physics only): investigate the reflection of light by different types of surface and the refraction of light by different substances",
      "content": "Required practical activity 9 (physics only): investigate the reflection of light by different types of surface and the refraction of light by different substances. AT skills covered by this practical activity: AT 4 and 8. This practical activity also provides opportunities to develop WS and MS. Details of all skills are given in Key opportunities for skills development (page 98)."
     },
     {
@@ -769,7 +769,7 @@ const SPEC_8463 = {
     {
      "code": "4.6.2.2 RP 10",
      "q": "How does the nature of a surface affect the infrared radiation it absorbs or radiates?",
-     "idea": "Required practical: infrared absorption and emission",
+     "idea": "Required practical activity 10: investigate how the amount of infrared radiation absorbed or radiated by a surface depends on the nature of that surface",
      "content": "Required practical activity 10: investigate how the amount of infrared radiation absorbed or radiated by a surface depends on the nature of that surface. AT skills covered by this practical activity: AT 1 and 4. This practical activity also provides opportunities to develop WS and MS. Details of all skills are given in Key opportunities for skills development (page 98)."
     },
     {
@@ -1106,7 +1106,7 @@ const SPEC_8463 = {
      "code": "WS 4.5",
      "q": "How are units interconverted?",
      "idea": "Interconverting units",
-     "content": "Interconvert units, for example between the SI units and prefixed forms used across the specification."
+     "content": "Students should be able to: Interconvert units."
     },
     {
      "code": "WS 4.6",
@@ -1120,7 +1120,7 @@ const SPEC_8463 = {
    "id": "9",
    "component": "P1",
    "option": null,
-   "name": "Mathematical requirements (assessed on every paper)",
+   "name": "7 Mathematical requirements",
    "caseStudies": [],
    "ideas": [
     {
@@ -1267,7 +1267,7 @@ const SPEC_8463 = {
    "id": "10.1",
    "component": "P1",
    "option": null,
-   "name": "Use of apparatus and techniques",
+   "name": "8.1 Use of apparatus and techniques (assessed on every paper)",
    "caseStudies": [],
    "ideas": [
     {

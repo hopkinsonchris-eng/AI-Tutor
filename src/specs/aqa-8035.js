@@ -24,7 +24,8 @@ const SPEC_8035 = {
     "Section A — The challenge of natural hazards (3.1.1): answer all questions (33 marks). In the specimen paper this is Question 1, 30 content marks plus 3 for SPaG on the 9-mark question.",
     "Section B — The living world (3.1.2): answer all questions (25 marks). In the specimen paper this is Question 2, with the 9-mark question set on “a hot desert/cold environment”, whichever option was studied.",
     "Section C — Physical landscapes in the UK (3.1.3): “answer any two questions from questions 3, 4 and 5” (30 marks). In the specimen paper question 3 is Coastal landscapes in the UK, question 4 River landscapes in the UK and question 5 Glacial landscapes in the UK, 15 marks each.",
-    "Question types: multiple-choice, short answer, levels of response, extended prose. 88 marks including 3 marks for spelling, punctuation, grammar and specialist terminology (SPaG). Written exam: 1 hour 30 minutes. 35% of GCSE."
+    "Question types: multiple-choice, short answer, levels of response, extended prose. 88 marks including 3 marks for spelling, punctuation, grammar and specialist terminology (SPaG). Written exam: 1 hour 30 minutes. 35% of GCSE.",
+    "The specification prints only the entry code 8035; the paper code 8035/1 is the one printed on the question papers and mark schemes."
    ]
   },
   {
@@ -40,7 +41,8 @@ const SPEC_8035 = {
     "Section A — Urban issues and challenges (3.2.1): answer all questions (33 marks). In the specimen paper this is Question 1, 30 content marks plus 3 for SPaG on the 9-mark question.",
     "Section B — The changing economic world (3.2.2): answer all questions (30 marks). In the specimen paper this is Question 2, ending in a 9-mark ‘justify’ question.",
     "Section C — The challenge of resource management (3.2.3): “answer question 3 and one from questions 4, 5 or 6” (25 marks). In the specimen paper question 3 is Resource management (compulsory, 14 marks) and questions 4, 5 and 6 are Food, Water and Energy (11 marks each).",
-    "Question types: multiple-choice, short answer, levels of response, extended prose. 88 marks including 3 marks for SPaG. Written exam: 1 hour 30 minutes. 35% of GCSE."
+    "Question types: multiple-choice, short answer, levels of response, extended prose. 88 marks including 3 marks for SPaG. Written exam: 1 hour 30 minutes. 35% of GCSE.",
+    "The specification prints only the entry code 8035; the paper code 8035/2 is the one printed on the question papers and mark schemes."
    ]
   },
   {
@@ -56,7 +58,8 @@ const SPEC_8035 = {
     "Section A — Issue evaluation (3.3.1): answer all questions (37 marks). In the specimen paper this is questions 1–3 on the pre-release resources, ending in a 9-mark decision question carrying 3 SPaG marks.",
     "Section B — Fieldwork (3.3.2): answer all questions (39 marks). In the specimen paper this is question 4 on fieldwork materials from an unfamiliar context (16 marks) and question 5 on the student's own individual enquiries (23 marks), ending in a 9-mark evaluation carrying 3 SPaG marks.",
     "“Pre-release resources booklet made available 12 weeks before Paper 3 exam.” Students may not take the original booklet into the exam room but are issued with a clean copy.",
-    "Question types: multiple-choice, short answer, levels of response, extended prose. 76 marks including 6 marks for SPaG. Written exam: 1 hour 30 minutes. 30% of GCSE."
+    "Question types: multiple-choice, short answer, levels of response, extended prose. 76 marks including 6 marks for SPaG. Written exam: 1 hour 30 minutes. 30% of GCSE.",
+    "The specification prints only the entry code 8035; the paper code 8035/3 is the one printed on the question papers and mark schemes."
    ]
   }
  ],
@@ -522,22 +525,16 @@ const SPEC_8035 = {
    "caseStudies": [],
    "ideas": [
     {
-     "code": "3.1.3.1 — The UK has a range of diverse landscapes (upland areas)",
-     "q": "Where are the UK's major upland areas?",
-     "idea": "The UK's major upland areas",
-     "content": "An overview of the location of major upland/lowland areas and river systems — the upland part of that overview: where the UK's major upland areas lie, as the compulsory introduction to 3.1.3 Physical landscapes in the UK."
-    },
-    {
-     "code": "3.1.3.1 — The UK has a range of diverse landscapes (lowland areas)",
-     "q": "Where are the UK's major lowland areas?",
-     "idea": "The UK's major lowland areas",
-     "content": "An overview of the location of major upland/lowland areas and river systems — the lowland part of that overview: where the UK's major lowland areas lie, and how they contrast with the uplands."
+     "code": "3.1.3.1 — The UK has a range of diverse landscapes (upland and lowland areas)",
+     "q": "Where are the UK's major upland and lowland areas?",
+     "idea": "The UK's major upland and lowland areas",
+     "content": "An overview of the location of major upland/lowland areas and river systems: the location of the UK's major upland areas and major lowland areas, as the compulsory introduction to 3.1.3 Physical landscapes in the UK."
     },
     {
      "code": "3.1.3.1 — The UK has a range of diverse landscapes (river systems)",
      "q": "Where are the UK's major river systems?",
      "idea": "The UK's major river systems",
-     "content": "An overview of the location of major upland/lowland areas and river systems — the river part of that overview: where the UK's major river systems run, which underpins the two landscape options chosen from coastal, river and glacial landscapes."
+     "content": "An overview of the location of major upland/lowland areas and river systems: the location of the UK's major river systems, which the two landscape options chosen from coastal, river and glacial landscapes build on."
     }
    ]
   },
@@ -791,8 +788,7 @@ const SPEC_8035 = {
    "caseStudies": [
     "An example of how the growth of tourism in an LIC or NEE helps to reduce the development gap.",
     "A case study of one LIC or NEE to illustrate: the location and importance of the country, regionally and globally; the wider political, social, cultural and environmental context within which the country is placed; the changing industrial structure; the role of transnational corporations (TNCs); the changing political and trading relationships with the wider world; international aid; the environmental impacts of economic development; the effects of economic development on quality of life for the population.",
-    "An example of how modern industrial development can be more environmentally sustainable.",
-    "Social and economic changes in the rural landscape in one area of population growth and one area of population decline."
+    "An example of how modern industrial development can be more environmentally sustainable."
    ],
    "ideas": [
     {
@@ -1015,10 +1011,7 @@ const SPEC_8035 = {
    "component": "C3",
    "option": null,
    "name": "Issue evaluation",
-   "caseStudies": [
-    "No case study or named example is set for this section: the issue(s) “will arise from any aspect of the compulsory sections of the subject content but may extend beyond it through the use of resources in relation to specific unseen contexts”.",
-    "The pre-release resource booklet: “Sources could include maps at different scales, diagrams, graphs, statistics, photographs, satellite images, sketches, extracts from published materials, and quotes from different interest groups.”"
-   ],
+   "caseStudies": [],
    "ideas": [
     {
      "code": "3.3.1 — This section contributes a critical thinking and problem-solving element to the assessment structure",
@@ -1058,10 +1051,7 @@ const SPEC_8035 = {
    "option": null,
    "name": "Fieldwork",
    "caseStudies": [
-    "Students need to undertake two geographical enquiries, each of which must include the use of primary data, collected as part of a fieldwork exercise.",
-    "The two enquiries must be carried out in contrasting environments and show an understanding of both physical and human geography.",
-    "In at least one of the enquiries students are expected to show an understanding about the interaction between physical and human geography.",
-    "Fieldwork must take place outside the classroom and school grounds on at least two occasions."
+    "Two geographical enquiries, each including the use of primary data collected as part of a fieldwork exercise, carried out in contrasting environments and showing an understanding of both physical and human geography."
    ],
    "ideas": [
     {
@@ -1119,16 +1109,7 @@ const SPEC_8035 = {
    "component": "C3",
    "option": null,
    "name": "Geographical skills (assessed in all three written exams; filed here under Paper 3)",
-   "caseStudies": [
-    "Atlas maps: coordinates – latitude and longitude; distributions and patterns of human and physical features; maps based on global and other scales; thematic maps.",
-    "Ordnance Survey maps at a range of scales, including 1:50 000 and 1:25 000 and other maps appropriate to the topic; four and six-figure grid references.",
-    "“Describe the physical features as they are shown on large scale maps of two of the following landscapes – coastlines, fluvial and glacial landscapes.”",
-    "Maps in association with photographs: sketch maps; ground, aerial and satellite photographs.",
-    "Graphs and charts to select and construct: line charts, bar charts, pie charts, pictograms, histograms with equal class intervals, divided bar, scattergraphs, and population pyramids.",
-    "Graphs and maps to complete: choropleth, isoline, dot maps, desire lines, proportional symbols and flow lines.",
-    "Maps, graphs and charts to interpret and extract information from, including population pyramids, choropleth maps, flow-line maps, dispersion graphs.",
-    "Types of data: maps; fieldwork data; geo-spatial data presented in a geographical information system (GIS) framework; satellite imagery; written and digital sources; visual and graphical sources; numerical and statistical information."
-   ],
+   "caseStudies": [],
    "ideas": [
     {
      "code": "3.4 — Students are required to develop and demonstrate a range of geographical skills",

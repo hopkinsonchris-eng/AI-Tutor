@@ -51,6 +51,7 @@ function r2() {
     async put(key, body, opts) { const buf = body instanceof ArrayBuffer ? new Uint8Array(body) : body instanceof Uint8Array ? body : new TextEncoder().encode(String(body)); m.set(key, { buf, meta: (opts && opts.httpMetadata) || {} }); },
     async get(key) { const v = m.get(key); if (!v) return null; return { body: v.buf, arrayBuffer: async () => v.buf.buffer.slice(v.buf.byteOffset, v.buf.byteOffset + v.buf.byteLength), httpMetadata: v.meta, size: v.buf.byteLength }; },
     async delete(key) { m.delete(key); },
+    async list({ prefix }) { return { objects: [...m.keys()].filter(k => k.startsWith(prefix || '')).sort().map(key => ({ key })), truncated: false }; },
     _map: m,
   };
 }

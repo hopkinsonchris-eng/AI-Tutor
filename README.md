@@ -20,6 +20,7 @@ src/
 worker/
   index.js             Cloudflare Worker: accounts, sessions, invites, daily caps, progress, the admin API,
                        courses, the Workflow classes, the monthly cron, the dictation fallback (Whisper on Workers AI), and the forward to Anthropic
+                       under a fixed education-only system prompt with an allow-list of request fields (docs/SCHOOL-PACK.md)
   builder.js           the course builder: document → outline → topics → validate → judge → resources → publish; the monthly review
   depth.js             course depth: for every room, a kit written by one model and checked by another, four rooms at a time
 data/catalogue.json    qualification codes per board and level, with verified spec PDF links

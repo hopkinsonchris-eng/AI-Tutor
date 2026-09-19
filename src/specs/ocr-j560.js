@@ -244,6 +244,26 @@ const SPEC_J560 = {
    {
     "word": "Give a reason",
     "means": "State the fact or property that justifies the answer, in the standard wording (for angles, the angle fact by name)."
+   },
+   {
+    "word": "Find",
+    "means": "Obtain the value or expression asked for by any valid method, showing the working that a mark scheme can follow."
+   },
+   {
+    "word": "Hence",
+    "means": "Use the result just obtained: the marks are for the method that builds on the previous part, and an unrelated method earns nothing."
+   },
+   {
+    "word": "Hence or otherwise",
+    "means": "The previous result is the intended route, but any complete correct method earns full marks."
+   },
+   {
+    "word": "Verify",
+    "means": "Substitute the given value or result and show it satisfies the statement; a derivation is not required."
+   },
+   {
+    "word": "State",
+    "means": "Give the fact, value or reason without working; the answer alone carries the mark."
    }
   ],
   "essayShapes": []
@@ -595,7 +615,7 @@ const SPEC_J560 = {
      "code": "5.03a",
      "q": "How do I calculate simple interest and solve step-by-step growth or decay problems?",
      "idea": "Discrete growth and decay — Growth and decay",
-     "content": "Initial learning: Calculate simple interest including in financial contexts. Foundation tier also: Solve problems step-by- step involving multipliers over a given interval, for example, compound interest, depreciation, etc. e.g. A car worth £15 000 new depreciating by 30%, 20% and 15% respectively in three years. [see also Percentage change, 2.03c] DfE ref: R9, R16."
+     "content": "Initial learning: Calculate simple interest including in financial contexts. Foundation tier also: Solve problems step-by-step involving multipliers over a given interval, for example, compound interest, depreciation, etc. e.g. A car worth £15 000 new depreciating by 30%, 20% and 15% respectively in three years. [see also Percentage change, 2.03c] DfE ref: R9, R16."
     }
    ]
   },
@@ -690,7 +710,7 @@ const SPEC_J560 = {
      "code": "6.02a",
      "q": "How do I turn a real-world description into a formula or expression?",
      "idea": "Algebraic formulae — Formulate algebraic expressions",
-     "content": "Foundation tier also: Formulate simple formulae and expressions from real- world contexts. e.g.\t \u0007Cost of car hire at £50 per day plus 10p per mile. \u0007The perimeter of a rectangle when the length is 2 cm more than the width. DfE ref: A3, A5, A21, R10."
+     "content": "Foundation tier also: Formulate simple formulae and expressions from real-world contexts. e.g.\t \u0007Cost of car hire at £50 per day plus 10p per mile. \u0007The perimeter of a rectangle when the length is 2 cm more than the width. DfE ref: A3, A5, A21, R10."
     },
     {
      "code": "6.02b",
@@ -927,8 +947,8 @@ const SPEC_J560 = {
     {
      "code": "7.01a",
      "q": "How do I read and plot coordinates in all four quadrants?",
-     "idea": "Graphs of equations and functions — x- and y-coordinates",
-     "content": "Initial learning: Work with x- and y-coordinates in all four quadrants. DfE ref: A8."
+     "idea": "Graphs of equations and functions — x-and y-coordinates",
+     "content": "Initial learning: Work with x-and y-coordinates in all four quadrants. DfE ref: A8."
     },
     {
      "code": "7.01b",
@@ -964,7 +984,7 @@ const SPEC_J560 = {
      "code": "7.04b",
      "q": "What does the gradient of a graph represent, and how is it linked to ratio and rate of change?",
      "idea": "Interpreting graphs — Gradients",
-     "content": "Initial learning: Understand the relationship between gradient and ratio. Foundation tier also: Interpret straight line gradients as rates of change. e.g.\t \u0007Gradient of a distance- time graph as a velocity. DfE ref: A14, A15, R8, R14, R15."
+     "content": "Initial learning: Understand the relationship between gradient and ratio. Foundation tier also: Interpret straight line gradients as rates of change. e.g.\t \u0007Gradient of a distance-time graph as a velocity. DfE ref: A14, A15, R8, R14, R15."
     }
    ]
   },
@@ -1116,8 +1136,8 @@ const SPEC_J560 = {
     {
      "code": "8.01g",
      "q": "How do I use coordinates to work with shapes and transformations?",
-     "idea": "Conventions, notation and terms Learners will be expected to be familiar with the following geometrical skills, conventions, notation and terms, which will be assessed in questions at both tiers. — x- and y-coordinates",
-     "content": "Initial learning: Use x- and y-coordinates in plane geometry problems, including transformations of simple shapes. DfE ref: G7, G11."
+     "idea": "Conventions, notation and terms Learners will be expected to be familiar with the following geometrical skills, conventions, notation and terms, which will be assessed in questions at both tiers. — x-and y-coordinates",
+     "content": "Initial learning: Use x-and y-coordinates in plane geometry problems, including transformations of simple shapes. DfE ref: G7, G11."
     },
     {
      "code": "8.02a",
@@ -1171,7 +1191,7 @@ const SPEC_J560 = {
      "code": "8.04a",
      "q": "What are the properties of isosceles, equilateral and right-angled triangles?",
      "idea": "Properties of polygons — Properties of a triangle",
-     "content": "Initial learning: Know the basic properties of isosceles, equilateral and right- angled triangles. Give geometrical reasons to justify these properties. Foundation tier also: Use these facts to find lengths and angles in rectilinear figures and in simple proofs. DfE ref: G4, G6."
+     "content": "Initial learning: Know the basic properties of isosceles, equilateral and right-angled triangles. Give geometrical reasons to justify these properties. Foundation tier also: Use these facts to find lengths and angles in rectilinear figures and in simple proofs. DfE ref: G4, G6."
     },
     {
      "code": "8.04b",

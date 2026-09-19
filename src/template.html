@@ -72,8 +72,8 @@ function splitSubject(s){const m=/^(.*?)\s*\((.+)\)\s*$/.exec(String(s||''));ret
 function boardLabel(x){return x.board+(x.qual?' '+x.qual:'')+' '+x.code;}
 /* builtOnly (the default on the add-course screen) lists only courses a student can add today: built-in specs and published Worker builds. */
 function offer(level,builtOnly){const subj={};const put=(subject0,board,code,id,builtIn)=>{const st=COURSES.courses[id];if(st&&st.status==='retracted'&&!SPECS[id])return;const status=SPECS[id]?'ready':st?st.status:(COURSES.building[id]?'building':'none');if(builtOnly&&status!=='ready'&&status!=='published')return;const {subject,qual}=splitSubject(subject0);(subj[subject]=subj[subject]||[]);if(!subj[subject].some(x=>x.id===id))subj[subject].push({board,qual,code,id,builtIn,fullSubject:String(subject0||''),status});};
-  for(const sp of Object.values(SPECS))if(sp.level===level)put(sp.subject,sp.board,sp.code,sp.id,true);
-  for(const q of COURSES.catalogue)if(q.level===level)put(q.subject,q.board,q.code,q.id,false);
+  const seen=new Set();for(const q of COURSES.catalogue)if(q.level===level){seen.add(q.id);put(q.subject,q.board,q.code,q.id,!!SPECS[q.id]);}
+  for(const sp of Object.values(SPECS))if(sp.level===level&&!seen.has(sp.id))put(sp.subject,sp.board,sp.code,sp.id,true);
   const rank=x=>x.status==='ready'?0:x.status==='published'?1:x.status==='building'?2:x.status==='review'?3:4;
   for(const k of Object.keys(subj))subj[k].sort((a,b)=>rank(a)-rank(b)||a.board.localeCompare(b.board)||a.qual.localeCompare(b.qual));return subj;}
 function pushSubject(id){if(!UI.setup.subjects.some(x=>x.specId===id))UI.setup.subjects.push({specId:id,options:{}});}

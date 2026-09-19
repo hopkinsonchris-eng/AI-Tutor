@@ -1431,7 +1431,7 @@ const SPEC_1SC0 = {
      "code": "1.50",
      "q": "What is a mole of a substance, in terms of the Avogadro constant and mass?",
      "idea": "The mole and the Avogadro constant",
-     "content": "(HT only) Recall that one mole of particles of a substance is defined as: a) the Avogadro constant number of particles (6.02 × 10^23 atoms, molecules, formulae or ions) of that substance; b) a mass of 'relative particle mass' g. Maths skills: 1b."
+     "content": "(HT only) Recall that one mole of particles of a substance is defined as: a) the Avogadro constant number of particles (6.02 × 10²³ atoms, molecules, formulae or ions) of that substance; b) a mass of 'relative particle mass' g. Maths skills: 1b."
     },
     {
      "code": "1.51",

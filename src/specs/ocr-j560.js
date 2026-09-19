@@ -261,7 +261,14 @@ const SPEC_J560 = {
    "component": "C1",
    "option": null,
    "name": "OCR 1 Number operations and integers",
-   "caseStudies": [],
+   "caseStudies": [
+    "[1.01a] Work out −8 + 15 − (−6) and 7 × (−4) ÷ 2 without a calculator, showing each step.",
+    "[1.02a] State whether 51 is odd, even or prime, then list the factors and the first three multiples of 18.",
+    "[1.02b] Express 600 as a product of its prime factors, giving the answer in index form.",
+    "[1.02c] Find the HCF and LCM of 24 and 36 by listing their factors and multiples.",
+    "[1.03a] Evaluate 5 + 2 × 3² using the correct order of operations, showing which operation is done first.",
+    "[1.04a] Use inverse operations to work out 223 − 98 by adding 2 then subtracting 100, and check 25 × 12 by rewriting it as 50 × 6."
+   ],
    "ideas": [
     {
      "code": "1.01a",
@@ -306,7 +313,19 @@ const SPEC_J560 = {
    "component": "C1",
    "option": null,
    "name": "OCR 2 Fractions, decimals and percentages",
-   "caseStudies": [],
+   "caseStudies": [
+    "[2.01a] Show that 2/6 is equivalent to 1/3, and write 2 1/2 as an improper fraction.",
+    "[2.01b] Work out 2/5 + 5/6 and 2/3 + 1/2 × 3/5, giving each answer as a fraction in its simplest form.",
+    "[2.01c] Find 2/5 of £3.50, then express £6 as a fraction of £15.",
+    "[2.02a] Convert 1/6 to a decimal using division, giving the answer with recurring dots.",
+    "[2.02b] Work out 4.7 + 2.35 and 3.2 × 0.6 without a calculator.",
+    "[2.02c] Work out 0.3 ÷ 0.6 without a calculator, showing the method.",
+    "[2.03a] Convert 1/4 to a decimal and a percentage, and write 1 1/2 as a percentage.",
+    "[2.03b] Find 15% of £80, then express £12 as a percentage of £40.",
+    "[2.03c] Express a 20% price increase as a multiplier, then use it to find the new price of a £45 jacket.",
+    "[2.04a] Order 4/5, 3/4, 0.72 and −0.9 from smallest to largest.",
+    "[2.04b] Write down whether 3/4 < 0.8 or 3/4 ≥ 0.8 is true, using the correct inequality symbol."
+   ],
    "ideas": [
     {
      "code": "2.01a",
@@ -381,7 +400,10 @@ const SPEC_J560 = {
    "component": "C1",
    "option": "tier",
    "name": "OCR 2 Fractions, decimals and percentages — Higher tier additions",
-   "caseStudies": [],
+   "caseStudies": [
+    "[2.01b] Simplify 1/(n − 1) + n/(n + 1) as a single fraction in its simplest form.",
+    "[2.02a] Convert the recurring decimal 0.4̇1̇ to a fraction in its simplest form."
+   ],
    "ideas": [
     {
      "code": "2.01b",
@@ -402,7 +424,14 @@ const SPEC_J560 = {
    "component": "C1",
    "option": null,
    "name": "OCR 3 Indices and surds",
-   "caseStudies": [],
+   "caseStudies": [
+    "[3.01a] Write 2 × 2 × 2 × 2 in index form, then write 5⁻² as a fraction.",
+    "[3.01b] Work out 2⁴, √9, ∛8 and 2⁻³, giving each answer as a whole number or fraction.",
+    "[3.01c] Simplify a⁵ × a³, b⁷ ÷ b² and (c⁴)³ using the laws of indices.",
+    "[3.02a] Write 1320 in standard form, and write 9.43 × 10⁻³ as an ordinary number.",
+    "[3.02b] Without a calculator, work out (3.2 × 10⁴) × (2 × 10³), giving the answer in standard form.",
+    "[3.03a] Give the circumference of a circle of radius 5 cm as an exact multiple of π."
+   ],
    "ideas": [
     {
      "code": "3.01a",
@@ -447,7 +476,12 @@ const SPEC_J560 = {
    "component": "C1",
    "option": "tier",
    "name": "OCR 3 Indices and surds — Higher tier additions",
-   "caseStudies": [],
+   "caseStudies": [
+    "[3.01a] Simplify 8^(2/3) using fractional indices, showing the root and power steps.",
+    "[3.01b] Evaluate 16^(−3/4) exactly, and estimate √51 to the nearest whole number.",
+    "[3.03a] Find the exact area of a right triangle with legs √2 cm and √8 cm, giving the answer in simplified surd form.",
+    "[3.03b] Simplify √12 to 2√3, and rationalise the denominators of 1/√3 and 1/(√3 + 1)."
+   ],
    "ideas": [
     {
      "code": "3.01a",
@@ -480,7 +514,11 @@ const SPEC_J560 = {
    "component": "C1",
    "option": null,
    "name": "OCR 4 Approximation and estimation",
-   "caseStudies": [],
+   "caseStudies": [
+    "[4.01a] Round 3846 to the nearest hundred, and round 6.482 to 2 significant figures.",
+    "[4.01b] Estimate, to one significant figure, the cost of 2.8 kg of potatoes at 68p per kg, without a calculator.",
+    "[4.01c] A length x = 2.1 cm is rounded to 1 dp; write down the error interval for x using inequality notation."
+   ],
    "ideas": [
     {
      "code": "4.01a",
@@ -507,7 +545,15 @@ const SPEC_J560 = {
    "component": "C1",
    "option": null,
    "name": "OCR 5 Ratio, proportion and rates of change",
-   "caseStudies": [],
+   "caseStudies": [
+    "[5.01a] Write 50 cm : 1.5 m as a ratio in its simplest form.",
+    "[5.01b] Divide £2.50 in the ratio 2 : 3, then divide £60 in the ratio 2 : 3 : 5.",
+    "[5.01c] Split £9 in the ratio 2 : 1, expressing each part as a fraction of the whole.",
+    "[5.01d] A recipe for 6 people uses 300 g of flour; work out how much flour is needed for 4 people.",
+    "[5.02a] Given that y is directly proportional to x and y = 20 when x = 4, find the value of y when x = 9.",
+    "[5.02b] Given that y is inversely proportional to x and y = 6 when x = 2, find y when x = 3.",
+    "[5.03a] A car worth £15 000 depreciates by 30%, then 20%, then 15% over three years; find its value at the end."
+   ],
    "ideas": [
     {
      "code": "5.01a",
@@ -558,7 +604,11 @@ const SPEC_J560 = {
    "component": "C1",
    "option": "tier",
    "name": "OCR 5 Ratio, proportion and rates of change — Higher tier additions",
-   "caseStudies": [],
+   "caseStudies": [
+    "[5.02a] Given that y is directly proportional to x² and y = 18 when x = 3, find y when x = 5.",
+    "[5.02b] Given that y is inversely proportional to √x and y = 4 when x = 9, find y when x = 25.",
+    "[5.03a] Write a formula for £100 invested at 10% p.a. compound interest after n years, then use it to find the value after 5 years."
+   ],
    "ideas": [
     {
      "code": "5.02a",
@@ -585,7 +635,26 @@ const SPEC_J560 = {
    "component": "C1",
    "option": null,
    "name": "OCR 6 Algebra",
-   "caseStudies": [],
+   "caseStudies": [
+    "[6.01a] Show that (x + 1)² + 2 is identically equal to x² + 2x + 3.",
+    "[6.01b] Simplify the expression 4a + 3b − a + 2b by collecting like terms.",
+    "[6.01c] Simplify a² × a³ and 3a³ ÷ a, showing the index laws used.",
+    "[6.01d] Expand and simplify 2(a + 3b) + 3(a − 2b), then expand (x − 1)(x − 2).",
+    "[6.01e] Factorise 3a − 9b, then factorise x² − x − 6 fully.",
+    "[6.02a] Write a formula for the cost of hiring a car at £50 per day plus 10p per mile driven.",
+    "[6.02b] Given v = u + at, find v when u = 7, a = 2 and t = 1.",
+    "[6.02c] Make x the subject of the formula y = 3x − 2.",
+    "[6.02d] Find the circumference and area of a circle with radius 5 cm, using 2πr and πr².",
+    "[6.02e] Given u = 5, a = 2 and t = 3, use v = u + at to find v, then use s = ut + 1/2at² to find s.",
+    "[6.03a] Solve the equation 3x − 1 = 5 algebraically.",
+    "[6.03b] Solve x² − 5x + 6 = 0 by factorising.",
+    "[6.03c] Solve the simultaneous equations 2x + 3y = 18 and y = 3x − 5.",
+    "[6.03d] Draw the graph of y = 2x − 1 and use it to find the approximate solution of 2x − 1 = 0.",
+    "[6.04a] Solve the inequality 2x + 1 ≥ 7 and show the solution on a number line.",
+    "[6.05a] Represent y = 2x + 3 as a function machine, showing the input, the two operations and the output.",
+    "[6.06a] Find the next two terms of the sequence 2, 4, 6, …, then find its nth term.",
+    "[6.06b] List the first five triangular numbers and the first five square numbers."
+   ],
    "ideas": [
     {
      "code": "6.01a",
@@ -702,7 +771,27 @@ const SPEC_J560 = {
    "component": "C1",
    "option": "tier",
    "name": "OCR 6 Algebra — Higher tier additions",
-   "caseStudies": [],
+   "caseStudies": [
+    "[6.01a] Prove algebraically that the sum of three consecutive integers is always a multiple of 3.",
+    "[6.01c] Simplify a^(1/2) × 2a⁻³, and simplify 2a²b³ ÷ 4a⁻³b, using the laws of indices.",
+    "[6.01d] Expand and simplify (x + 1)(x − 1)(2x + 1).",
+    "[6.01e] Factorise 2x² + 3x − 2 fully.",
+    "[6.01f] Complete the square for x² + 4x − 6, giving the answer in the form (x + p)² + q.",
+    "[6.01g] Write 1/(n − 1) + n/(n + 1) as a single fraction in its simplest form.",
+    "[6.02a] Formulate a formula for a quantity inversely proportional to the square of another, then use given values to find the constant of proportionality.",
+    "[6.02c] Make x the subject of the formula y = 3/(x − 2), simplifying the algebraic fraction that results.",
+    "[6.02d] State the quadratic formula, then use it to solve 2x² − 5x + 1 = 0.",
+    "[6.03a] Solve the equation 3/(x + 1) + 2/(x − 1) = 1, simplifying the algebraic fractions first.",
+    "[6.03b] Solve 2x² = 3x + 5, rearranging into the form ax² + bx + c = 0 and using the quadratic formula.",
+    "[6.03c] Solve simultaneously x² + y² = 50 and 2y = x + 5.",
+    "[6.03d] Find the coordinates where the line y = x + 1 intersects the curve y = x² − 2 by solving the equations simultaneously.",
+    "[6.03e] Use a decimal search between x = 1 and x = 2 to find an approximate solution to x³ − x − 1 = 0 to 2 decimal places.",
+    "[6.04a] Solve the inequality x² − 2x < 3, giving the answer in set notation.",
+    "[6.04b] Represent the solution set of y ≥ x + 1 and y < 2x on a graph, shading the required region.",
+    "[6.05a] Given the function that doubles a number then adds 3, find the inverse function that reverses this process.",
+    "[6.06a] Find the nth term of the quadratic sequence 0, 3, 10, 21, …",
+    "[6.06b] Find the next two terms and the nth term of the sequence 1, √2, 2, 2√2, …"
+   ],
    "ideas": [
     {
      "code": "6.01a",
@@ -825,7 +914,15 @@ const SPEC_J560 = {
    "component": "C1",
    "option": null,
    "name": "OCR 7 Graphs of equations and functions",
-   "caseStudies": [],
+   "caseStudies": [
+    "[7.01a] Plot the point (−3, 2) on a coordinate grid and state which quadrant it lies in.",
+    "[7.01b] Draw up a table of values and plot the graph of y = 2x² + 1 for x from −3 to 3.",
+    "[7.01c] Sketch the graph of y = x², labelling its turning point, then find the roots of x² − 5x + 6 = 0 algebraically.",
+    "[7.02a] Find the gradient and y-intercept of the line y = 3x − 2, then find the equation of the line through (1, 4) with gradient 2.",
+    "[7.02b] Find the equation of the line through (0, 3) that is parallel to y = 2x − 1.",
+    "[7.04a] Sketch a distance-time graph for a car travelling at constant speed, stopping, then returning at a different constant speed.",
+    "[7.04b] Find the gradient of a distance-time graph over the interval 0 to 4 seconds and interpret it as a velocity in m/s."
+   ],
    "ideas": [
     {
      "code": "7.01a",
@@ -876,7 +973,18 @@ const SPEC_J560 = {
    "component": "C1",
    "option": "tier",
    "name": "OCR 7 Graphs of equations and functions — Higher tier additions",
-   "caseStudies": [],
+   "caseStudies": [
+    "[7.01b] Draw up a table of values and plot the graph of y = 3 × 1.1ˣ for x from 0 to 5.",
+    "[7.01c] Sketch the graph of y = x² − 6x + 5 by completing the square to find its turning point.",
+    "[7.01d] Sketch the graph of y = 2ˣ, marking where it crosses the y-axis and its behaviour as x → −∞.",
+    "[7.01e] Sketch the graph of y = sin x for 0° ≤ x ≤ 360°, marking its maximum, minimum and zeros.",
+    "[7.01f] Write down the equation of a circle centred at the origin with radius 5, then state whether the point (3, 4) lies on it.",
+    "[7.02a] Shade the region satisfying y < 2x + 1 on a graph, using a dashed line for the boundary.",
+    "[7.02b] Find the equation of the line through (2, 5) perpendicular to y = 2x − 1.",
+    "[7.03a] Sketch the graph of y = (x + 2)² − 1 as a translation of y = x².",
+    "[7.04b] Estimate the gradient of a velocity-time graph at t = 3 seconds by drawing a tangent, and interpret it as acceleration.",
+    "[7.04c] Estimate the area under a velocity-time graph between t = 0 and t = 10 seconds and interpret it as the distance travelled."
+   ],
    "ideas": [
     {
      "code": "7.01b",
@@ -945,7 +1053,29 @@ const SPEC_J560 = {
    "component": "C1",
    "option": null,
    "name": "OCR 8 Basic geometry",
-   "caseStudies": [],
+   "caseStudies": [
+    "[8.01a] Identify, from a diagram, a pair of parallel lines and a pair of perpendicular line segments.",
+    "[8.01b] Classify a marked angle as acute, obtuse, right or reflex, and label side a as the side opposite angle A in triangle ABC.",
+    "[8.01c] Name a quadrilateral from its diagram as a kite, rhombus, parallelogram or trapezium, giving a reason.",
+    "[8.01d] Label the vertices, edges and faces of a triangular prism from a diagram.",
+    "[8.01e] Draw a diagram, from a written description, of a rectangular garden 8 m by 5 m with a circular pond of radius 1 m in one corner.",
+    "[8.01f] Use compasses to construct a circle of radius 4 cm, then use a protractor to measure an angle in it to the nearest degree.",
+    "[8.01g] Reflect the triangle with vertices (1, 1), (3, 1), (1, 4) in the line x = 2, giving the coordinates of the image.",
+    "[8.02a] Use ruler and compasses to construct the perpendicular bisector of a line segment AB of length 8 cm.",
+    "[8.02b] Use ruler and compasses to construct the bisector of a 70° angle formed by two lines.",
+    "[8.02c] Construct the perpendicular from a point P to a line, and state why it gives the shortest distance from P to the line.",
+    "[8.02d] A goat is tied to a post in a field; construct the locus of points it can reach on a rope of length 3 m.",
+    "[8.03a] Three angles meet at a point and measure 130°, 95° and x°; use the angles at a point fact to find x.",
+    "[8.03b] Two angles on a straight line are 3x° and 2x° + 30°; use the angles on a line fact to find x.",
+    "[8.03c] Two parallel lines are cut by a transversal; identify a pair of alternate angles and a pair of corresponding angles and state their sizes.",
+    "[8.03d] Find the sum of the interior angles of a hexagon, then find the size of one interior angle of a regular hexagon.",
+    "[8.04a] An isosceles triangle has a base angle of 50°; find the other two angles, giving a geometrical reason.",
+    "[8.04b] A parallelogram has one angle of 65°; find its other three angles, giving geometrical reasons.",
+    "[8.04c] State the order of rotational symmetry and the number of lines of symmetry of a regular pentagon.",
+    "[8.05a] Label the radius, chord, tangent and a minor sector on a diagram of a circle.",
+    "[8.06a] State the number of faces, edges and vertices of a triangular-based pyramid.",
+    "[8.06b] Draw the plan and front elevation of a cuboid measuring 4 cm by 3 cm by 2 cm."
+   ],
    "ideas": [
     {
      "code": "8.01a",
@@ -1080,7 +1210,21 @@ const SPEC_J560 = {
    "component": "C1",
    "option": "tier",
    "name": "OCR 8 Basic geometry — Higher tier additions",
-   "caseStudies": [],
+   "caseStudies": [
+    "[8.03a] Prove formally, using angles on a straight line and vertically opposite angles, that the three angles of a triangle sum to 180°.",
+    "[8.03b] Two parallel lines are cut by a transversal; prove that co-interior angles sum to 180°, using angles on a line.",
+    "[8.03c] Prove that alternate angles on parallel lines are equal, using vertically opposite and corresponding angle facts.",
+    "[8.03d] Prove that the exterior angle of a triangle equals the sum of the two interior opposite angles.",
+    "[8.04a] Prove that a triangle inscribed in a semicircle is right-angled, using the isosceles triangles formed by the radii.",
+    "[8.04b] Prove that the diagonals of a rhombus bisect each other at right angles, using its properties as a parallelogram.",
+    "[8.05b] The angle at the centre of a circle is 130°; use the circle theorem to find the angle at the circumference subtended by the same arc.",
+    "[8.05c] A triangle is inscribed in a circle with one side as the diameter; use the circle theorem to find the angle opposite the diameter.",
+    "[8.05d] Two angles in the same segment of a circle are 3x° and 40°; use the circle theorem to find x.",
+    "[8.05e] A chord of length 10 cm is 4 cm from the centre of a circle; use the perpendicular bisector property to find the radius.",
+    "[8.05f] A tangent touches a circle at point P; given the radius to P, find the angle between the tangent and a chord using the perpendicular property.",
+    "[8.05g] The angle between a tangent and a chord at P is 55°; use the alternate segment theorem to find the angle in the opposite segment.",
+    "[8.05h] A cyclic quadrilateral has opposite angles 4x° and 2x° + 30°; use the fact they are supplementary to find x."
+   ],
    "ideas": [
     {
      "code": "8.03a",
@@ -1167,7 +1311,18 @@ const SPEC_J560 = {
    "component": "C1",
    "option": null,
    "name": "OCR 9 Congruence and similarity",
-   "caseStudies": [],
+   "caseStudies": [
+    "[9.01a] Reflect a triangle in the line y = x, and describe the mirror line from a shape and its image.",
+    "[9.01b] Rotate a shape 90° clockwise about the point (2, 1), and describe the centre and angle of a rotation from a shape and its image.",
+    "[9.01c] Translate a triangle by the column vector (3, −2), giving the coordinates of the image.",
+    "[9.02a] Prove that two triangles with sides 5 cm, 7 cm, 9 cm and 5 cm, 7 cm, 9 cm are congruent, stating the SSS case.",
+    "[9.02b] Use congruent triangles to prove that the base angles of an isosceles triangle are equal.",
+    "[9.03a] Given vectors a and b, find 2a − 3b as a single vector.",
+    "[9.03b] Represent the vector from (1, 2) to (4, 6) as a column vector and draw it on a coordinate grid.",
+    "[9.04a] Prove that two triangles with angles 40°, 60°, 80° and 40°, 60°, 80° are similar.",
+    "[9.04b] Enlarge a triangle by scale factor 3 from centre (0, 0), then identify the scale factor of an enlargement from a shape and its image.",
+    "[9.04c] Two similar triangles have corresponding sides 4 cm and 10 cm; find the length of the side that corresponds to a 6 cm side in the smaller triangle."
+   ],
    "ideas": [
     {
      "code": "9.01a",
@@ -1236,7 +1391,12 @@ const SPEC_J560 = {
    "component": "C1",
    "option": "tier",
    "name": "OCR 9 Congruence and similarity — Higher tier additions",
-   "caseStudies": [],
+   "caseStudies": [
+    "[9.01d] Reflect a shape in the x-axis then rotate the image 90° clockwise about the origin; describe the single transformation equivalent to both.",
+    "[9.03a] Use vectors a = OA and b = OB to prove that the midpoint M of AB satisfies OM = 1/2(a + b).",
+    "[9.04b] Enlarge a triangle by scale factor −2 from centre (1, 1), and describe the effect on its orientation and size.",
+    "[9.04c] Two similar cuboids have corresponding lengths in the ratio 2 : 5; find the ratio of their surface areas and the ratio of their volumes."
+   ],
    "ideas": [
     {
      "code": "9.01d",
@@ -1269,7 +1429,25 @@ const SPEC_J560 = {
    "component": "C1",
    "option": null,
    "name": "OCR 10 Mensuration",
-   "caseStudies": [],
+   "caseStudies": [
+    "[10.01a] Convert 2.5 kg to grams, and convert 3 m² to cm².",
+    "[10.01b] Convert a speed of 72 km/h into m/s.",
+    "[10.01c] On a map with scale 1 : 25000, a distance measures 6 cm; find the real distance in km, and state the bearing of B from A as 070°.",
+    "[10.02a] Find the perimeter of an L-shaped room made from two rectangles, given the side lengths.",
+    "[10.02b] Find the circumference of a circle of radius 6 cm, then find the arc length of a sector with angle 60° and radius 6 cm.",
+    "[10.02c] Find the perimeter of a composite shape made from a rectangle and a semicircle, given its dimensions.",
+    "[10.03a] Find the area of a triangle with base 8 cm and height 5 cm.",
+    "[10.03b] Find the area of a parallelogram with base 10 cm and height 4 cm.",
+    "[10.03c] Find the area of a trapezium with parallel sides 5 cm and 9 cm and height 4 cm.",
+    "[10.03d] Find the area of a circle of radius 7 cm, then find the area of a sector with angle 90° and radius 7 cm.",
+    "[10.03e] Find the area of a composite shape made from a rectangle and a quarter circle, given its dimensions.",
+    "[10.04a] Find the surface area and volume of a cuboid measuring 5 cm by 4 cm by 3 cm, then find the volume of a cylinder of radius 3 cm and height 10 cm.",
+    "[10.04b] Using the given formulae, find the volume and surface area of a sphere of radius 6 cm.",
+    "[10.04c] Using the formula V = 1/3 × base area × height, find the volume of a pyramid with a square base of side 6 cm and height 8 cm.",
+    "[10.05a] Find the length of the hypotenuse of a right-angled triangle with the other two sides 6 cm and 8 cm.",
+    "[10.05b] In a right-angled triangle, the hypotenuse is 10 cm and one angle is 35°; find the length of the side opposite that angle.",
+    "[10.05c] Without a calculator, write down the exact values of sin 30°, cos 45° and tan 60°."
+   ],
    "ideas": [
     {
      "code": "10.01a",
@@ -1380,7 +1558,13 @@ const SPEC_J560 = {
    "component": "C1",
    "option": "tier",
    "name": "OCR 10 Mensuration — Higher tier additions",
-   "caseStudies": [],
+   "caseStudies": [
+    "[10.03a] Find the area of a triangle with sides 8 cm and 6 cm and an included angle of 50°, using area = 1/2 × ab sin C.",
+    "[10.05a] Find the length of the diagonal of a cuboid measuring 4 cm by 3 cm by 12 cm using Pythagoras' theorem in 3D.",
+    "[10.05b] Find the angle between the diagonal and the base of a cuboid measuring 6 cm by 8 cm by 10 cm using trigonometry.",
+    "[10.05d] In a triangle, angle A = 40°, angle B = 65° and side a = 7 cm; use the sine rule to find side b.",
+    "[10.05e] In a triangle, sides b = 8 cm, c = 6 cm and angle A = 60°; use the cosine rule to find side a."
+   ],
    "ideas": [
     {
      "code": "10.03a",
@@ -1419,7 +1603,18 @@ const SPEC_J560 = {
    "component": "C1",
    "option": null,
    "name": "OCR 11 Probability",
-   "caseStudies": [],
+   "caseStudies": [
+    "[11.01a] Mark 'evens' at 0.5 and 'impossible' at 0 on a 0–1 probability scale, and estimate where an unlikely event lies.",
+    "[11.01b] Record the outcomes of 50 spins of a spinner in a frequency table, and use a frequency tree to show pass/fail results split by gender.",
+    "[11.01c] A coin is flipped 200 times and lands heads 108 times; use the relative frequency to estimate the probability of heads.",
+    "[11.01d] Two fair dice are rolled and the scores added; find the probability that the total is 7, and the expected number of 7s in 90 rolls.",
+    "[11.02a] List all the ways the letters E, F and G can be arranged, and use the list to find the probability of E appearing first.",
+    "[11.02b] List the outcomes of flipping two coins and rolling a die together, using a systematic strategy.",
+    "[11.02c] Draw a Venn diagram for 30 students, where 18 study French, 12 study German and 5 study both, then find P(studies neither).",
+    "[11.02d] Draw a tree diagram for picking two balls without replacement from a bag of 5 red and 3 blue balls, and use it to find P(both red).",
+    "[11.02e] Given P(rain) = 0.3, find P(no rain); given P(A) = 0.4, P(B) = 0.5 and P(A and B) = 0.1, find P(A or B).",
+    "[11.02f] Use a tree diagram to find the probability of drawing two red counters in a row from a bag of 5 red and 4 blue counters without replacement."
+   ],
    "ideas": [
     {
      "code": "11.01a",
@@ -1488,7 +1683,12 @@ const SPEC_J560 = {
    "component": "C1",
    "option": "tier",
    "name": "OCR 11 Probability — Higher tier additions",
-   "caseStudies": [],
+   "caseStudies": [
+    "[11.02a] A bag has 3 red, 4 blue and 5 green counters; choose the most appropriate diagram and use it to find P(two different colours) when two are drawn.",
+    "[11.02b] Use the product rule to find the number of possible 4-digit PINs using the digits 0–9 with no repeats.",
+    "[11.02c] Construct a Venn diagram for 100 people where 40 own a cat, 35 own a dog, 15 own both, and use it to find P(owns a dog | owns a cat).",
+    "[11.02f] A card is drawn at random from a pack of 52; given it is red, find the probability it is a diamond, using P(A and B) = P(A given B)P(B)."
+   ],
    "ideas": [
     {
      "code": "11.02a",
@@ -1521,7 +1721,14 @@ const SPEC_J560 = {
    "component": "C1",
    "option": null,
    "name": "OCR 12 Statistics",
-   "caseStudies": [],
+   "caseStudies": [
+    "[12.01a] A survey samples 50 of a school's 1200 students; state the population and the sample, and explain why picking only one tutor group is biased.",
+    "[12.02a] Draw a pie chart to show favourite subjects from a frequency table of 60 students, then compare two years' sales on a composite bar chart.",
+    "[12.03a] Find the mean, median, mode and range of the data set 4, 7, 7, 9, 12, 15, then estimate the mean from a grouped frequency table.",
+    "[12.03b] Explain how a bar chart with a y-axis starting at 50 instead of 0 misrepresents the difference between two bars.",
+    "[12.03c] Plot a scatter diagram for height and shoe size, draw a line of best fit, and use it to predict the shoe size for a height of 165 cm.",
+    "[12.03d] Identify an outlier in the data set 12, 14, 13, 15, 47, 14, and suggest a reason it should be excluded from the mean."
+   ],
    "ideas": [
     {
      "code": "12.01a",
@@ -1566,7 +1773,10 @@ const SPEC_J560 = {
    "component": "C1",
    "option": "tier",
    "name": "OCR 12 Statistics — Higher tier additions",
-   "caseStudies": [],
+   "caseStudies": [
+    "[12.02b] Draw a cumulative frequency graph from a grouped frequency table of exam marks, and use it to estimate the median and interquartile range.",
+    "[12.03a] Draw a box plot from the quartiles Q1 = 12, median = 18, Q3 = 25, and use it to compare with another distribution's median and IQR."
+   ],
    "ideas": [
     {
      "code": "12.02b",

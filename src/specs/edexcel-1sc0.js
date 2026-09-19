@@ -104,7 +104,7 @@ const SPEC_1SC0 = {
  ],
  "markConventions": {
   "style": "points",
-  "summary": "Six externally examined papers (Biology 1 and 2, Chemistry 1 and 2, Physics 1 and 2), each 1 hour 10 minutes, 60 marks, six questions all answered, 16.67% of the qualification; first assessment May/June 2018, all sat in one May/June series. Every paper is available at foundation tier (targets grades 1-5) and higher tier (targets grades 4-9) and a student sits all six in the same tier; 16 marks of each paper are overlap questions that appear in both tiers. Each paper mixes multiple-choice, short answer questions, calculations and extended open-response questions; Pearson's papers mark the extended open-response questions (6 marks) with levels-based mark schemes for a sustained line of reasoning. Calculators may be used on every paper. Higher-tier-only content is printed in bold in the specification and is marked '(HT only)' in the ideas. Eighteen mandatory core practicals cover the apparatus and techniques of Appendix 6 and are examined on the papers. Mathematical skills (Appendix 1) are assessed within the content at a level not below Key Stage 3 on foundation tier and not below foundation GCSE Mathematics on higher tier; each topic's 'Maths skills' column and 'Use of mathematics' list say which skills it draws on. Appendix 4 list a: students must recall and apply these physics equations: distance travelled = average speed × time (2.6b); acceleration = change in velocity ÷ time taken, a = (v − u) / t (2.8); force = mass × acceleration, F = m × a (2.15); weight = mass × gravitational field strength, W = m × g (2.16); momentum = mass × velocity, p = m × v (2.24); change in gravitational potential energy = mass × gravitational field strength × change in vertical height, ΔGPE = m × g × Δh (3.1 and 8.8); kinetic energy = ½ × mass × (speed)², KE = ½ × m × v² (3.2 and 8.9); efficiency = useful energy transferred by the device ÷ total energy supplied to the device (3.11 and 8.15); wave speed = frequency × wavelength, v = f × λ, and wave speed = distance ÷ time, v = x / t (4.6); work done = force × distance moved in the direction of the force, E = F × d (8.6); power = work done ÷ time taken, P = E / t (8.13); energy transferred = charge moved × potential difference, E = Q × V (10.6); charge = current × time, Q = I × t (10.9); potential difference = current × resistance, V = I × R (10.13); power = energy transferred ÷ time taken, P = E / t (10.29); electrical power = current × potential difference, P = I × V, and electrical power = (current)² × resistance, P = I² × R (10.31); density = mass ÷ volume, ρ = m / V (14.2); force exerted on a spring = spring constant × extension, F = k × x (15.3). Appendix 4 list b: these are given on a formulae sheet at the end of the paper for students to select and apply: (final velocity)² − (initial velocity)² = 2 × acceleration × distance, v² − u² = 2 × a × x (2.9); force = change in momentum ÷ time, F = (mv − mu) / t (2.26, higher tier only); energy transferred = current × potential difference × time, E = I × V × t (10.27); force on a conductor at right angles to a magnetic field carrying a current = magnetic flux density × current × length, F = B × I × l (12.13, higher tier only); higher-tier-only equations are not given on the foundation formulae sheet. SI base units metre, kilogram, second, ampere, kelvin and mole and the derived units hertz, newton, joule, watt, pascal, coulomb, volt, ohm and tesla (Appendix 5) are used throughout. The periodic table (Appendix 3) is provided in the chemistry papers.",
+  "summary": "Six externally examined papers (Biology 1 and 2, Chemistry 1 and 2, Physics 1 and 2), each 1 hour 10 minutes, 60 marks, six questions all answered, 16.67% of the qualification; first assessment May/June 2018, all sat in one May/June series. Every paper is available at foundation tier (targets grades 1-5) and higher tier (targets grades 4-9) and a student sits all six in the same tier; 16 marks of each paper are overlap questions that appear in both tiers. Each paper mixes multiple-choice, short answer questions, calculations and extended open-response questions; Pearson's papers mark the extended open-response questions (6 marks) with levels-based mark schemes for a sustained line of reasoning. Calculators may be used on every paper. Higher-tier-only content is printed in bold in the specification and is marked '(HT only)' in the ideas. Eighteen mandatory core practicals cover the apparatus and techniques of Appendix 6 and are examined on the papers. Mathematical skills (Appendix 1) are assessed within the content at a level not below Key Stage 3 on foundation tier and not below foundation GCSE Mathematics on higher tier; each topic's 'Maths skills' column and 'Use of mathematics' list say which skills it draws on. Appendix 4 list a: students must recall and apply these physics equations: distance travelled = average speed × time (2.6b); acceleration = change in velocity ÷ time taken, a = (v − u) / t (2.8); force = mass × acceleration, F = m × a (2.15); weight = mass × gravitational field strength, W = m × g (2.16); momentum = mass × velocity, p = m × v (2.24, higher tier only); change in gravitational potential energy = mass × gravitational field strength × change in vertical height, ΔGPE = m × g × Δh (3.1 and 8.8); kinetic energy = ½ × mass × (speed)², KE = ½ × m × v² (3.2 and 8.9); efficiency = useful energy transferred by the device ÷ total energy supplied to the device (3.11 and 8.15); wave speed = frequency × wavelength, v = f × λ, and wave speed = distance ÷ time, v = x / t (4.6); work done = force × distance moved in the direction of the force, E = F × d (8.6); power = work done ÷ time taken, P = E / t (8.13); energy transferred = charge moved × potential difference, E = Q × V (10.6); charge = current × time, Q = I × t (10.9); potential difference = current × resistance, V = I × R (10.13); power = energy transferred ÷ time taken, P = E / t (10.29); electrical power = current × potential difference, P = I × V, and electrical power = (current)² × resistance, P = I² × R (10.31); density = mass ÷ volume, ρ = m / V (14.2); force exerted on a spring = spring constant × extension, F = k × x (15.3). Appendix 4 list b: these are given on a formulae sheet at the end of the paper for students to select and apply: (final velocity)² − (initial velocity)² = 2 × acceleration × distance, v² − u² = 2 × a × x (2.9); force = change in momentum ÷ time, F = (mv − mu) / t (2.26, higher tier only); energy transferred = current × potential difference × time, E = I × V × t (10.27); force on a conductor at right angles to a magnetic field carrying a current = magnetic flux density × current × length, F = B × I × l (12.13, higher tier only); higher-tier-only equations are not given on the foundation formulae sheet. SI base units metre, kilogram, second, ampere, kelvin and mole and the derived units hertz, newton, joule, watt, pascal, coulomb, volt, ohm and tesla (Appendix 5) are used throughout. The periodic table (Appendix 3) is provided in the chemistry papers.",
   "commandWords": [
    {
     "word": "Add/Label",
@@ -1558,7 +1558,7 @@ const SPEC_1SC0 = {
    "id": "C3",
    "component": "1C",
    "option": null,
-   "name": "Chemistry Topic 3 – Chemical changes",
+   "name": "Chemistry Topic 3 – Chemical change",
    "caseStudies": [
     "Investigate the change in pH on adding powdered calcium hydroxide or calcium oxide to a fixed volume of dilute hydrochloric acid",
     "Investigate the preparation of pure, dry hydrated copper sulfate crystals starting from copper oxide including the use of a water bath",
@@ -1605,7 +1605,7 @@ const SPEC_1SC0 = {
      "code": "3.7",
      "q": "What do 'dilute' and 'concentrated' mean for a solution?",
      "idea": "Dilute and concentrated",
-     "content": "(HT only) Explain the terms dilute and concentrated, with respect to the amount of substance in solution."
+     "content": "(HT only) Explain the terms dilute and concentrated, with respect to the amount of substances in solution."
     },
     {
      "code": "3.8",
@@ -2645,7 +2645,7 @@ const SPEC_1SC0 = {
      "code": "4.10",
      "q": "What happens to a wave's direction and speed when it is refracted at a boundary?",
      "idea": "Refraction at a boundary",
-     "content": "Explain how waves will be refracted at a boundary in terms of the change of direction and speed. Maths skills: 1c, 3c, 5b."
+     "content": "Explain how waves will be refracted at a boundary in terms of the change of direction and (HT only) speed. Maths skills: 1c, 3c, 5b."
     },
     {
      "code": "4.11",
@@ -3079,19 +3079,19 @@ const SPEC_1SC0 = {
      "code": "9.3",
      "q": "How can vector diagrams show the resolution of forces, a net force or equilibrium?",
      "idea": "Vector diagrams for forces",
-     "content": "Use vector diagrams to illustrate resolution of forces, a net force, and equilibrium situations (scale drawings only). Maths skills: 4a, 5a, 5b."
+     "content": "(HT only) Use vector diagrams to illustrate resolution of forces, a net force, and equilibrium situations (scale drawings only). Maths skills: 4a, 5a, 5b."
     },
     {
      "code": "9.4",
      "q": "How do you draw a free body force diagram?",
      "idea": "Free body force diagrams",
-     "content": "Draw and use free body force diagrams. Maths skills: 4a, 5a, 5b."
+     "content": "(HT only) Draw and use free body force diagrams. Maths skills: 4a, 5a, 5b."
     },
     {
      "code": "9.5",
      "q": "What happens when several forces act on an object, including the special case where they balance?",
      "idea": "Resultant and balanced forces",
-     "content": "Explain examples of the forces acting on an isolated solid object or a system where several forces lead to a resultant force on an object and the special case of balanced forces when the resultant force is zero. Maths skills: 5a."
+     "content": "(HT only) Explain examples of the forces acting on an isolated solid object or a system where several forces lead to a resultant force on an object and the special case of balanced forces when the resultant force is zero. Maths skills: 5a."
     },
     {
      "code": "9.10",
@@ -4021,7 +4021,7 @@ const SPEC_1SC0 = {
      "code": "2.24",
      "q": "How is momentum calculated from mass and velocity?",
      "idea": "Momentum",
-     "content": "momentum = mass × velocity; p = m × v (recall and apply)."
+     "content": "(HT only) momentum = mass × velocity; p = m × v (recall and apply)."
     },
     {
      "code": "3.1 and 8.8",

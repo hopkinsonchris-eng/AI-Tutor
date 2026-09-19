@@ -3,3 +3,4 @@ node_modules/
 .wrangler/
 scratch/
 data/papers/.pearson-cache/
+scratchpad/

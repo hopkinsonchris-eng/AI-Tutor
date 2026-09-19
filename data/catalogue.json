@@ -553,8 +553,8 @@
       "board": "Pearson Edexcel",
       "subject": "Combined Science",
       "code": "1SC0",
-      "specUrl": null,
-      "verified": null
+      "specUrl": "https://qualifications.pearson.com/content/dam/pdf/GCSE/Science/2016/Specification/gcse-combinedscience-spec.pdf",
+      "verified": "2026-09-19"
     },
     {
       "level": "GCSE",

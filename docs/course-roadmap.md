@@ -19,28 +19,48 @@ with a fresh model, then write and judge a room kit for every room. Siblings sha
 Combined Science rooms plus the extra content; AQA and OCR A level Maths carry the same DfE content as Edexcel 9MA0, so their
 rooms are re-keyed rather than rewritten; the Edexcel English Language 2.0 resit paper shares its skills with 1EN0.
 
-## Catalogue corrections before starting
+## Catalogue corrections (applied 20 September 2026)
 
-| Course | Change | Why |
-|---|---|---|
-| AQA French | 8652 → 8658 | the 2024 specification; first exams summer 2026 |
-| AQA Spanish | 8692 → 8698 | as above |
-| AQA German | 8662 → 8668 | as above |
+AQA's 2024 modern-language specifications, first taught September 2024 and first examined summer 2026, are **8692 Spanish**,
+**8652 French** and **8662 German**; 8698, 8658 and 8668 are the outgoing 2016 specifications. An earlier note here had the
+change the wrong way round and the catalogue was carrying the old codes; it now carries the 2024 ones. The 2025 entry counts
+below are the outgoing specifications', which stand in for the new ones.
 
-Specifications in the top 50 that are not yet in `data/catalogue.json` (add from the Admin tab or the file):
-- GCSE Spanish — AQA 8698 (102,687 entries)
-- GCSE French — AQA 8658 (97,806 entries)
-- GCSE English Language 2.0 — Pearson Edexcel 1EN2 (66,425 entries)
-- GCSE Mathematics — Eduqas C300 (49,187 entries)
-- GCSE Religious Studies — Eduqas C120 (48,447 entries)
-- GCSE Geography B — Pearson Edexcel 1GB0 (29,430 entries)
-- GCSE Statistics — Pearson Edexcel 1ST0 (28,776 entries)
-- GCSE German — AQA 8668 (25,392 entries)
-- GCSE Religious Studies B — Pearson Edexcel 1RB0 (23,481 entries)
-- GCSE Geography B (Enquiring Minds) — OCR J384 (19,293 entries)
-- GCSE Media Studies — Eduqas C680 (18,554 entries)
-- GCSE History B (Schools History Project) — OCR J411 (17,477 entries)
-- GCSE Religious Studies A — Pearson Edexcel 1RA0 (17,143 entries)
+Every specification in the top 50 is in `data/catalogue.json`. Wave 1 has a verified PDF link for every course but
+French, which AQA serves only from its content network (`cdn.sanity.io`), off the catalogue's domain list:
+
+| Course | Verified specification PDF |
+|---|---|
+| AQA Spanish 8692 | https://filestore.aqa.org.uk/resources/spanish/specifications/AQA-8692-SP-2024.PDF |
+| AQA French 8652 | not on AQA's own domain — pass `--url https://cdn.sanity.io/files/p28bar15/green/672787d9e5c10db595a68be124976cf5ea1c5ba6.pdf` (the link on aqa.org.uk/subjects/french/gcse/french-8652/specification) |
+| Eduqas English Language C700 | https://www.eduqas.co.uk/media/10ea1en0/eduqas-gcse-english-language-from-2015-e.pdf |
+| AQA History 8145 | https://filestore.aqa.org.uk/resources/history/specifications/AQA-8145-SP-2016.PDF |
+| Pearson Edexcel Business 1BS0 | https://qualifications.pearson.com/content/dam/pdf/GCSE/Business/2017/specification-and-sample-assessments/gcse-business-spec-2017.pdf |
+| OCR Computer Science J277 | https://www.ocr.org.uk/Images/558027-specification-gcse-computer-science-j277.pdf |
+| Pearson Edexcel English Language 2.0 1EN2 | https://qualifications.pearson.com/content/dam/pdf/GCSE/English%20Language/2021/specification-and-sample-assessment/9781446966709-gcse-2021-l12-eng-lang-2-0.pdf |
+| AQA Psychology 7182 | https://filestore.aqa.org.uk/resources/psychology/specifications/AQA-7181-7182-SP-2015.PDF |
+| Eduqas English Literature C720 | https://www.eduqas.co.uk/media/x2zpzwgt/eduqas-gcse-english-lit-spec-from-2015-e.pdf |
+| Eduqas Mathematics C300 | https://www.eduqas.co.uk/media/cosjcbs1/eduqas-gcse-maths-spec-from-2015-e.pdf |
+
+AQA German 8662 (wave 3) is verified too: https://filestore.aqa.org.uk/resources/german/specifications/AQA-8662-SP-2024.PDF
+
+## Building a wave on the batch API
+
+`scripts/batch-course.js` runs the Worker's own pipeline through the Message Batches API: the same prompts, schemas,
+validators and judge, Sonnet 5 writing and Opus 5 judging, at half the token price and on API credits rather than a
+subscription. Every request's usage goes to a ledger, so a wave's cost is measured, not estimated.
+
+```
+export ANTHROPIC_API_KEY=…
+node scripts/batch-course.js wave 1 --url AQA-8652=https://cdn.sanity.io/files/p28bar15/green/672787d9e5c10db595a68be124976cf5ea1c5ba6.pdf
+node scripts/batch-course.js cost
+npm test
+```
+
+A map the judge scores under 0.8, or whose mark style contradicts the family prior the tests enforce, is held in
+`scratch/courses/<id>/batch/` with the judge's report instead of reaching `src/specs/`. Rooms refused twice ship without a
+kit and are named in the kits file; a rerun retries only those. Details and the resume rules are in
+`.claude/skills/course-builder/references/batch.md`.
 
 ## Already built
 
@@ -74,30 +94,30 @@ Specifications in the top 50 that are not yet in `data/catalogue.json` (add from
 
 | # | Level | Subject | Board | Code | Entries 2025 | Cumulative | Note |
 |---|---|---|---|---|---|---|---|
-| 1 | GCSE | Spanish | AQA | 8698 | 102,687 | 5% | not in the catalogue. new spec, first exams 2026; catalogue lists the old 8692 |
-| 2 | GCSE | French | AQA | 8658 | 97,806 | 10% | not in the catalogue. new spec, first exams 2026; catalogue lists the old 8652 |
+| 1 | GCSE | Spanish | AQA | 8692 | 102,687 | 5% | the 2024 specification, first exams 2026 (entries are the outgoing 8698's); verified link |
+| 2 | GCSE | French | AQA | 8652 | 97,806 | 10% | the 2024 specification, first exams 2026 (entries are the outgoing 8658's); PDF only on AQA's content network — build with --url |
 | 3 | GCSE | English Language | Eduqas | C700 | 97,094 | 14% |  |
 | 4 | GCSE | History | AQA | 8145 | 93,746 | 19% | option-heavy |
 | 5 | GCSE | Business | Pearson Edexcel | 1BS0 | 73,184 | 22% |  |
 | 6 | GCSE | Computer Science | OCR | J277 | 66,716 | 26% |  |
-| 7 | GCSE | English Language 2.0 | Pearson Edexcel | 1EN2 | 66,425 | 29% | not in the catalogue. the post-16 resit spec; not in the catalogue |
+| 7 | GCSE | English Language 2.0 | Pearson Edexcel | 1EN2 | 66,425 | 29% | the post-16 resit spec; verified link |
 | 8 | A level | Psychology | AQA | 7182 | 63,378 | 32% | the second-biggest A level, one board has 85% of it |
 | 9 | GCSE | English Literature | Eduqas | C720 | 59,417 | 35% |  |
-| 10 | GCSE | Mathematics | Eduqas | C300 | 49,187 | 37% | not in the catalogue.  |
+| 10 | GCSE | Mathematics | Eduqas | C300 | 49,187 | 37% |  |
 
 ### Wave 2 — Ranks 11 to 20, where the first A level (AQA Psychology) appears
 
 | # | Level | Subject | Board | Code | Entries 2025 | Cumulative | Note |
 |---|---|---|---|---|---|---|---|
-| 11 | GCSE | Religious Studies | Eduqas | C120 | 48,447 | 40% | not in the catalogue.  |
+| 11 | GCSE | Religious Studies | Eduqas | C120 | 48,447 | 40% |  |
 | 12 | GCSE | English Literature | Pearson Edexcel | 1ET0 | 46,358 | 42% |  |
 | 13 | GCSE | Combined Science A (Gateway) | OCR | J250 | 45,000 | 44% | estimate: ~5% of the double award |
 | 14 | GCSE | English Language | Pearson Edexcel | 1EN0 | 41,565 | 46% |  |
 | 15 | A level | Biology | AQA | 7402 | 37,825 | 48% | the app already carries fixtures for this code |
 | 16 | A level | Sociology | AQA | 7192 | 37,236 | 50% |  |
-| 17 | GCSE | Geography B | Pearson Edexcel | 1GB0 | 29,430 | 51% | not in the catalogue. the bigger Edexcel geography; catalogue has only A (1GA0) |
+| 17 | GCSE | Geography B | Pearson Edexcel | 1GB0 | 29,430 | 51% | the bigger Edexcel geography; catalogue has only A (1GA0) |
 | 18 | GCSE | Business | AQA | 8132 | 29,094 | 52% |  |
-| 19 | GCSE | Statistics | Pearson Edexcel | 1ST0 | 28,776 | 54% | not in the catalogue.  |
+| 19 | GCSE | Statistics | Pearson Edexcel | 1ST0 | 28,776 | 54% |  |
 | 20 | A level | Chemistry | AQA | 7405 | 28,455 | 55% |  |
 
 ### Wave 3 — Ranks 21 to 30
@@ -107,8 +127,8 @@ Specifications in the top 50 that are not yet in `data/catalogue.json` (add from
 | 21 | GCSE | French | Pearson Edexcel | 1FR1 | 27,258 | 57% | new spec from 2026 (2025 entries were 1FR0) |
 | 22 | GCSE | Spanish | Pearson Edexcel | 1SP1 | 26,797 | 58% | new spec from 2026 (2025 entries were 1SP0) |
 | 23 | A level | Chemistry A | OCR | H432 | 25,528 | 59% | requested in the admin queue |
-| 24 | GCSE | German | AQA | 8668 | 25,392 | 60% | not in the catalogue. new spec, first exams 2026; catalogue lists the old 8662 |
-| 25 | GCSE | Religious Studies B | Pearson Edexcel | 1RB0 | 23,481 | 61% | not in the catalogue.  |
+| 24 | GCSE | German | AQA | 8662 | 25,392 | 60% | the 2024 specification, first exams 2026 (entries are the outgoing 8668's); verified link |
+| 25 | GCSE | Religious Studies B | Pearson Edexcel | 1RB0 | 23,481 | 61% |  |
 | 26 | A level | Physics | AQA | 7408 | 23,469 | 63% |  |
 | 27 | GCSE | Business | OCR | J204 | 23,198 | 64% |  |
 | 28 | GCSE | Sociology | AQA | 8192 | 22,258 | 65% |  |
@@ -122,12 +142,12 @@ Specifications in the top 50 that are not yet in `data/catalogue.json` (add from
 | 31 | A level | Biology A | OCR | H420 | 21,295 | 68% |  |
 | 32 | GCSE | Chemistry | Pearson Edexcel | 1CH0 | 20,909 | 69% |  |
 | 33 | GCSE | Physics | Pearson Edexcel | 1PH0 | 20,762 | 70% |  |
-| 34 | GCSE | Geography B (Enquiring Minds) | OCR | J384 | 19,293 | 71% | not in the catalogue. the bigger OCR geography; catalogue has only A (J383) |
+| 34 | GCSE | Geography B (Enquiring Minds) | OCR | J384 | 19,293 | 71% | the bigger OCR geography; catalogue has only A (J383) |
 | 35 | A level | History | AQA | 7042 | 18,587 | 72% | option-heavy: schools pick 1 breadth + 1 depth study of many |
-| 36 | GCSE | Media Studies | Eduqas | C680 | 18,554 | 73% | not in the catalogue.  |
+| 36 | GCSE | Media Studies | Eduqas | C680 | 18,554 | 73% |  |
 | 37 | GCSE | Geography A | Pearson Edexcel | 1GA0 | 18,271 | 74% |  |
-| 38 | GCSE | History B (Schools History Project) | OCR | J411 | 17,477 | 74% | not in the catalogue. the bigger OCR history; catalogue has only A (J410) |
-| 39 | GCSE | Religious Studies A | Pearson Edexcel | 1RA0 | 17,143 | 75% | not in the catalogue.  |
+| 38 | GCSE | History B (Schools History Project) | OCR | J411 | 17,477 | 74% | the bigger OCR history; catalogue has only A (J410) |
+| 39 | GCSE | Religious Studies A | Pearson Edexcel | 1RA0 | 17,143 | 75% |  |
 | 40 | A level | Business | AQA | 7132 | 15,578 | 76% |  |
 | 41 | A level | Mathematics | AQA | 7357 | 15,532 | 77% | same content as 9MA0 (the DfE content is common); rooms can be re-keyed |
 | 42 | A level | Economics | AQA | 7136 | 15,469 | 77% |  |
@@ -155,20 +175,20 @@ Specifications in the top 50 that are not yet in `data/catalogue.json` (add from
 | 59 | GCSE | Sociology | Eduqas | C200 | 8,951 | 87% | not in the catalogue.  |
 | 60 | A level | English Language | AQA | 7702 | 8,765 | 87% |  |
 | 61 | A level | English Literature | OCR | H472 | 8,716 | 88% | set texts |
-| 62 | A level | Law | OCR | H418 | 7,806 | 88% | not in the catalogue.  |
+| 62 | A level | Law | OCR | H418 | 7,806 | 88% |  |
 | 63 | A level | Mathematics A | OCR | H240 | 7,653 | 88% | common content with 9MA0 |
 | 64 | A level | Religious Studies | OCR | H573 | 7,492 | 89% |  |
 | 65 | GCSE | Biology A (Gateway) | OCR | J247 | 7,317 | 89% |  |
 | 66 | A level | English Literature A | AQA | 7712 | 7,281 | 90% | set texts |
 | 67 | GCSE | Music | OCR | J536 | 7,226 | 90% | not in the catalogue.  |
 | 68 | GCSE | Chemistry A (Gateway) | OCR | J248 | 6,630 | 90% |  |
-| 69 | A level | English Literature B | AQA | 7717 | 6,584 | 91% | not in the catalogue.  |
+| 69 | A level | English Literature B | AQA | 7717 | 6,584 | 91% |  |
 | 70 | GCSE | Physics A (Gateway) | OCR | J249 | 6,477 | 91% |  |
 | 71 | GCSE | Media Studies | AQA | 8572 | 6,377 | 91% | not in the catalogue.  |
-| 72 | A level | Mathematics B (MEI) | OCR | H640 | 6,307 | 91% | not in the catalogue. not in the catalogue; common content with 9MA0 |
+| 72 | A level | Mathematics B (MEI) | OCR | H640 | 6,307 | 91% | common content with 9MA0 |
 | 73 | GCSE | English Literature | OCR | J352 | 6,158 | 92% |  |
 | 74 | GCSE | German | Pearson Edexcel | 1GN1 | 6,158 | 92% | new spec from 2026 |
-| 75 | A level | Law | AQA | 7162 | 5,957 | 92% | not in the catalogue.  |
+| 75 | A level | Law | AQA | 7162 | 5,957 | 92% |  |
 | 76 | GCSE | English Language | OCR | J351 | 5,723 | 93% |  |
 | 77 | GCSE | Statistics | AQA | 8382 | 5,689 | 93% | not in the catalogue.  |
 | 78 | A level | Computer Science | AQA | 7517 | 5,675 | 93% |  |

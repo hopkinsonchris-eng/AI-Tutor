@@ -393,8 +393,8 @@
       "board": "AQA",
       "subject": "Psychology",
       "code": "7182",
-      "specUrl": null,
-      "verified": null
+      "specUrl": "https://filestore.aqa.org.uk/resources/psychology/specifications/AQA-7181-7182-SP-2015.PDF",
+      "verified": "2026-09-20"
     },
     {
       "level": "A level",
@@ -505,8 +505,8 @@
       "board": "Pearson Edexcel",
       "subject": "Business",
       "code": "1BS0",
-      "specUrl": null,
-      "verified": null
+      "specUrl": "https://qualifications.pearson.com/content/dam/pdf/GCSE/Business/2017/specification-and-sample-assessments/gcse-business-spec-2017.pdf",
+      "verified": "2026-09-20"
     },
     {
       "level": "GCSE",
@@ -569,8 +569,8 @@
       "board": "OCR",
       "subject": "Computer Science",
       "code": "J277",
-      "specUrl": null,
-      "verified": null
+      "specUrl": "https://www.ocr.org.uk/Images/558027-specification-gcse-computer-science-j277.pdf",
+      "verified": "2026-09-20"
     },
     {
       "level": "GCSE",
@@ -593,8 +593,8 @@
       "board": "Eduqas",
       "subject": "English Language",
       "code": "C700",
-      "specUrl": null,
-      "verified": null
+      "specUrl": "https://www.eduqas.co.uk/media/10ea1en0/eduqas-gcse-english-language-from-2015-e.pdf",
+      "verified": "2026-09-20"
     },
     {
       "level": "GCSE",
@@ -625,8 +625,8 @@
       "board": "Pearson Edexcel",
       "subject": "English Language 2.0",
       "code": "1EN2",
-      "specUrl": null,
-      "verified": null
+      "specUrl": "https://qualifications.pearson.com/content/dam/pdf/GCSE/English%20Language/2021/specification-and-sample-assessment/9781446966709-gcse-2021-l12-eng-lang-2-0.pdf",
+      "verified": "2026-09-20"
     },
     {
       "level": "GCSE",
@@ -641,8 +641,8 @@
       "board": "Eduqas",
       "subject": "English Literature",
       "code": "C720",
-      "specUrl": null,
-      "verified": null
+      "specUrl": "https://www.eduqas.co.uk/media/x2zpzwgt/eduqas-gcse-english-lit-spec-from-2015-e.pdf",
+      "verified": "2026-09-20"
     },
     {
       "level": "GCSE",
@@ -672,7 +672,7 @@
       "level": "GCSE",
       "board": "AQA",
       "subject": "French",
-      "code": "8658",
+      "code": "8652",
       "specUrl": null,
       "verified": null
     },
@@ -728,9 +728,9 @@
       "level": "GCSE",
       "board": "AQA",
       "subject": "German",
-      "code": "8668",
-      "specUrl": null,
-      "verified": null
+      "code": "8662",
+      "specUrl": "https://filestore.aqa.org.uk/resources/german/specifications/AQA-8662-SP-2024.PDF",
+      "verified": "2026-09-20"
     },
     {
       "level": "GCSE",
@@ -793,8 +793,8 @@
       "board": "Eduqas",
       "subject": "Mathematics",
       "code": "C300",
-      "specUrl": null,
-      "verified": null
+      "specUrl": "https://www.eduqas.co.uk/media/cosjcbs1/eduqas-gcse-maths-spec-from-2015-e.pdf",
+      "verified": "2026-09-20"
     },
     {
       "level": "GCSE",
@@ -920,9 +920,9 @@
       "level": "GCSE",
       "board": "AQA",
       "subject": "Spanish",
-      "code": "8698",
-      "specUrl": null,
-      "verified": null
+      "code": "8692",
+      "specUrl": "https://filestore.aqa.org.uk/resources/spanish/specifications/AQA-8692-SP-2024.PDF",
+      "verified": "2026-09-20"
     },
     {
       "level": "GCSE",

@@ -35,14 +35,15 @@ export ANTHROPIC_API_KEY=…                                     # API credits; 
 node scripts/batch-course.js spec <board> <code> [--url …]     # → src/specs/<board>-<code>.js, or held in scratch
 node scripts/batch-course.js kits <id> [--only t1,t2]          # → src/kits/<id>.js
 node scripts/batch-course.js course <board> <code> [--url …]   # spec, kits, then install in build.js
-node scripts/batch-course.js wave 1 [--parallel 3] [--url AQA-8652=https://…pdf]
+node scripts/batch-course.js wave 1 [--parallel 3] [--skip EDQ-C300] [--url AQA-8652=https://…pdf]
 node scripts/batch-course.js cost [<id>]
 npm test
 ```
 
 `--dry-run` builds the requests and submits nothing (for a spec, only the outline is shown, since the topics are not
 known until it exists). `--poll <seconds>` sets the polling interval (default 30). `--gbp <rate>` converts the report.
-A course with no verified link in `data/catalogue.json` takes `--url`; on `wave`, as `--url <id>=<url>`.
+A course with no verified link in `data/catalogue.json` takes `--url`; on `wave`, as `--url <id>=<url>`. `--skip <id>,…`
+leaves courses out of a wave — a maths course, which belongs on the session path (see the end of this file).
 
 ## The cost
 

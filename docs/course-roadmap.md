@@ -52,10 +52,13 @@ subscription. Every request's usage goes to a ledger, so a wave's cost is measur
 
 ```
 export ANTHROPIC_API_KEY=…
-node scripts/batch-course.js wave 1 --url AQA-8652=https://cdn.sanity.io/files/p28bar15/green/672787d9e5c10db595a68be124976cf5ea1c5ba6.pdf
+node scripts/batch-course.js wave 1 --skip EDQ-C300 --url AQA-8652=https://cdn.sanity.io/files/p28bar15/green/672787d9e5c10db595a68be124976cf5ea1c5ba6.pdf
 node scripts/batch-course.js cost
 npm test
 ```
+
+Eduqas Mathematics C300 is skipped above: a maths course's writers and judges need the board's formulae booklet in front
+of them, which only the session path (`references/depth.md`) provides.
 
 A map the judge scores under 0.8, or whose mark style contradicts the family prior the tests enforce, is held in
 `scratch/courses/<id>/batch/` with the judge's report instead of reaching `src/specs/`. Rooms refused twice ship without a

@@ -7,7 +7,7 @@
    node scripts/batch-course.js spec <board> <code> [--url …]   fetch the PDF → outline → topics → validate → judge → src/specs/
    node scripts/batch-course.js kits <id> [--only t1,t2]         write → validate → judge → one rewrite → judge → src/kits/<id>.js
    node scripts/batch-course.js course <board> <code> [--url …]  spec, then kits, then install in build.js
-   node scripts/batch-course.js wave <n> [--parallel 3]          every course of that wave in docs/course-roadmap.md not yet built
+   node scripts/batch-course.js wave <n> [--parallel 3] [--skip <id>,…]  every course of that wave in docs/course-roadmap.md not yet built
    node scripts/batch-course.js cost [<id>]                      the ledger: tokens and dollars by course, stage and model
    Options: --dry-run (build the requests, submit nothing)  --doc file|url (how the PDF reaches the model; default file)
             --poll <seconds> (default 30)  --gbp <rate> (USD→GBP for the cost report; default 0.75)
@@ -425,11 +425,13 @@ async function main(argv) {
     const id = argv[1]; if (!id) throw new Error('usage: kits <id> [--only t1,t2]');
     const k = await runKits({ id, only: flag('only') ? flag('only').split(',') : null, ...common }); if (k.dryRun) return; console.log(printCost(k.id, k.cost, gbp)); console.log('now run: npm test');
   } else if (cmd === 'wave') {
-    const n = argv[1]; if (!n) throw new Error('usage: wave <n> [--parallel 3] [--url <id>=https://…pdf …]');
+    const n = argv[1]; if (!n) throw new Error('usage: wave <n> [--parallel 3] [--skip <id>,…] [--url <id>=https://…pdf …]');
+    const skip = new Set((flag('skip') || '').split(',').map(x => x.trim()).filter(Boolean));
     const parallel = Number(flag('parallel')) || 3;
     /* a course whose PDF is not on a verified catalogue link takes its URL here, e.g. --url AQA-8652=https://…pdf */
     const urls = {}; argv.forEach((a, i) => { if (a === '--url' && /^[A-Z]+-[A-Z0-9]+=/.test(argv[i + 1] || '')) { const [cid, ...rest] = argv[i + 1].split('='); urls[cid] = rest.join('='); } });
-    const all = waveCourses(n), todo = all.filter(c => !specFor(c.id));
+    const all = waveCourses(n), todo = all.filter(c => !specFor(c.id) && !skip.has(c.id));
+    if (skip.size) console.log(`skipping ${[...skip].join(', ')}`);
     console.log(`wave ${n}: ${todo.length} of ${all.length} course(s) not yet built — ${todo.map(c => c.id).join(', ') || 'none'}`);
     const results = []; let i = 0;
     const worker = async () => { while (i < todo.length) { const c = todo[i++]; try {

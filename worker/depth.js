@@ -130,7 +130,7 @@ export async function runDepth(params, deps) {
 
   for (let attempt = 0; attempt < 2 && pending.length; attempt++) {
     const again = attempt > 0;
-    const writeRequests = pending.map(({ t, problems }) => batchRequest(cid('write', t.id), { prompt: kitPrompts.write({ spec, topic: t, family, problems }), schema: kitSchemas.kit, model: KIT_MODELS.write, maxTokens: 20000 }, { topic: t, family, problems }));
+    const writeRequests = pending.map(({ t, problems }) => batchRequest(cid('write', t.id), { prompt: kitPrompts.write({ spec, topic: t, family, problems }), schema: kitSchemas.kit, model: KIT_MODELS.write, maxTokens: 32000 }, { topic: t, family, problems }));
     const writeResults = await runBatchRound(step, ai, `depth ${id} write${again ? ' again' : ''}`, writeRequests);
     rec.calls += writeRequests.length;
 

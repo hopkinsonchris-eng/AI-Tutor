@@ -118,7 +118,23 @@ const logs = []; const log = (m) => logs.push(m);
     ok('S6 a caret power in a spec is a ship problem', BC.shipProblems({ subject: 'Mathematics', markConventions: { style: 'points' }, topics: [{ ideas: [{ content: 'x^2 + 1' }] }] }).some(p => /caret/.test(p)));
     const api3 = fakeApi((k) => k.kind === 'outline' ? outline() : k.kind === 'topic' ? (k.id === '3.3' ? { ideas: [idea('3.3.1', 1)], caseStudies: [], skills: [] } : topicAnswer(k.id)) : goodJudge());
     let err = null; try { await BC.runSpec({ board: 'AQA', code: '7042', provenance, scratch: tmp(), root: tmp(), api: api3, log }); } catch (e) { err = e; }
-    ok('S7 a topic refused twice fails the run with the validator\'s reason, after exactly one corrective batch', err && /refused by the validator after the corrective round/.test(err.message) && /at least two key ideas/.test(err.message) && api3.calls.create.length === 2);
+    ok('S7 a topic refused every round fails the run with the validator\'s reason only once JUDGE_ROUNDS is spent, not on the first round\'s corrective batch', err && /refused by the validator after the corrective round/.test(err.message) && /at least two key ideas/.test(err.message) && api3.calls.create.filter(b => kindOf(b.requests[0].params).kind === 'topic').length === 2 * BC.JUDGE_ROUNDS);
+
+    let topicCalls4 = 0;
+    const api4 = fakeApi((k) => k.kind === 'outline' ? outline() : k.kind === 'topic' ? (k.id === '3.3' && ++topicCalls4 <= 2 ? { ideas: [idea('3.3.1', 1)], caseStudies: [], skills: [] } : topicAnswer(k.id)) : goodJudge());
+    const r4 = await BC.runSpec({ board: 'AQA', code: '7042', provenance, scratch: tmp(), root: tmp(), api: api4, log });
+    ok('S7b a topic the validator refuses through round 1\'s own corrective batch costs that round, not the whole run — round 2 tries a fresh outline and the spec still publishes', r4.published && r4.rounds === 2);
+
+    /* the component a topic belongs to can itself be renamed by a corrective re-outline (this is exactly what
+       killed a live AQA-8652 run: round 2 renamed a component id and a topic kept unchanged since round 1 was
+       reused with its round-1 component, which the new outline no longer had) */
+    const renamedComponent = () => outline({ components: outline().components.map(c => c.id === 'P1' ? { ...c, id: 'PAPER1' } : c), topics: outline().topics.map(t => t.component === 'P1' ? { ...t, component: 'PAPER1' } : t) });
+    let judgeCalls5 = 0;
+    const api5 = fakeApi((k) => k.kind === 'outline' ? (judgeCalls5 > 0 ? renamedComponent() : outline()) : k.kind === 'topic' ? topicAnswer(k.id) : k.kind === 'judge' ? (judgeCalls5++ === 0 ? { ...goodJudge(), score: 0.5, invented: ['needs the component ids renamed'] } : goodJudge()) : null);
+    const r5 = await BC.runSpec({ board: 'AQA', code: '7042', provenance, scratch: tmp(), root: tmp(), api: api5, log });
+    ok('S7c a corrective round that renames a topic\'s own component still publishes — the stale round-1 answer pointing at the old component id is dropped, not reused as-is', r5.published && r5.rounds === 2 && r5.spec.topics.find(t => t.id === '3.1').component === 'PAPER1');
+    const topic31Asks = api5.calls.message.filter(p => kindOf(p).kind === 'topic' && kindOf(p).id === '3.1').length + api5.calls.create.flatMap(b => b.requests).filter(q => kindOf(q.params).kind === 'topic' && kindOf(q.params).id === '3.1').length;
+    ok('S7c topic 3.1 was rewritten for round 2 because its component changed, even though its id and name did not (asked once per round, not reused from round 1)', topic31Asks === 2);
   }
 
   /* ---------- the document by URL, and a dry run ---------- */

@@ -229,11 +229,12 @@ async function runSpec({ board, code, subject, level, url, scratch, dryRun, poll
     spec = skeleton(outline, id, params);
     log(`${r > 1 ? `round ${r}: re-` : ''}outline: ${spec.topics.length} topics, ${spec.components.length} components, family ${family}`);
 
-    /* 2. topics — a topic this round's outline kept under the same id and name keeps its earlier content rather
-          than being rewritten and rebilled; the first new or changed one is a direct call (it writes the document
-          into Sonnet's cache), the rest go as one batch that reads it, then one corrective batch for whatever the
-          validator refuses */
-    for (const tid of Object.keys(filled)) if (!spec.topics.some(t => t.id === tid && t.name === filled[tid].name)) delete filled[tid];
+    /* 2. topics — a topic this round's outline kept under the same id, name, component and option keeps its earlier
+          content rather than being rewritten and rebilled (a corrective round can rename a component's own id, which
+          would otherwise leave a reused topic pointing at one that no longer exists); the first new or changed one is
+          a direct call (it writes the document into Sonnet's cache), the rest go as one batch that reads it, then one
+          corrective batch for whatever the validator refuses */
+    for (const tid of Object.keys(filled)) { const t = spec.topics.find(x => x.id === tid); if (!t || t.name !== filled[tid].name || t.component !== filled[tid].component || t.option !== filled[tid].option) delete filled[tid]; }
     const topicPrompt = (t, problems) => R.params({ system, prompt: B.prompts.topic({ outline: spec, topic: t, family, problems }), source, schema: B.schemas.topic, model: MODELS.topic, maxTokens: MAX_TOKENS.topic });
     if (!filled[spec.topics[0].id]) {
       const rr = await R.direct('topic', cid(id, 'topic', spec.topics[0].id, `r${r}`), topicPrompt(spec.topics[0], null));
@@ -258,7 +259,21 @@ async function runSpec({ board, code, subject, level, url, scratch, dryRun, poll
       spec.topics = spec.topics.map(t => filled[t.id] || t);
     }
     v = validateSpec(spec);
-    if (!v.ok) { fs.writeFileSync(path.join(R.dir, 'spec.refused.json'), JSON.stringify({ problems: v.problems, spec }, null, 1)); throw new Error(`${id}: refused by the validator after the corrective round — ${v.problems.slice(0, 4).join('; ')} (the draft is in ${path.relative(ROOT, path.join(R.dir, 'spec.refused.json'))})`); }
+    if (!v.ok) {
+      fs.writeFileSync(path.join(R.dir, 'spec.refused.json'), JSON.stringify({ problems: v.problems, spec }, null, 1));
+      if (r >= JUDGE_ROUNDS) throw new Error(`${id}: refused by the validator after the corrective round — ${v.problems.slice(0, 4).join('; ')} (the draft is in ${path.relative(ROOT, path.join(R.dir, 'spec.refused.json'))})`);
+      /* a round that regenerated the outline can introduce a validator problem the previous round never had —
+         that costs the rest of this round, not the whole run, while rounds remain: the same findings-as-objection
+         mechanism a low judge score uses picks it up next round, this time from the validator rather than the judge.
+         A topic the validator names keeps its content cached across a round change only when the outline actually
+         changed something about it (see the pruning above) — its content is known bad, so drop it too, or an
+         unchanged outline would just resubmit the same answer and fail identically next round. */
+      log(`refused by the validator after the corrective round (${v.problems.length}) — round ${r + 1} of ${JUDGE_ROUNDS}: re-outlining with the validator's own findings as the objection`);
+      for (const p of v.problems) { const m = /^topic "([^"]+)"/.exec(p); if (m) delete filled[m[1]]; }
+      R.state.lastJudge = { invented: v.problems.slice(0, 8), missing: [] };
+      R.state.round = r + 1; R.state.outline = null; R.state.judge = null; R.save();
+      continue;
+    }
 
     /* 3. judge — Opus, fresh context, one request in a batch of one */
     judge = R.state.judge;

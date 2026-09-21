@@ -333,7 +333,23 @@ const baseEnv = () => ({ ANTHROPIC_API_KEY: 'sk-ant-test', ALLOWED_ORIGIN: 'http
     const head = async (url) => ({ ok: true, status: 200, contentType: 'application/pdf', etag: headEtag, lastModified: 'Mon, 01 Sep 2025 00:00:00 GMT', length: 1000, url });
     const pending = [];
     e.COURSE_BUILDER = { created: [], async create({ id, params }) { this.created.push(id); pending.push(() => builder.exports.runBuild(params, { ...loaded.exports.builderDeps(e, inlineStep()), ai: cannedAI(), head })); return { id }; } };
-    const cannedKit = () => ({ async kit({ topic, family }) { return sampleKit(topic, family); }, async judgeKit() { return { score: 0.95, wrong: [], problems: [], notes: 'ok' }; } });
+    const cannedKit = () => {
+      const store = new Map();
+      return {
+        async submitBatch(requests) {
+          const results = {};
+          for (const r of requests) {
+            const payload = r.custom_id.startsWith('write:') ? sampleKit(r.topic, r.family) : { score: 0.95, wrong: [], problems: [], notes: 'ok' };
+            results[r.custom_id] = { custom_id: r.custom_id, result: { type: 'succeeded', message: { stop_reason: 'end_turn', content: [{ type: 'text', text: JSON.stringify(payload) }] } } };
+          }
+          const id = 'batch_' + Math.random().toString(36).slice(2);
+          store.set(id, results);
+          return { id, processing_status: 'ended', results_url: id };
+        },
+        async getBatch(id) { return { id, processing_status: 'ended', results_url: id }; },
+        async fetchResults(url) { return store.get(url); },
+      };
+    };
     e.COURSE_DEPTH = { created: [], async create({ id, params }) { this.created.push(params); pending.push(() => depth.exports.runDepth(params, { kv: e.USAGE, step: inlineStep(), ai: cannedKit(), now: () => new Date().toISOString() })); return { id }; } };
     e.COURSE_REVIEW = { created: [], async create({ id, params }) { this.created.push(id); pending.push(() => builder.exports.runReview(params.id, { kv: e.USAGE, step: inlineStep(), ai: cannedAI(), head, now: () => new Date().toISOString(), boardDomains: CATALOGUE.boardDomains })); return { id }; } };
     const runPending = async () => { while (pending.length) await pending.shift()(); };

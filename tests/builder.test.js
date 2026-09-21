@@ -13,7 +13,7 @@ const B = loadModule(path.join(__dirname, '..', 'worker', 'builder.js'), {
 }).exports;
 const { runBuild, runReview, diffSpecs, prompts, specIdFor, PROMPT_VERSION } = B;
 const D = loadModule(path.join(__dirname, '..', 'worker', 'depth.js'), { '../src/kit-validator.js': kitValidator, '../src/families.js': families }).exports;
-const { runDepth, kitPrompts, KIT_BATCH } = D;
+const { runDepth, kitPrompts } = D;
 
 /* ---------- canned documents: what the model returns, per family ---------- */
 const idea = (code, n) => ({ code, q: `What does ${code} require?`, idea: `Idea ${code}`, content: `The specification statement for ${code}, in the board's own terms, with what the student must be able to do — number ${n}.` });
@@ -186,10 +186,30 @@ const deps = (f, over = {}) => ({ kv: kv(), step: inlineStep(), ai: ai(f), head:
     ok('R3 an AI client without a resources method still builds and publishes', rec.status === 'published' && (await d.kv.get('spec:' + rec.id, 'json')).resources.hubs.length === 0);
   }
 
-  /* ---------- course depth (tooler criteria 1–4, 8): write → validate → judge → one rewrite ---------- */
-  const kitAI = (over = {}) => { const calls = { kit: 0, judge: 0, prompts: [], inflight: 0, maxInflight: 0 }; return { calls,
-    async kit({ topic, family, prompt, problems }) { calls.kit++; calls.prompts.push(prompt); calls.inflight++; calls.maxInflight = Math.max(calls.maxInflight, calls.inflight); await new Promise(r => setTimeout(r, 5)); calls.inflight--; return over.kit ? over.kit(topic, family, problems, calls) : sampleKit(topic, family); },
-    async judgeKit({ topic, kit }) { calls.judge++; return over.judge ? over.judge(topic, kit, calls) : { score: 0.95, wrong: [], problems: [], notes: 'Faithful and correct.' }; } }; };
+  /* ---------- course depth (tooler criteria 1–4, 8): write → validate → judge → one rewrite, everything
+     still needing work each round going into a single Anthropic Message Batch, not one call per room ---------- */
+  const kitAI = (over = {}) => {
+    const calls = { kit: 0, judge: 0, prompts: [], batches: [] };
+    const store = new Map();
+    return { calls,
+      async submitBatch(requests) {
+        calls.batches.push(requests.length);
+        const results = {};
+        for (const r of requests) {
+          calls.prompts.push(r.params.messages[0].content[0].text);
+          let payload;
+          if (r.custom_id.startsWith('write:')) { calls.kit++; payload = over.kit ? over.kit(r.topic, r.family, r.problems, calls) : sampleKit(r.topic, r.family); }
+          else { calls.judge++; payload = over.judge ? over.judge(r.topic, r.kit, calls) : { score: 0.95, wrong: [], problems: [], notes: 'Faithful and correct.' }; }
+          results[r.custom_id] = { custom_id: r.custom_id, result: { type: 'succeeded', message: { stop_reason: 'end_turn', content: [{ type: 'text', text: JSON.stringify(payload) }] } } };
+        }
+        const id = 'batch_' + Math.random().toString(36).slice(2);
+        store.set(id, results);
+        return { id, processing_status: 'ended', results_url: id };
+      },
+      async getBatch(id) { return { id, processing_status: 'ended', results_url: id }; },
+      async fetchResults(url) { return store.get(url); },
+    };
+  };
   const publishedKv = async (f = 'science', topicCount = 3) => { const d = deps(f); if (topicCount !== 3) d.ai.outline = async () => outlineFor(f, { topics: Array.from({ length: topicCount }, (_, i) => ({ id: '3.' + (i + 1), component: i % 2 ? 'P2' : 'P1', option: null, name: 'Topic ' + (i + 1) })) }); const rec = await runBuild(params(f), d); if (rec.status !== 'published') throw new Error('setup: ' + rec.error); return { kv: d.kv, id: rec.id }; };
   const depthDeps = (kv, ai) => ({ kv, step: inlineStep(), ai, now: () => '2026-09-10T15:00:00.000Z' });
   {
@@ -198,7 +218,7 @@ const deps = (f, over = {}) => ({ kv: kv(), step: inlineStep(), ai: ai(f), head:
     const kit = await kv.get(`kit:${id}:3.1`, 'json');
     ok('D1 depth writes a kit for every topic, judges each, and records progress to done', rec.status === 'done' && rec.total === 3 && Object.keys(rec.done).length === 3 && rec.failed.length === 0 && ai.calls.kit === 3 && ai.calls.judge === 3 && rec.calls === 6, JSON.stringify({ status: rec.status, done: rec.done, failed: rec.failed, calls: ai.calls.kit + '/' + ai.calls.judge }));
     ok('D1 a stored kit passes the contract and carries provenance', kit && kitValidator.validateKit(kit, (await kv.get('spec:' + id, 'json')).topics[0], 'science').ok && kit.built.judge.score === 0.95 && kit.built.promptVersion && kit.built.models.length === 2 && kit.family === 'science', JSON.stringify(kit && kit.built));
-    ok('D1 the steps are named per room', d.step.names.includes('kit write 3.1') && d.step.names.includes('kit judge 3.1'), d.step.names.join(','));
+    ok('D1 the steps are named per round, one submit for the whole batch', d.step.names.includes(`depth ${id} write submit`) && d.step.names.includes(`depth ${id} judge submit`), d.step.names.join(','));
     ok('D7 the writer prompt carries the topic\'s key ideas, the mark conventions and the family\'s kit rules', /3\.1\.1/.test(ai.calls.prompts[0]) && /commandWords|command words/i.test(ai.calls.prompts[0]) && families.FAMILIES.science.kit.rules.every(r => ai.calls.prompts[0].includes(r)) && /12/.test(ai.calls.prompts[0]));
   }
   {
@@ -229,7 +249,7 @@ const deps = (f, over = {}) => ({ kv: kv(), step: inlineStep(), ai: ai(f), head:
   {
     const { kv, id } = await publishedKv('science', 9); const ai = kitAI();
     const rec = await runDepth({ id }, depthDeps(kv, ai));
-    ok(`D6 rooms are written ${KIT_BATCH} at a time, never more, never one by one`, rec.status === 'done' && Object.keys(rec.done).length === 9 && ai.calls.maxInflight === KIT_BATCH, String(ai.calls.maxInflight));
+    ok('D6 all nine rooms go into one Anthropic Message Batch per round, not one call each', rec.status === 'done' && Object.keys(rec.done).length === 9 && ai.calls.batches.length === 2 && ai.calls.batches.every(n => n === 9), JSON.stringify(ai.calls.batches));
   }
   ok('D7 the kit rules reach the skill reference too', require('fs').readFileSync(path.join(__dirname, '..', '.claude', 'skills', 'course-builder', 'references', 'families.md'), 'utf8').includes(families.FAMILIES.essay.kit.rules[0]));
 

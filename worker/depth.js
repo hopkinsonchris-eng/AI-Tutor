@@ -3,9 +3,11 @@
  * src/kit-validator.js, with the family's kit rules from src/families.js.
  *
  * runDepth(params, deps)   params = { id, only?: [topicId] }
- *                          for each room, four at a time: write → validate → judge → one rewrite with the
- *                          objections → store, or list the room as failed with what went wrong
- * deps = { kv, step, ai: { kit, judgeKit }, now }
+ *                          every room still needing work goes into one Anthropic Message Batch per round:
+ *                          write → validate → judge → one rewrite with the objections → store, or list the
+ *                          room as failed with what went wrong. A batch costs half what the same calls cost
+ *                          made one at a time, so a round is a single submit-and-poll, not one call per room.
+ * deps = { kv, step, ai: { submitBatch, getBatch, fetchResults }, now }
  * The Workflow class that gives this durability lives in index.js; this file has no Cloudflare imports.
  */
 import { validateKit, KINDS } from '../src/kit-validator.js';
@@ -14,7 +16,6 @@ import { FAMILIES, familyFor, kitText } from '../src/families.js';
 export const KIT_PROMPT_VERSION = '2026-09-10.2';
 export const KIT_MODELS = { write: 'claude-sonnet-5', judge: 'claude-opus-5' };
 export const KIT_SCORE = 0.8;
-export const KIT_BATCH = 4;
 
 const S = (properties) => ({ type: 'object', properties, required: Object.keys(properties), additionalProperties: false });
 const arr = items => ({ type: 'array', items });
@@ -68,6 +69,43 @@ export function judgeProblems(j) {
   return out.length ? out : [`judged ${Math.round(score * 100)}% — ${j.notes || 'not good enough to publish'}`];
 }
 
+/* One round's worth of write or judge calls for every room that needs one: submit as a single Anthropic
+   Message Batch, then wait for it to end — the wait between polls is a durable step.sleep, never a spin
+   inside a step — and read the results back keyed by custom_id. */
+async function runBatchRound(step, ai, label, requests) {
+  if (!requests.length) return {};
+  const batch = await step.do(`${label} submit`, () => ai.submitBatch(requests));
+  let status = batch, tries = 0, delay = 15;
+  while (status.processing_status !== 'ended') {
+    await step.sleep(`${label} wait ${tries}`, `${delay} seconds`);
+    status = await step.do(`${label} poll ${tries}`, () => ai.getBatch(batch.id));
+    tries++;
+    delay = Math.min(delay * 2, 300);
+  }
+  return ai.fetchResults(status.results_url);
+}
+
+/* One request's own outcome from a batch's results, or why it doesn't have one. */
+function fromBatchResult(results, customId) {
+  const result = results && results[customId] && results[customId].result;
+  if (!result) throw new Error('no result returned for this request');
+  if (result.type !== 'succeeded') throw new Error(`batch request ${result.type}: ${JSON.stringify(result.error || {}).slice(0, 200)}`);
+  if (result.message.stop_reason === 'refusal') throw new Error('the model declined this request');
+  return JSON.parse((result.message.content || []).filter(c => c.type === 'text').map(c => c.text).join(''));
+}
+
+/* One room's place in a batch: the Anthropic call under custom_id, plus the context (never sent over the
+   wire — kitAI's submitBatch sends only custom_id and params) a mock or caller needs without re-parsing
+   the prompt. */
+function batchRequest(customId, { prompt, schema, model, maxTokens }, context) {
+  return { custom_id: customId, ...context, params: {
+    model, max_tokens: maxTokens,
+    system: [{ type: 'text', text: kitPrompts.system(), cache_control: { type: 'ephemeral', ttl: '1h' } }],
+    messages: [{ role: 'user', content: [{ type: 'text', text: prompt }] }],
+    output_config: { format: { type: 'json_schema', schema }, effort: 'high' },
+  } };
+}
+
 export async function runDepth(params, deps) {
   const { kv, step, ai, now } = deps;
   const id = params.id;
@@ -83,48 +121,86 @@ export async function runDepth(params, deps) {
   await save();
   const topics = only ? spec.topics.filter(t => only.includes(t.id)) : spec.topics;
 
-  const one = async (t) => {
-    const write = (problems, again) => step.do(`kit write ${t.id}${again ? ' again' : ''}`, () => ai.kit({ prompt: kitPrompts.write({ spec, topic: t, family, problems }), schema: kitSchemas.kit, model: KIT_MODELS.write, topic: t, family, problems }));
-    const judge = (kit, again) => step.do(`kit judge ${t.id}${again ? ' again' : ''}`, () => ai.judgeKit({ prompt: kitPrompts.judge({ spec, topic: t, family, kit }), schema: kitSchemas.judge, model: KIT_MODELS.judge, topic: t, family, kit }));
-    let kit = await write(null, false); rec.calls++;
-    let problems = validateKit(kit, t, family).problems.map(p => 'refused by the validator: ' + p);
-    let verdict = null;
-    if (!problems.length) { verdict = await judge(kit, false); rec.calls++; problems = judgeProblems(verdict); }
-    if (problems.length) {
-      kit = await write(problems, true); rec.calls++;
-      problems = validateKit(kit, t, family).problems.map(p => 'refused by the validator: ' + p);
-      if (!problems.length) { verdict = await judge(kit, true); rec.calls++; problems = judgeProblems(verdict); }
-    }
-    if (problems.length) { rec.failed.push({ topic: t.id, problems: problems.slice(0, 6) }); await save(); return; }
-    const record = { id, topic: t.id, family, lesson: kit.lesson, room: kit.room, cards: kit.cards, extras: kit.extras || [],
-      built: { at: now(), models: [KIT_MODELS.write, KIT_MODELS.judge], promptVersion: KIT_PROMPT_VERSION, judge: { score: Number(verdict.score) || 0, notes: verdict.notes || '' } } };
-    await kv.put(`kit:${id}:${t.id}`, JSON.stringify(record));
-    rec.done[t.id] = record.built.at;
-    await save();
-  };
+  const kits = {}; // topic.id -> the kit once it has passed the validator
+  let pending = topics.map(t => ({ t, problems: null })); // rooms still needing a write this round
 
-  for (let i = 0; i < topics.length; i += KIT_BATCH) {
-    await Promise.all(topics.slice(i, i + KIT_BATCH).map(t => one(t).catch(e => { rec.failed.push({ topic: t.id, problems: [String((e && e.message) || e).slice(0, 200)] }); })));
+  for (let attempt = 0; attempt < 2 && pending.length; attempt++) {
+    const again = attempt > 0;
+    const writeRequests = pending.map(({ t, problems }) => batchRequest(`write:${t.id}`, { prompt: kitPrompts.write({ spec, topic: t, family, problems }), schema: kitSchemas.kit, model: KIT_MODELS.write, maxTokens: 20000 }, { topic: t, family, problems }));
+    const writeResults = await runBatchRound(step, ai, `depth ${id} write${again ? ' again' : ''}`, writeRequests);
+    rec.calls += writeRequests.length;
+
+    const toJudge = [];
+    const next = [];
+    for (const { t } of pending) {
+      let problems;
+      try {
+        const kit = fromBatchResult(writeResults, `write:${t.id}`);
+        kits[t.id] = kit;
+        problems = validateKit(kit, t, family).problems.map(p => 'refused by the validator: ' + p);
+      } catch (e) { problems = [String((e && e.message) || e).slice(0, 200)]; }
+      if (!problems.length) toJudge.push(t);
+      else if (again) rec.failed.push({ topic: t.id, problems: problems.slice(0, 6) });
+      else next.push({ t, problems });
+    }
+
+    if (toJudge.length) {
+      const judgeRequests = toJudge.map(t => batchRequest(`judge:${t.id}`, { prompt: kitPrompts.judge({ spec, topic: t, family, kit: kits[t.id] }), schema: kitSchemas.judge, model: KIT_MODELS.judge, maxTokens: 6000 }, { topic: t, family, kit: kits[t.id] }));
+      const judgeResults = await runBatchRound(step, ai, `depth ${id} judge${again ? ' again' : ''}`, judgeRequests);
+      rec.calls += judgeRequests.length;
+
+      for (const t of toJudge) {
+        let verdict, problems;
+        try { verdict = fromBatchResult(judgeResults, `judge:${t.id}`); problems = judgeProblems(verdict); }
+        catch (e) { problems = [String((e && e.message) || e).slice(0, 200)]; }
+        if (!problems.length) {
+          const record = { id, topic: t.id, family, lesson: kits[t.id].lesson, room: kits[t.id].room, cards: kits[t.id].cards, extras: kits[t.id].extras || [],
+            built: { at: now(), models: [KIT_MODELS.write, KIT_MODELS.judge], promptVersion: KIT_PROMPT_VERSION, judge: { score: Number(verdict.score) || 0, notes: verdict.notes || '' } } };
+          await kv.put(`kit:${id}:${t.id}`, JSON.stringify(record));
+          rec.done[t.id] = record.built.at;
+        } else if (again) rec.failed.push({ topic: t.id, problems: problems.slice(0, 6) });
+        else next.push({ t, problems });
+      }
+    }
+
+    pending = next;
     await save();
   }
+
   rec.status = 'done';
   await save();
   return rec;
 }
 
-/* The real model calls: structured outputs, no document — the kit is grounded in the spec map. */
+/* The real model calls: one Anthropic Message Batch per round, at half the per-token price of a
+   synchronous call, structured output grounded in the spec map, no document involved. */
 export function kitAI(env) {
   const key = env.ANTHROPIC_API_KEY;
   const headers = { 'Content-Type': 'application/json', 'x-api-key': key, 'anthropic-version': '2023-06-01' };
-  async function structured({ prompt, schema, model, maxTokens }) {
-    const body = { model, max_tokens: maxTokens, system: [{ type: 'text', text: kitPrompts.system(), cache_control: { type: 'ephemeral', ttl: '1h' } }],
-      messages: [{ role: 'user', content: [{ type: 'text', text: prompt }] }], output_config: { format: { type: 'json_schema', schema }, effort: 'high' } };
-    const res = await fetch('https://api.anthropic.com/v1/messages', { method: 'POST', headers, body: JSON.stringify(body) });
+  async function submitBatch(requests) {
+    const body = { requests: requests.map(r => ({ custom_id: r.custom_id, params: r.params })) };
+    const res = await fetch('https://api.anthropic.com/v1/messages/batches', { method: 'POST', headers, body: JSON.stringify(body) });
     const text = await res.text();
-    if (!res.ok) throw new Error(`Anthropic ${res.status}: ${text.slice(0, 300)}`);
-    const data = JSON.parse(text);
-    if (data.stop_reason === 'refusal') throw new Error('the model declined this request');
-    return JSON.parse((data.content || []).filter(c => c.type === 'text').map(c => c.text).join(''));
+    if (!res.ok) throw new Error(`Anthropic batch create ${res.status}: ${text.slice(0, 300)}`);
+    return JSON.parse(text);
   }
-  return { kit: (a) => structured({ ...a, maxTokens: 20000 }), judgeKit: (a) => structured({ ...a, maxTokens: 6000 }) };
+  async function getBatch(batchId) {
+    const res = await fetch(`https://api.anthropic.com/v1/messages/batches/${batchId}`, { headers });
+    const text = await res.text();
+    if (!res.ok) throw new Error(`Anthropic batch status ${res.status}: ${text.slice(0, 300)}`);
+    return JSON.parse(text);
+  }
+  async function fetchResults(resultsUrl) {
+    const res = await fetch(resultsUrl, { headers });
+    const text = await res.text();
+    if (!res.ok) throw new Error(`Anthropic batch results ${res.status}: ${text.slice(0, 300)}`);
+    const byId = {};
+    for (const line of text.split('\n')) {
+      if (!line.trim()) continue;
+      const row = JSON.parse(line);
+      byId[row.custom_id] = row;
+    }
+    return byId;
+  }
+  return { submitBatch, getBatch, fetchResults };
 }

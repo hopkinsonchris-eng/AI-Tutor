@@ -35,6 +35,10 @@ const FILE_DAYS = 7;
 const CARET = /[A-Za-z0-9)]\^-?\d/;
 const caretProblems = (x) => CARET.test(JSON.stringify(x)) ? ['powers are written with a caret (x^2, 10^-3): write them with superscript characters (x², 10⁻³) — the shipped files refuse carets'] : [];
 
+/* Anthropic's custom_id must match ^[a-zA-Z0-9_-]{1,64}$ — a topic id like "3.1" and the ":" this file used as a
+   separator both break that, so every custom_id is built and re-read through this one join. */
+const cid = (...parts) => parts.join('-').replace(/[^A-Za-z0-9_-]/g, '_');
+
 /* ---------- cost ---------- */
 function costOf(model, usage, ttl = TTL, batch = true) {
   const p = PRICES[model] || PRICES['claude-sonnet-5']; const m = batch ? BATCH_DISCOUNT : 1; const M = 1e6;
@@ -198,7 +202,7 @@ async function runSpec({ board, code, subject, level, url, scratch, dryRun, poll
   /* 1. outline — one Opus call, direct: everything else waits for it, and it writes the document into Opus's cache */
   let outline = R.state.outline;
   if (!outline) {
-    const ask = (problems) => R.direct('outline', `${id}:outline${problems ? ':again' : ''}`, R.params({ system, prompt: B.prompts.outline({ ...params, family: family0, problems }), source, schema: B.schemas.outline, model: MODELS.outline, maxTokens: MAX_TOKENS.outline }));
+    const ask = (problems) => R.direct('outline', cid(id, 'outline', problems ? 'again' : ''), R.params({ system, prompt: B.prompts.outline({ ...params, family: family0, problems }), source, schema: B.schemas.outline, model: MODELS.outline, maxTokens: MAX_TOKENS.outline }));
     let r = await ask(null);
     if (r.dryRun) return { id, dryRun: true };
     let problems = outlineProblems(skeleton(r.value, id, params));
@@ -215,24 +219,24 @@ async function runSpec({ board, code, subject, level, url, scratch, dryRun, poll
   const topicPrompt = (t, problems) => R.params({ system, prompt: B.prompts.topic({ outline: spec, topic: t, family, problems }), source, schema: B.schemas.topic, model: MODELS.topic, maxTokens: MAX_TOKENS.topic });
   const filled = R.state.topics || (R.state.topics = {});
   if (!filled[spec.topics[0].id]) {
-    const r = await R.direct('topic', `${id}:topic:${spec.topics[0].id}`, topicPrompt(spec.topics[0], null));
+    const r = await R.direct('topic', cid(id, 'topic', spec.topics[0].id), topicPrompt(spec.topics[0], null));
     if (r.dryRun) return { id, dryRun: true };
     filled[spec.topics[0].id] = merge(spec.topics[0], r.value); R.save();
   }
   const rest = spec.topics.filter(t => !filled[t.id]);
-  const first = await R.batch('topics', 'topic', rest.map(t => ({ custom_id: `${id}:topic:${t.id}`, params: topicPrompt(t, null) })));
+  const first = await R.batch('topics', 'topic', rest.map(t => ({ custom_id: cid(id, 'topic', t.id), params: topicPrompt(t, null) })));
   if (Object.values(first).some(v => v.dryRun)) return { id, dryRun: true };
   const problemsFor = {};
-  for (const t of rest) { const r = first[`${id}:topic:${t.id}`]; if (r.error) problemsFor[t.id] = [r.error]; else filled[t.id] = merge(t, r.value); }
+  for (const t of rest) { const r = first[cid(id, 'topic', t.id)]; if (r.error) problemsFor[t.id] = [r.error]; else filled[t.id] = merge(t, r.value); }
   R.save();
   spec.topics = spec.topics.map(t => filled[t.id] || t);
   spec.topics.forEach((t, i) => { if (filled[t.id]) { const p = topicProblems(spec, i, filled[t.id]); if (p.length) problemsFor[t.id] = (problemsFor[t.id] || []).concat(p); } });
   const again = spec.topics.filter(t => problemsFor[t.id]);
   if (again.length) {
     log(`${again.length} topic(s) refused by the validator — one corrective batch`);
-    const second = await R.batch('topics-again', 'topic', again.map(t => ({ custom_id: `${id}:topic:${t.id}:again`, params: topicPrompt(t, problemsFor[t.id].slice(0, 8)) })));
+    const second = await R.batch('topics-again', 'topic', again.map(t => ({ custom_id: cid(id, 'topic', t.id, 'again'), params: topicPrompt(t, problemsFor[t.id].slice(0, 8)) })));
     if (Object.values(second).some(v => v.dryRun)) return { id, dryRun: true };
-    for (const t of again) { const r = second[`${id}:topic:${t.id}:again`]; if (!r.error) filled[t.id] = merge(t, r.value); }
+    for (const t of again) { const r = second[cid(id, 'topic', t.id, 'again')]; if (!r.error) filled[t.id] = merge(t, r.value); }
     R.save();
     spec.topics = spec.topics.map(t => filled[t.id] || t);
   }
@@ -242,8 +246,8 @@ async function runSpec({ board, code, subject, level, url, scratch, dryRun, poll
   /* 3. judge — Opus, fresh context, one request in a batch of one */
   let judge = R.state.judge;
   if (!judge) {
-    const r = await R.batch('judge', 'judge', [{ custom_id: `${id}:judge`, params: R.params({ system, prompt: B.prompts.judge({ family, spec }), source, schema: B.schemas.judge, model: MODELS.judge, maxTokens: MAX_TOKENS.judge }) }]);
-    const j = r[`${id}:judge`]; if (j.dryRun) return { id, dryRun: true }; if (j.error) throw new Error(`${id}: the judge failed — ${j.error}`);
+    const r = await R.batch('judge', 'judge', [{ custom_id: cid(id, 'judge'), params: R.params({ system, prompt: B.prompts.judge({ family, spec }), source, schema: B.schemas.judge, model: MODELS.judge, maxTokens: MAX_TOKENS.judge }) }]);
+    const j = r[cid(id, 'judge')]; if (j.dryRun) return { id, dryRun: true }; if (j.error) throw new Error(`${id}: the judge failed — ${j.error}`);
     judge = R.state.judge = j.value; R.save();
   }
   const score = Number(judge.score) || 0;
@@ -320,10 +324,10 @@ async function runKits({ id, spec, scratch, dryRun, poll, api, log: logFn, only,
   const round = async (n, list) => {
     const tag = `a${a}r${n}`;
     const needWrite = list.filter(({ t }) => { const k = kits[t.id]; return !(k && k.attempt === a && k.round === n && k.written); });
-    const w = await R.batch(`kits-${tag}-write`, 'write', needWrite.map(({ t, problems }) => ({ custom_id: `${id}:write:${t.id}:${tag}`, params: write(t, problems) })));
+    const w = await R.batch(`kits-${tag}-write`, 'write', needWrite.map(({ t, problems }) => ({ custom_id: cid(id, 'write', t.id, tag), params: write(t, problems) })));
     if (Object.values(w).some(v => v.dryRun)) return 'dry';
     for (const { t } of needWrite) {
-      const r = w[`${id}:write:${t.id}:${tag}`];
+      const r = w[cid(id, 'write', t.id, tag)];
       const k = kits[t.id] = { ...(kits[t.id] || {}), attempt: a, round: n, written: true, judged: false, verdict: null, done: false };
       if (r.error) { k.kit = null; k.problems = [r.error]; continue; }
       const v = validateKit(r.value, t, family);
@@ -331,10 +335,10 @@ async function runKits({ id, spec, scratch, dryRun, poll, api, log: logFn, only,
     }
     R.save();
     const toJudge = list.map(x => x.t).filter(t => { const k = kits[t.id]; return k && k.attempt === a && k.round === n && k.kit && !k.problems.length && !k.judged; });
-    const j = await R.batch(`kits-${tag}-judge`, 'judgeKit', toJudge.map(t => ({ custom_id: `${id}:judge:${t.id}:${tag}`, params: judge(t, kits[t.id].kit) })));
+    const j = await R.batch(`kits-${tag}-judge`, 'judgeKit', toJudge.map(t => ({ custom_id: cid(id, 'judge', t.id, tag), params: judge(t, kits[t.id].kit) })));
     if (Object.values(j).some(v => v.dryRun)) return 'dry';
     for (const t of toJudge) {
-      const r = j[`${id}:judge:${t.id}:${tag}`]; const k = kits[t.id]; k.judged = true;
+      const r = j[cid(id, 'judge', t.id, tag)]; const k = kits[t.id]; k.judged = true;
       if (r.error) { k.problems = ['the judge failed: ' + r.error]; continue; }
       k.verdict = r.value; k.problems = D.judgeProblems(r.value);
       if (!k.problems.length) { k.done = true; k.at = new Date().toISOString(); }

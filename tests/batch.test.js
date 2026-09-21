@@ -67,7 +67,7 @@ const logs = []; const log = (m) => logs.push(m);
     ok('S1 the PDF went up once through the Files API and every request carries it as a cached file document', api.calls.upload.length === 1 && api.calls.message.every(p => p.messages[0].content[0].type === 'document' && p.messages[0].content[0].source.file_id === 'file_test_1' && p.messages[0].content[0].cache_control.ttl === '1h') && api.calls.create.every(b => b.requests.every(q => q.params.messages[0].content[0].source.file_id === 'file_test_1')));
     ok('S1 the system prompt is the Worker\'s, cached for an hour, and the output is constrained to the Worker\'s schema', api.calls.message[0].system[0].cache_control.ttl === '1h' && /specification maps for a study platform/.test(api.calls.message[0].system[0].text) && api.calls.message[0].output_config.format.type === 'json_schema' && api.calls.message[0].output_config.format.schema.properties.topics);
     const names = api.calls.create.map(b => b.requests.length + ':' + b.requests.map(q => q.custom_id).join(','));
-    ok('S2 the other three topics went as one batch, then the topic the validator refused went back alone with the objection, then the judge as a batch of one', api.calls.create.length === 3 && names[0] === '3:AQA-7042:topic:3.2,AQA-7042:topic:3.3,AQA-7042:topic:3.4' && names[1] === '1:AQA-7042:topic:3.2:again' && names[2] === '1:AQA-7042:judge', names.join(' | '));
+    ok('S2 the other three topics went as one batch, then the topic the validator refused went back alone with the objection, then the judge as a batch of one', api.calls.create.length === 3 && names[0] === '3:AQA-7042-topic-3_2,AQA-7042-topic-3_3,AQA-7042-topic-3_4' && names[1] === '1:AQA-7042-topic-3_2-again' && names[2] === '1:AQA-7042-judge', names.join(' | '));
     ok('S2 the corrective request carries the validator\'s problem in the Worker\'s own words', /previous answer for this topic was refused[\s\S]*too thin/.test(kindOf(api.calls.create[1].requests[0].params).text));
     ok('S2 the judge runs on Opus with the full draft', api.calls.create[2].requests[0].params.model === 'claude-opus-5' && /"3.4.3"/.test(api.calls.create[2].requests[0].params.messages[0].content[1].text));
     const file = path.join(root, 'src', 'specs', 'aqa-7042.js');
@@ -160,7 +160,7 @@ const logs = []; const log = (m) => logs.push(m);
     ok('K5 a room refused twice ships without a kit and is named in the file\'s header with the judge\'s objection', r.passed.length === 3 && r.failed.length === 1 && r.failed[0].topic === '3.3' && /Rooms without a kit after one rewrite[\s\S]*3\.3 — question 1: wrong/.test(fs.readFileSync(file, 'utf8')) && !freshKits(root)['AQA-7042']['3.3']);
     attempt = 1; const before = api.calls.create.length;
     const r2 = await BC.runKits({ id: 'AQA-7042', spec, scratch, root, api, log });
-    ok('K5 the rerun is a new attempt that writes and judges only the failed room, and then all four ship', api.calls.create.length === before + 2 && api.calls.create[before].requests.length === 1 && /:3\.3:a2r1$/.test(api.calls.create[before].requests[0].custom_id) && r2.passed.length === 4 && r2.failed.length === 0 && Object.keys(freshKits(root)['AQA-7042']).length === 4);
+    ok('K5 the rerun is a new attempt that writes and judges only the failed room, and then all four ship', api.calls.create.length === before + 2 && api.calls.create[before].requests.length === 1 && /-3_3-a2r1$/.test(api.calls.create[before].requests[0].custom_id) && r2.passed.length === 4 && r2.failed.length === 0 && Object.keys(freshKits(root)['AQA-7042']).length === 4);
 
     /* the crash: the judge batch of round 1 is submitted, then polling dies; the rerun polls the same batch and never resubmits the writes */
     const root3 = tmp(), scratch3 = tmp();
@@ -178,10 +178,10 @@ const logs = []; const log = (m) => logs.push(m);
   {
     const root = tmp(), scratch = tmp();
     const spec = { ...outline(), id: 'AQA-7042', topics: outline().topics.map(t => ({ ...t, ...topicAnswer(t.id) })) };
-    const api = fakeApi((k) => k.kind === 'write' ? sampleKit(topicOf(spec, k.id), 'essay') : { score: 0.9, wrong: [], problems: [], notes: 'Yes.' }, { failures: { 'AQA-7042:write:3.2:a1r1': 'errored' } });
+    const api = fakeApi((k) => k.kind === 'write' ? sampleKit(topicOf(spec, k.id), 'essay') : { score: 0.9, wrong: [], problems: [], notes: 'Yes.' }, { failures: { 'AQA-7042-write-3_2-a1r1': 'errored' } });
     const r = await BC.runKits({ id: 'AQA-7042', spec, scratch, root, api, log });
     const rewrite = api.calls.create[2].requests;
-    ok('K7 a request the API errored is not billed, not in the ledger, and is written afresh in round 2 without a "previous kit" objection', rewrite.length === 1 && /:3\.2:a1r2$/.test(rewrite[0].custom_id) && !/previous kit was refused/.test(rewrite[0].params.messages[0].content[0].text) && r.passed.length === 4 && fs.readFileSync(path.join(scratch, 'AQA-7042', 'batch', 'ledger.jsonl'), 'utf8').split('\n').filter(Boolean).length === 8);
+    ok('K7 a request the API errored is not billed, not in the ledger, and is written afresh in round 2 without a "previous kit" objection', rewrite.length === 1 && /-3_2-a1r2$/.test(rewrite[0].custom_id) && !/previous kit was refused/.test(rewrite[0].params.messages[0].content[0].text) && r.passed.length === 4 && fs.readFileSync(path.join(scratch, 'AQA-7042', 'batch', 'ledger.jsonl'), 'utf8').split('\n').filter(Boolean).length === 8);
   }
 
   /* ---------- the roadmap's waves ---------- */

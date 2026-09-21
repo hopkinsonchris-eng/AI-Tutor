@@ -339,7 +339,7 @@ const baseEnv = () => ({ ANTHROPIC_API_KEY: 'sk-ant-test', ALLOWED_ORIGIN: 'http
         async submitBatch(requests) {
           const results = {};
           for (const r of requests) {
-            const payload = r.custom_id.startsWith('write:') ? sampleKit(r.topic, r.family) : { score: 0.95, wrong: [], problems: [], notes: 'ok' };
+            const payload = r.custom_id.startsWith('write-') ? sampleKit(r.topic, r.family) : { score: 0.95, wrong: [], problems: [], notes: 'ok' };
             results[r.custom_id] = { custom_id: r.custom_id, result: { type: 'succeeded', message: { stop_reason: 'end_turn', content: [{ type: 'text', text: JSON.stringify(payload) }] } } };
           }
           const id = 'batch_' + Math.random().toString(36).slice(2);

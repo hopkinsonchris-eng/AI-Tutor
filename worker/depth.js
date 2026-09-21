@@ -85,6 +85,10 @@ async function runBatchRound(step, ai, label, requests) {
   return ai.fetchResults(status.results_url);
 }
 
+/* Anthropic's custom_id must match ^[a-zA-Z0-9_-]{1,64}$ — a topic id like "3.1" breaks that, so every
+   custom_id is built and re-read through this one join. */
+const cid = (...parts) => parts.join('-').replace(/[^A-Za-z0-9_-]/g, '_');
+
 /* One request's own outcome from a batch's results, or why it doesn't have one. */
 function fromBatchResult(results, customId) {
   const result = results && results[customId] && results[customId].result;
@@ -126,7 +130,7 @@ export async function runDepth(params, deps) {
 
   for (let attempt = 0; attempt < 2 && pending.length; attempt++) {
     const again = attempt > 0;
-    const writeRequests = pending.map(({ t, problems }) => batchRequest(`write:${t.id}`, { prompt: kitPrompts.write({ spec, topic: t, family, problems }), schema: kitSchemas.kit, model: KIT_MODELS.write, maxTokens: 20000 }, { topic: t, family, problems }));
+    const writeRequests = pending.map(({ t, problems }) => batchRequest(cid('write', t.id), { prompt: kitPrompts.write({ spec, topic: t, family, problems }), schema: kitSchemas.kit, model: KIT_MODELS.write, maxTokens: 20000 }, { topic: t, family, problems }));
     const writeResults = await runBatchRound(step, ai, `depth ${id} write${again ? ' again' : ''}`, writeRequests);
     rec.calls += writeRequests.length;
 
@@ -135,7 +139,7 @@ export async function runDepth(params, deps) {
     for (const { t } of pending) {
       let problems;
       try {
-        const kit = fromBatchResult(writeResults, `write:${t.id}`);
+        const kit = fromBatchResult(writeResults, cid('write', t.id));
         kits[t.id] = kit;
         problems = validateKit(kit, t, family).problems.map(p => 'refused by the validator: ' + p);
       } catch (e) { problems = [String((e && e.message) || e).slice(0, 200)]; }
@@ -145,13 +149,13 @@ export async function runDepth(params, deps) {
     }
 
     if (toJudge.length) {
-      const judgeRequests = toJudge.map(t => batchRequest(`judge:${t.id}`, { prompt: kitPrompts.judge({ spec, topic: t, family, kit: kits[t.id] }), schema: kitSchemas.judge, model: KIT_MODELS.judge, maxTokens: 6000 }, { topic: t, family, kit: kits[t.id] }));
+      const judgeRequests = toJudge.map(t => batchRequest(cid('judge', t.id), { prompt: kitPrompts.judge({ spec, topic: t, family, kit: kits[t.id] }), schema: kitSchemas.judge, model: KIT_MODELS.judge, maxTokens: 6000 }, { topic: t, family, kit: kits[t.id] }));
       const judgeResults = await runBatchRound(step, ai, `depth ${id} judge${again ? ' again' : ''}`, judgeRequests);
       rec.calls += judgeRequests.length;
 
       for (const t of toJudge) {
         let verdict, problems;
-        try { verdict = fromBatchResult(judgeResults, `judge:${t.id}`); problems = judgeProblems(verdict); }
+        try { verdict = fromBatchResult(judgeResults, cid('judge', t.id)); problems = judgeProblems(verdict); }
         catch (e) { problems = [String((e && e.message) || e).slice(0, 200)]; }
         if (!problems.length) {
           const record = { id, topic: t.id, family, lesson: kits[t.id].lesson, room: kits[t.id].room, cards: kits[t.id].cards, extras: kits[t.id].extras || [],

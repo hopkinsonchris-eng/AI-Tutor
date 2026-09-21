@@ -198,7 +198,7 @@ const deps = (f, over = {}) => ({ kv: kv(), step: inlineStep(), ai: ai(f), head:
         for (const r of requests) {
           calls.prompts.push(r.params.messages[0].content[0].text);
           let payload;
-          if (r.custom_id.startsWith('write:')) { calls.kit++; payload = over.kit ? over.kit(r.topic, r.family, r.problems, calls) : sampleKit(r.topic, r.family); }
+          if (r.custom_id.startsWith('write-')) { calls.kit++; payload = over.kit ? over.kit(r.topic, r.family, r.problems, calls) : sampleKit(r.topic, r.family); }
           else { calls.judge++; payload = over.judge ? over.judge(r.topic, r.kit, calls) : { score: 0.95, wrong: [], problems: [], notes: 'Faithful and correct.' }; }
           results[r.custom_id] = { custom_id: r.custom_id, result: { type: 'succeeded', message: { stop_reason: 'end_turn', content: [{ type: 'text', text: JSON.stringify(payload) }] } } };
         }

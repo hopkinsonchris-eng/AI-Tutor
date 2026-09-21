@@ -29,8 +29,9 @@ const topicOf = (spec, id) => spec.topics.find(t => t.id === id) || outline().to
 const provenance = { id: 'AQA-7042', board: 'AQA', code: '7042', subject: 'History', level: 'A level', url: 'https://filestore.aqa.org.uk/x/AQA-7042-SP-2015.PDF', etag: '"abc"', lastModified: 'Mon, 01 Sep 2026 00:00:00 GMT', length: 1234567, checkedAt: '2026-09-20T10:00:00.000Z', pdf: path.join(__dirname, '_kit.js') };
 
 /* What a request is, from its prompt: the same templates the Worker uses, so this is exactly what the API would see. */
+const textOf = (p) => p.messages[0].content.filter(c => c.type === 'text').map(c => c.text).join('');
 function kindOf(p) {
-  const text = p.messages[0].content.filter(c => c.type === 'text').map(c => c.text).join('');
+  const text = textOf(p);
   if (/Produce the outline/.test(text)) return { kind: 'outline', again: /previous outline was refused/.test(text) };
   let m = /fill in topic (\S+) "/.exec(text); if (m) return { kind: 'topic', id: m[1], again: /previous answer for this topic was refused/.test(text), text };
   if (/Judge this draft specification map/.test(text)) return { kind: 'judge' };
@@ -67,7 +68,7 @@ const logs = []; const log = (m) => logs.push(m);
     ok('S1 the PDF went up once through the Files API and every request carries it as a cached file document', api.calls.upload.length === 1 && api.calls.message.every(p => p.messages[0].content[0].type === 'document' && p.messages[0].content[0].source.file_id === 'file_test_1' && p.messages[0].content[0].cache_control.ttl === '1h') && api.calls.create.every(b => b.requests.every(q => q.params.messages[0].content[0].source.file_id === 'file_test_1')));
     ok('S1 the system prompt is the Worker\'s, cached for an hour, and the output is constrained to the Worker\'s schema', api.calls.message[0].system[0].cache_control.ttl === '1h' && /specification maps for a study platform/.test(api.calls.message[0].system[0].text) && api.calls.message[0].output_config.format.type === 'json_schema' && api.calls.message[0].output_config.format.schema.properties.topics);
     const names = api.calls.create.map(b => b.requests.length + ':' + b.requests.map(q => q.custom_id).join(','));
-    ok('S2 the other three topics went as one batch, then the topic the validator refused went back alone with the objection, then the judge as a batch of one', api.calls.create.length === 3 && names[0] === '3:AQA-7042-topic-3_2,AQA-7042-topic-3_3,AQA-7042-topic-3_4' && names[1] === '1:AQA-7042-topic-3_2-again' && names[2] === '1:AQA-7042-judge', names.join(' | '));
+    ok('S2 the other three topics went as one batch, then the topic the validator refused went back alone with the objection, then the judge as a batch of one', api.calls.create.length === 3 && names[0] === '3:AQA-7042-topic-3_2-r1,AQA-7042-topic-3_3-r1,AQA-7042-topic-3_4-r1' && names[1] === '1:AQA-7042-topic-3_2-r1-again' && names[2] === '1:AQA-7042-judge-r1', names.join(' | '));
     ok('S2 the corrective request carries the validator\'s problem in the Worker\'s own words', /previous answer for this topic was refused[\s\S]*too thin/.test(kindOf(api.calls.create[1].requests[0].params).text));
     ok('S2 the judge runs on Opus with the full draft', api.calls.create[2].requests[0].params.model === 'claude-opus-5' && /"3.4.3"/.test(api.calls.create[2].requests[0].params.messages[0].content[1].text));
     const file = path.join(root, 'src', 'specs', 'aqa-7042.js');
@@ -91,12 +92,25 @@ const logs = []; const log = (m) => logs.push(m);
     ok('S5 a finished spec run is idempotent — a rerun asks the API for nothing and rewrites the same file', api.calls.create.length + api.calls.message.length === before && r2.published && api.calls.upload.length === 1);
   }
 
-  /* ---------- a spec the judge scores under 0.8, or that the repo\'s own tests would refuse, is held ---------- */
+  /* ---------- a spec the judge scores under 0.8 gets its own findings back as the next round's objection, up
+     to JUDGE_ROUNDS attempts, before it is held for a person to read the judge's report ---------- */
   {
     const root = tmp(), scratch = tmp();
     const api = fakeApi((k) => k.kind === 'outline' ? outline() : k.kind === 'topic' ? topicAnswer(k.id) : k.kind === 'judge' ? { ...goodJudge(), score: 0.6, fidelity: 0.6, invented: ['3.9 Invented topic'] } : null);
     const r = await BC.runSpec({ board: 'AQA', code: '7042', provenance, scratch, root, api, log });
-    ok('S6 a spec judged 60% is held: written beside its judge.json in scratch, never in src/specs', !r.published && r.file === path.join(scratch, 'AQA-7042', 'batch', 'aqa-7042.js') && fs.existsSync(r.file) && !fs.existsSync(path.join(root, 'src', 'specs', 'aqa-7042.js')) && fs.existsSync(path.join(scratch, 'AQA-7042', 'batch', 'judge.json')) && /judged 60%/.test(r.held[0]));
+    ok('S6 a spec judged 60% is held: written beside its judge.json in scratch, never in src/specs', !r.published && r.file === path.join(scratch, 'AQA-7042', 'batch', 'aqa-7042.js') && fs.existsSync(r.file) && !fs.existsSync(path.join(root, 'src', 'specs', 'aqa-7042.js')) && fs.existsSync(path.join(scratch, 'AQA-7042', 'batch', 'judge.json')) && /judged 60% after 3 round\(s\) of 3/.test(r.held[0]));
+    const outlineMsgs = api.calls.message.filter(p => kindOf(p).kind === 'outline');
+    ok('S6 it stops at JUDGE_ROUNDS, not before and not indefinitely: one outline direct call and one judge batch per round, the first outline carrying no objection and the other two carrying the previous round\'s finding', r.rounds === BC.JUDGE_ROUNDS && outlineMsgs.length === 3 && api.calls.create.filter(b => kindOf(b.requests[0].params).kind === 'judge').length === 3 && !/a judge found/.test(textOf(outlineMsgs[0])) && outlineMsgs.slice(1).every(p => /a judge found: 3\.9 Invented topic/.test(textOf(p))));
+
+    const root1b = tmp(), scratch1b = tmp();
+    let judgeCalls1b = 0;
+    const api1b = fakeApi((k) => k.kind === 'outline' ? outline() : k.kind === 'topic' ? topicAnswer(k.id) : k.kind === 'judge' ? (judgeCalls1b++ === 0 ? { ...goodJudge(), score: 0.5, fidelity: 0.5, invented: ['topic "3.1" duplicates the theme'] } : goodJudge()) : null);
+    const r1b = await BC.runSpec({ board: 'AQA', code: '7042', provenance, scratch: scratch1b, root: root1b, api: api1b, log });
+    ok('S6b a spec that clears the bar on its second round publishes, having stopped looping the moment it passed', r1b.published && r1b.rounds === 2 && judgeCalls1b === 2);
+    const outlineMsgs1b = api1b.calls.message.filter(p => kindOf(p).kind === 'outline');
+    ok('S6b the second round\'s outline call carries the first judge\'s finding as the objection, in the shared prompt\'s own words', outlineMsgs1b.length === 2 && /previous outline was refused by the validator for these reasons[\s\S]*a judge found: topic "3\.1" duplicates the theme/.test(textOf(outlineMsgs1b[1])));
+    ok('S6b none of the four topics were rewritten for round 2 — the outline came back with the same ids and names, so the cached content from round 1 was kept and not rebilled', api1b.calls.create.filter(b => kindOf(b.requests[0].params).kind === 'topic').length === 1 && api1b.calls.create.length === 3);
+
     const root2 = tmp(), scratch2 = tmp();
     const api2 = fakeApi((k) => k.kind === 'outline' ? outline({ markConventions: { ...outline().markConventions, style: 'points' } }) : k.kind === 'topic' ? topicAnswer(k.id) : k.kind === 'judge' ? goodJudge() : null);
     const r2 = await BC.runSpec({ board: 'AQA', code: '7042', provenance, scratch: scratch2, root: root2, api: api2, log });

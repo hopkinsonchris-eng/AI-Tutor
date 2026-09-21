@@ -4,7 +4,9 @@
    usage written to a ledger so the real cost of a course is a number, not an estimate. Sonnet 5 writes, Opus 5 judges;
    nothing here runs on a subscription. The results land in the repository exactly as a hand-built course does.
 
-   node scripts/batch-course.js spec <board> <code> [--url …]   fetch the PDF → outline → topics → validate → judge → src/specs/
+   node scripts/batch-course.js spec <board> <code> [--url …]   fetch the PDF → outline → topics → validate → judge →
+                                                                 src/specs/, or up to JUDGE_ROUNDS re-outlines with the
+                                                                 judge's own findings as the objection, then held
    node scripts/batch-course.js kits <id> [--only t1,t2]         write → validate → judge → one rewrite → judge → src/kits/<id>.js
    node scripts/batch-course.js course <board> <code> [--url …]  spec, then kits, then install in build.js
    node scripts/batch-course.js wave <n> [--parallel 3] [--skip <id>,…]  every course of that wave in docs/course-roadmap.md not yet built
@@ -36,8 +38,13 @@ const CARET = /[A-Za-z0-9)]\^-?\d/;
 const caretProblems = (x) => CARET.test(JSON.stringify(x)) ? ['powers are written with a caret (x^2, 10^-3): write them with superscript characters (x², 10⁻³) — the shipped files refuse carets'] : [];
 
 /* Anthropic's custom_id must match ^[a-zA-Z0-9_-]{1,64}$ — a topic id like "3.1" and the ":" this file used as a
-   separator both break that, so every custom_id is built and re-read through this one join. */
-const cid = (...parts) => parts.join('-').replace(/[^A-Za-z0-9_-]/g, '_');
+   separator both break that, so every custom_id is built and re-read through this one join. Falsy parts (an
+   omitted tag) are dropped rather than joined in as the literal string "null". */
+const cid = (...parts) => parts.filter(Boolean).join('-').replace(/[^A-Za-z0-9_-]/g, '_');
+
+/* A spec judged under the publish score gets its own findings back as the next round's objection — up to this
+   many attempts in total before it is held for a person to read the judge's report and decide. */
+const JUDGE_ROUNDS = 3;
 
 /* ---------- cost ---------- */
 function costOf(model, usage, ttl = TTL, batch = true) {
@@ -198,69 +205,87 @@ async function runSpec({ board, code, subject, level, url, scratch, dryRun, poll
   }
   const family0 = familyFor(params.subject);
   const system = B.prompts.system();
-
-  /* 1. outline — one Opus call, direct: everything else waits for it, and it writes the document into Opus's cache */
-  let outline = R.state.outline;
-  if (!outline) {
-    const ask = (problems) => R.direct('outline', cid(id, 'outline', problems ? 'again' : ''), R.params({ system, prompt: B.prompts.outline({ ...params, family: family0, problems }), source, schema: B.schemas.outline, model: MODELS.outline, maxTokens: MAX_TOKENS.outline }));
-    let r = await ask(null);
-    if (r.dryRun) return { id, dryRun: true };
-    let problems = outlineProblems(skeleton(r.value, id, params));
-    if (problems.length) { log(`outline refused by the validator (${problems.length}) — asking once more`); r = await ask(problems); problems = outlineProblems(skeleton(r.value, id, params)); }
-    if (problems.length) throw new Error(`${id}: outline refused twice: ${problems.slice(0, 4).join('; ')}`);
-    outline = R.state.outline = r.value; R.save();
-  }
-  const family = FAMILIES[outline.family] ? outline.family : family0;
-  const spec = skeleton(outline, id, params);
-  log(`outline: ${spec.topics.length} topics, ${spec.components.length} components, family ${family}`);
-
-  /* 2. topics — the first one direct (it writes the document into Sonnet's cache), the rest as one batch that reads
-        it, then one corrective batch for whatever the validator refuses */
-  const topicPrompt = (t, problems) => R.params({ system, prompt: B.prompts.topic({ outline: spec, topic: t, family, problems }), source, schema: B.schemas.topic, model: MODELS.topic, maxTokens: MAX_TOKENS.topic });
   const filled = R.state.topics || (R.state.topics = {});
-  if (!filled[spec.topics[0].id]) {
-    const r = await R.direct('topic', cid(id, 'topic', spec.topics[0].id), topicPrompt(spec.topics[0], null));
-    if (r.dryRun) return { id, dryRun: true };
-    filled[spec.topics[0].id] = merge(spec.topics[0], r.value); R.save();
-  }
-  const rest = spec.topics.filter(t => !filled[t.id]);
-  const first = await R.batch('topics', 'topic', rest.map(t => ({ custom_id: cid(id, 'topic', t.id), params: topicPrompt(t, null) })));
-  if (Object.values(first).some(v => v.dryRun)) return { id, dryRun: true };
-  const problemsFor = {};
-  for (const t of rest) { const r = first[cid(id, 'topic', t.id)]; if (r.error) problemsFor[t.id] = [r.error]; else filled[t.id] = merge(t, r.value); }
-  R.save();
-  spec.topics = spec.topics.map(t => filled[t.id] || t);
-  spec.topics.forEach((t, i) => { if (filled[t.id]) { const p = topicProblems(spec, i, filled[t.id]); if (p.length) problemsFor[t.id] = (problemsFor[t.id] || []).concat(p); } });
-  const again = spec.topics.filter(t => problemsFor[t.id]);
-  if (again.length) {
-    log(`${again.length} topic(s) refused by the validator — one corrective batch`);
-    const second = await R.batch('topics-again', 'topic', again.map(t => ({ custom_id: cid(id, 'topic', t.id, 'again'), params: topicPrompt(t, problemsFor[t.id].slice(0, 8)) })));
-    if (Object.values(second).some(v => v.dryRun)) return { id, dryRun: true };
-    for (const t of again) { const r = second[cid(id, 'topic', t.id, 'again')]; if (!r.error) filled[t.id] = merge(t, r.value); }
+
+  let outline, family, spec, v, judge, score;
+  for (let r = R.state.round = R.state.round || 1; r <= JUDGE_ROUNDS; r = R.state.round) {
+    /* every round beyond the first opens with what the previous judge found wrong, phrased as an objection the
+       shared outline prompt already knows how to act on (it was written for the validator's objections, so a
+       judge finding is framed the same way rather than rewording that shared prompt for this one caller) */
+    const judgeProblems = r > 1 && R.state.lastJudge ? [...(R.state.lastJudge.invented || []), ...(R.state.lastJudge.missing || [])].map(p => `a judge found: ${p}`) : null;
+
+    /* 1. outline — one Opus call, direct: everything else waits for it, and it writes the document into Opus's cache */
+    outline = R.state.outline;
+    if (!outline) {
+      const ask = (problems, tag) => R.direct('outline', cid(id, 'outline', `r${r}`, tag), R.params({ system, prompt: B.prompts.outline({ ...params, family: family0, problems }), source, schema: B.schemas.outline, model: MODELS.outline, maxTokens: MAX_TOKENS.outline }));
+      let rr = await ask(judgeProblems, judgeProblems ? 'fix' : null);
+      if (rr.dryRun) return { id, dryRun: true };
+      let problems = outlineProblems(skeleton(rr.value, id, params));
+      if (problems.length) { log(`outline refused by the validator (${problems.length}) — asking once more`); rr = await ask(problems, 'again'); problems = outlineProblems(skeleton(rr.value, id, params)); }
+      if (problems.length) throw new Error(`${id}: outline refused twice: ${problems.slice(0, 4).join('; ')}`);
+      outline = R.state.outline = rr.value; R.save();
+    }
+    family = FAMILIES[outline.family] ? outline.family : family0;
+    spec = skeleton(outline, id, params);
+    log(`${r > 1 ? `round ${r}: re-` : ''}outline: ${spec.topics.length} topics, ${spec.components.length} components, family ${family}`);
+
+    /* 2. topics — a topic this round's outline kept under the same id and name keeps its earlier content rather
+          than being rewritten and rebilled; the first new or changed one is a direct call (it writes the document
+          into Sonnet's cache), the rest go as one batch that reads it, then one corrective batch for whatever the
+          validator refuses */
+    for (const tid of Object.keys(filled)) if (!spec.topics.some(t => t.id === tid && t.name === filled[tid].name)) delete filled[tid];
+    const topicPrompt = (t, problems) => R.params({ system, prompt: B.prompts.topic({ outline: spec, topic: t, family, problems }), source, schema: B.schemas.topic, model: MODELS.topic, maxTokens: MAX_TOKENS.topic });
+    if (!filled[spec.topics[0].id]) {
+      const rr = await R.direct('topic', cid(id, 'topic', spec.topics[0].id, `r${r}`), topicPrompt(spec.topics[0], null));
+      if (rr.dryRun) return { id, dryRun: true };
+      filled[spec.topics[0].id] = merge(spec.topics[0], rr.value); R.save();
+    }
+    const rest = spec.topics.filter(t => !filled[t.id]);
+    const first = await R.batch(`topics-r${r}`, 'topic', rest.map(t => ({ custom_id: cid(id, 'topic', t.id, `r${r}`), params: topicPrompt(t, null) })));
+    if (Object.values(first).some(v => v.dryRun)) return { id, dryRun: true };
+    const problemsFor = {};
+    for (const t of rest) { const rr = first[cid(id, 'topic', t.id, `r${r}`)]; if (rr.error) problemsFor[t.id] = [rr.error]; else filled[t.id] = merge(t, rr.value); }
     R.save();
     spec.topics = spec.topics.map(t => filled[t.id] || t);
-  }
-  const v = validateSpec(spec);
-  if (!v.ok) { fs.writeFileSync(path.join(R.dir, 'spec.refused.json'), JSON.stringify({ problems: v.problems, spec }, null, 1)); throw new Error(`${id}: refused by the validator after the corrective round — ${v.problems.slice(0, 4).join('; ')} (the draft is in ${path.relative(ROOT, path.join(R.dir, 'spec.refused.json'))})`); }
+    spec.topics.forEach((t, i) => { if (filled[t.id]) { const p = topicProblems(spec, i, filled[t.id]); if (p.length) problemsFor[t.id] = (problemsFor[t.id] || []).concat(p); } });
+    const again = spec.topics.filter(t => problemsFor[t.id]);
+    if (again.length) {
+      log(`${again.length} topic(s) refused by the validator — one corrective batch`);
+      const second = await R.batch(`topics-r${r}-again`, 'topic', again.map(t => ({ custom_id: cid(id, 'topic', t.id, `r${r}`, 'again'), params: topicPrompt(t, problemsFor[t.id].slice(0, 8)) })));
+      if (Object.values(second).some(v => v.dryRun)) return { id, dryRun: true };
+      for (const t of again) { const rr = second[cid(id, 'topic', t.id, `r${r}`, 'again')]; if (!rr.error) filled[t.id] = merge(t, rr.value); }
+      R.save();
+      spec.topics = spec.topics.map(t => filled[t.id] || t);
+    }
+    v = validateSpec(spec);
+    if (!v.ok) { fs.writeFileSync(path.join(R.dir, 'spec.refused.json'), JSON.stringify({ problems: v.problems, spec }, null, 1)); throw new Error(`${id}: refused by the validator after the corrective round — ${v.problems.slice(0, 4).join('; ')} (the draft is in ${path.relative(ROOT, path.join(R.dir, 'spec.refused.json'))})`); }
 
-  /* 3. judge — Opus, fresh context, one request in a batch of one */
-  let judge = R.state.judge;
-  if (!judge) {
-    const r = await R.batch('judge', 'judge', [{ custom_id: cid(id, 'judge'), params: R.params({ system, prompt: B.prompts.judge({ family, spec }), source, schema: B.schemas.judge, model: MODELS.judge, maxTokens: MAX_TOKENS.judge }) }]);
-    const j = r[cid(id, 'judge')]; if (j.dryRun) return { id, dryRun: true }; if (j.error) throw new Error(`${id}: the judge failed — ${j.error}`);
-    judge = R.state.judge = j.value; R.save();
+    /* 3. judge — Opus, fresh context, one request in a batch of one */
+    judge = R.state.judge;
+    if (!judge) {
+      const rr = await R.batch(`judge-r${r}`, 'judge', [{ custom_id: cid(id, 'judge', `r${r}`), params: R.params({ system, prompt: B.prompts.judge({ family, spec }), source, schema: B.schemas.judge, model: MODELS.judge, maxTokens: MAX_TOKENS.judge }) }]);
+      const jj = rr[cid(id, 'judge', `r${r}`)]; if (jj.dryRun) return { id, dryRun: true }; if (jj.error) throw new Error(`${id}: the judge failed — ${jj.error}`);
+      judge = R.state.judge = jj.value; R.state.lastJudge = judge; R.save();
+    }
+    score = Number(judge.score) || 0;
+    fs.writeFileSync(path.join(R.dir, 'judge.json'), JSON.stringify({ ...judge, round: r }, null, 1));
+    log(`${r > 1 ? `round ${r}: ` : ''}judged ${Math.round(score * 100)}% (coverage ${judge.coverage}, fidelity ${judge.fidelity}, options ${judge.options}, family fit ${judge.familyFit}) · ${v.ideas} key ideas`);
+    if (judge.invented && judge.invented.length) log(`invented (not in the document): ${judge.invented.slice(0, 6).join('; ')}`);
+    if (judge.missing && judge.missing.length) log(`missing sections: ${judge.missing.slice(0, 6).join('; ')}`);
+
+    if (score >= B.PUBLISH_SCORE || r >= JUDGE_ROUNDS) break;
+    log(`below ${Math.round(B.PUBLISH_SCORE * 100)}% — round ${r + 1} of ${JUDGE_ROUNDS}: re-outlining with the judge's own findings as the objection`);
+    R.state.round = r + 1; R.state.outline = null; R.state.judge = null; R.save();
   }
-  const score = Number(judge.score) || 0;
+
   spec.source = source.fileId ? { url: source.url, etag: source.etag, lastModified: source.lastModified, length: source.length, checkedAt: source.checkedAt } : { ...source };
-  fs.writeFileSync(path.join(R.dir, 'judge.json'), JSON.stringify(judge, null, 1));
-  const held = shipProblems(spec); if (score < B.PUBLISH_SCORE) held.unshift(`judged ${Math.round(score * 100)}%, below the ${Math.round(B.PUBLISH_SCORE * 100)}% the platform publishes at`);
+  const held = shipProblems(spec);
+  if (score < B.PUBLISH_SCORE) held.unshift(`judged ${Math.round(score * 100)}% after ${R.state.round} round(s) of ${JUDGE_ROUNDS}, below the ${Math.round(B.PUBLISH_SCORE * 100)}% the platform publishes at — read judge.json and fix by hand, or build this one in a session`);
   const published = !held.length;
   const file = writeSpecFile(spec, { judge, family, dir: published ? path.join(root, 'src', 'specs') : R.dir, id });
-  log(`judged ${Math.round(score * 100)}% (coverage ${judge.coverage}, fidelity ${judge.fidelity}, options ${judge.options}, family fit ${judge.familyFit}) · ${v.ideas} key ideas · ${path.relative(root, file)}`);
-  if (judge.invented && judge.invented.length) log(`invented (not in the document): ${judge.invented.slice(0, 6).join('; ')}`);
-  if (judge.missing && judge.missing.length) log(`missing sections: ${judge.missing.slice(0, 6).join('; ')}`);
+  log(path.relative(root, file));
   for (const h of held) log(`HELD: ${h}`);
-  return { id, spec, judge, score, family, file, published, held, cost: costReport(R.ledgerFile) };
+  return { id, spec, judge, score, family, file, published, held, rounds: R.state.round, cost: costReport(R.ledgerFile) };
 }
 
 function writeSpecFile(spec, { judge, family, dir, id }) {
@@ -457,5 +482,5 @@ async function main(argv) {
   } else console.log(fs.readFileSync(__filename, 'utf8').split('\n').slice(1, 16).join('\n'));
 }
 
-module.exports = { runSpec, runKits, costOf, costReport, waveCourses, anthropicBatches, writeSpecFile, shipProblems, specFileName, specVarName, MODELS, PRICES };
+module.exports = { runSpec, runKits, costOf, costReport, waveCourses, anthropicBatches, writeSpecFile, shipProblems, specFileName, specVarName, MODELS, PRICES, JUDGE_ROUNDS };
 if (require.main === module) main(process.argv.slice(2)).catch(e => { console.error('batch-course.js:', e.message); process.exit(1); });

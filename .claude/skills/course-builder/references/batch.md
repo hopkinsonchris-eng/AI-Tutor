@@ -15,6 +15,7 @@ weekly limit, and when the cost has to be a measured number.
 | First topic | Sonnet 5 | one direct call | writes the document into Sonnet's cache, so the batch that follows reads it at a tenth of the price |
 | Every other topic | Sonnet 5 | one batch | one corrective batch for whatever the validator refuses, with the objection |
 | Judge of the map | Opus 5 | a batch of one | coverage, fidelity, options, family fit; overall score is the minimum |
+| Re-outline and re-fill, if the judge scores under 0.8 | Opus 5, then Sonnet 5 | as above, up to 2 more times | the judge's own `invented` and `missing` go back as the outline's objection; a topic the new outline kept under the same id and name keeps its earlier answer rather than being rebilled |
 | Every room's kit | Sonnet 5 | one batch | validated on collection |
 | Judge of every kit | Opus 5 | one batch | re-solves every question in a fresh context |
 | Rewrite of refused rooms | Sonnet 5, then Opus 5 | one batch each | once, with the objections; a second refusal ships the room without a kit |
@@ -66,18 +67,24 @@ rerun retries again.
 
 ## State and resuming
 
-Everything a run knows is in `scratch/courses/<id>/batch/state.json`: the provenance, the file id, the outline, every
-topic's answer, the judge's verdict, and for every batch its id and whether its results were collected. A batch that was
-submitted and not collected is polled again by its id on the next run, never resubmitted; a stage whose answer is in
-the state is not asked again. So an interrupted run is resumed by running the same command. The kits pipeline numbers
-each run as an attempt, and a rerun after a finished run writes and judges only the rooms without a kit.
+Everything a run knows is in `scratch/courses/<id>/batch/state.json`: the provenance, the file id, the current round, the
+outline, every topic's answer, the judge's verdict, and for every batch its id and whether its results were collected. A
+batch that was submitted and not collected is polled again by its id on the next run, never resubmitted; a stage whose
+answer is in the state is not asked again. So an interrupted run is resumed by running the same command, including
+mid-way through a corrective round. The kits pipeline numbers each run as an attempt, and a rerun after a finished run
+writes and judges only the rooms without a kit.
 
 To start a course over, delete its `batch/` directory. To retry one room, `kits <id> --only <topic>`.
 
 ## What is held and what to do
 
-- **A map judged under 0.8**, or one the ship checks refuse, is written to `scratch/courses/<id>/batch/` beside
-  `judge.json`, and the command exits 2. Read the judge's `invented`, `missing` and `notes`, fix the file by the main
+- **A map still judged under 0.8 after `JUDGE_ROUNDS` (3) attempts**, or one the ship checks refuse, is written to
+  `scratch/courses/<id>/batch/` beside `judge.json` (each round's own verdict, so `judge.json` is the last one), and
+  the command exits 2. The first two rounds already tried to fix themselves — every round after the first opens with
+  the previous round's own `invented` and `missing` findings as the outline's objection, so what's left in the final
+  `judge.json` is what the loop could not resolve on its own, not what nobody looked at. A judge is not perfectly
+  consistent between rounds (it can reverse an earlier verdict, as it did on AQA-8692's stress-position topic), so
+  read the full history in the log rather than trusting only the last round's wording. Fix the file by the main
   procedure (the document decides), move it to `src/specs/`, then `kits <id>`.
 - **A map the validator refuses after the corrective round** stops the run; the draft and the problems are in
   `spec.refused.json`. Usually a topic the document numbers unusually: fix the outline by hand or build in a session.

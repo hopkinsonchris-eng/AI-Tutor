@@ -42,6 +42,9 @@ hand and a course built by the Worker are indistinguishable in shape.
    subscription rather than the API, follow `references/depth.md`: `npm run course -- fetch`, write the
    spec and kits with parallel subagents, judge each kit with a fresh subagent, ship in `src/kits/`.
    `npm run course -- current` keeps hand-built courses checked against their documents.
+   To build on the API without a session, at half the token price and with the cost measured, run the same
+   pipeline through the Message Batches API: `node scripts/batch-course.js course <board> <code>` (a whole wave of
+   the roadmap: `wave <n>`), per `references/batch.md`.
 
 ## Monthly update pass
 

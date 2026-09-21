@@ -85,6 +85,13 @@ fresh-context judge, and `build.js` serves the kits from the site. `npm run cour
 checks every hand-built course's document for changes. The procedure is
 `.claude/skills/course-builder/references/depth.md`.
 
+Or on the API without a session: `node scripts/batch-course.js course <board> <code>` runs the Worker's pipeline
+through the Message Batches API — Sonnet writes, Opus judges, every token at half the standard price — and ships the
+spec and kits in Git like a hand-built course. `wave <n>` builds a whole wave of `docs/course-roadmap.md`;
+`cost` prints what each course actually cost from the ledger of every request's usage. A map the judge scores under
+0.8 is held with the judge's report rather than shipped. The procedure is
+`.claude/skills/course-builder/references/batch.md`.
+
 ## The desktop in every room
 
 Every room has a Desktop tab: a wall of the student's own material, private to them and kept on the tutor

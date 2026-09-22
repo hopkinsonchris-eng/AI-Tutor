@@ -13,7 +13,7 @@ weekly limit, and when the cost has to be a measured number.
 |---|---|---|---|
 | Outline: identity, components, options, mark conventions, topic list | Opus 5 | one direct call | everything waits for it; it also writes the document into Opus's cache for the judge |
 | First topic | Sonnet 5 | one direct call | writes the document into Sonnet's cache, so the batch that follows reads it at a tenth of the price |
-| Every other topic | Sonnet 5 | one batch | one corrective batch for whatever the validator refuses, with the objection |
+| Every other topic | Sonnet 5 | one batch | up to two more corrective batches for whatever the validator refuses about a topic's own content — never for a topic whose problem is really about its place in the outline (its id, name or component), which no rewrite fixes |
 | Judge of the map | Opus 5 | a batch of one | coverage, fidelity, options, family fit; overall score is the minimum |
 | Re-outline and re-fill, if the judge scores under 0.8 | Opus 5, then Sonnet 5 | as above, up to 2 more times | the judge's own `invented` and `missing` go back as the outline's objection; a topic the new outline kept under the same id and name keeps its earlier answer rather than being rebilled |
 | Every room's kit | Sonnet 5 | one batch | validated on collection |

@@ -46,6 +46,13 @@ const cid = (...parts) => parts.filter(Boolean).join('-').replace(/[^A-Za-z0-9_-
    many attempts in total before it is held for a person to read the judge's report and decide. */
 const JUDGE_ROUNDS = 3;
 
+/* A topic's own content — too few ideas, a duplicated idea code, thin content — is the writer's to fix by
+   trying again, never the outline's: rewriting the whole topic list in response is what collapsed several
+   grammar topics into one oversized topic on a live course, which then couldn't be written or judged within
+   the normal token budget. Only these three checks are actually about a topic's place in the outline. */
+const OUTLINE_TOPIC_PROBLEM = /: (id is duplicated|needs a name|component ".*" is not one of)/;
+const TOPIC_WRITE_ROUNDS = 3;
+
 /* ---------- cost ---------- */
 function costOf(model, usage, ttl = TTL, batch = true) {
   const p = PRICES[model] || PRICES['claude-sonnet-5']; const m = batch ? BATCH_DISCOUNT : 1; const M = 1e6;
@@ -232,8 +239,10 @@ async function runSpec({ board, code, subject, level, url, scratch, dryRun, poll
     /* 2. topics — a topic this round's outline kept under the same id, name, component and option keeps its earlier
           content rather than being rewritten and rebilled (a corrective round can rename a component's own id, which
           would otherwise leave a reused topic pointing at one that no longer exists); the first new or changed one is
-          a direct call (it writes the document into Sonnet's cache), the rest go as one batch that reads it, then one
-          corrective batch for whatever the validator refuses */
+          a direct call (it writes the document into Sonnet's cache), the rest go as one batch that reads it, then up
+          to TOPIC_WRITE_ROUNDS - 1 more corrective batches for whatever the validator refuses about a topic's own
+          content — never for a topic whose problem is really about its place in the outline (see OUTLINE_TOPIC_PROBLEM
+          above), which no amount of rewriting fixes */
     for (const tid of Object.keys(filled)) { const t = spec.topics.find(x => x.id === tid); if (!t || t.name !== filled[tid].name || t.component !== filled[tid].component || t.option !== filled[tid].option) delete filled[tid]; }
     const topicPrompt = (t, problems) => R.params({ system, prompt: B.prompts.topic({ outline: spec, topic: t, family, problems }), source, schema: B.schemas.topic, model: MODELS.topic, maxTokens: MAX_TOKENS.topic });
     if (!filled[spec.topics[0].id]) {
@@ -249,14 +258,20 @@ async function runSpec({ board, code, subject, level, url, scratch, dryRun, poll
     R.save();
     spec.topics = spec.topics.map(t => filled[t.id] || t);
     spec.topics.forEach((t, i) => { if (filled[t.id]) { const p = topicProblems(spec, i, filled[t.id]); if (p.length) problemsFor[t.id] = (problemsFor[t.id] || []).concat(p); } });
-    const again = spec.topics.filter(t => problemsFor[t.id]);
-    if (again.length) {
-      log(`${again.length} topic(s) refused by the validator — one corrective batch`);
-      const second = await R.batch(`topics-r${r}-again`, 'topic', again.map(t => ({ custom_id: cid(id, 'topic', t.id, `r${r}`, 'again'), params: topicPrompt(t, problemsFor[t.id].slice(0, 8)) })));
-      if (Object.values(second).some(v => v.dryRun)) return { id, dryRun: true };
-      for (const t of again) { const rr = second[cid(id, 'topic', t.id, `r${r}`, 'again')]; if (!rr.error) filled[t.id] = merge(t, rr.value); }
+    /* a topic whose only problems are about its own content gets more tries at the same outline before anything
+       escalates to a re-outline; a topic with a genuinely outline-structural problem (its id, name or component)
+       can't be fixed by asking the writer again, so it isn't retried here — it surfaces below instead */
+    for (let attempt = 2; attempt <= TOPIC_WRITE_ROUNDS; attempt++) {
+      const again = spec.topics.filter(t => problemsFor[t.id] && problemsFor[t.id].every(p => !OUTLINE_TOPIC_PROBLEM.test(p)));
+      if (!again.length) break;
+      log(`${again.length} topic(s) refused by the validator — corrective batch ${attempt - 1} of ${TOPIC_WRITE_ROUNDS - 1}`);
+      const tag = attempt === 2 ? 'again' : `again${attempt - 1}`;
+      const retry = await R.batch(`topics-r${r}-${tag}`, 'topic', again.map(t => ({ custom_id: cid(id, 'topic', t.id, `r${r}`, tag), params: topicPrompt(t, problemsFor[t.id].slice(0, 8)) })));
+      if (Object.values(retry).some(v => v.dryRun)) return { id, dryRun: true };
+      for (const t of again) { const rr = retry[cid(id, 'topic', t.id, `r${r}`, tag)]; if (rr.error) { problemsFor[t.id] = [rr.error]; continue; } filled[t.id] = merge(t, rr.value); delete problemsFor[t.id]; }
       R.save();
       spec.topics = spec.topics.map(t => filled[t.id] || t);
+      spec.topics.forEach((t, i) => { if (filled[t.id] && !problemsFor[t.id]) { const p = topicProblems(spec, i, filled[t.id]); if (p.length) problemsFor[t.id] = p; } });
     }
     v = validateSpec(spec);
     if (!v.ok) {
@@ -497,5 +512,5 @@ async function main(argv) {
   } else console.log(fs.readFileSync(__filename, 'utf8').split('\n').slice(1, 16).join('\n'));
 }
 
-module.exports = { runSpec, runKits, costOf, costReport, waveCourses, anthropicBatches, writeSpecFile, shipProblems, specFileName, specVarName, MODELS, PRICES, JUDGE_ROUNDS };
+module.exports = { runSpec, runKits, costOf, costReport, waveCourses, anthropicBatches, writeSpecFile, shipProblems, specFileName, specVarName, MODELS, PRICES, JUDGE_ROUNDS, TOPIC_WRITE_ROUNDS, OUTLINE_TOPIC_PROBLEM };
 if (require.main === module) main(process.argv.slice(2)).catch(e => { console.error('batch-course.js:', e.message); process.exit(1); });

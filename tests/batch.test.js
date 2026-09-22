@@ -118,12 +118,24 @@ const logs = []; const log = (m) => logs.push(m);
     ok('S6 a caret power in a spec is a ship problem', BC.shipProblems({ subject: 'Mathematics', markConventions: { style: 'points' }, topics: [{ ideas: [{ content: 'x^2 + 1' }] }] }).some(p => /caret/.test(p)));
     const api3 = fakeApi((k) => k.kind === 'outline' ? outline() : k.kind === 'topic' ? (k.id === '3.3' ? { ideas: [idea('3.3.1', 1)], caseStudies: [], skills: [] } : topicAnswer(k.id)) : goodJudge());
     let err = null; try { await BC.runSpec({ board: 'AQA', code: '7042', provenance, scratch: tmp(), root: tmp(), api: api3, log }); } catch (e) { err = e; }
-    ok('S7 a topic refused every round fails the run with the validator\'s reason only once JUDGE_ROUNDS is spent, not on the first round\'s corrective batch', err && /refused by the validator after the corrective round/.test(err.message) && /at least two key ideas/.test(err.message) && api3.calls.create.filter(b => kindOf(b.requests[0].params).kind === 'topic').length === 2 * BC.JUDGE_ROUNDS);
+    ok('S7 a topic refused every round fails the run with the validator\'s reason only once JUDGE_ROUNDS is spent, not on the first round\'s corrective batch', err && /refused by the validator after the corrective round/.test(err.message) && /at least two key ideas/.test(err.message) && api3.calls.create.filter(b => kindOf(b.requests[0].params).kind === 'topic').length === BC.TOPIC_WRITE_ROUNDS * BC.JUDGE_ROUNDS);
 
     let topicCalls4 = 0;
     const api4 = fakeApi((k) => k.kind === 'outline' ? outline() : k.kind === 'topic' ? (k.id === '3.3' && ++topicCalls4 <= 2 ? { ideas: [idea('3.3.1', 1)], caseStudies: [], skills: [] } : topicAnswer(k.id)) : goodJudge());
     const r4 = await BC.runSpec({ board: 'AQA', code: '7042', provenance, scratch: tmp(), root: tmp(), api: api4, log });
-    ok('S7b a topic the validator refuses through round 1\'s own corrective batch costs that round, not the whole run — round 2 tries a fresh outline and the spec still publishes', r4.published && r4.rounds === 2);
+    ok('S7b a topic that only needed a second corrective try never needed a re-outline at all — its own content problem stayed a content problem, not a reason to reshuffle the course', r4.published && r4.rounds === 1 && topicCalls4 === 3);
+    ok('S7b that recovery used both of TOPIC_WRITE_ROUNDS\' extra tries, all within round 1, not the judge-corrective round loop', api4.calls.create.filter(b => kindOf(b.requests[0].params).kind === 'topic').length === 3);
+
+    let topicCallsS7c = 0;
+    const apiS7c = fakeApi((k) => k.kind === 'outline' ? outline() : k.kind === 'topic' ? (k.id === '3.3' ? (++topicCallsS7c <= BC.TOPIC_WRITE_ROUNDS ? { ideas: [idea('3.3.1', 1)], caseStudies: [], skills: [] } : topicAnswer(k.id)) : topicAnswer(k.id)) : goodJudge());
+    const rS7c = await BC.runSpec({ board: 'AQA', code: '7042', provenance, scratch: tmp(), root: tmp(), api: apiS7c, log });
+    ok('S7c a topic still bad after every retry this round does escalate to a fresh outline next round — the escalation path still works, it just isn\'t reached early', rS7c.published && rS7c.rounds === 2 && topicCallsS7c === BC.TOPIC_WRITE_ROUNDS + 1);
+
+    /* the classifier that keeps an outline-structural problem (never actually reachable here once written, since
+       the outline's own validator retry catches a bad id, name or component on the skeleton before any topic is
+       written — this is the defence for anything that reaches the topic-write loop despite that) recognises only
+       the validator's three outline-structural messages, not a content one */
+    ok('S7d OUTLINE_TOPIC_PROBLEM recognises the validator\'s own three outline-structural messages and nothing else', ['topic "3.1": id is duplicated', 'topic "3.1": needs a name', 'topic "3.1": component "X" is not one of P1, P2'].every(p => BC.OUTLINE_TOPIC_PROBLEM.test(p)) && ['topic "3.1": needs at least two key ideas, has 1', 'topic "3.1": idea code "a" is duplicated', 'topic "3.1" idea "a": content is too thin (under 30 characters)'].every(p => !BC.OUTLINE_TOPIC_PROBLEM.test(p)));
 
     /* the component a topic belongs to can itself be renamed by a corrective re-outline (this is exactly what
        killed a live AQA-8652 run: round 2 renamed a component id and a topic kept unchanged since round 1 was

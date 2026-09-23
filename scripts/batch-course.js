@@ -30,7 +30,7 @@ const VERSION = '2023-06-01';
 const PRICES = { 'claude-sonnet-5': { in: 2, out: 10 }, 'claude-opus-5': { in: 5, out: 25 }, 'claude-haiku-4-5': { in: 1, out: 5 }, 'claude-fable-5-1': { in: 10, out: 50 } };
 const BATCH_DISCOUNT = 0.5;
 const MODELS = { outline: B.MODELS.outline, topic: B.MODELS.topic, judge: B.MODELS.judge, write: D.KIT_MODELS.write, judgeKit: D.KIT_MODELS.judge };
-const MAX_TOKENS = { outline: 16000, topic: 16000, judge: 16000, write: 32000, judgeKit: 6000 };
+const MAX_TOKENS = { outline: 16000, topic: 16000, judge: 16000, write: 32000, judgeKit: 16000 };
 const TTL = '1h';
 const FILE_DAYS = 7;
 /* tests/spec.test.js refuses a shipped file that writes a power with a caret */

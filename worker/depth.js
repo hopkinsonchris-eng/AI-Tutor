@@ -149,7 +149,7 @@ export async function runDepth(params, deps) {
     }
 
     if (toJudge.length) {
-      const judgeRequests = toJudge.map(t => batchRequest(cid('judge', t.id), { prompt: kitPrompts.judge({ spec, topic: t, family, kit: kits[t.id] }), schema: kitSchemas.judge, model: KIT_MODELS.judge, maxTokens: 6000 }, { topic: t, family, kit: kits[t.id] }));
+      const judgeRequests = toJudge.map(t => batchRequest(cid('judge', t.id), { prompt: kitPrompts.judge({ spec, topic: t, family, kit: kits[t.id] }), schema: kitSchemas.judge, model: KIT_MODELS.judge, maxTokens: 16000 }, { topic: t, family, kit: kits[t.id] }));
       const judgeResults = await runBatchRound(step, ai, `depth ${id} judge${again ? ' again' : ''}`, judgeRequests);
       rec.calls += judgeRequests.length;
 

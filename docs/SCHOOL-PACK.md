@@ -40,7 +40,7 @@ Source code: the complete repository is at github.com/hopkinsonchris-eng/AI-Tuto
 | File | What it holds |
 |---|---|
 | worker/index.js | the server: accounts, sessions, caps, the AI forward and its guardrail (`TUTOR_SYSTEM`, `proxyProblem`, `proxy`) |
-| worker/safeguarding.js | the deterministic safeguarding backstop on every AI request — see section 5.6 |
+| worker/safeguarding.js | the deterministic safeguarding backstop on every AI request (section 5.6) |
 | src/gen.js | every prompt the app sends, including the coach's rules |
 | tests/worker.test.js | the automated tests, including G1–G4 (the guardrail) and SG1–SG8 (safeguarding) |
 | tests/safeguarding.test.js | the safeguarding filter tested on its own, including that it leaves ordinary exam content alone |
@@ -110,14 +110,17 @@ Every prompt the page sends is composed from the exam board's specification: it 
 
 ### 5.6 Safeguarding: filtering, monitoring and alerting beyond the model's own guardrail
 
-A model's own good behaviour is not treated as sufficient on its own. Every message a student sends the tutor is checked by a fixed, deterministic filter (worker/safeguarding.js) that runs before the AI provider is called at all, so what happens next never depends on the model's own judgement in the moment:
+A model's own good behaviour isn't treated as sufficient on its own. Every message a student sends the tutor is checked by a fixed, deterministic filter (worker/safeguarding.js) that runs before the AI provider is called at all, so what happens next never depends on the model's own judgement in the moment.
 
-- **Prevented by design.** A message naming clear suicidal or self-harm intent, or disclosing abuse, is never sent to the model. The server answers directly with a fixed message that a person has written and reviewed — pointing the student to a trusted adult and to Childline (0800 1111, childline.org.uk) and Shout (text 85258) — the same reply every time, not something the AI improvises. It also does not spend the student's daily allowance, so a student in this situation is never turned away by a cap.
-- **Filtered throughout the reply.** A message with broader signs of distress (being bullied, feeling hopeless, not coping) still reaches the model for the study help it asked for, but the same support message is appended to whatever the model says, so the student sees it regardless of how well the model's own guardrail handled the rest of the reply.
-- **Monitoring and reporting.** Every match — both kinds — is logged with the student's username, the category, a short excerpt and a timestamp, and (if `SAFEGUARDING_WEBHOOK` is configured) posted immediately to wherever a school or the owner wants it alerted. `GET /manage/safeguarding` gives an accessible, admin-only record of the day's flags; `PATCH /manage/safeguarding/<day>/<id>` records who reviewed one and when, so a flag has an audit trail, not just an entry.
-- **Scope, stated plainly.** This is a first-pass filter on wording, not a clinical assessment, and it does not claim to be one: it exists to guarantee two things happen reliably — a student sees real support, and a human sees the exchange — never to itself decide whether a student is at risk. That is also why every match is logged and reviewable, including the ones a person judges, on reading, not to have needed escalating.
+A message naming clear suicidal or self-harm intent, or disclosing abuse, is never sent to the model. The server answers directly with a fixed message that a person has written and reviewed, pointing the student to a trusted adult and to Childline (0800 1111, childline.org.uk) and Shout (text 85258). It's the same reply every time, not something the AI improvises, and it doesn't spend the student's daily allowance, so a student in this situation is never turned away by a cap.
 
-This is proven by tests SG1–SG8 in tests/worker.test.js (the short-circuit, the appended support message, the KV log, the webhook post, the admin-only listing and review) and by tests/safeguarding.test.js on the filter itself, including that ordinary exam content that touches the same subjects in the third person — a Hamlet essay question, a history question about wartime casualties, a PSHE question about what Childline does — is correctly left alone.
+A message with broader signs of distress (being bullied, feeling hopeless, not coping) still reaches the model for the study help it asked for, but the same support message is appended to whatever the model says, so the student sees it regardless of how well the model's own guardrail handled the rest of the reply.
+
+Every match, either kind, is logged with the student's username, the category, a short excerpt and a timestamp, and, if `SAFEGUARDING_WEBHOOK` is configured, posted immediately to wherever a school or the owner wants it alerted. `GET /manage/safeguarding` gives an accessible, admin-only record of the day's flags; `PATCH /manage/safeguarding/<day>/<id>` records who reviewed one and when, so a flag has an audit trail.
+
+This is a first-pass filter on wording, not a clinical assessment, and it doesn't claim to be one. It exists to guarantee two things: a student sees real support, and a human sees the exchange. It never decides on its own whether a student is at risk, which is also why every match is logged and reviewable, including the ones a person judges, on reading, not to have needed escalating.
+
+Tests SG1 to SG8 in tests/worker.test.js prove this: the short-circuit, the appended support message, the KV log, the webhook post, the admin-only listing and review. tests/safeguarding.test.js tests the filter on its own, including that ordinary exam content touching the same subjects in the third person (a Hamlet essay question, a history question about wartime casualties, a PSHE question about what Childline does) is correctly left alone.
 
 ## 6. Verification
 

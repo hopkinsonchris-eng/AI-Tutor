@@ -1,7 +1,7 @@
 /* The batch path (scripts/batch-course.js): the Worker's pipeline run through the Message Batches API against a
    stand-in for the API. Criteria: the outline and the first topic are direct calls that warm the cache and the
-   rest are batches; the validator's corrective round and the judge's one rewrite reach the model with the objections;
-   what ships meets the same contracts and tests as a hand-built course; a run is resumable without a second spend;
+   rest are batches; the validator's corrective round and the judge's corrective rewrites reach the model with the
+   objections; what ships meets the same contracts and tests as a hand-built course; a run is resumable without a second spend;
    the ledger prices every request at batch rates; a held spec never reaches src/specs. */
 const fs = require('fs'), path = require('path'), os = require('os');
 const families = require('../src/families.js'), { validateSpec } = require('../src/spec-validator.js'), { validateKit } = require('../src/kit-validator.js');
@@ -159,7 +159,7 @@ const logs = []; const log = (m) => logs.push(m);
     ok('S9 a dry run uploads nothing, calls nothing, submits nothing', d.dryRun && api2.calls.upload.length === 0 && api2.calls.message.length === 0 && api2.calls.create.length === 0);
   }
 
-  /* ---------- the kits: write → validate → judge → one rewrite → judge ---------- */
+  /* ---------- the kits: write → validate → judge → up to KIT_WRITE_ROUNDS-1 corrective rewrites → judge ---------- */
   {
     const root = tmp(), scratch = tmp();
     const spec = { ...outline(), id: 'AQA-7042', topics: outline().topics.map(t => ({ ...t, ...topicAnswer(t.id) })) };
@@ -187,19 +187,19 @@ const logs = []; const log = (m) => logs.push(m);
     ok('K4 a finished kits run is idempotent — nothing is written or judged again', b.length === before && r2.passed.length === 4);
   }
 
-  /* ---------- a room that fails twice; the rerun that retries only it; a crash that is resumed without a second spend ---------- */
+  /* ---------- a room that keeps failing; the rerun that retries only it; a crash that is resumed without a second spend ---------- */
   {
     const root = tmp(), scratch = tmp();
     const spec = { ...outline(), id: 'AQA-7042', topics: outline().topics.map(t => ({ ...t, ...topicAnswer(t.id) })) };
-    let attempt = 0;
+    let attempt = 0, judgedThree = 0;
     const api = fakeApi((k) => {
       if (k.kind === 'write') return sampleKit(topicOf(spec, k.id), 'essay');
-      if (k.kind === 'judgeKit') { const tid = /on (Topic \w+|The investigation)\?/.exec(k.kit.room.questions[0].q)[1]; if (tid === 'Topic three' && attempt < 1) return { score: 0.4, wrong: [{ index: 0, why: 'wrong' }], problems: [], notes: 'No.' }; return { score: 0.9, wrong: [], problems: [], notes: 'Yes.' }; }
+      if (k.kind === 'judgeKit') { const tid = /on (Topic \w+|The investigation)\?/.exec(k.kit.room.questions[0].q)[1]; if (tid === 'Topic three' && attempt < 1) { judgedThree++; return { score: 0.4, wrong: [{ index: 0, why: 'wrong' }], problems: [], notes: 'No.' }; } return { score: 0.9, wrong: [], problems: [], notes: 'Yes.' }; }
       return null;
     });
     const r = await BC.runKits({ id: 'AQA-7042', spec, scratch, root, api, log });
     const file = path.join(root, 'src', 'kits', 'AQA-7042.js');
-    ok('K5 a room refused twice ships without a kit and is named in the file\'s header with the judge\'s objection', r.passed.length === 3 && r.failed.length === 1 && r.failed[0].topic === '3.3' && /Rooms without a kit after one rewrite[\s\S]*3\.3 — question 1: wrong/.test(fs.readFileSync(file, 'utf8')) && !freshKits(root)['AQA-7042']['3.3']);
+    ok('K5 a room refused in every round only ships without a kit once the widened budget is used, not after one rewrite', r.passed.length === 3 && r.failed.length === 1 && r.failed[0].topic === '3.3' && judgedThree === BC.KIT_WRITE_ROUNDS && new RegExp(`Rooms without a kit after ${BC.KIT_WRITE_ROUNDS - 1} corrective rewrites[\\s\\S]*3\\.3 — question 1: wrong`).test(fs.readFileSync(file, 'utf8')) && !freshKits(root)['AQA-7042']['3.3'], `judged ${judgedThree} times`);
     attempt = 1; const before = api.calls.create.length;
     const r2 = await BC.runKits({ id: 'AQA-7042', spec, scratch, root, api, log });
     ok('K5 the rerun is a new attempt that writes and judges only the failed room, and then all four ship', api.calls.create.length === before + 2 && api.calls.create[before].requests.length === 1 && /-3_3-a2r1$/.test(api.calls.create[before].requests[0].custom_id) && r2.passed.length === 4 && r2.failed.length === 0 && Object.keys(freshKits(root)['AQA-7042']).length === 4);

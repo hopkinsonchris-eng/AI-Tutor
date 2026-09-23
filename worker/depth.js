@@ -4,9 +4,10 @@
  *
  * runDepth(params, deps)   params = { id, only?: [topicId] }
  *                          every room still needing work goes into one Anthropic Message Batch per round:
- *                          write → validate → judge → one rewrite with the objections → store, or list the
- *                          room as failed with what went wrong. A batch costs half what the same calls cost
- *                          made one at a time, so a round is a single submit-and-poll, not one call per room.
+ *                          write → validate → judge → up to KIT_WRITE_ROUNDS-1 corrective rewrites with the
+ *                          judge's own objections → store, or list the room as failed with what went wrong.
+ *                          A batch costs half what the same calls cost made one at a time, so a round is a
+ *                          single submit-and-poll, not one call per room.
  * deps = { kv, step, ai: { submitBatch, getBatch, fetchResults }, now }
  * The Workflow class that gives this durability lives in index.js; this file has no Cloudflare imports.
  */
@@ -16,6 +17,11 @@ import { FAMILIES, familyFor, kitText } from '../src/families.js';
 export const KIT_PROMPT_VERSION = '2026-09-10.2';
 export const KIT_MODELS = { write: 'claude-sonnet-5', judge: 'claude-opus-5' };
 export const KIT_SCORE = 0.8;
+/* A room kit's own content — a wrong answer key, an undersized model answer, a worked example whose setup doesn't
+   carry what its steps use — is the writer's to fix by trying again with the judge's objections, never a reason to
+   give up on the room after a single rewrite: several broad rooms (a vocabulary appendix, a consolidated grammar
+   topic) on a live course still failed with specific, fixable objections after exactly one rewrite. */
+export const KIT_WRITE_ROUNDS = 4;
 
 const S = (properties) => ({ type: 'object', properties, required: Object.keys(properties), additionalProperties: false });
 const arr = items => ({ type: 'array', items });
@@ -128,8 +134,8 @@ export async function runDepth(params, deps) {
   const kits = {}; // topic.id -> the kit once it has passed the validator
   let pending = topics.map(t => ({ t, problems: null })); // rooms still needing a write this round
 
-  for (let attempt = 0; attempt < 2 && pending.length; attempt++) {
-    const again = attempt > 0;
+  for (let attempt = 0; attempt < KIT_WRITE_ROUNDS && pending.length; attempt++) {
+    const again = attempt > 0, last = attempt === KIT_WRITE_ROUNDS - 1;
     const writeRequests = pending.map(({ t, problems }) => batchRequest(cid('write', t.id), { prompt: kitPrompts.write({ spec, topic: t, family, problems }), schema: kitSchemas.kit, model: KIT_MODELS.write, maxTokens: 32000 }, { topic: t, family, problems }));
     const writeResults = await runBatchRound(step, ai, `depth ${id} write${again ? ' again' : ''}`, writeRequests);
     rec.calls += writeRequests.length;
@@ -144,12 +150,12 @@ export async function runDepth(params, deps) {
         problems = validateKit(kit, t, family).problems.map(p => 'refused by the validator: ' + p);
       } catch (e) { problems = [String((e && e.message) || e).slice(0, 200)]; }
       if (!problems.length) toJudge.push(t);
-      else if (again) rec.failed.push({ topic: t.id, problems: problems.slice(0, 6) });
+      else if (last) rec.failed.push({ topic: t.id, problems: problems.slice(0, 6) });
       else next.push({ t, problems });
     }
 
     if (toJudge.length) {
-      const judgeRequests = toJudge.map(t => batchRequest(cid('judge', t.id), { prompt: kitPrompts.judge({ spec, topic: t, family, kit: kits[t.id] }), schema: kitSchemas.judge, model: KIT_MODELS.judge, maxTokens: 16000 }, { topic: t, family, kit: kits[t.id] }));
+      const judgeRequests = toJudge.map(t => batchRequest(cid('judge', t.id), { prompt: kitPrompts.judge({ spec, topic: t, family, kit: kits[t.id] }), schema: kitSchemas.judge, model: KIT_MODELS.judge, maxTokens: 32000 }, { topic: t, family, kit: kits[t.id] }));
       const judgeResults = await runBatchRound(step, ai, `depth ${id} judge${again ? ' again' : ''}`, judgeRequests);
       rec.calls += judgeRequests.length;
 
@@ -162,7 +168,7 @@ export async function runDepth(params, deps) {
             built: { at: now(), models: [KIT_MODELS.write, KIT_MODELS.judge], promptVersion: KIT_PROMPT_VERSION, judge: { score: Number(verdict.score) || 0, notes: verdict.notes || '' } } };
           await kv.put(`kit:${id}:${t.id}`, JSON.stringify(record));
           rec.done[t.id] = record.built.at;
-        } else if (again) rec.failed.push({ topic: t.id, problems: problems.slice(0, 6) });
+        } else if (last) rec.failed.push({ topic: t.id, problems: problems.slice(0, 6) });
         else next.push({ t, problems });
       }
     }

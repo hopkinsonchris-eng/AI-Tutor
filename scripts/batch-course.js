@@ -7,7 +7,8 @@
    node scripts/batch-course.js spec <board> <code> [--url …]   fetch the PDF → outline → topics → validate → judge →
                                                                  src/specs/, or up to JUDGE_ROUNDS re-outlines with the
                                                                  judge's own findings as the objection, then held
-   node scripts/batch-course.js kits <id> [--only t1,t2]         write → validate → judge → one rewrite → judge → src/kits/<id>.js
+   node scripts/batch-course.js kits <id> [--only t1,t2]         write → validate → judge → up to KIT_WRITE_ROUNDS-1 corrective
+                                                                 rewrites with the judge's own objections → src/kits/<id>.js
    node scripts/batch-course.js course <board> <code> [--url …]  spec, then kits, then install in build.js
    node scripts/batch-course.js wave <n> [--parallel 3] [--skip <id>,…]  every course of that wave in docs/course-roadmap.md not yet built
    node scripts/batch-course.js cost [<id>]                      the ledger: tokens and dollars by course, stage and model
@@ -30,7 +31,7 @@ const VERSION = '2023-06-01';
 const PRICES = { 'claude-sonnet-5': { in: 2, out: 10 }, 'claude-opus-5': { in: 5, out: 25 }, 'claude-haiku-4-5': { in: 1, out: 5 }, 'claude-fable-5-1': { in: 10, out: 50 } };
 const BATCH_DISCOUNT = 0.5;
 const MODELS = { outline: B.MODELS.outline, topic: B.MODELS.topic, judge: B.MODELS.judge, write: D.KIT_MODELS.write, judgeKit: D.KIT_MODELS.judge };
-const MAX_TOKENS = { outline: 16000, topic: 16000, judge: 16000, write: 32000, judgeKit: 16000 };
+const MAX_TOKENS = { outline: 16000, topic: 16000, judge: 16000, write: 32000, judgeKit: 32000 };
 const TTL = '1h';
 const FILE_DAYS = 7;
 /* tests/spec.test.js refuses a shipped file that writes a power with a caret */
@@ -52,6 +53,13 @@ const JUDGE_ROUNDS = 3;
    the normal token budget. Only these three checks are actually about a topic's place in the outline. */
 const OUTLINE_TOPIC_PROBLEM = /: (id is duplicated|needs a name|component ".*" is not one of)/;
 const TOPIC_WRITE_ROUNDS = 3;
+
+/* A room kit's own content — a wrong answer key, an undersized model answer, a worked example whose setup doesn't
+   carry what its steps use — is the writer's to fix by trying again with the judge's objections, never a reason to
+   give up on the room: two live courses each still had most of their broadest rooms (a vocabulary appendix, a
+   consolidated grammar topic) failing after exactly one rewrite, with specific, fixable objections each time. One
+   rewrite was never enough for those rooms; this many rounds are, mirroring TOPIC_WRITE_ROUNDS above. */
+const KIT_WRITE_ROUNDS = 4;
 
 /* ---------- cost ---------- */
 function costOf(model, usage, ttl = TTL, batch = true) {
@@ -405,11 +413,12 @@ async function runKits({ id, spec, scratch, dryRun, poll, api, log: logFn, only,
   if (pending.length) {
     log(`attempt ${a}: ${pending.length} room(s) to write · family ${family}`);
     if ((await round(1, pending.map(t => ({ t, problems: null })))) === 'dry') return { id, dryRun: true };
-    const again = pending.filter(t => !kits[t.id].done);
-    if (again.length) {
-      log(`${again.length} room(s) refused in round 1 — one rewrite with the objections`);
+    for (let n = 2; n <= KIT_WRITE_ROUNDS; n++) {
+      const again = pending.filter(t => !kits[t.id].done);
+      if (!again.length) break;
+      log(`${again.length} room(s) refused in round ${n - 1} — corrective rewrite ${n - 1} of ${KIT_WRITE_ROUNDS - 1}`);
       /* a room whose write or judge errored (no content to object to) gets a fresh write rather than a "rewrite" */
-      if ((await round(2, again.map(t => ({ t, problems: kits[t.id].kit ? kits[t.id].problems.slice(0, 8) : null })))) === 'dry') return { id, dryRun: true };
+      if ((await round(n, again.map(t => ({ t, problems: kits[t.id].kit ? kits[t.id].problems.slice(0, 8) : null })))) === 'dry') return { id, dryRun: true };
     }
   } else log(`every room already has a judged kit — nothing to write`);
   R.state.inflight = false; R.save();
@@ -429,8 +438,8 @@ function writeKitsFile(spec, family, kits, { passed, failed, root = ROOT }) {
   }
   const dir = path.join(root, 'src', 'kits'); fs.mkdirSync(dir, { recursive: true });
   const file = path.join(dir, spec.id + '.js');
-  const left = failed.length ? `\n   Rooms without a kit after one rewrite — a rerun of "node scripts/batch-course.js kits ${spec.id}" retries only these:\n   ${failed.map(t => `${t.id} — ${((kits[t.id] && kits[t.id].problems) || ['no answer']).slice(0, 2).join('; ').replace(/\*\//g, '* /').slice(0, 160)}`).join('\n   ')}` : '';
-  fs.writeFileSync(file, `/* ${SPEC_TITLE(spec)} — room kits built on the Message Batches API with the Worker's depth pipeline: written by\n   ${MODELS.write} to the contract in src/kit-validator.js, every question re-solved and the lesson read against the\n   specification map by ${MODELS.judgeKit} in a fresh context, one rewrite on objections. See .claude/skills/course-builder/references/batch.md.${left} */\nmodule.exports = { ID: '${spec.id}', KITS: ${JSON.stringify(out)} };\n`);
+  const left = failed.length ? `\n   Rooms without a kit after ${KIT_WRITE_ROUNDS - 1} corrective rewrites — a rerun of "node scripts/batch-course.js kits ${spec.id}" retries only these:\n   ${failed.map(t => `${t.id} — ${((kits[t.id] && kits[t.id].problems) || ['no answer']).slice(0, 2).join('; ').replace(/\*\//g, '* /').slice(0, 160)}`).join('\n   ')}` : '';
+  fs.writeFileSync(file, `/* ${SPEC_TITLE(spec)} — room kits built on the Message Batches API with the Worker's depth pipeline: written by\n   ${MODELS.write} to the contract in src/kit-validator.js, every question re-solved and the lesson read against the\n   specification map by ${MODELS.judgeKit} in a fresh context, up to ${KIT_WRITE_ROUNDS - 1} rewrites on objections.\n   See .claude/skills/course-builder/references/batch.md.${left} */\nmodule.exports = { ID: '${spec.id}', KITS: ${JSON.stringify(out)} };\n`);
   return file;
 }
 
@@ -512,5 +521,5 @@ async function main(argv) {
   } else console.log(fs.readFileSync(__filename, 'utf8').split('\n').slice(1, 16).join('\n'));
 }
 
-module.exports = { runSpec, runKits, costOf, costReport, waveCourses, anthropicBatches, writeSpecFile, shipProblems, specFileName, specVarName, MODELS, PRICES, JUDGE_ROUNDS, TOPIC_WRITE_ROUNDS, OUTLINE_TOPIC_PROBLEM };
+module.exports = { runSpec, runKits, costOf, costReport, waveCourses, anthropicBatches, writeSpecFile, shipProblems, specFileName, specVarName, MODELS, PRICES, JUDGE_ROUNDS, TOPIC_WRITE_ROUNDS, OUTLINE_TOPIC_PROBLEM, KIT_WRITE_ROUNDS };
 if (require.main === module) main(process.argv.slice(2)).catch(e => { console.error('batch-course.js:', e.message); process.exit(1); });

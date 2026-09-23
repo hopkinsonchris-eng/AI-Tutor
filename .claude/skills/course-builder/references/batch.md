@@ -18,7 +18,7 @@ weekly limit, and when the cost has to be a measured number.
 | Re-outline and re-fill, if the judge scores under 0.8 | Opus 5, then Sonnet 5 | as above, up to 2 more times | the judge's own `invented` and `missing` go back as the outline's objection; a topic the new outline kept under the same id and name keeps its earlier answer rather than being rebilled |
 | Every room's kit | Sonnet 5 | one batch | validated on collection |
 | Judge of every kit | Opus 5 | one batch | re-solves every question in a fresh context |
-| Rewrite of refused rooms | Sonnet 5, then Opus 5 | one batch each | once, with the objections; a second refusal ships the room without a kit |
+| Rewrite of refused rooms | Sonnet 5, then Opus 5 | one batch each | up to KIT_WRITE_ROUNDS-1 times, with the objections; a room still refused after all of them ships without a kit |
 
 The PDF goes up once through the Files API (seven-day expiry; re-uploaded automatically on a rerun after six days) and
 every request references it as a cached document with a one-hour cache. `--doc url` sends the board's URL instead, which
@@ -88,8 +88,9 @@ To start a course over, delete its `batch/` directory. To retry one room, `kits 
   procedure (the document decides), move it to `src/specs/`, then `kits <id>`.
 - **A map the validator refuses after the corrective round** stops the run; the draft and the problems are in
   `spec.refused.json`. Usually a topic the document numbers unusually: fix the outline by hand or build in a session.
-- **A room refused twice** ships without a kit and is named in the header of `src/kits/<id>.js` with the objection.
-  Students see the room spec-only, as on the Worker. `kits <id>` retries every such room in a new attempt.
+- **A room still refused after `KIT_WRITE_ROUNDS` (4) rounds** ships without a kit and is named in the header of
+  `src/kits/<id>.js` with the objection. Students see the room spec-only, as on the Worker. `kits <id>` retries every
+  such room in a new attempt, itself good for another `KIT_WRITE_ROUNDS` rounds.
 - **A kit written with a caret power** is a problem the rewrite fixes; if it survives, the room is left out rather than
   breaking `npm test`.
 

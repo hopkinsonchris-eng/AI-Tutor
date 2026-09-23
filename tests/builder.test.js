@@ -13,7 +13,7 @@ const B = loadModule(path.join(__dirname, '..', 'worker', 'builder.js'), {
 }).exports;
 const { runBuild, runReview, diffSpecs, prompts, specIdFor, PROMPT_VERSION } = B;
 const D = loadModule(path.join(__dirname, '..', 'worker', 'depth.js'), { '../src/kit-validator.js': kitValidator, '../src/families.js': families }).exports;
-const { runDepth, kitPrompts } = D;
+const { runDepth, kitPrompts, KIT_WRITE_ROUNDS } = D;
 
 /* ---------- canned documents: what the model returns, per family ---------- */
 const idea = (code, n) => ({ code, q: `What does ${code} require?`, idea: `Idea ${code}`, content: `The specification statement for ${code}, in the board's own terms, with what the student must be able to do — number ${n}.` });
@@ -186,8 +186,9 @@ const deps = (f, over = {}) => ({ kv: kv(), step: inlineStep(), ai: ai(f), head:
     ok('R3 an AI client without a resources method still builds and publishes', rec.status === 'published' && (await d.kv.get('spec:' + rec.id, 'json')).resources.hubs.length === 0);
   }
 
-  /* ---------- course depth (tooler criteria 1–4, 8): write → validate → judge → one rewrite, everything
-     still needing work each round going into a single Anthropic Message Batch, not one call per room ---------- */
+  /* ---------- course depth (tooler criteria 1–4, 8): write → validate → judge → up to KIT_WRITE_ROUNDS-1
+     corrective rewrites, everything still needing work each round going into a single Anthropic Message
+     Batch, not one call per room ---------- */
   const kitAI = (over = {}) => {
     const calls = { kit: 0, judge: 0, prompts: [], batches: [] };
     const store = new Map();
@@ -252,6 +253,18 @@ const deps = (f, over = {}) => ({ kv: kv(), step: inlineStep(), ai: ai(f), head:
     ok('D6 all nine rooms go into one Anthropic Message Batch per round, not one call each', rec.status === 'done' && Object.keys(rec.done).length === 9 && ai.calls.batches.length === 2 && ai.calls.batches.every(n => n === 9), JSON.stringify(ai.calls.batches));
   }
   ok('D7 the kit rules reach the skill reference too', require('fs').readFileSync(path.join(__dirname, '..', '.claude', 'skills', 'course-builder', 'references', 'families.md'), 'utf8').includes(families.FAMILIES.essay.kit.rules[0]));
+  {
+    const { kv, id } = await publishedKv('science'); let failures = KIT_WRITE_ROUNDS - 2;
+    const ai = kitAI({ judge: (topic) => { if (topic.id === '3.2' && failures > 0) { failures--; return { score: 0.4, wrong: [], problems: ['still wrong'], notes: '' }; } return { score: 0.95, wrong: [], problems: [], notes: '' }; } });
+    const rec = await runDepth({ id }, depthDeps(kv, ai));
+    ok('D8 a room that keeps failing recovers within the widened budget: more than one rewrite is given before it is given up on', rec.status === 'done' && Object.keys(rec.done).length === 3 && rec.failed.length === 0 && ai.calls.kit === 3 + (KIT_WRITE_ROUNDS - 2), JSON.stringify({ kit: ai.calls.kit, done: rec.done, failed: rec.failed }));
+  }
+  {
+    const { kv, id } = await publishedKv('science');
+    const ai = kitAI({ judge: (topic) => topic.id === '3.3' ? { score: 0.4, wrong: [], problems: ['forever wrong'], notes: '' } : { score: 0.95, wrong: [], problems: [], notes: '' } });
+    const rec = await runDepth({ id }, depthDeps(kv, ai));
+    ok('D9 a room still bad after every corrective round is only given up on once the widened budget (KIT_WRITE_ROUNDS) is used up, not after one rewrite', rec.status === 'done' && rec.failed.length === 1 && rec.failed[0].topic === '3.3' && ai.calls.kit === 2 + KIT_WRITE_ROUNDS, JSON.stringify({ kit: ai.calls.kit, failed: rec.failed }));
+  }
 
   console.log('PASSED: ' + pass); console.log('-'.repeat(50));
   if (fails.length) { console.log('FAILED:'); fails.forEach(f => console.log('  ' + f)); process.exit(1); }

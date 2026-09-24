@@ -8,7 +8,9 @@
                                                                  src/specs/, or up to JUDGE_ROUNDS re-outlines with the
                                                                  judge's own findings as the objection, then held
    node scripts/batch-course.js kits <id> [--only t1,t2]         write → validate → judge → up to KIT_WRITE_ROUNDS-1 corrective
-                                                                 rewrites with the judge's own objections → src/kits/<id>.js
+                                                                 rewrites, each carrying every objection raised about that
+                                                                 room so far (KIT_HISTORY_MAX), across rounds and reruns
+                                                                 alike → src/kits/<id>.js
    node scripts/batch-course.js course <board> <code> [--url …]  spec, then kits, then install in build.js
    node scripts/batch-course.js wave <n> [--parallel 3] [--skip <id>,…]  every course of that wave in docs/course-roadmap.md not yet built
    node scripts/batch-course.js cost [<id>]                      the ledger: tokens and dollars by course, stage and model
@@ -31,7 +33,7 @@ const VERSION = '2023-06-01';
 const PRICES = { 'claude-sonnet-5': { in: 2, out: 10 }, 'claude-opus-5': { in: 5, out: 25 }, 'claude-haiku-4-5': { in: 1, out: 5 }, 'claude-fable-5-1': { in: 10, out: 50 } };
 const BATCH_DISCOUNT = 0.5;
 const MODELS = { outline: B.MODELS.outline, topic: B.MODELS.topic, judge: B.MODELS.judge, write: D.KIT_MODELS.write, judgeKit: D.KIT_MODELS.judge };
-const MAX_TOKENS = { outline: 16000, topic: 16000, judge: 16000, write: 32000, judgeKit: 32000 };
+const MAX_TOKENS = { outline: 16000, topic: 16000, judge: 16000, write: 32000, judgeKit: 48000 };
 const TTL = '1h';
 const FILE_DAYS = 7;
 /* tests/spec.test.js refuses a shipped file that writes a power with a caret */
@@ -60,6 +62,13 @@ const TOPIC_WRITE_ROUNDS = 3;
    consolidated grammar topic) failing after exactly one rewrite, with specific, fixable objections each time. One
    rewrite was never enough for those rooms; this many rounds are, mirroring TOPIC_WRITE_ROUNDS above. */
 const KIT_WRITE_ROUNDS = 4;
+
+/* A room whose rewrite only carries the round just before it can fix exactly what was named while introducing
+   something new elsewhere in a 12-16 question room — a live AQA-8692 build went 0 for 12 after the full widened
+   KIT_WRITE_ROUNDS budget this way, with different, genuine objections every round. Every problem ever raised
+   about a room, across every round and every attempt (kits persist in state.json between CLI reruns), is kept
+   instead, deduplicated and capped, so a room that stops making a mistake keeps being told not to make it again. */
+const KIT_HISTORY_MAX = 16;
 
 /* ---------- cost ---------- */
 function costOf(model, usage, ttl = TTL, batch = true) {
@@ -378,11 +387,21 @@ async function runKits({ id, spec, scratch, dryRun, poll, api, log: logFn, only,
   const topics = only ? spec.topics.filter(t => only.includes(t.id)) : spec.topics;
   const write = (t, problems) => R.params({ system, prompt: D.kitPrompts.write({ spec, topic: t, family, problems }), schema: D.kitSchemas.kit, model: MODELS.write, maxTokens: MAX_TOKENS.write });
   const judge = (t, kit) => R.params({ system, prompt: D.kitPrompts.judge({ spec, topic: t, family, kit }), schema: D.kitSchemas.judge, model: MODELS.judgeKit, maxTokens: MAX_TOKENS.judgeKit });
-  const kits = R.state.kits || (R.state.kits = {});   /* topic → { attempt, round, kit, written, judged, verdict, problems, done, at } */
+  const kits = R.state.kits || (R.state.kits = {});   /* topic → { attempt, round, kit, written, judged, verdict, problems, history, done, at } */
   /* an attempt is one run of this command; a run that was interrupted is resumed under its own attempt number */
   if (!R.state.inflight) { R.state.attempt = (R.state.attempt || 0) + 1; R.state.inflight = true; if (!dryRun) R.save(); }
   const a = R.state.attempt;
   const pending = topics.filter(t => !kits[t.id] || !kits[t.id].done);
+
+  /* Every problem ever raised about a room, across every round and every attempt — see KIT_HISTORY_MAX above. */
+  const remember = (k, problems) => {
+    k.history = k.history || [];
+    for (const p of problems || []) if (p && !k.history.includes(p)) k.history.push(p);
+    if (k.history.length > KIT_HISTORY_MAX) k.history = k.history.slice(k.history.length - KIT_HISTORY_MAX);
+  };
+  /* null only for a room with no earlier draft to reference at all — the write prompt's "your previous kit"
+     framing doesn't fit a room that has never produced usable content. */
+  const objectionsFor = (t) => { const k = kits[t.id]; return (k && k.kit && k.history && k.history.length) ? k.history : null; };
 
   const round = async (n, list) => {
     const tag = `a${a}r${n}`;
@@ -395,6 +414,7 @@ async function runKits({ id, spec, scratch, dryRun, poll, api, log: logFn, only,
       if (r.error) { k.kit = null; k.problems = [r.error]; continue; }
       const v = validateKit(r.value, t, family);
       k.kit = r.value; k.problems = v.problems.map(p => 'refused by the validator: ' + p).concat(caretProblems(r.value));
+      remember(k, k.problems);
     }
     R.save();
     const toJudge = list.map(x => x.t).filter(t => { const k = kits[t.id]; return k && k.attempt === a && k.round === n && k.kit && !k.problems.length && !k.judged; });
@@ -404,6 +424,7 @@ async function runKits({ id, spec, scratch, dryRun, poll, api, log: logFn, only,
       const r = j[cid(id, 'judge', t.id, tag)]; const k = kits[t.id]; k.judged = true;
       if (r.error) { k.problems = ['the judge failed: ' + r.error]; continue; }
       k.verdict = r.value; k.problems = D.judgeProblems(r.value);
+      remember(k, k.problems);
       if (!k.problems.length) { k.done = true; k.at = new Date().toISOString(); }
     }
     R.save();
@@ -412,13 +433,12 @@ async function runKits({ id, spec, scratch, dryRun, poll, api, log: logFn, only,
 
   if (pending.length) {
     log(`attempt ${a}: ${pending.length} room(s) to write · family ${family}`);
-    if ((await round(1, pending.map(t => ({ t, problems: null })))) === 'dry') return { id, dryRun: true };
+    if ((await round(1, pending.map(t => ({ t, problems: objectionsFor(t) })))) === 'dry') return { id, dryRun: true };
     for (let n = 2; n <= KIT_WRITE_ROUNDS; n++) {
       const again = pending.filter(t => !kits[t.id].done);
       if (!again.length) break;
       log(`${again.length} room(s) refused in round ${n - 1} — corrective rewrite ${n - 1} of ${KIT_WRITE_ROUNDS - 1}`);
-      /* a room whose write or judge errored (no content to object to) gets a fresh write rather than a "rewrite" */
-      if ((await round(n, again.map(t => ({ t, problems: kits[t.id].kit ? kits[t.id].problems.slice(0, 8) : null })))) === 'dry') return { id, dryRun: true };
+      if ((await round(n, again.map(t => ({ t, problems: objectionsFor(t) })))) === 'dry') return { id, dryRun: true };
     }
   } else log(`every room already has a judged kit — nothing to write`);
   R.state.inflight = false; R.save();
@@ -521,5 +541,5 @@ async function main(argv) {
   } else console.log(fs.readFileSync(__filename, 'utf8').split('\n').slice(1, 16).join('\n'));
 }
 
-module.exports = { runSpec, runKits, costOf, costReport, waveCourses, anthropicBatches, writeSpecFile, shipProblems, specFileName, specVarName, MODELS, PRICES, JUDGE_ROUNDS, TOPIC_WRITE_ROUNDS, OUTLINE_TOPIC_PROBLEM, KIT_WRITE_ROUNDS };
+module.exports = { runSpec, runKits, costOf, costReport, waveCourses, anthropicBatches, writeSpecFile, shipProblems, specFileName, specVarName, MODELS, PRICES, JUDGE_ROUNDS, TOPIC_WRITE_ROUNDS, OUTLINE_TOPIC_PROBLEM, KIT_WRITE_ROUNDS, KIT_HISTORY_MAX };
 if (require.main === module) main(process.argv.slice(2)).catch(e => { console.error('batch-course.js:', e.message); process.exit(1); });

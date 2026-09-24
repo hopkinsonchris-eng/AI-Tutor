@@ -265,6 +265,20 @@ const deps = (f, over = {}) => ({ kv: kv(), step: inlineStep(), ai: ai(f), head:
     const rec = await runDepth({ id }, depthDeps(kv, ai));
     ok('D9 a room still bad after every corrective round is only given up on once the widened budget (KIT_WRITE_ROUNDS) is used up, not after one rewrite', rec.status === 'done' && rec.failed.length === 1 && rec.failed[0].topic === '3.3' && ai.calls.kit === 2 + KIT_WRITE_ROUNDS, JSON.stringify({ kit: ai.calls.kit, failed: rec.failed }));
   }
+  {
+    /* a room whose objections change every round must carry all of them into its next rewrite, not just the
+       round before — a rewrite that only sees the latest finding can fix it while quietly reintroducing an
+       earlier one, which is what left a live AQA-8692 build at 0 of 12 shipped after the full widened budget */
+    const { kv, id } = await publishedKv('science');
+    const distinct = ['question 3: alpha problem, wrong unit', 'question 6: beta problem, ambiguous wording', 'question 9: gamma problem, contradicts the facts'];
+    let judgeCalls32 = 0;
+    const ai = kitAI({ judge: (topic) => { if (topic.id !== '3.2') return { score: 0.95, wrong: [], problems: [], notes: '' }; const i = judgeCalls32++; return i < distinct.length ? { score: 0.4, wrong: [], problems: [distinct[i]], notes: '' } : { score: 0.95, wrong: [], problems: [], notes: '' }; } });
+    const rec = await runDepth({ id }, depthDeps(kv, ai));
+    const writes32 = ai.calls.prompts.filter(p => /Topic 3\.2\b/.test(p) && /Write the complete kit/.test(p));
+    ok('D10 round 3\'s rewrite of the room carries both distinct objections raised so far, not just round 2\'s', writes32.length >= 3 && /alpha problem/.test(writes32[2]) && /beta problem/.test(writes32[2]), writes32[2] && writes32[2].slice(0, 300));
+    ok('D10 round 4\'s rewrite carries all three, the full history across every round', writes32.length >= 4 && ['alpha problem', 'beta problem', 'gamma problem'].every(p => new RegExp(p).test(writes32[3])));
+    ok('D10 the accumulated history let the room recover instead of looping forever', rec.status === 'done' && Object.keys(rec.done).length === 3 && rec.failed.length === 0 && judgeCalls32 === distinct.length + 1);
+  }
 
   console.log('PASSED: ' + pass); console.log('-'.repeat(50));
   if (fails.length) { console.log('FAILED:'); fails.forEach(f => console.log('  ' + f)); process.exit(1); }

@@ -216,6 +216,31 @@ const logs = []; const log = (m) => logs.push(m);
     ok('K6 the ledger has exactly one row per answered request: four writes and four judgements', ledger3.length === 8);
   }
 
+  /* ---------- a room whose objections change every round: the rewrite must carry all of them, not just the
+     last round's, or a rewrite can fix what was named while quietly reintroducing an earlier problem (this is
+     what left a live AQA-8692 build at 0 of 12 shipped after the full widened KIT_WRITE_ROUNDS budget) ---------- */
+  {
+    const root = tmp(), scratch = tmp();
+    const spec = { ...outline(), id: 'AQA-7042', topics: outline().topics.map(t => ({ ...t, ...topicAnswer(t.id) })) };
+    let judgeCalls3 = 0;
+    const distinct = ['question 2: alpha problem, wrong tense', 'question 5: beta problem, missing unit', 'question 8: gamma problem, ambiguous wording'];
+    const api = fakeApi((k) => {
+      if (k.kind === 'write') return sampleKit(topicOf(spec, k.id), 'essay');
+      if (k.kind === 'judgeKit') {
+        const tid = /on (Topic \w+|The investigation)\?/.exec(k.kit.room.questions[0].q)[1];
+        if (tid !== 'Topic three') return { score: 0.9, wrong: [], problems: [], notes: 'Yes.' };
+        const i = judgeCalls3++;
+        return i < distinct.length ? { score: 0.4, wrong: [], problems: [distinct[i]], notes: 'No.' } : { score: 0.9, wrong: [], problems: [], notes: 'Yes.' };
+      }
+      return null;
+    });
+    const r = await BC.runKits({ id: 'AQA-7042', spec, scratch, root, api, log });
+    const write33 = (tag) => { const q = api.calls.create.flatMap(b => b.requests).find(q => { const k = kindOf(q.params); return k.kind === 'write' && k.id === '3.3' && new RegExp(tag + '$').test(q.custom_id); }); return q && kindOf(q.params); };
+    ok('K7 round 3\'s rewrite of the room carries both of the two distinct objections raised so far, not just round 2\'s', write33('a1r3') && /alpha problem/.test(write33('a1r3').text) && /beta problem/.test(write33('a1r3').text), write33('a1r3') && write33('a1r3').text.slice(0, 300));
+    ok('K7 round 4\'s rewrite carries all three, the full history across every round', write33('a1r4') && ['alpha problem', 'beta problem', 'gamma problem'].every(p => new RegExp(p).test(write33('a1r4').text)));
+    ok('K7 the accumulated history let the room recover instead of looping forever, and the rest of the course is unaffected', r.passed.includes('3.3') && r.passed.length === 4 && judgeCalls3 === distinct.length + 1);
+  }
+
   /* ---------- an errored request in a batch ---------- */
   {
     const root = tmp(), scratch = tmp();

@@ -18,7 +18,7 @@ weekly limit, and when the cost has to be a measured number.
 | Re-outline and re-fill, if the judge scores under 0.8 | Opus 5, then Sonnet 5 | as above, up to 2 more times | the judge's own `invented` and `missing` go back as the outline's objection; a topic the new outline kept under the same id and name keeps its earlier answer rather than being rebilled |
 | Every room's kit | Sonnet 5 | one batch | validated on collection |
 | Judge of every kit | Opus 5 | one batch | re-solves every question in a fresh context |
-| Rewrite of refused rooms | Sonnet 5, then Opus 5 | one batch each | up to KIT_WRITE_ROUNDS-1 times, with the objections; a room still refused after all of them ships without a kit |
+| Rewrite of refused rooms | Sonnet 5, then Opus 5 | one batch each | up to KIT_WRITE_ROUNDS-1 times, each carrying every objection raised about that room so far (KIT_HISTORY_MAX), not just the round before it, so a fixed mistake doesn't come back; a room still refused after all of them ships without a kit |
 
 The PDF goes up once through the Files API (seven-day expiry; re-uploaded automatically on a rerun after six days) and
 every request references it as a cached document with a one-hour cache. `--doc url` sends the board's URL instead, which

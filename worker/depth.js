@@ -4,10 +4,11 @@
  *
  * runDepth(params, deps)   params = { id, only?: [topicId] }
  *                          every room still needing work goes into one Anthropic Message Batch per round:
- *                          write → validate → judge → up to KIT_WRITE_ROUNDS-1 corrective rewrites with the
- *                          judge's own objections → store, or list the room as failed with what went wrong.
- *                          A batch costs half what the same calls cost made one at a time, so a round is a
- *                          single submit-and-poll, not one call per room.
+ *                          write → validate → judge → up to KIT_WRITE_ROUNDS-1 corrective rewrites, each
+ *                          carrying every objection raised about that room so far this run (KIT_HISTORY_MAX),
+ *                          not just the round before it → store, or list the room as failed with what went
+ *                          wrong. A batch costs half what the same calls cost made one at a time, so a round
+ *                          is a single submit-and-poll, not one call per room.
  * deps = { kv, step, ai: { submitBatch, getBatch, fetchResults }, now }
  * The Workflow class that gives this durability lives in index.js; this file has no Cloudflare imports.
  */
@@ -22,6 +23,11 @@ export const KIT_SCORE = 0.8;
    give up on the room after a single rewrite: several broad rooms (a vocabulary appendix, a consolidated grammar
    topic) on a live course still failed with specific, fixable objections after exactly one rewrite. */
 export const KIT_WRITE_ROUNDS = 4;
+/* A room whose rewrite only carries the round just before it can fix exactly what was named while introducing
+   something new elsewhere in a 12-16 question room. Every problem ever raised about a room, across every round
+   of this run, is kept instead, deduplicated and capped, so a room that stops making a mistake keeps being told
+   not to make it again, not just whatever it did most recently. */
+export const KIT_HISTORY_MAX = 16;
 
 const S = (properties) => ({ type: 'object', properties, required: Object.keys(properties), additionalProperties: false });
 const arr = items => ({ type: 'array', items });
@@ -132,6 +138,12 @@ export async function runDepth(params, deps) {
   const topics = only ? spec.topics.filter(t => only.includes(t.id)) : spec.topics;
 
   const kits = {}; // topic.id -> the kit once it has passed the validator
+  const history = {}; // topic.id -> every problem raised about it so far this run, deduplicated and capped
+  const remember = (tid, problems) => {
+    const h = history[tid] = history[tid] || [];
+    for (const p of problems || []) if (p && !h.includes(p)) h.push(p);
+    if (h.length > KIT_HISTORY_MAX) history[tid] = h.slice(h.length - KIT_HISTORY_MAX);
+  };
   let pending = topics.map(t => ({ t, problems: null })); // rooms still needing a write this round
 
   for (let attempt = 0; attempt < KIT_WRITE_ROUNDS && pending.length; attempt++) {
@@ -150,12 +162,11 @@ export async function runDepth(params, deps) {
         problems = validateKit(kit, t, family).problems.map(p => 'refused by the validator: ' + p);
       } catch (e) { problems = [String((e && e.message) || e).slice(0, 200)]; }
       if (!problems.length) toJudge.push(t);
-      else if (last) rec.failed.push({ topic: t.id, problems: problems.slice(0, 6) });
-      else next.push({ t, problems });
+      else { remember(t.id, problems); if (last) rec.failed.push({ topic: t.id, problems: problems.slice(0, 6) }); else next.push({ t, problems: history[t.id] }); }
     }
 
     if (toJudge.length) {
-      const judgeRequests = toJudge.map(t => batchRequest(cid('judge', t.id), { prompt: kitPrompts.judge({ spec, topic: t, family, kit: kits[t.id] }), schema: kitSchemas.judge, model: KIT_MODELS.judge, maxTokens: 32000 }, { topic: t, family, kit: kits[t.id] }));
+      const judgeRequests = toJudge.map(t => batchRequest(cid('judge', t.id), { prompt: kitPrompts.judge({ spec, topic: t, family, kit: kits[t.id] }), schema: kitSchemas.judge, model: KIT_MODELS.judge, maxTokens: 48000 }, { topic: t, family, kit: kits[t.id] }));
       const judgeResults = await runBatchRound(step, ai, `depth ${id} judge${again ? ' again' : ''}`, judgeRequests);
       rec.calls += judgeRequests.length;
 
@@ -168,8 +179,7 @@ export async function runDepth(params, deps) {
             built: { at: now(), models: [KIT_MODELS.write, KIT_MODELS.judge], promptVersion: KIT_PROMPT_VERSION, judge: { score: Number(verdict.score) || 0, notes: verdict.notes || '' } } };
           await kv.put(`kit:${id}:${t.id}`, JSON.stringify(record));
           rec.done[t.id] = record.built.at;
-        } else if (last) rec.failed.push({ topic: t.id, problems: problems.slice(0, 6) });
-        else next.push({ t, problems });
+        } else { remember(t.id, problems); if (last) rec.failed.push({ topic: t.id, problems: problems.slice(0, 6) }); else next.push({ t, problems: history[t.id] }); }
       }
     }
 

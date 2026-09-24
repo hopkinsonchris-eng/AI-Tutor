@@ -1,17 +1,18 @@
 /* AQA GCSE Spanish (8692) — room kits built on the Message Batches API with the Worker's depth pipeline: written by
    claude-sonnet-5 to the contract in src/kit-validator.js, every question re-solved and the lesson read against the
-   specification map by claude-opus-5 in a fresh context, one rewrite on objections. See .claude/skills/course-builder/references/batch.md.
-   Rooms without a kit after one rewrite — a rerun of "node scripts/batch-course.js kits AQA-8692" retries only these:
-   3.1.1 — question 7: The model answer in sol does not meet the task it is set against: the task demands 'unas 90 palabras' with at least one past, one present and one fu
-   3.1.2 — lesson.examples[2] (Photo card): the setup asks for one thing about what the people are doing and one about the atmosphere, but the final step ('Add an opinion 
-   3.1.3 — question 9: The 35+ word translation has four English sentences, but `a` gives only 'El verano pasado fui de vacaciones a la costa con mi familia.' — the first 
-   3.2.1.1 — lesson.check: the answer to "How do you make 'actor' feminine?" is given as "actora (add -a after -or)". This is wrong — the feminine of actor is the irregular 
-   3.2.1.2 — question 8: Answer key is narrow/ambiguous: the English prompt 'You have to recycle to protect the environment' is naturally rendered 'Tienes que reciclar para 
-   3.2.2.1 — question 14: Part (a): the text says 'aquella ciudad donde pasábamos los veranos' (pasábamos = we, i.e. the narrator with the cousins, used to spend the summers
-   3.2.2.2 — the answer ran past max_tokens
-   3.2.3 — examples[0].setup: asks how 'the letter c is pronounced in each' of four words, but 'queso' contains no letter c — the setup's question does not fit one of its 
-   3.3.1 — the answer ran past max_tokens
-   Foundation tier vocabulary — refused by the validator: lesson.examples[4]: the first step only restates the setup — it must make the first move
-   Higher tier vocabulary — the answer ran past max_tokens
+   specification map by claude-opus-5 in a fresh context, up to 3 rewrites on objections.
+   See .claude/skills/course-builder/references/batch.md.
+   Rooms without a kit after 3 corrective rewrites — a rerun of "node scripts/batch-course.js kits AQA-8692" retries only these:
+   3.1.1 — question 1: 'siempre nos hace reír' means 'always makes US laugh' (the writer and family), but both a and sol render it 'makes them laugh' — the object pronoun 
+   3.1.2 — question 9: The stem asks only for 'the correct form of "gustar"', but the key/solution require the two words 'nos gustan'; a student writing 'gustan' (the form
+   3.1.3 — question 12: The question asks for approximately 90 words, but the model answer in `sol` is only about 74 words, and it uses no past time frame at all (present 
+   3.2.1.1 — question 13: The solution's grammar is wrong and contradicts the kit's own fact list: it says "su agrees with estudiante (singular)", but su is singular because
+   3.2.1.2 — question 8: Model answer 'Normalmente estoy jugando al fútbol con mis amigos' is not sound Spanish for the task: the present continuous (estar + gerundio) state
+   3.2.2.1 — question 9: The Spanish text is not marked as reported speech: after 'Mi abuela me contó una historia sobre su juventud' the first person continues ('Mi hermana
+   3.2.2.2 — room.questions[5].hints[2] ('Your answer will begin with two words before "es que"') hands the student the connector 'es que', which is part of the required ans
+   3.2.3 — question 11: 'Compramos queso y jamón en el mercado, y después caminamos por el parque.' is genuinely ambiguous: for -ar verbs the nosotros present and preterit
+   3.3.1 — question 11: The task demands 'approximately 90 words' (and the 15-mark grid rewards three time frames), but the model answer in sol is only about 63 words, so 
+   Foundation tier vocabulary — the answer ran past max_tokens
+   Higher tier vocabulary — question 11: The model Spanish under-translates the English: 'because so many tourists go' is rendered 'porque van muchos turistas', which only says 'many touri
    6 — the answer ran past max_tokens */
 module.exports = { ID: 'AQA-8692', KITS: {} };

@@ -20,6 +20,8 @@ weekly limit, and when the cost has to be a measured number.
 | Judge of every kit | Opus 5 | one batch | re-solves every question in a fresh context |
 | Rewrite of refused rooms | Sonnet 5, then Opus 5 | one batch each | up to KIT_WRITE_ROUNDS-1 times, each carrying every objection raised about that room so far (KIT_HISTORY_MAX), not just the round before it, so a fixed mistake doesn't come back; a room still refused after all of them ships without a kit |
 
+The kit writer's answer may run to MAX_TOKENS.write output tokens (64,000; the model's thinking counts against it). A room whose answer is cut off at that budget is not abandoned: it goes into the corrective rewrite with an explicit objection to write the kit more concisely, and keeps that objection in its history. Two language courses lost most of their broadest rooms at the earlier 32,000 budget before any objection could be raised.
+
 The PDF goes up once through the Files API (seven-day expiry; re-uploaded automatically on a rerun after six days) and
 every request references it as a cached document with a one-hour cache. `--doc url` sends the board's URL instead, which
 is what the Worker does; use it if the Files API refuses a document.

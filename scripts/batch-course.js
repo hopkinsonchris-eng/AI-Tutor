@@ -33,7 +33,14 @@ const VERSION = '2023-06-01';
 const PRICES = { 'claude-sonnet-5': { in: 2, out: 10 }, 'claude-opus-5': { in: 5, out: 25 }, 'claude-haiku-4-5': { in: 1, out: 5 }, 'claude-fable-5-1': { in: 10, out: 50 } };
 const BATCH_DISCOUNT = 0.5;
 const MODELS = { outline: B.MODELS.outline, topic: B.MODELS.topic, judge: B.MODELS.judge, write: D.KIT_MODELS.write, judgeKit: D.KIT_MODELS.judge };
-const MAX_TOKENS = { outline: 16000, topic: 16000, judge: 16000, write: 32000, judgeKit: 48000 };
+/* write: a room kit is one JSON answer of up to 16 questions with solutions, 4-6 worked examples, cards and extras,
+   and the model's thinking counts against the same budget. Two live language courses (AQA-8692, AQA-8652) lost most of
+   their broadest rooms — a 35-idea sound-symbol appendix, a 2,500-character-per-idea grammar topic — to "ran past
+   max_tokens" at 32,000 before any objection could be raised. Batch requests are not streamed and have no HTTP
+   timeout to protect, and Sonnet 5 allows up to 128,000 output tokens, so the writer gets the same headroom the
+   judge already has and then some; a room that still overruns is told so (see the max_tokens objection below). */
+const MAX_TOKENS = { outline: 16000, topic: 16000, judge: 16000, write: 64000, judgeKit: 48000 };
+const MAX_TOKENS_OBJECTION = `the answer ran past the output budget of ${MAX_TOKENS.write} tokens and was cut off: write the whole kit more concisely — shorter lesson sections, one-line worked-example steps, brief solutions and card backs — without dropping any required part`;
 const TTL = '1h';
 const FILE_DAYS = 7;
 /* tests/spec.test.js refuses a shipped file that writes a power with a caret */
@@ -160,7 +167,7 @@ function runFor(id, opts = {}) {
      collected name with new requests is a new attempt. Returns { customId: { value } | { error } }. */
   async function batch(name, stage, requests) {
     if (!requests.length) return {};
-    if (opts.dryRun) { log(`dry run: ${name} would submit ${requests.length} request(s) · ${(JSON.stringify(requests).length / 1024).toFixed(0)} KB of prompts`); return Object.fromEntries(requests.map(r => [r.custom_id, { dryRun: true }])); }
+    if (opts.dryRun) { const mt = [...new Set(requests.map(r => r.params && r.params.max_tokens).filter(Boolean))]; log(`dry run: ${name} would submit ${requests.length} request(s) · ${(JSON.stringify(requests).length / 1024).toFixed(0)} KB of prompts · ${requests[0] && requests[0].params ? requests[0].params.model : ''} · max_tokens ${mt.join('/')}`); return Object.fromEntries(requests.map(r => [r.custom_id, { dryRun: true }])); }
     let rec = state.batches[name];
     if (!rec || rec.collected) {
       const b = await api.create(requests);
@@ -399,9 +406,10 @@ async function runKits({ id, spec, scratch, dryRun, poll, api, log: logFn, only,
     for (const p of problems || []) if (p && !k.history.includes(p)) k.history.push(p);
     if (k.history.length > KIT_HISTORY_MAX) k.history = k.history.slice(k.history.length - KIT_HISTORY_MAX);
   };
-  /* null only for a room with no earlier draft to reference at all — the write prompt's "your previous kit"
-     framing doesn't fit a room that has never produced usable content. */
-  const objectionsFor = (t) => { const k = kits[t.id]; return (k && k.kit && k.history && k.history.length) ? k.history : null; };
+  /* null only for a room that has never been attempted — a room whose only answer so far was cut off at
+     max_tokens has a history too (the objection to write more concisely), and a rewrite that carries nothing back
+     would just overrun again the same way. */
+  const objectionsFor = (t) => { const k = kits[t.id]; return (k && k.history && k.history.length) ? k.history : null; };
 
   const round = async (n, list) => {
     const tag = `a${a}r${n}`;
@@ -411,7 +419,7 @@ async function runKits({ id, spec, scratch, dryRun, poll, api, log: logFn, only,
     for (const { t } of needWrite) {
       const r = w[cid(id, 'write', t.id, tag)];
       const k = kits[t.id] = { ...(kits[t.id] || {}), attempt: a, round: n, written: true, judged: false, verdict: null, done: false };
-      if (r.error) { k.kit = null; k.problems = [r.error]; continue; }
+      if (r.error) { k.kit = null; k.problems = [r.error]; remember(k, /max_tokens/.test(r.error) ? [MAX_TOKENS_OBJECTION] : []); continue; }
       const v = validateKit(r.value, t, family);
       k.kit = r.value; k.problems = v.problems.map(p => 'refused by the validator: ' + p).concat(caretProblems(r.value));
       remember(k, k.problems);

@@ -384,7 +384,8 @@ function topicProblems(spec, i, filled) {
 /* ---------- the kits: write → validate → judge → one rewrite with the objections → judge ---------- */
 function specFor(id, root = ROOT) { const dir = path.join(root, 'src', 'specs'); if (!fs.existsSync(dir)) return null; for (const f of fs.readdirSync(dir)) { const m = require(path.join(dir, f)); for (const sp of Object.values(m)) if (sp && sp.id === id) return sp; } return null; }
 
-async function runKits({ id, spec, scratch, dryRun, poll, api, log: logFn, only, root = ROOT }) {
+async function runKits({ id, spec, scratch, dryRun, poll, api, log: logFn, only, rounds, root = ROOT }) {
+  const WRITE_ROUNDS = Math.max(1, Math.min(KIT_WRITE_ROUNDS, rounds || KIT_WRITE_ROUNDS));
   spec = spec || specFor(id, root);
   if (!spec) throw new Error(`no spec with id ${id} in src/specs/ — build the spec first`);
   const R = runFor(id, { scratch, dryRun, poll, api, log: logFn });
@@ -442,10 +443,10 @@ async function runKits({ id, spec, scratch, dryRun, poll, api, log: logFn, only,
   if (pending.length) {
     log(`attempt ${a}: ${pending.length} room(s) to write · family ${family}`);
     if ((await round(1, pending.map(t => ({ t, problems: objectionsFor(t) })))) === 'dry') return { id, dryRun: true };
-    for (let n = 2; n <= KIT_WRITE_ROUNDS; n++) {
+    for (let n = 2; n <= WRITE_ROUNDS; n++) {
       const again = pending.filter(t => !kits[t.id].done);
       if (!again.length) break;
-      log(`${again.length} room(s) refused in round ${n - 1} — corrective rewrite ${n - 1} of ${KIT_WRITE_ROUNDS - 1}`);
+      log(`${again.length} room(s) refused in round ${n - 1} — corrective rewrite ${n - 1} of ${WRITE_ROUNDS - 1}`);
       if ((await round(n, again.map(t => ({ t, problems: objectionsFor(t) })))) === 'dry') return { id, dryRun: true };
     }
   } else log(`every room already has a judged kit — nothing to write`);
@@ -518,8 +519,11 @@ async function main(argv) {
     if (!r.published) { console.log(heldNote(r)); process.exitCode = 2; return; }
     if (cmd === 'course') { const k = await runKits({ id: r.id, spec: r.spec, ...common }); if (k.dryRun) return; console.log(printCost(k.id, k.cost, gbp)); install(r.id); console.log('now run: npm test'); }
   } else if (cmd === 'kits') {
-    const id = argv[1]; if (!id) throw new Error('usage: kits <id> [--only t1,t2]');
-    const k = await runKits({ id, only: flag('only') ? flag('only').split(',') : null, ...common }); if (k.dryRun) return; console.log(printCost(k.id, k.cost, gbp)); console.log('now run: npm test');
+    const id = argv[1]; if (!id) throw new Error('usage: kits <id> [--only t1,t2] [--writer <model>] [--rounds n]');
+    /* --writer swaps the kit writer for one run (a trial of Opus 5 on rooms Sonnet 5 could not get past the judge);
+       --rounds caps the write/judge rounds for that run. Both apply to this command only and are recorded in the ledger. */
+    if (flag('writer')) { if (!PRICES[flag('writer')]) throw new Error(`--writer ${flag('writer')}: no price known for that model`); MODELS.write = flag('writer'); console.log(`kit writer for this run: ${MODELS.write}`); }
+    const k = await runKits({ id, only: flag('only') ? flag('only').split(',') : null, rounds: Number(flag('rounds')) || null, ...common }); if (k.dryRun) return; console.log(printCost(k.id, k.cost, gbp)); console.log('now run: npm test');
   } else if (cmd === 'wave') {
     const n = argv[1]; if (!n) throw new Error('usage: wave <n> [--parallel 3] [--skip <id>,…] [--url <id>=https://…pdf …]');
     const skip = new Set((flag('skip') || '').split(',').map(x => x.trim()).filter(Boolean));

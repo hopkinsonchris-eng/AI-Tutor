@@ -414,7 +414,11 @@ async function runKits({ id, spec, scratch, dryRun, poll, api, log: logFn, only,
 
   const round = async (n, list) => {
     const tag = `a${a}r${n}`;
-    const needWrite = list.filter(({ t }) => { const k = kits[t.id]; return !(k && k.attempt === a && k.round === n && k.written); });
+    /* A room already written at this round — or at a later one, when a run is resumed after the process died
+       mid-way — is not written again: state keeps only a room's latest round, and a resumed run that re-ran the
+       earlier rounds paid for them twice (an Opus 5 trial on AQA-8652 resubmitted round 1 while round 3 was
+       still in flight). */
+    const needWrite = list.filter(({ t }) => { const k = kits[t.id]; return !(k && k.attempt === a && k.written && k.round >= n); });
     const w = await R.batch(`kits-${tag}-write`, 'write', needWrite.map(({ t, problems }) => ({ custom_id: cid(id, 'write', t.id, tag), params: write(t, problems) })));
     if (Object.values(w).some(v => v.dryRun)) return 'dry';
     for (const { t } of needWrite) {

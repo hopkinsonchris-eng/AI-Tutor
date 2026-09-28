@@ -1,6 +1,6 @@
 # Course roadmap — every remaining specification, most popular first
 
-21 courses are built (specification map from the board's PDF, judged room kits for every room). This is the order for the
+23 courses are built (specification map from the board's PDF, judged room kits for every room). This is the order for the
 other 135 in the boards' own catalogues, ranked by how many students sat each specification in summer 2025.
 Top 25 covers 77% of the remaining entries; top 50 covers 89%.
 

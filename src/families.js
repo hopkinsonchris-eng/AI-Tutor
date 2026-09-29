@@ -17,7 +17,7 @@ const FAMILIES = {
       'caseStudies lists the named examples, case studies or set texts the specification requires for the topic, in the wording the specification uses (for example "One high-energy coastline"). Empty only if the specification genuinely names none.',
       'Where the specification offers options (choose one of several topics), model them as options with the topic ids they choose between, and set topic.option on each choice.',
     ],
-    kit: { kinds: { paragraph: 2, factfile: 1, plan: 1 }, rules: [
+    kit: { kinds: { paragraph: 2, factfile: 'ifCaseStudies', plan: 1 }, rules: [
       'Model paragraphs: at least two, each titled with the level it would earn under the board’s levels (for example "Model paragraph — Level 4") and written to that level, with the point, the named evidence, the developed chain of reasoning and the mini-judgement; one strong and one weaker, so the student can see the difference. A hand-built kit may give the pair as one levelled model answer (question, expected, levels 1 to 3 whose answers grow cumulatively, sentence for sentence), which counts as one paragraph per level.',
       'A case-study fact file for each named example the specification requires for the topic: the dates, figures, places and names an examiner rewards, one per item.',
       'An essay plan for one question in the board’s own command words: the decoded question, the paragraphs in order, the evaluation thread, and what the conclusion must say.',

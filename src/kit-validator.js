@@ -35,9 +35,13 @@ function validateKit(kit, topic, family) {
     if (!e || typeof e.setup !== 'string' || e.setup.trim().length < 40) bad(`lesson.examples[${i}]: needs setup — the full problem the student sees before predicting: every value, statement or source given, and what is asked (at least 40 characters)`);
     if (!e || !Array.isArray(e.cues) || !Array.isArray(e.steps) || e.cues.length !== e.steps.length || e.cues.some(c => typeof c !== 'string' || c.trim().length < 8)) bad(`lesson.examples[${i}]: needs cues — one short question per step, asked before that step is revealed, that the setup and the steps so far make answerable`);
     if (e && typeof e.setup === 'string' && Array.isArray(e.steps) && e.steps.length >= 2) {
+      /* The result of the final step must not already be in the setup. The result is the last number the final step
+         writes; a setup value that the final step merely uses (a loan of £5,000 in "(5,600 − 5,000) ÷ 5,000 = 12%") is
+         not a leak, and flagging it held every finance room of a live business course through four rewrites. */
+      const finalNums = nums(e.steps[e.steps.length - 1]);
       const earlier = new Set(nums(e.steps.slice(0, -1).join(' '))), inSetup = new Set(nums(e.setup));
-      const leaked = [...new Set(nums(e.steps[e.steps.length - 1]))].filter(x => !earlier.has(x) && inSetup.has(x) && !/^(0|1|2|3|4|5|10|100)$/.test(x));
-      if (leaked.length) bad(`lesson.examples[${i}]: the setup gives away the result — ${leaked.join(', ')} first appears in the final step`);
+      const result = finalNums[finalNums.length - 1];
+      if (result !== undefined && inSetup.has(result) && !earlier.has(result) && !/^(0|1|2|3|4|5|10|100)$/.test(result)) bad(`lesson.examples[${i}]: the setup gives away the result — the final step ends on ${result}, which the setup already states; give the setup only the values and what is asked`);
       const a = words(e.steps[0]), b = words(e.setup); const inter = [...a].filter(w => b.has(w)).length;
       if (a.size >= 6 && inter / a.size > 0.8) bad(`lesson.examples[${i}]: the first step only restates the setup — it must make the first move`);
     }
@@ -84,7 +88,9 @@ function validateKit(kit, topic, family) {
     if (!Array.isArray(x.items) || !x.items.length || x.items.some(it => !it)) bad(`extras[${i}]: needs at least one non-empty item, or a levelled model answer (question, expected, levels)`); });
   const fam = FAMILIES[family];
   if (fam && fam.kit) for (const [kind, min] of Object.entries(fam.kit.kinds)) {
-    const need = min === 'ifPracticals' ? ((topic.caseStudies || []).length ? 1 : 0) : min;
+    /* 'ifPracticals' / 'ifCaseStudies': one section per topic that names any — a fact file for a topic with no named
+       case study can only be invented, which the judge rightly refuses, so it is not asked for. */
+    const need = (typeof min === 'string' && min.startsWith('if')) ? ((topic.caseStudies || []).length ? 1 : 0) : min;
     const have = extras.reduce((n, x) => n + (x && x.kind === kind ? (Array.isArray(x.levels) ? x.levels.length : 1) : 0), 0);   // a levelled model answer is one section per level: a strong and a weaker paragraph in one
     if (have < need) bad(`extras: the ${family} family needs at least ${need} "${kind}" section${need === 1 ? '' : 's'}, has ${have}`);
   }

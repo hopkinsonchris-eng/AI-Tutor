@@ -42,6 +42,8 @@ const MODELS = { outline: B.MODELS.outline, topic: B.MODELS.topic, judge: B.MODE
 const MAX_TOKENS = { outline: 16000, topic: 16000, judge: 16000, write: 64000, judgeKit: 48000 };
 const MAX_TOKENS_OBJECTION = `the answer ran past the output budget of ${MAX_TOKENS.write} tokens and was cut off: write the whole kit more concisely — shorter lesson sections, one-line worked-example steps, brief solutions and card backs — without dropping any required part`;
 const TTL = '1h';
+/* consecutive failed polls of a batch tolerated before the error is raised (at the default 30 s poll, ten minutes) */
+const POLL_FAILURES = 20;
 const FILE_DAYS = 7;
 /* tests/spec.test.js refuses a shipped file that writes a power with a caret */
 const CARET = /[A-Za-z0-9)]\^-?\d/;
@@ -122,9 +124,14 @@ function anthropicBatches({ key, fetch: f = globalThis.fetch, sleep = ms => new 
     },
     /* poll until ended; a line is printed only when the counts change */
     async wait(id, pollMs) {
-      let last = '';
+      let last = '', failures = 0;
       for (;;) {
-        const b = await this.retrieve(id);
+        /* A poll is a GET with no side effect, so a transient failure — a 5xx, a 429, a dropped connection, the API
+           gateway's "credential validation failed" 503 that ended a live 1BS0 run mid-round — is retried at the polling
+           interval rather than thrown; a fault that persists for POLL_FAILURES polls is a real error. */
+        let b;
+        try { b = await this.retrieve(id); failures = 0; }
+        catch (e) { const m = String(e && e.message || e); if (++failures <= POLL_FAILURES && /Anthropic (5\d\d|429)|fetch failed|ECONN|ETIMEDOUT|socket/.test(m)) { log(`batch ${id}: poll failed (${m.slice(0, 120)}) — retry ${failures} of ${POLL_FAILURES}`); await sleep(pollMs); continue; } throw e; }
         const c = b.request_counts || {};
         const line = `${b.processing_status} · ${c.succeeded || 0} succeeded, ${c.processing || 0} processing, ${c.errored || 0} errored, ${c.expired || 0} expired, ${c.canceled || 0} canceled`;
         if (line !== last) { log(`batch ${id}: ${line}`); last = line; }

@@ -181,7 +181,8 @@ function runFor(id, opts = {}) {
     if (rec && !rec.collected && Array.isArray(rec.customIds) && requests.some(r => !rec.customIds.includes(r.custom_id))) {
       const have = requests.filter(r => rec.customIds.includes(r.custom_id)), more = requests.filter(r => !rec.customIds.includes(r.custom_id));
       log(`${name}: ${rec.id} holds ${have.length} of ${requests.length} request(s) — the other ${more.length} go in ${name}+`);
-      return { ...(await batch(name, stage, have)), ...(await batch(name + '+', stage, more)) };
+      const rest = batch(name + '+', stage, more);   /* submitted now, not after the pending batch ends */
+      return { ...(await batch(name, stage, have)), ...(await rest) };
     }
     if (!rec || rec.collected) {
       const b = await api.create(requests);

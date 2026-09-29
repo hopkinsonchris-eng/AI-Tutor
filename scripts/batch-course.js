@@ -176,9 +176,16 @@ function runFor(id, opts = {}) {
     if (!requests.length) return {};
     if (opts.dryRun) { const mt = [...new Set(requests.map(r => r.params && r.params.max_tokens).filter(Boolean))]; log(`dry run: ${name} would submit ${requests.length} request(s) · ${(JSON.stringify(requests).length / 1024).toFixed(0)} KB of prompts · ${requests[0] && requests[0].params ? requests[0].params.model : ''} · max_tokens ${mt.join('/')}`); return Object.fromEntries(requests.map(r => [r.custom_id, { dryRun: true }])); }
     let rec = state.batches[name];
+    /* A resumed run may bring more requests than the pending batch holds (a validator fix let rooms it had refused
+       through to the judge): the pending batch is collected for the requests it has, the rest go in a batch of their own. */
+    if (rec && !rec.collected && Array.isArray(rec.customIds) && requests.some(r => !rec.customIds.includes(r.custom_id))) {
+      const have = requests.filter(r => rec.customIds.includes(r.custom_id)), more = requests.filter(r => !rec.customIds.includes(r.custom_id));
+      log(`${name}: ${rec.id} holds ${have.length} of ${requests.length} request(s) — the other ${more.length} go in ${name}+`);
+      return { ...(await batch(name, stage, have)), ...(await batch(name + '+', stage, more)) };
+    }
     if (!rec || rec.collected) {
       const b = await api.create(requests);
-      rec = state.batches[name] = { id: b.id, stage, submittedAt: new Date().toISOString(), requests: requests.length, models: [...new Set(requests.map(r => r.params.model))], collected: false };
+      rec = state.batches[name] = { id: b.id, stage, submittedAt: new Date().toISOString(), requests: requests.length, customIds: requests.map(r => r.custom_id), models: [...new Set(requests.map(r => r.params.model))], collected: false };
       save(); log(`${name}: submitted ${requests.length} request(s) as ${b.id}`);
     } else log(`${name}: resuming ${rec.id}, submitted ${rec.submittedAt}`);
     const ended = await api.wait(rec.id, pollMs);
@@ -436,6 +443,15 @@ async function runKits({ id, spec, scratch, dryRun, poll, api, log: logFn, only,
       k.kit = r.value; k.problems = v.problems.map(p => 'refused by the validator: ' + p).concat(caretProblems(r.value));
       remember(k, k.problems);
     }
+    /* A room this round already wrote but the validator refused is checked again: a run resumed after a validator
+       fix (six rooms of a business course were held by a rule that misread analytical examples) then goes straight
+       to the judge instead of paying for another rewrite. */
+    for (const { t } of list) {
+      const k = kits[t.id];
+      if (!(k && k.attempt === a && k.round === n && k.kit && !k.judged && k.problems.some(p => p.startsWith('refused by the validator: ')))) continue;
+      const v = validateKit(k.kit, t, family);
+      k.problems = v.problems.map(p => 'refused by the validator: ' + p).concat(caretProblems(k.kit));
+    }
     R.save();
     const toJudge = list.map(x => x.t).filter(t => { const k = kits[t.id]; return k && k.attempt === a && k.round === n && k.kit && !k.problems.length && !k.judged; });
     const j = await R.batch(`kits-${tag}-judge`, 'judgeKit', toJudge.map(t => ({ custom_id: cid(id, 'judge', t.id, tag), params: judge(t, kits[t.id].kit) })));
@@ -445,6 +461,7 @@ async function runKits({ id, spec, scratch, dryRun, poll, api, log: logFn, only,
       if (r.error) { k.problems = ['the judge failed: ' + r.error]; continue; }
       k.verdict = r.value; k.problems = D.judgeProblems(r.value);
       remember(k, k.problems);
+      log(`${t.id}: judged ${Math.round((Number(r.value.score) || 0) * 100)}%${k.problems.length ? ` — ${k.problems.length} problem(s): ${k.problems[0].slice(0, 120)}` : ' — shipped'}`);
       if (!k.problems.length) { k.done = true; k.at = new Date().toISOString(); }
     }
     R.save();

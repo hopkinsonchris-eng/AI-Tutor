@@ -19,7 +19,10 @@ Run the session on Opus 5 (`/model`). Write kits with Sonnet 5 subagents (`model
 Agent tool) — the Worker uses the same model for the same job and the validator refuses malformed
 work. Judge with Opus 5 subagents (`model: "opus"`): re-solving every question is where the stronger
 model earns its cost. Fable is not needed; reach for it only if a course keeps failing the judge on
-subject matter.
+subject matter. Fable orchestrating a build spends a week's subscription allowance in days.
+
+Without a session at all: `references/batch.md` runs this same pipeline on the API through the Message Batches API,
+Sonnet 5 writing and Opus 5 judging at half the token price, with a ledger that gives the real cost of the course.
 
 ## Procedure
 

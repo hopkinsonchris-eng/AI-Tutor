@@ -46,8 +46,11 @@ function validateKit(kit, topic, family) {
       const result = computed[0];
       if (result !== undefined && inSetup.has(result) && !earlier.has(result) && !/^(0|1|2|3|4|5|10|100)$/.test(result)) bad(`lesson.examples[${i}]: the setup gives away the result — the final step computes ${result}, which the setup already states; give the setup only the values and what is asked`);
       const a = words(e.steps[0]), b = words(e.setup); const inter = [...a].filter(w => b.has(w)).length;
-      /* a first step that works something out ("(£5,000 − £3,000) ÷ £5,000 × 100 = 40%") reuses the setup's numbers and words, and is a move */
-      if (a.size >= 6 && inter / a.size > 0.8 && !e.steps[0].includes('=')) bad(`lesson.examples[${i}]: the first step only restates the setup — it must make the first move`);
+      /* A first step that works something out ("(£5,000 − £3,000) ÷ £5,000 × 100 = 40%"), plots the given sellers on
+         a market map, or names the change the figures show ("has fallen from 24% to 15%") reuses the setup's numbers
+         and words and is still a move: it brings a word of its own. Only a step with none is a restatement. */
+      const fresh = [...a].filter(w => !b.has(w) && w.length > 3);
+      if (a.size >= 6 && inter / a.size > 0.8 && !fresh.length && !e.steps[0].includes('=')) bad(`lesson.examples[${i}]: the first step only restates the setup — it must make the first move`);
     }
   });
   const ch = Array.isArray(L.check) ? L.check : [];

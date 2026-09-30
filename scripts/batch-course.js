@@ -176,15 +176,20 @@ function runFor(id, opts = {}) {
     if (!requests.length) return {};
     if (opts.dryRun) { const mt = [...new Set(requests.map(r => r.params && r.params.max_tokens).filter(Boolean))]; log(`dry run: ${name} would submit ${requests.length} request(s) · ${(JSON.stringify(requests).length / 1024).toFixed(0)} KB of prompts · ${requests[0] && requests[0].params ? requests[0].params.model : ''} · max_tokens ${mt.join('/')}`); return Object.fromEntries(requests.map(r => [r.custom_id, { dryRun: true }])); }
     let rec = state.batches[name];
-    /* A resumed run may bring more requests than the pending batch holds (a validator fix let rooms it had refused
-       through to the judge): the pending batch is collected for the requests it has, the rest go in a batch of their own. */
-    if (rec && !rec.collected && Array.isArray(rec.customIds) && requests.some(r => !rec.customIds.includes(r.custom_id))) {
-      const have = requests.filter(r => rec.customIds.includes(r.custom_id)), more = requests.filter(r => !rec.customIds.includes(r.custom_id));
+    const ids = rec && Array.isArray(rec.customIds) ? rec.customIds : null;
+    /* A resumed run may bring more requests than the batch under this name holds (a validator fix let rooms it had
+       refused through to the judge): that batch serves the requests it has, the rest go in a batch of their own. */
+    if (ids && requests.some(r => !ids.includes(r.custom_id))) {
+      const have = requests.filter(r => ids.includes(r.custom_id)), more = requests.filter(r => !ids.includes(r.custom_id));
       log(`${name}: ${rec.id} holds ${have.length} of ${requests.length} request(s) — the other ${more.length} go in ${name}+`);
       const rest = batch(name + '+', stage, more);   /* submitted now, not after the pending batch ends */
       return { ...(await batch(name, stage, have)), ...(await rest) };
     }
-    if (!rec || rec.collected) {
+    /* A collected batch that still covers every request is read again, never resubmitted: a run killed while a
+       sibling batch was still in flight comes back before its results reached the state, and a fresh submission
+       would pay for the same nine judgements twice (it did, once, on EDX-1BS0; the duplicate was cancelled unprocessed). */
+    if (rec && rec.collected && ids) log(`${name}: ${rec.id} already collected — reading its results again`);
+    else if (!rec || rec.collected) {
       const b = await api.create(requests);
       rec = state.batches[name] = { id: b.id, stage, submittedAt: new Date().toISOString(), requests: requests.length, customIds: requests.map(r => r.custom_id), models: [...new Set(requests.map(r => r.params.model))], collected: false };
       save(); log(`${name}: submitted ${requests.length} request(s) as ${b.id}`);

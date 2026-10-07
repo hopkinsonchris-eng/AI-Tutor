@@ -25,8 +25,10 @@ ${JSON_RULE}
 {"why":"...","sections":[{"code":"...","heading":"...","text":"..."}],"examTips":["..."],"checks":[{"q":"...","a":"...","code":"..."}]}`;
 }
 /* The desktop: a photograph of the student's own notes, transcribed as written, then cards made only from what the notes say. */
-function transcribePrompt() {
-  return 'Transcribe this photograph of handwritten or printed study notes into plain text. Keep the headings, lists, equations and diagrams\' labels as written; do not add, summarise, reorder or correct anything. Where a word is illegible write [illegible]. Reply with the transcription only, no preamble.';
+/* Reading a page: the room's course, topic and key ideas are the vocabulary that resolves hard handwriting. */
+function transcribePrompt(spec, topic) {
+  const ctx = spec && topic ? `This is a photograph of a page of a student's handwritten or printed study notes for ${spec.board} ${spec.level} ${spec.subject} (${spec.code}), topic ${topic.id} ${topic.name}. The page's own title, usually its first line, says what it covers. Use this context to read hard handwriting: a word that could be several things is the one that fits the subject. The key ideas of this topic, as a vocabulary: ${topic.ideas.map(i => `${i.code} ${i.idea}`).join('; ')}.\n` : 'This is a photograph of handwritten or printed study notes.\n';
+  return ctx + 'Transcribe it into plain text. Keep the headings, lists, equations and diagrams\' labels as written, in order; do not add, summarise, reorder or correct anything. Where a word really cannot be read write [illegible]. Reply with the transcription only, no preamble.';
 }
 function cardsFromNotesPrompt(spec, topic, notes, count) {
   return `Create up to ${count} recall cards FROM THE STUDENT'S OWN NOTES below, for the topic given. Use only facts that appear in the notes and belong to this topic; never add facts the notes do not contain, and skip anything off-topic. Each card must be reconstructable knowledge, not recognition: the front asks, the back answers in under 25 words. Cite the key-idea code each card belongs to.
@@ -295,11 +297,36 @@ ${String(notes || '').slice(0, 6000)}
 """
 Return JSON only: {"questions":[{"q":"...","a":"...","code":"..."}]}`;
 }
+/* The write-up: the page turned into complete revision notes for this room — the student's facts kept (corrected where
+   wrong), the gaps filled from the specification and marked as such. */
+function notesWriteupPrompt(spec, topic, notes) {
+  return `Write up the student's own notes below into a clear, complete set of revision notes for this room.
+Keep the student's structure and order where there is one; the first line is usually their title. Keep every fact they wrote, corrected only where it is wrong (say so in that point). Where the transcription says [illegible] or breaks off, work out from the context and the subject what was meant. Then fill the gaps: add the points this room's key ideas need that the page lacks, so the notes are complete for this room. Mark each point "from":"notes" when it comes from the student's page and "from":"spec" when you added it. Every section cites the key-idea code it belongs to. Short points, under 25 words each. ${CONTENT_RULE}
+${specBlock(spec, topic)}
+STUDENT'S OWN NOTES (transcribed from a photograph):
+"""
+${String(notes || '').slice(0, 6000)}
+"""
+Return JSON only: {"title":"...","sections":[{"heading":"...","code":"...","points":[{"text":"...","from":"notes"|"spec"}]}],"gaps":["what the page did not cover, in a phrase each"]}`;
+}
+function validateNotesWriteup(topic, o) {
+  if (!o || typeof o.title !== 'string' || !o.title.trim()) return 'title missing';
+  if (!Array.isArray(o.sections) || !o.sections.length) return 'no sections';
+  let fromNotes = 0;
+  for (const s of o.sections) {
+    if (!s || !s.heading || !Array.isArray(s.points) || !s.points.length) return 'section incomplete';
+    if (!validCodes(topic, [s.code])) return `section cites unknown code ${s.code}`;
+    for (const p of s.points) { if (!p || !p.text) return 'point missing text'; if (p.from !== 'notes' && p.from !== 'spec') return 'point not marked notes or spec'; if (String(p.text).split(/\s+/).length > 40) return 'point too long'; if (p.from === 'notes') fromNotes++; }
+  }
+  if (!fromNotes) return 'nothing kept from the student\'s page';
+  if (o.gaps != null && !Array.isArray(o.gaps)) return 'gaps not a list';
+  return null;
+}
 function validateNotesQuestions(topic, o, min = 3) {
   if (!o || !Array.isArray(o.questions) || o.questions.length < min) return 'too few questions';
   for (const q of o.questions) { if (!q.q || !q.a) return 'question missing a side'; if (String(q.a).split(/\s+/).length > 45) return 'answer too long'; if (!validCodes(topic, [q.code])) return `question cites unknown code ${q.code}`; }
   return null;
 }
-if (typeof module !== 'undefined') module.exports = { topicOf, ideaCodes, specBlock, lessonPrompt, cardsPrompt, transcribePrompt, cardsFromNotesPrompt, notesCodesPrompt, validateNotesCodes, questionsFromNotesPrompt, validateNotesQuestions, questionsPrompt, essayQuestionPrompt, markEssayPrompt, coachPrompt,
+if (typeof module !== 'undefined') module.exports = { topicOf, ideaCodes, specBlock, lessonPrompt, cardsPrompt, transcribePrompt, cardsFromNotesPrompt, notesCodesPrompt, validateNotesCodes, questionsFromNotesPrompt, validateNotesQuestions, notesWriteupPrompt, validateNotesWriteup, questionsPrompt, essayQuestionPrompt, markEssayPrompt, coachPrompt,
   validCodes, validateLesson, validateCards, validateQuestions, validateEssayQ, validateMarking, weeklyNotePrompt, caretakerPrompt, validateCaretaker,
   LITERAL_REGISTER, registerBlock, STATION_LABELS, sceneSummary, sceneBlock, floatingCoachPrompt, validateCoachReply, chunkPrompt, validateChunks, TOUR_STEPS, TOUR_GROUPS, tourPrompt, validateTour, CONTENT_RULE };

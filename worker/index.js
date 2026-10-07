@@ -53,7 +53,7 @@
  *   session:<token>      {username, created}                       expires after SESSION_DAYS
  *   invite:<token>       {username, name, role, daily}             expires after INVITE_DAYS
  *   progress:<username>  {updatedAt, device, state}
- *   desk:<username>:<room> {items:[{id, kind, at, title, text, url, site, image, video, pos, key, name, size, type, w, h, thumb, cards, codes, quiz}]}
+ *   desk:<username>:<room> {items:[{id, kind, at, title, text, url, site, image, video, pos, key, name, size, type, w, h, thumb, cards, codes, quiz, writeup}]}
  *   deskq:<username>     bytes of files stored in R2 (quota)
  *   unfurl:<sha>         a link's title and preview image, cached a week
  *   videos2:<spec>:<topic> the room's verified YouTube videos, cached 60 days (7 when none were found)
@@ -991,6 +991,7 @@ async function desk(request, env, url, cors) {
     if (typeof b.cards === 'number') item.cards = Math.max(0, Math.floor(b.cards));
     /* a photo's notes, once read: the key-idea codes they cover, and a short test written from them */
     if (Array.isArray(b.codes)) item.codes = b.codes.filter(c => typeof c === 'string' && /^[\w.()\/-]{1,24}$/.test(c)).slice(0, 16);
+    if (b.writeup && typeof b.writeup === 'object') { const w = b.writeup; item.writeup = { title: typeof w.title === 'string' ? w.title.slice(0, 120) : '', sections: (Array.isArray(w.sections) ? w.sections : []).filter(s => s && typeof s.heading === 'string' && Array.isArray(s.points)).slice(0, 12).map(s => ({ heading: s.heading.slice(0, 200), ...(typeof s.code === 'string' ? { code: s.code.slice(0, 24) } : {}), points: s.points.filter(p => p && typeof p.text === 'string' && p.text.trim()).slice(0, 12).map(p => ({ text: p.text.slice(0, 400), from: p.from === 'spec' ? 'spec' : 'notes' })) })), gaps: (Array.isArray(w.gaps) ? w.gaps : []).filter(g => typeof g === 'string').slice(0, 8).map(g => g.slice(0, 200)) }; }
     if (Array.isArray(b.quiz)) item.quiz = b.quiz.filter(q => q && typeof q.q === 'string' && typeof q.a === 'string' && q.q.trim() && q.a.trim()).slice(0, 8).map(q => ({ q: q.q.slice(0, 400), a: q.a.slice(0, 400), ...(typeof q.code === 'string' ? { code: q.code.slice(0, 24) } : {}) }));
     if (typeof b.seen === 'string') item.seen = b.seen.slice(0, 10);
     await env.USAGE.put(ik, JSON.stringify(idx));

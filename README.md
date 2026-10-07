@@ -94,7 +94,13 @@ progress blob. A student can:
 - photograph notes or classwork from the phone's camera — the photo is resized to 2,000 px on the device,
   a Straighten step lets them drag four corners onto the page and warps it flat with a levels clean-up,
   then the tutor transcribes it (Haiku, one call, counted against the daily cap) so the wall's search finds
-  any word in it, and "Make cards" turns the transcription into checked cards for the room's deck;
+  any word in it, and a second cheap call matches the notes to the room's key-idea codes. The photo then
+  carries a "Lesson, videos, cards & test" panel: the codes it covers, a Lesson button that opens the lesson
+  with those sections already unfolded, Practise and Exit ticket, the room's cards on those ideas with
+  Review, the room's checked videos that name those codes (with Pin), "Make cards from the notes" (checked
+  cards for the deck, from the notes only), and "Test me on these notes" (short questions written from the
+  notes alone, answers corrected where the notes are wrong, kept with the photo). A photo that was never
+  read, or whose reading failed, offers "Read the notes" to fetch it back from the desk and try again;
 - pin a YouTube or Vimeo video (YouTube resumes where they stopped), save a link (title and preview are
   fetched by the Worker, public http(s) only), write a card straight into the room's deck, keep a note,
   or attach a PDF;

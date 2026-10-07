@@ -53,7 +53,7 @@
  *   session:<token>      {username, created}                       expires after SESSION_DAYS
  *   invite:<token>       {username, name, role, daily}             expires after INVITE_DAYS
  *   progress:<username>  {updatedAt, device, state}
- *   desk:<username>:<room> {items:[{id, kind, at, title, text, url, site, image, video, pos, key, name, size, type, w, h, thumb, cards}]}
+ *   desk:<username>:<room> {items:[{id, kind, at, title, text, url, site, image, video, pos, key, name, size, type, w, h, thumb, cards, codes, quiz}]}
  *   deskq:<username>     bytes of files stored in R2 (quota)
  *   unfurl:<sha>         a link's title and preview image, cached a week
  *   videos2:<spec>:<topic> the room's verified YouTube videos, cached 60 days (7 when none were found)
@@ -988,6 +988,9 @@ async function desk(request, env, url, cors) {
     if (typeof b.thumb === 'string' && /^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/.test(b.thumb) && b.thumb.length <= DESK_THUMB_MAX) item.thumb = b.thumb;
     if (typeof b.w === 'number' && typeof b.h === 'number') { item.w = Math.floor(b.w); item.h = Math.floor(b.h); }
     if (typeof b.cards === 'number') item.cards = Math.max(0, Math.floor(b.cards));
+    /* a photo's notes, once read: the key-idea codes they cover, and a short test written from them */
+    if (Array.isArray(b.codes)) item.codes = b.codes.filter(c => typeof c === 'string' && /^[\w.()\/-]{1,24}$/.test(c)).slice(0, 16);
+    if (Array.isArray(b.quiz)) item.quiz = b.quiz.filter(q => q && typeof q.q === 'string' && typeof q.a === 'string' && q.q.trim() && q.a.trim()).slice(0, 8).map(q => ({ q: q.q.slice(0, 400), a: q.a.slice(0, 400), ...(typeof q.code === 'string' ? { code: q.code.slice(0, 24) } : {}) }));
     if (typeof b.seen === 'string') item.seen = b.seen.slice(0, 10);
     await env.USAGE.put(ik, JSON.stringify(idx));
     return json({ item }, 200, cors);

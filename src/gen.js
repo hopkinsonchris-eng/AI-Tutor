@@ -269,6 +269,37 @@ function validateTour(o, names) {
     if (t.length < 8 || t.length > 90 || /!/.test(t) || !must[st.key]) continue; if (!new RegExp(must[st.key], 'i').test(t)) continue; out[st.key] = t; }
   return out;
 }
-if (typeof module !== 'undefined') module.exports = { topicOf, ideaCodes, specBlock, lessonPrompt, cardsPrompt, transcribePrompt, cardsFromNotesPrompt, questionsPrompt, essayQuestionPrompt, markEssayPrompt, coachPrompt,
+/* The student's own notes, read from a photograph: which of this room's key ideas they cover (the thread that ties the
+   photo to the lesson, the videos and the cards), and a short test written from them. */
+function notesCodesPrompt(spec, topic, notes) {
+  return `Match the student's own notes below to the key ideas of the topic. Return the codes of every key idea the notes clearly cover — a line or more about it — and nothing the notes merely mention in passing. Notes about something else entirely give an empty list.
+${specBlock(spec, topic)}
+STUDENT'S OWN NOTES (transcribed from a photograph):
+"""
+${String(notes || '').slice(0, 6000)}
+"""
+Return JSON only: {"codes":["..."]}`;
+}
+function validateNotesCodes(topic, o) {
+  if (!o || !Array.isArray(o.codes)) return 'codes missing';
+  const set = new Set(ideaCodes(topic));
+  if (!o.codes.every(c => typeof c === 'string' && set.has(c))) return 'unknown code';
+  return null;
+}
+function questionsFromNotesPrompt(spec, topic, notes, count) {
+  return `Write up to ${count} short test questions FROM THE STUDENT'S OWN NOTES below, for the topic given, to check the student can recall what they wrote. Use only facts that appear in the notes and belong to this topic; never add facts the notes do not contain, and skip anything off-topic. Each answer is what the notes say, in under 30 words; where the notes are wrong, the answer gives the correct fact and says the notes differ. Cite the key-idea code each question belongs to. ${CONTENT_RULE}
+${specBlock(spec, topic)}
+STUDENT'S OWN NOTES (transcribed from a photograph):
+"""
+${String(notes || '').slice(0, 6000)}
+"""
+Return JSON only: {"questions":[{"q":"...","a":"...","code":"..."}]}`;
+}
+function validateNotesQuestions(topic, o, min = 3) {
+  if (!o || !Array.isArray(o.questions) || o.questions.length < min) return 'too few questions';
+  for (const q of o.questions) { if (!q.q || !q.a) return 'question missing a side'; if (String(q.a).split(/\s+/).length > 45) return 'answer too long'; if (!validCodes(topic, [q.code])) return `question cites unknown code ${q.code}`; }
+  return null;
+}
+if (typeof module !== 'undefined') module.exports = { topicOf, ideaCodes, specBlock, lessonPrompt, cardsPrompt, transcribePrompt, cardsFromNotesPrompt, notesCodesPrompt, validateNotesCodes, questionsFromNotesPrompt, validateNotesQuestions, questionsPrompt, essayQuestionPrompt, markEssayPrompt, coachPrompt,
   validCodes, validateLesson, validateCards, validateQuestions, validateEssayQ, validateMarking, weeklyNotePrompt, caretakerPrompt, validateCaretaker,
   LITERAL_REGISTER, registerBlock, STATION_LABELS, sceneSummary, sceneBlock, floatingCoachPrompt, validateCoachReply, chunkPrompt, validateChunks, TOUR_STEPS, TOUR_GROUPS, tourPrompt, validateTour, CONTENT_RULE };

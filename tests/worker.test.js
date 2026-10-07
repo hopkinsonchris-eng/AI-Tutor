@@ -200,6 +200,8 @@ const baseEnv = () => ({ ANTHROPIC_API_KEY: 'sk-ant-test', ALLOWED_ORIGIN: 'http
     ok('D3 a photo upload lands in R2 under the owner and becomes a photo item', r.status === 200 && photo.kind === 'photo' && photo.size === 2000 && photo.key.startsWith('desk/matthew/') && env.DESK._map.has(photo.key), JSON.stringify(photo));
     r = await worker.fetch(req('/desk/OCR-H481%7C1.2/' + photo.id, J('PATCH', { text: 'The water cycle has three stores', thumb: 'data:image/jpeg;base64,AAAA' }, STU)), env);
     ok('D6 the transcription and thumbnail attach to the photo (criterion 3)', r.status === 200 && (await r.json()).item.text === 'The water cycle has three stores');
+    r = await worker.fetch(req('/desk/OCR-H481%7C1.2/' + photo.id, J('PATCH', { codes: ['1.a', '1.c', 'bad code!', 7], quiz: [{ q: 'What bounds a sediment cell?', a: 'Headlands and estuaries', code: '1.c' }, { q: 'no answer' }, 'junk'] }, STU)), env);
+    { const it = (await r.json()).item; ok('D6b the key ideas the notes cover and the test written from them attach to the photo, with junk dropped', r.status === 200 && JSON.stringify(it.codes) === '["1.a","1.c"]' && it.quiz.length === 1 && it.quiz[0].a === 'Headlands and estuaries' && it.quiz[0].code === '1.c', JSON.stringify([it.codes, it.quiz])); }
     r = await worker.fetch(req('/desk/file/' + photo.key.replace(/^desk\//, ''), { headers: STU }), env);
     ok('D9 the owner reads the file back with its type', r.status === 200 && r.headers.get('Content-Type') === 'image/jpeg' && (await r.arrayBuffer()).byteLength === 2000);
     r = await worker.fetch(req('/desk/file/' + photo.key.replace(/^desk\//, ''), { headers: ADM }), env);

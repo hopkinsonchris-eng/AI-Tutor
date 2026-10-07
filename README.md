@@ -93,8 +93,11 @@ progress blob. A student can:
 
 - photograph notes or classwork from the phone's camera — the photo is resized to 2,000 px on the device,
   a Straighten step lets them drag four corners onto the page and warps it flat with a levels clean-up,
-  then the tutor transcribes it (Haiku, one call, counted against the daily cap) so the wall's search finds
-  any word in it, and a second cheap call matches the notes to the room's key-idea codes. The photo then
+  then the tutor reads it (one call on the main model, told the course, the room and its key ideas so hard
+  handwriting resolves to the word that fits the subject) so the wall's search finds any word in it, a
+  cheap call matches the notes to the room's key-idea codes, and a third call writes the page up into
+  complete revision notes for the room: the student's facts kept (corrected where wrong), the gaps filled
+  from the specification and marked "+", the page's own title used as its title. The photo then
   carries a "Lesson, videos, cards & test" panel: the codes it covers, a Lesson button that opens the lesson
   with those sections already unfolded, Practise and Exit ticket, the room's cards on those ideas with
   Review, the room's checked videos that name those codes (with Pin), "Make cards from the notes" (checked

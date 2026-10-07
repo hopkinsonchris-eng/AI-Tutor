@@ -39,6 +39,8 @@ const server = http.createServer((req, res) => {
     if (/^\/courses\/[^/]+\/kit\//.test(p)) return send(404, { error: 'no kit for that room yet' });
     if (p === '/' && m === 'POST') { const parts = (body.messages && body.messages[0] && body.messages[0].content) || []; const text = parts.map(x => x.text || '').join(' '); seen.ai.push({ model: body.model, image: parts.some(x => x.type === 'image'), kind: /Transcribe/.test(text) ? 'transcribe' : /OWN NOTES/.test(text) ? 'cards' : /post-it/.test(text) ? 'note' : /next step/i.test(text) ? 'nudge' : 'other' });
       if (/Transcribe/.test(text)) return send(200, { content: [{ type: 'text', text: TRANSCRIPT }] });
+      if (/Match the student/.test(text)) return send(200, { content: [{ type: 'text', text: JSON.stringify({ codes: ['1.a', '1.b'] }) }] });
+      if (/short test questions/.test(text)) return send(200, { content: [{ type: 'text', text: JSON.stringify({ questions: [{ q: 'Name the four major stores of the water cycle.', a: 'Atmosphere, hydrosphere, cryosphere, lithosphere.', code: '1.a' }, { q: 'What share of the hydrosphere is in the oceans?', a: 'About 96.5%.', code: '1.a' }, { q: 'Which flow moves water laterally through the soil to a river?', a: 'Throughflow.', code: '1.b' }] }) }] });
       if (/post-it/.test(text)) return send(200, { content: [{ type: 'text', text: JSON.stringify({ text: 'Hard questions keep costing hints. Do two cold, then mark one.' }) }] });
       if (/OWN NOTES/.test(text)) return send(200, { content: [{ type: 'text', text: JSON.stringify({ cards: [{ front: 'Name the four major stores of the water cycle', back: 'Atmosphere, hydrosphere, cryosphere, lithosphere', code: '1.a' }, { front: 'What is residence time?', back: 'How long water stays in a store — about nine days in the atmosphere', code: '1.a' }, { front: 'Which process moves water from soil into rivers laterally?', back: 'Throughflow', code: '1.b' }, { front: 'Largest carbon store apart from the lithosphere?', back: 'The ocean', code: '2.a' }].map(c => ({ ...c, code: SPECS['OCR-H481'].topics.find(t => t.id === '1.2').ideas[0].code })) }) }] });
       return send(200, { content: [{ type: 'text', text: JSON.stringify({ text: 'Matthew, before the cards, straighten and read Tuesday\'s notes on your desktop in Earth\'s life support systems.', node: 'OCR-H481|1.2', station: 'desktop' }) }] }); }
@@ -60,15 +62,17 @@ const server = http.createServer((req, res) => {
   });
 });
 
+/* the app opens on the campus; the proof starts from Today's plan */
+const toToday = async pg => { await pg.waitForSelector('#v-campus .chip[data-v="today"], #v-today .steps', { timeout: 15000 }); await pg.evaluate(() => go('today')); await pg.waitForSelector('#v-today .steps', { timeout: 15000 }); };
 (async () => {
   await new Promise(r => server.listen(PORT, r));
   const browser = await chromium.launch(fs.existsSync('/opt/pw-browsers/chromium') ? { executablePath: '/opt/pw-browsers/chromium' } : {});
   const ctx = await browser.newContext({ viewport: { width: 1180, height: 900 }, deviceScaleFactor: 2 });
   await ctx.addInitScript(() => { localStorage.setItem('platform:session', 'tok-matthew'); });
   const page = await ctx.newPage();
-  await page.goto(ORIGIN); await page.waitForSelector('#v-today .steps', { timeout: 15000 });
+  await page.goto(ORIGIN); await toToday(page);
   /* into the room, onto the desktop */
-  await page.click('nav button[data-v="rooms"]'); await page.click('button[data-open="OCR-H481|1.2"]');
+  await page.evaluate(() => openRoom('OCR-H481|1.2', 'lesson')); await page.waitForSelector('.stations button[data-station="desktop"]');
   await page.click('.stations button[data-station="desktop"]'); await page.waitForSelector('#dkPhoto', { timeout: 10000 });
   /* a photograph of a page of notes on a desk, skewed as a phone would see it */
   const quad = [[300, 170], [1330, 240], [1270, 1070], [230, 990]];
@@ -97,6 +101,12 @@ const server = http.createServer((req, res) => {
   await page.fill('#dkNote', 'Ask Mr Hall about the difference between throughflow and interflow.'); await page.click('#dkAddNote'); await page.waitForSelector('.dblock[data-kind="note"]', { timeout: 10000 });
   await page.click('[data-dkplay]'); await page.waitForSelector('iframe.dframe', { timeout: 10000 }); await page.waitForTimeout(1500);
   await page.screenshot({ path: path.join(OUT, 'desk-2-wall.png'), fullPage: true });
+  /* the ring binder: the page read into text, matched to the room, with its links and a test from the notes */
+  await page.click('.stations button[data-station="notes"]'); await page.waitForSelector('.npage .ntext', { timeout: 10000 });
+  await page.click('.npage [data-dkquiz]'); await page.waitForSelector('.npage [data-reveal^="dq"]', { timeout: 20000 }); await page.click('.npage [data-reveal^="dq"]'); await page.waitForTimeout(400);
+  await page.screenshot({ path: path.join(OUT, 'desk-9-notes.png'), fullPage: true });
+  const notesFacts = await page.evaluate(() => ({ pages: document.querySelectorAll('.npage').length, text: /Stores: atmosphere/.test(document.querySelector('.npage .ntext').textContent), codes: [...document.querySelectorAll('.npage .dlinks .ideas .cite')].map(x => x.textContent).join(), quiz: document.querySelectorAll('.npage .qcard').length, binder: (document.querySelector('svg.desk [data-station="notes"][aria-label^="Notes:"]') || {}).getAttribute && document.querySelector('svg.desk [data-station="notes"][aria-label^="Notes:"]').getAttribute('aria-label') }));
+  await page.click('.stations button[data-station="desktop"]'); await page.waitForSelector('.dblock[data-kind="photo"]', { timeout: 10000 });
   const cardsInDeck = await page.evaluate(() => Object.values(S.cards).filter(c => c.node === 'OCR-H481|1.2').length);
   /* the drawn desk: the room's state as objects; each opens the station beneath */
   await page.click('.stations button[data-station="lesson"]'); await page.waitForSelector('svg.desk [data-station="planner"]'); await page.evaluate(() => window.scrollTo(0, 0)); await page.waitForTimeout(600);
@@ -109,17 +119,17 @@ const server = http.createServer((req, res) => {
   await page.click('svg.desk [data-station="planner"]'); await page.waitForSelector('.stations button[data-station="planner"][aria-selected="true"]'); await page.waitForSelector('table.cal'); await page.evaluate(() => window.scrollTo(0, 0)); await page.waitForTimeout(300);
   await page.screenshot({ path: path.join(OUT, 'desk-8-planner.png'), fullPage: false, clip: { x: 0, y: 0, width: 1180, height: 900 } });
   /* an untouched room */
-  await page.click('#backRooms'); await page.click('button[data-open="OCR-H481|2.1"]'); await page.waitForSelector('svg.desk [data-station="planner"]'); await page.evaluate(() => window.scrollTo(0, 0)); await page.waitForTimeout(500);
+  await page.evaluate(() => openRoom('OCR-H481|2.1', 'lesson')); await page.waitForSelector('svg.desk [data-station="planner"]'); await page.evaluate(() => window.scrollTo(0, 0)); await page.waitForTimeout(500);
   await page.screenshot({ path: path.join(OUT, 'desk-7-empty.png'), fullPage: false, clip: { x: 0, y: 0, width: 1180, height: 760 } });
   const emptyFacts = await page.evaluate(() => ({ prompt: !!document.querySelector('svg.desk [aria-label="Pin a video"]') && !!document.querySelector('svg.desk [aria-label="Photograph your notes"]'), note: !document.querySelector('svg.desk [data-postit="mine"]') && !!document.querySelector('svg.desk [data-postit="mine-empty"]') && /Do the lesson and/.test(document.querySelector('svg.desk [data-postit="note"]').textContent), plant: document.querySelector('svg.desk [data-plant]').dataset.plant }));
   /* Today: the three-week-old item resurfaces, the nudge points at the desktop */
-  await page.reload(); await page.waitForSelector('#v-today .steps', { timeout: 15000 }); await page.waitForSelector('#v-today .dtoday', { timeout: 15000 }); await page.waitForTimeout(800);
+  await page.reload(); await toToday(page); await page.waitForSelector('#v-today .dtoday', { timeout: 15000 }); await page.waitForTimeout(800);
   await page.screenshot({ path: path.join(OUT, 'desk-3-today.png'), fullPage: false });
   /* the phone */
   const phone = await browser.newContext({ viewport: { width: 400, height: 820 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
   await phone.addInitScript(() => { localStorage.setItem('platform:session', 'tok-matthew'); });
-  const pp = await phone.newPage(); await pp.goto(ORIGIN); await pp.waitForSelector('#v-today .steps', { timeout: 15000 });
-  await pp.$eval('nav button[data-v="rooms"]', b => b.click()); await pp.waitForSelector('button[data-open="OCR-H481|1.2"]'); await pp.$eval('button[data-open="OCR-H481|1.2"]', b => b.click()); await pp.waitForSelector('svg.desk [aria-label^="Videos: resume"]', { timeout: 10000 }); await pp.waitForTimeout(600);
+  const pp = await phone.newPage(); await pp.goto(ORIGIN); await toToday(pp);
+  await pp.evaluate(() => openRoom('OCR-H481|1.2', 'lesson')); await pp.waitForSelector('svg.desk [aria-label^="Videos: resume"]', { timeout: 10000 }); await pp.waitForTimeout(600);
   await pp.screenshot({ path: path.join(OUT, 'desk-6-desk-phone.png'), fullPage: false, clip: { x: 0, y: 0, width: 400, height: 640 } });
   const hits = await pp.evaluate(() => [...document.querySelectorAll('svg.desk .dobj')].map(g => { const b = g.getBoundingClientRect(); return { n: g.getAttribute('aria-label').slice(0, 24), w: Math.round(b.width), h: Math.round(b.height) }; }));
   const captionsHidden = await pp.evaluate(() => getComputedStyle(document.querySelector('svg.desk .dcap')).display === 'none');
@@ -127,6 +137,7 @@ const server = http.createServer((req, res) => {
   await pp.screenshot({ path: path.join(OUT, 'desk-4-phone.png'), fullPage: true });
   await browser.close(); server.close();
   const dims = seen.patches.find(x => x.w);
+  console.log('notes binder', JSON.stringify(notesFacts));
   console.log('uploaded', seen.upload, '· straightened size', dims && `${dims.w}×${dims.h}`, '· tutor calls', JSON.stringify(seen.ai.filter(a => a.kind !== 'nudge')), '· cards in the room deck', cardsInDeck);
   const okDims = dims && dims.w <= 2000 && dims.h <= 2000 && Math.abs(dims.w / dims.h - 1050 / 860) < 0.15;
   console.log(seen.upload && seen.upload.bytes < 8 * 1048576 && okDims && seen.ai.some(a => a.kind === 'transcribe' && a.image && a.model === 'claude-haiku-4-5') && seen.ai.some(a => a.kind === 'cards') && cardsInDeck >= 4 ? 'PROOF: criteria 2, 3, 4, 5 and 6 seen in the browser' : 'PROOF: FAILED');

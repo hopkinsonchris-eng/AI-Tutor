@@ -151,9 +151,9 @@ function validateCaretaker(o) { if (!o || typeof o !== 'object') return 'no answ
 
 
 /* ---------- The floating coach: what it can see, how it is asked, how its reply is checked ---------- */
-const STATION_LABELS = { lesson: 'Lesson', formulae: 'Key facts', cards: 'Flash cards', practise: 'Practise', essay: 'Essay', mark: 'Mark', exit: 'Exit ticket', planner: 'Planner', desktop: 'Desktop', coach: 'Coach' };
+const STATION_LABELS = { lesson: 'Lesson', formulae: 'Key facts', cards: 'Flash cards', practise: 'Practise', essay: 'Essay', mark: 'Mark', exit: 'Exit ticket', planner: 'Planner', notes: 'Notes', desktop: 'Desktop', coach: 'Coach' };
 const COACH_VIEWS = ['campus', 'today', 'exam', 'prog', 'office'];
-const COACH_STATIONS = ['lesson', 'cards', 'practise', 'essay', 'exit', 'desktop', 'formulae', 'mark', 'planner'];
+const COACH_STATIONS = ['lesson', 'cards', 'practise', 'essay', 'exit', 'desktop', 'formulae', 'mark', 'planner', 'notes'];
 function sceneSummary(sc) {
   if (!sc) return '';
   if (sc.view === 'rooms' && sc.spec && sc.topic) { let s = `${sc.spec.subject} · ${sc.topic.id} ${sc.topic.name} · ${STATION_LABELS[sc.station] || 'Lesson'}`; const it = sc.item; if (it && it.kind === 'question' && it.n) s += ` · question ${it.n} of ${it.of}`; return s; }

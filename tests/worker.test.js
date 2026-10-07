@@ -50,6 +50,9 @@ const baseEnv = () => ({ ANTHROPIC_API_KEY: 'sk-ant-test', ALLOWED_ORIGIN: 'http
   ok('W1 health check answers', r.status === 200 && (await r.json()).service === 'tutor-proxy');
   r = await worker.fetch(req('/', { method: 'OPTIONS' }), env);
   ok('W2 preflight allows the site origin, Authorization, and the admin verbs', r.status === 204 && r.headers.get('Access-Control-Allow-Origin') === 'https://studyplatform.example' && /Authorization/.test(r.headers.get('Access-Control-Allow-Headers')) && /PATCH/.test(r.headers.get('Access-Control-Allow-Methods')));
+  r = await worker.fetch(req('/desk/OCR-H481%7C1.2/upload', { method: 'OPTIONS', headers: { Origin: 'https://studyplatform.example', 'Access-Control-Request-Method': 'POST', 'Access-Control-Request-Headers': 'authorization, content-type, x-desk-name, x-desk-kind' } }), env);
+  { const allowed = (r.headers.get('Access-Control-Allow-Headers') || '').toLowerCase().split(/\s*,\s*/);
+    ok('W2b preflight allows every header the photo and paper uploads send (Safari otherwise reports only "Load failed")', r.status === 204 && ['authorization', 'content-type', 'x-desk-name', 'x-desk-kind', 'x-page-name'].every(h => allowed.includes(h)), allowed.join(',')); }
   r = await worker.fetch(req('/'), { ...baseEnv(), USAGE: undefined });
   ok('W3 refuses to run without KV rather than half-working', r.status === 503);
 

@@ -1240,7 +1240,9 @@ function corsHeaders(env) {
   return {
     'Access-Control-Allow-Origin': env.ALLOWED_ORIGIN || '*',
     'Access-Control-Allow-Methods': 'GET, POST, PUT, PATCH, DELETE, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    /* The desktop and paper uploads send the file's name and kind as headers; a browser preflights those and
+       refuses the upload outright (Safari says only "Load failed") unless each one is allowed here. */
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Desk-Name, X-Desk-Kind, X-Page-Name',
     'Access-Control-Max-Age': '86400',
   };
 }

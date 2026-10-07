@@ -210,6 +210,8 @@ const baseEnv = () => ({ ANTHROPIC_API_KEY: 'sk-ant-test', ALLOWED_ORIGIN: 'http
     ok('D9 another account sees an empty desktop for the same room', (await r.json()).items.length === 0);
     r = await worker.fetch(req('/desk/OCR-H481%7C1.2/upload', { method: 'POST', headers: { ...STU, 'Content-Type': 'text/html', 'X-Desk-Name': 'x.html' }, body: 'hello' }), env);
     ok('D7 only images and PDFs are accepted', r.status === 415);
+    r = await worker.fetch(req('/desk/OCR-H481%7C1.2/upload', { method: 'POST', headers: { ...STU, 'Content-Type': 'image/jpeg', 'X-Desk-Name': 'from-files.jpg', 'X-Desk-Kind': 'file' }, body: jpeg }), env);
+    { const ff = (await r.json()).item; ok('D7b an image sent in by the File button is still a photo the tutor can read', r.status === 200 && ff.kind === 'photo'); await worker.fetch(req('/desk/OCR-H481%7C1.2/' + ff.id, { method: 'DELETE', headers: STU }), env); }
     r = await worker.fetch(req('/desk/OCR-H481%7C1.2/upload', { method: 'POST', headers: { ...STU, 'Content-Type': 'image/png', 'X-Desk-Name': 'big.png' }, body: new Uint8Array(8 * 1024 * 1024 + 1) }), env);
     ok('D8 a file over 8 MB is refused', r.status === 413);
     await env.USAGE.put('deskq:matthew', String(250 * 1024 * 1024 - 100));

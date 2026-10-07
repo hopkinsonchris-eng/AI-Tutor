@@ -23,7 +23,7 @@
  *   GET  /desk/file/<user>/<room>/<id>  bearer, owner only -> the file
  *   GET  /desk/<room>         bearer                     -> {items, used, quota}
  *   POST /desk/<room>         bearer {kind, …}           -> {item}         (link, video, card, note)
- *   POST /desk/<room>/upload  bearer, raw body, X-Desk-Name, X-Desk-Kind -> {item}   (photo or file, into R2)
+ *   POST /desk/<room>/upload  bearer, raw body, X-Desk-Name -> {item}   (an image is a photo, a PDF a file; into R2)
  *   PATCH/DELETE /desk/<room>/<id>  bearer
  *   POST /                    bearer, an Anthropic messages request -> forwarded
  *
@@ -954,7 +954,8 @@ async function desk(request, env, url, cors) {
     const id = randomToken(9), name = String(request.headers.get('X-Desk-Name') || 'file').slice(0, 120);
     const key = `desk/${user}/${room}/${id}.${DESK_TYPES[type]}`;
     await env.DESK.put(key, body, { httpMetadata: { contentType: type } });
-    const kind = type === 'application/pdf' ? 'file' : (request.headers.get('X-Desk-Kind') === 'file' ? 'file' : 'photo');
+    /* every image is a photo the tutor can read, whichever button it came in by; only a PDF is a plain file */
+    const kind = type === 'application/pdf' ? 'file' : 'photo';
     const item = { id, kind, at: now(), name, key, size: body.byteLength, type, title: name.replace(/\.[a-z0-9]+$/i, '') };
     idx.items.unshift(item);
     await env.USAGE.put(ik, JSON.stringify(idx)); await env.USAGE.put(qk, String(used + body.byteLength));

@@ -100,7 +100,10 @@ progress blob. A student can:
   Review, the room's checked videos that name those codes (with Pin), "Make cards from the notes" (checked
   cards for the deck, from the notes only), and "Test me on these notes" (short questions written from the
   notes alone, answers corrected where the notes are wrong, kept with the photo). A photo that was never
-  read, or whose reading failed, offers "Read the notes" to fetch it back from the desk and try again;
+  read, or whose reading failed, offers "Read the notes" to fetch it back from the desk and try again.
+  The **Notes** tab is the room's ring binder (drawn on the desk below the planner; the photo taped to the
+  wall opens it too): every page in the order taken, its text in full beside a small thumbnail, Read again,
+  and the same panel of links. Any image is a photo whichever button it came in by; only a PDF is a file;
 - pin a YouTube or Vimeo video (YouTube resumes where they stopped), save a link (title and preview are
   fetched by the Worker, public http(s) only), write a card straight into the room's deck, keep a note,
   or attach a PDF;

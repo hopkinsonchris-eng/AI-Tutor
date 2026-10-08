@@ -22,7 +22,8 @@
  *   GET  /desk/unfurl?url=    bearer                     -> {title, image, site}   (http(s) only, no private addresses)
  *   GET  /desk/file/<user>/<room>/<id>  bearer, owner only -> the file
  *   GET  /desk/<room>         bearer                     -> {items, used, quota}
- *   POST /desk/<room>         bearer {kind, …}           -> {item}         (link, video, card, note)
+ *   POST /desk/<room>         bearer {kind, …}           -> {item}         (link, video, card, note, page — a typed page of notes)
+ *   every /desk route takes ?as=<username> from an admin, to work on that student's desk; items made that way carry by and byName
  *   POST /desk/<room>/upload  bearer, raw body, X-Desk-Name -> {item}   (an image is a photo, a PDF a file; into R2)
  *   PATCH/DELETE /desk/<room>/<id>  bearer
  *   POST /                    bearer, an Anthropic messages request -> forwarded
@@ -40,6 +41,7 @@
  *   Admin (bearer, role admin):
  *   GET    /manage/users
  *   POST   /manage/users              {username, name, daily, role?} -> {user, invite}
+ *   GET    /manage/users/:u/rooms     -> {rooms:[<room id>]} the rooms in the student's progress
  *   PATCH  /manage/users/:u           {name?, daily?, disabled?, role?}
  *   DELETE /manage/users/:u
  *   POST   /manage/users/:u/invite    -> a fresh invite (password reset)
@@ -923,7 +925,14 @@ async function desk(request, env, url, cors) {
   const s = await sessionUser(request, env);
   if (!s) return json({ error: 'not signed in' }, 401, cors);
   if (!env.DESK) return json({ error: 'Desktop is not set up yet — the DESK storage bucket is not bound' }, 503, cors);
-  const user = s.user.username;
+  /* an admin may work on a student's desk (?as=): what they add is marked as theirs */
+  let user = s.user.username, by = null;
+  const as = normUsername(url.searchParams.get('as') || '');
+  if (as && as !== user) {
+    if (s.user.role !== 'admin') return json({ error: 'only an admin can work on another student\'s desk' }, 403, cors);
+    if (!(await env.USAGE.get(`user:${as}`, 'json'))) return json({ error: 'no such user' }, 404, cors);
+    user = as; by = { by: s.user.username, byName: s.user.name };
+  }
   const parts = url.pathname.split('/').slice(2).map(x => decodeURIComponent(x));
   if (parts[0] === 'all' && request.method === 'GET') return deskAll(env, user, cors);
   if (parts[0] === 'unfurl' && request.method === 'GET') return unfurl(env, url.searchParams.get('url') || '', cors);
@@ -956,16 +965,16 @@ async function desk(request, env, url, cors) {
     await env.DESK.put(key, body, { httpMetadata: { contentType: type } });
     /* every image is a photo the tutor can read, whichever button it came in by; only a PDF is a plain file */
     const kind = type === 'application/pdf' ? 'file' : 'photo';
-    const item = { id, kind, at: now(), name, key, size: body.byteLength, type, title: name.replace(/\.[a-z0-9]+$/i, '') };
+    const item = { id, kind, at: now(), name, key, size: body.byteLength, type, title: name.replace(/\.[a-z0-9]+$/i, ''), ...by };
     idx.items.unshift(item);
     await env.USAGE.put(ik, JSON.stringify(idx)); await env.USAGE.put(qk, String(used + body.byteLength));
     return json({ item, used: used + body.byteLength, quota: DESK_QUOTA }, 200, cors);
   }
   if (request.method === 'POST' && !sub) {
     const b = await readJson(request);
-    if (!['link', 'video', 'card', 'note'].includes(b.kind)) return json({ error: 'kind must be link, video, card or note' }, 400, cors);
+    if (!['link', 'video', 'card', 'note', 'page'].includes(b.kind)) return json({ error: 'kind must be link, video, card, note or page' }, 400, cors);
     if (idx.items.length >= DESK_MAX_ITEMS) return json({ error: `This room's desktop holds 200 items already — delete something first` }, 409, cors);
-    const item = { id: randomToken(9), kind: b.kind, at: now(), title: String(b.title || '').slice(0, 200) };
+    const item = { id: randomToken(9), kind: b.kind, at: now(), title: String(b.title || '').slice(0, 200), ...by };
     if (b.kind === 'link' || b.kind === 'video') {
       const u = safeHttpUrl(b.url); if (!u) return json({ error: 'a web address starting http(s):// is required' }, 400, cors);
       item.url = u.href; item.site = String(b.site || u.hostname).slice(0, 80); if (b.image && safeHttpUrl(b.image)) item.image = String(b.image).slice(0, 500);
@@ -975,6 +984,7 @@ async function desk(request, env, url, cors) {
     if (b.kind === 'card') { item.front = String(b.front || '').slice(0, 300); item.back = String(b.back || '').slice(0, 600); item.code = String(b.code || '').slice(0, 40); item.cardId = String(b.cardId || '').slice(0, 20); if (!item.front || !item.back) return json({ error: 'a card needs a front and a back' }, 400, cors); }
     if (b.kind === 'note' || b.text) item.text = String(b.text || '').slice(0, DESK_TEXT_MAX);
     if (b.kind === 'note' && !item.text) return json({ error: 'a note needs some text' }, 400, cors);
+    if (b.kind === 'page' && !item.text.trim()) return json({ error: 'a page needs some text' }, 400, cors);
     idx.items.unshift(item);
     await env.USAGE.put(ik, JSON.stringify(idx));
     return json({ item }, 200, cors);
@@ -1069,7 +1079,7 @@ async function manage(request, env, url, cors) {
   if (!s) return json({ error: 'not signed in' }, 401, cors);
   if (s.user.role !== 'admin') return json({ error: 'admin only' }, 403, cors);
 
-  const m = /^\/manage\/users(?:\/([^/]+))?(?:\/(invite))?$/.exec(url.pathname);
+  const m = /^\/manage\/users(?:\/([^/]+))?(?:\/(invite|rooms))?$/.exec(url.pathname);
   if (!m) return json({ error: 'not found' }, 404, cors);
   const target = m[1] ? normUsername(decodeURIComponent(m[1])) : '';
   const sub = m[2] || '';
@@ -1106,6 +1116,10 @@ async function manage(request, env, url, cors) {
 
   if (sub === 'invite' && request.method === 'POST') {
     return json({ invite: await newInvite(env, existing) }, 200, cors);
+  }
+  if (sub === 'rooms' && request.method === 'GET') {
+    const prog = await env.USAGE.get(`progress:${target}`, 'json');
+    return json({ rooms: Object.keys((prog && prog.state && prog.state.nodes) || {}) }, 200, cors);
   }
   if (!sub && request.method === 'PATCH') {
     const body = await readJson(request);

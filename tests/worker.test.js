@@ -230,6 +230,32 @@ const baseEnv = () => ({ ANTHROPIC_API_KEY: 'sk-ant-test', ALLOWED_ORIGIN: 'http
     ok('D2 deleting a photo removes the item, the file and its bytes from the quota', r.status === 200 && !env.DESK._map.has(photo.key) && (await env.USAGE.get('deskq:matthew')) === '0');
     r = await worker.fetch(req('/desk/all', { headers: STU }), env);
     d = await r.json();
+    /* an admin in a student's binder: ?as= on the desk routes, pages marked as theirs, a typed page, the student's rooms */
+    { const adminMe = (await (await worker.fetch(req('/auth/me', { headers: ADM }), env)).json()).user;
+      r = await worker.fetch(req('/desk/OCR-H481%7C1.2?as=matthew', J('POST', { kind: 'page', title: 'Sediment cells', text: 'A sediment cell is a stretch of coast within which sediment is sourced, moved and deposited.' }, ADM)), env);
+      const pg = (await r.json()).item;
+      ok('AD1 an admin adds a typed page of notes to a student’s room, and it is marked as from the admin', r.status === 200 && pg.kind === 'page' && pg.text.startsWith('A sediment cell') && pg.by === adminMe.username && pg.byName === adminMe.name, JSON.stringify(pg));
+      r = await worker.fetch(req('/desk/OCR-H481%7C1.2', { headers: STU }), env);
+      ok('AD1 the student sees it on their own desk, with who added it', r.status === 200 && (await r.json()).items.some(x => x.id === pg.id && x.byName === adminMe.name));
+      r = await worker.fetch(req('/desk/OCR-H481%7C1.2?as=matthew', J('POST', { kind: 'page', text: '  ' }, ADM)), env);
+      ok('AD1 a page needs some text', r.status === 400);
+      r = await worker.fetch(req('/desk/OCR-H481%7C1.2/upload?as=matthew', { method: 'POST', headers: { ...ADM, 'Content-Type': 'image/jpeg', 'X-Desk-Name': 'from-chris.jpg' }, body: jpeg }), env);
+      const ap = (await r.json()).item;
+      ok('AD2 an admin’s photo lands under the student in R2, marked as the admin’s, and the admin can read it back with ?as=', r.status === 200 && ap.key.startsWith('desk/matthew/') && ap.by === adminMe.username && (await worker.fetch(req('/desk/file/' + ap.key.replace(/^desk\//, '') + '?as=matthew', { headers: ADM }), env)).status === 200 && (await worker.fetch(req('/desk/file/' + ap.key.replace(/^desk\//, ''), { headers: ADM }), env)).status === 404, JSON.stringify(ap));
+      r = await worker.fetch(req('/desk/OCR-H481%7C1.2/' + pg.id + '?as=matthew', J('PATCH', { writeup: { title: 'Sediment cells', sections: [{ heading: 'Definition', code: '1.c', points: [{ text: 'A closed system of sediment', from: 'notes' }] }] } }, ADM)), env);
+      ok('AD2 the admin’s write-up attaches to the student’s page', r.status === 200 && (await r.json()).item.writeup.sections.length === 1);
+      r = await worker.fetch(req('/desk/OCR-H481%7C1.2?as=' + adminMe.username, { headers: STU }), env);
+      ok('AD3 a student cannot work on anyone else’s desk', r.status === 403);
+      r = await worker.fetch(req('/desk/OCR-H481%7C1.2?as=nobody', { headers: ADM }), env);
+      ok('AD3 an unknown student is refused', r.status === 404);
+      const prevProg = await env.USAGE.get('progress:matthew');
+      await env.USAGE.put('progress:matthew', JSON.stringify({ updatedAt: new Date().toISOString(), device: 'an iPad', state: { nodes: { 'OCR-H481|1.2': { state: 'Fluent' }, 'OCR-H481|2.1': { state: 'Unassessed' } }, setup: { student: 'Matthew' } } }));
+      r = await worker.fetch(req('/manage/users/matthew/rooms', { headers: ADM }), env);
+      ok('AD4 an admin can list a student’s rooms', r.status === 200 && JSON.stringify((await r.json()).rooms) === '["OCR-H481|1.2","OCR-H481|2.1"]');
+      ok('AD4 a student cannot', (await worker.fetch(req('/manage/users/matthew/rooms', { headers: STU }), env)).status >= 400);
+      if (prevProg) await env.USAGE.put('progress:matthew', prevProg); else await env.USAGE.delete('progress:matthew');
+      for (const id of [pg.id, ap.id]) await worker.fetch(req('/desk/OCR-H481%7C1.2/' + id + '?as=matthew', { method: 'DELETE', headers: ADM }), env);
+      r = await worker.fetch(req('/desk/all', { headers: STU }), env); d = await r.json(); }
     ok('D10 the course view lists each room with a count and the latest items', d.rooms['OCR-H481|1.2'] && d.rooms['OCR-H481|1.2'].count === 3 && d.rooms['OCR-H481|1.2'].latest.length === 3 && d.rooms['OCR-H481|1.2'].latest[0].kind === 'note');
     const saveFetch = sandbox.__fetch;
     sandbox.__fetch = async (url) => new Response('<html><head><title>T</title><meta property="og:title" content="Coasts explained"><meta property="og:image" content="https://cdn.example.org/c.jpg"></head></html>', { status: 200, headers: { 'Content-Type': 'text/html' } });

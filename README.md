@@ -106,7 +106,11 @@ progress blob. A student can:
   read, or whose reading failed, offers "Read the notes" to fetch it back from the desk and try again.
   The **Notes** tab is the room's ring binder (drawn on the desk below the planner; the photo taped to the
   wall opens it too): every page in the order taken, its text in full beside a small thumbnail, Read again,
-  and the same panel of links. Any image is a photo whichever button it came in by; only a PDF is a file;
+  and the same panel of links. Any image is a photo whichever button it came in by; only a PDF is a file.
+  A page can also be typed ("Type a page"): it is matched and written up like a photographed one. An admin
+  can open any student's binder from the Admin tab ("Notes binder" on the account), pick one of the student's
+  rooms, and photograph or type pages into it: they land on the student's desk, read and written up for that
+  room, marked "from Chris". The Worker allows `?as=<username>` on the desk routes to admins only;
 - pin a YouTube or Vimeo video (YouTube resumes where they stopped), save a link (title and preview are
   fetched by the Worker, public http(s) only), write a card straight into the room's deck, keep a note,
   or attach a PDF;

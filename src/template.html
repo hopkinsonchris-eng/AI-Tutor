@@ -1342,6 +1342,8 @@ document.addEventListener('click',async e=>{let t=e.target;noteActivity();
     try{const r=await api('/manage/users',{method:'POST',body:{name,username,daily}});out.innerHTML=inviteCard(r.invite,r.user);document.getElementById('adName').value='';document.getElementById('adUser').value='';const list=document.getElementById('adList');const fresh=await api('/manage/users');UI.adminSite=fresh.site||'';list.innerHTML='';renderAdminList(fresh);}
     catch(e){out.innerHTML=`<p class="err">${esc(e.message)}</p>`;}return;}
   if(t.dataset&&t.dataset.copyLink){try{await navigator.clipboard.writeText(t.dataset.copyLink);t.textContent='Copied';}catch(e){prompt('Copy this link:',t.dataset.copyLink);}return;}
+  const adn=t.closest('[data-ad-notes]');if(adn){await adminOpenBinder(adn.dataset.adNotes,adn.dataset.name||adn.dataset.adNotes);return;}
+  if(t.id==='adBinderClose'){deskLeaveStudent();renderAdminBinder();return;}
   if(t.dataset&&t.dataset.adToggle){try{await api('/manage/users/'+encodeURIComponent(t.dataset.adToggle),{method:'PATCH',body:{disabled:t.dataset.to==='1'}});renderAdmin();}catch(e){alert(e.message);}return;}
   if(t.dataset&&t.dataset.adReset){try{const r=await api('/manage/users/'+encodeURIComponent(t.dataset.adReset)+'/invite',{method:'POST'});const d=await api('/manage/users');const u=d.users.find(x=>x.username===t.dataset.adReset);document.getElementById('adOut').innerHTML=inviteCard(r.invite,u||{name:t.dataset.adReset,username:t.dataset.adReset});window.scrollTo(0,0);}catch(e){alert(e.message);}return;}
   if(t.dataset&&t.dataset.adCap){const v=prompt('AI requests a day for '+t.dataset.adCap+':',t.dataset.daily);if(v===null)return;try{await api('/manage/users/'+encodeURIComponent(t.dataset.adCap),{method:'PATCH',body:{daily:v}});renderAdmin();}catch(e){alert(e.message);}return;}
@@ -1358,7 +1360,7 @@ document.addEventListener('click',async e=>{let t=e.target;noteActivity();
   if(t.dataset&&t.dataset.linksSave){const id=t.dataset.linksSave;const ta=document.getElementById('links-'+id);const out=document.getElementById('linksOut-'+id);const hubs=String(ta?ta.value:'').split('\n').map(l=>l.trim()).filter(Boolean).map(l=>{const p=l.split('|').map(x=>x.trim());return p.length>=3?{name:p[0],kind:p[1].toLowerCase(),url:p.slice(2).join('|')}:{name:p[0],kind:'notes',url:p[1]||''};});
     try{const r=await api('/manage/courses/'+encodeURIComponent(id)+'/links',{method:'POST',body:{hubs}});if(out)out.innerHTML=`<div class="good">Saved ${r.hubs.length} link${r.hubs.length===1?'':'s'}. Students see them in every room of this course.</div>`;await loadCourses();}catch(e){if(out)out.innerHTML=`<p class="err">${esc(e.message)}</p>`;}return;}
   if(t.id==='suEdit'){await loadCourses();UI.setup=JSON.parse(JSON.stringify(S.setup));document.querySelectorAll('main>section').forEach(x=>x.classList.toggle('hide',x.id!=='v-setup'));renderSetup();return;}
-  if(!S)return;
+  if(!S&&!UI.desk.ctx)return;
   const pn=t.closest('[data-pin]');if(pn){S.pinned=S.pinned||{};if(S.pinned[pn.dataset.pin])delete S.pinned[pn.dataset.pin];else S.pinned[pn.dataset.pin]=true;await save();renderOffice();renderQuickBar();return;}
   const bl=t.closest('[data-bldg]');if(bl){UI.subject=bl.dataset.bldg;UI.room=null;go('rooms');renderRooms();return;}
   const bv=t.closest('[data-bldg-view]');if(bv){go(bv.dataset.bldgView);if(bv.dataset.bldgView==='office')renderOffice();return;}
@@ -1439,8 +1441,6 @@ document.addEventListener('click',async e=>{let t=e.target;noteActivity();
   if(t.id==='dkTypePage'){UI.desk.typing={title:'',text:''};deskRender();return;}
   if(t.id==='dkTypeCancel'){UI.desk.typing=null;deskRender();return;}
   if(t.id==='dkAddPage'){const ti=document.getElementById('dkPageTitle'),tx=document.getElementById('dkPageText');await deskAddPage(ti&&ti.value,tx&&tx.value);return;}
-  const adn=t.closest('[data-ad-notes]');if(adn){await adminOpenBinder(adn.dataset.adNotes,adn.dataset.name||adn.dataset.adNotes);return;}
-  if(t.id==='adBinderClose'){deskLeaveStudent();renderAdminBinder();return;}
   const dkd=t.closest('[data-dkdel]');if(dkd){if(confirm('Remove this from your desktop?'))await deskDelete(dkd.dataset.dkdel);return;}
   const apr=t.closest('[data-apres]');if(apr){const P=UI.apr,q=P.qs[P.i],h=P.hints[P.i]||0;if(apr.dataset.apres==='miss'){document.getElementById('missMode').classList.remove('hide');return;}const okk=apr.dataset.apres==='ok';const mode=okk?null:document.getElementById('pMode').value;P.results.push({ok:okk,hints:h});S.practice.push({date:TODAY,node:UI.room,ok:okk,hints:h,marks:q.m,d:q.d});tourTick('question');
     if(okk)withT(UI.room,()=>recordResult(S,UI.room,{examStandard:q.d>=2,allCorrect:h===0,interleaved:false},TODAY));else{S.errors.unshift({date:TODAY,node:UI.room,ref:q.q.slice(0,80),mode,fix:q.sol,hints:h});withT(UI.room,()=>recordWrong(S,UI.room,mode,TODAY));}addHours(q.m*2/60);P.i++;await save();renderAll();return;}
